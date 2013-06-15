@@ -1,0 +1,14 @@
+<IfModule mod_rewrite.c>
+    # Enable Rewrite Engine
+	RewriteEngine On
+	
+	# Tell PHP that the mod_rewrite module is ENABLED.
+    SetEnv HTTP_MOD_REWRITE On
+
+	# Redirect all ASPX file calls to the index.php?aspx=ASPX_FILENAME
+	RewriteRule ^(.*)\.aspx$ index.php?aspx=$1 [QSA,L]
+</IfModule>
+<IfModule !mod_rewrite.c>
+    # Tell PHP that the mod_rewrite module is DISABLED.
+    SetEnv HTTP_MOD_REWRITE Off
+</IfModule>

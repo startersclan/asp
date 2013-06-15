@@ -1,0 +1,5 @@
+.idea/*
+system/logs/*.log
+system/snapshots/bf2/*.txt
+system/snapshots/bf2142/*.txt
+system/snapshots/unprocessed/*.txt
