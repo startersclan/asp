@@ -212,15 +212,6 @@ class Snapshot extends GameResult
         // Grab database connection and lets go!
         $connection = Database::GetConnection("stats");
 
-        // Fetch the server
-        $ip = $connection->quote($this->serverIp);
-        $prefix = $connection->quote($this->serverPrefix);
-        $result = $connection->query("SELECT id FROM server WHERE ip={$ip} AND port={$this->serverPort}");
-        if (!($result instanceof PDOStatement) || ($serverId = (int)$result->fetchColumn()))
-        {
-            throw new Exception("Unknown server '{$ip}:{$this->serverPort}'!");
-        }
-
         // Get a log file
         if ($this->logWriter == null)
         {
@@ -230,6 +221,16 @@ class Snapshot extends GameResult
                 $this->logWriter = new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "stats_debug.log"), "stats_debug");
                 $this->logWriter->setLogLevel(Config::Get('debug_lvl'));
             }
+        }
+
+        // Fetch the server
+        $ip = $connection->quote($this->serverIp);
+        $prefix = $connection->quote($this->serverPrefix);
+        $result = $connection->query("SELECT id FROM server WHERE ip={$ip} AND port={$this->serverPort}");
+        if (!($result instanceof PDOStatement) || ($serverId = (int)$result->fetchColumn()))
+        {
+            $this->logWriter->logError("Unknown server '{$ip}:{$this->serverPort}'!");
+            throw new Exception("Unknown server '{$ip}:{$this->serverPort}'!");
         }
 
         // Start logging information about this snapshot
@@ -514,6 +515,12 @@ class Snapshot extends GameResult
             // ********************************
             // Process ServerInfo
             // ********************************
+            $query = new UpdateOrInsertQuery($connection, 'server');
+            $query->set('name', '=', $this->serverName);
+            $query->set('queryport', '=', $this->queryPort);
+            $query->set('lastupdate', '=', time());
+            $query->where('id', '=', $serverId);
+            $query->executeUpdate();
 
             // ********************************
             // Process MapInfo
@@ -528,10 +535,6 @@ class Snapshot extends GameResult
             $query->executeUpdate();
 
             // ********************************
-            // Process Smoc And General Ranks
-            // ********************************
-
-            // ********************************
             // Commit the Transaction and Log
             // ********************************
             $connection->commit();
@@ -540,6 +543,17 @@ class Snapshot extends GameResult
         {
             $connection->rollBack();
         }
+    }
+
+    public function getFilename()
+    {
+        // Generate SNAPSHOT Filename
+        $mapdate = date('Ymd_Hi', time());
+        $prefix  = '';
+        if ($this->serverPrefix != '')
+            $prefix .= $this->serverPrefix . '-';
+
+        return $prefix . $this->mapName . '_' . $mapdate . '.txt';
     }
 
     protected function addPlayer(Player $player)

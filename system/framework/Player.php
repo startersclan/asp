@@ -164,6 +164,11 @@ class Player
     public $teamVehicleDamage = 0;
 
     /**
+     * @var array [Id => Level]
+     */
+    public $earnedAwards = array();
+
+    /**
      * Player constructor.
      *
      * @param Dictionary $playerData
@@ -290,6 +295,14 @@ class Player
         if ($this->sqlTime < 0) $this->sqlTime = 0;
         if ($this->sqmTime < 0) $this->sqmTime = 0;
         if ($this->lwTime < 0) $this->lwTime = 0;
+
+        // Extract player awards
+        foreach ($playerData as $item)
+        {
+            // Make sure that the award given exists in the Awards List
+            //if (BackendAwardData.Awards.ContainsKey(Item.Key))
+                //this.EarnedAwards.Add(BackendAwardData.Awards[Item.Key], Int32.Parse(Item.Value));
+        }
     }
 }
 
