@@ -1,12 +1,13 @@
 <?php
 /**
- * Plexis Content Management Asp
+ * Plexis Framework
  *
  * @file        system/framework/IO/FileInfo.php
- * @copyright   2013, Plexis Dev Team
+ * @copyright   2013 - 2017, Plexis Dev Team
  * @license     GNU GPL v3
  */
 namespace System\IO;
+
 use FileNotFoundException;
 use IOException;
 use Exception;
@@ -18,8 +19,8 @@ use Exception;
  * because a file exists check will not always be necessary, and will increase
  * performance over the static File class methods
  *
- * @author      Steven Wilson 
- * @package     Asp
+ * @author      Steven Wilson
+ * @package     System
  * @subpackage  IO
  */
 class FileInfo
@@ -50,15 +51,15 @@ class FileInfo
     public function __construct($path, $create = false)
     {
         // Make sure the file exists, or we are creating a file
-        if(!file_exists($path))
+        if (!file_exists($path))
         {
             // Do we attempt to create?
-            if(!$create)
+            if (!$create)
                 throw new FileNotFoundException("File '{$path}' does not exist");
 
             // Attempt to create the file
             $handle = @fopen($path, 'w+');
-            if($handle)
+            if ($handle)
             {
                 // Close the handle
                 fclose($handle);
@@ -66,7 +67,7 @@ class FileInfo
             else
                 throw new IOException("Cannot create file '{$path}'");
         }
-        elseif(!is_file($path))
+        elseif (!is_file($path))
         {
             throw new Exception("'{$path}' is not a file!");
         }
@@ -140,6 +141,7 @@ class FileInfo
         $File = new FileStream($this->filePath, FileStream::WRITE);
         $wrote = $File->write($stringData);
         $File->close();
+
         return $wrote !== false;
     }
 
@@ -192,13 +194,13 @@ class FileInfo
      *
      * @return void
      */
-    public function moveTo($newPath) 
+    public function moveTo($newPath)
     {
         $result = @copy($this->filePath, $newPath);
-        if(!$result)
+        if (!$result)
         {
             $error = error_get_last();
-            if($error === null)
+            if ($error === null)
                 throw new IOException("Cannot copy file \"{$this->filePath}\" to \"{$newPath}\".");
             else
                 throw new IOException($error["message"]);
@@ -217,14 +219,14 @@ class FileInfo
      *
      * @param string $fileName The name of the file we are copying to
      * @param bool $overwrite Defines whether to overwrite an existing
-     * 	 file, if it exists
+     *     file, if it exists
      *
      * @return bool Returns true on success, false otherwise
      */
-    public function copyTo($fileName, $overwrite = false) 
+    public function copyTo($fileName, $overwrite = false)
     {
         // If file exists, and we disallow overwriting
-        if(!$overwrite && file_exists($fileName))
+        if (!$overwrite && file_exists($fileName))
             return false;
 
         // return the copy result
@@ -236,25 +238,27 @@ class FileInfo
      *
      * @return bool Returns true on success, false otherwise
      */
-    public function truncate() 
+    public function truncate()
     {
         $f = @fopen($this->filePath, "r+");
-        if ($f !== false) 
+        if ($f !== false)
         {
             ftruncate($f, 0);
             fclose($f);
+
             return true;
         }
+
         return false;
     }
 
     /**
      * Gets last modification time of file
      *
-     * @return int|bool Returns the time the file was last modified, 
+     * @return int|bool Returns the time the file was last modified,
      * or FALSE on failure. The time is returned as a Unix timestamp.
      */
-    public function lastWriteTime() 
+    public function lastWriteTime()
     {
         return filemtime($this->filePath);
     }
@@ -262,89 +266,108 @@ class FileInfo
     /**
      * Gets last access time of file
      *
-     * @return int|bool Returns the time the file was last accessed, 
+     * @return int|bool Returns the time the file was last accessed,
      * or FALSE on failure. The time is returned as a Unix timestamp.
      */
-    public function lastAccessTime() 
+    public function lastAccessTime()
     {
         return fileatime($this->filePath);
     }
 
     /**
      * Gets the size,  in bytes, of the current file
-     *
-     * @param bool $format Format the file size to human readable format?
-     * @param bool $gt2gb Do we think this file to be over 2 GB? This is used to get
-     *   an accurate file size via the command line on 32 bit systems.
-     *
-     * @return float|string|bool Returns false on failure, a float if $format is false, or
-     *   a string if $format is true
+     * @TODO Fix Me
+     * @return int
      */
-    public function size($format = false, $gt2gb = false) 
+    public function size()
     {
         // Get most accurate file size based on operating system
-        $total_size = '0';
-        $is64Bit = (PHP_INT_MAX > 2147483647);
+        $total_size = 0;
+        $is64Bit = (PHP_INT_SIZE > 4);
 
         // If we suspect the file being over 2 GB on a 32 bit system, use command line
-        if($gt2gb && !$is64Bit)
+        if (!$is64Bit)
         {
             // Get file size
-            $isWindows = (substr(strtoupper(PHP_OS), 0, 3) === 'WIN');
+            $isWindows = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN');
             $total_size = ($isWindows)
-                ? exec("for %v in (\"". $this->filePath ."\") do @echo %~zv") // Windows
+                ? exec("for %v in (\"" . $this->filePath . "\") do @echo %~zv") // Windows
                 : shell_exec("stat -c%s " . escapeshellarg($this->filePath)); // Linux
 
             // If we failed to get a size, we take extreme measures
-            if(!$total_size || !is_numeric($total_size))
+            if (!is_numeric($total_size) || $total_size == 0)
             {
-                if($isWindows)
+                if ($isWindows)
                 {
                     // Check for windows COM
-                    if(class_exists("COM", false)) 
+                    if (class_exists("COM", false))
                     {
-                        /** @noinspection PhpUndefinedClassInspection */
                         $fsobj = new \COM('Scripting.FileSystemObject');
-
-                        /** @noinspection PhpUndefinedMethodInspection */
                         $f = $fsobj->GetFile($this->filePath);
-                        $total_size = (float) $f->Size;
+                        $total_size = $f->Size;
                     }
-                    else 
+                    else
                     {
-                        return false;
+                        return 0;
                     }
                 }
                 else
                 {
-                    $total_size = trim(exec("perl -e 'printf \"%d\n\",(stat(shift))[7];' ". $this->filePath));
-                    if(!$total_size || !is_numeric($total_size))
-                        return false;
+                    $total_size = trim(exec("perl -e 'printf \"%d\n\",(stat(shift))[7];' " . $this->filePath));
+                    if (!$total_size || !is_numeric($total_size))
+                        return 0;
                 }
             }
         }
 
         // Just to make sure, try and return the filesize() if nothing else
-        if($total_size == '0' || !$total_size || !is_numeric($total_size)) 
-            $total_size = (float) @filesize($this->filePath);
-        return ($format == true) ? $this->formatSize($total_size) : (float) $total_size;
+        if ($total_size == 0 || !is_numeric($total_size))
+            $total_size = filesize($this->filePath);
+
+        return $total_size;
     }
 
     /**
-     * Fetches or sets the permissions of the file
+     * Sets the access permissions of the file
      *
-     * @param int $ch The permission (octal) chmod level to set on the file.
-     *   If left unset, the current chmod will be returned.
+     * @param int $chmod The permission level, as an octal, to set on the file (chmod).
      *
-     * @return int|bool Returns the current file chmod if $ch is left null,
-     *   otherwise, returns the success value of setting the permissions.
+     * @remarks
+     *        Permissions:
+     *            0 - no permissions,
+     *            1 – can execute,
+     *            2 – can write,
+     *            4 – can read
+     *
+     *        The octal number is the sum of those three permissions.
+     *
+     *        Position of the digit in value:
+     *            1 - Always zero, to signify an octal value!!
+     *            2 - what the owner can do,
+     *            3 - users in the file group,
+     *            4 - users not in the file group
+     *
+     * @example
+     *        0600 – owner can read and write
+     *        0700 – owner can read, write and execute
+     *        0666 – all can read and write
+     *        0777 – all can read, write and execute
+     *
+     * @return bool returns the success value of setting the permissions.
      */
-    public function chmod($ch = null) 
+    public function setAccess($chmod)
     {
-        if(empty($ch))
-            return fileperms($this->filePath);
+        return chmod($this->filePath, $chmod);
+    }
 
-        return chmod($this->filePath, $ch);
+    /**
+     * Gets the access permissions of the file
+     *
+     * @return int the permissions on the file
+     */
+    public function getAccess()
+    {
+        return fileperms($this->filePath);
     }
 
     /**
@@ -352,15 +375,16 @@ class FileInfo
      *
      * @return bool
      */
-    public function isWritable() 
+    public function isWritable()
     {
         // Attempt to open the file, and read contents
         $handle = @fopen($this->filePath, 'a');
-        if($handle === false) 
+        if ($handle === false)
             return false;
 
         // Close the file, return true
         fclose($handle);
+
         return true;
     }
 
@@ -373,11 +397,12 @@ class FileInfo
     {
         // Attempt to open the file, and read contents
         $handle = @fopen($this->filePath, 'r');
-        if($handle === false)
+        if ($handle === false)
             return false;
 
         // Close the file, return true
         fclose($handle);
+
         return true;
     }
 
@@ -392,6 +417,7 @@ class FileInfo
     {
         $units = array(' B', ' KB', ' MB', ' GB', ' TB');
         for ($i = 0; $size >= 1024 && $i < 4; $i++) $size /= 1024;
+
         return round($size, 2) . $units[$i];
     }
 

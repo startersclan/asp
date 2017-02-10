@@ -24,11 +24,22 @@ class IPv4Address implements iIPAddress
         );
     }
 
+    /**
+     * Returns whether this IP address is the loopback address (Localhost)
+     * @return bool
+     */
     public function isLoopback()
     {
         return $this->isLocal;
     }
 
+    /**
+     * Returns whether this IP Address is equal to the supplied IP
+     *
+     * @param string|iIPAddress $Ip The IPAddress to compare to
+     *
+     * @return bool
+     */
     public function equals($Ip)
     {
         if($Ip instanceof IPv4Address)

@@ -6,6 +6,7 @@
  * @license     GNU GPL v3
  */
 namespace System;
+
 use System\IO\File;
 use System\IO\Path;
 
@@ -85,13 +86,13 @@ class View
      */
     public function set($name, $value = null)
     {
-		if(is_array($name))
-		{
-			foreach($name as $key => $v)
-				$this->set($key, $v);
-		}
-		else
-			$this->variables[$name] = $value;
+        if (is_array($name))
+        {
+            foreach ($name as $key => $v)
+                $this->set($key, $v);
+        }
+        else
+            $this->variables[$name] = $value;
 
         return $this;
     }
@@ -138,7 +139,7 @@ class View
      */
     public function attachScript($location, $type = 'text/javascript')
     {
-       self::$scripts[] = array('location' => $location, 'type' => $type);
+        self::$scripts[] = array('location' => $location, 'type' => $type);
     }
 
     /**
@@ -149,54 +150,58 @@ class View
      * @internal param string $file The full path to the view file
      */
     public function render($full = true)
-	{
-		// Setup default Vars
-		$header = '';
-		$footer = '';
-		
-		// Full the header and footer vars
-		if($full == true)
-		{
+    {
+        // Setup default Vars
+        $header = '';
+        $footer = '';
+
+        // Full the header and footer vars
+        if ($full == true)
+        {
             // Load header and footer
-			$header = $this->loadView('header');
-			$footer = $this->loadView('footer');
+            $header = $this->loadView('header');
+            $footer = $this->loadView('footer');
 
             // if we have attached stylesheets, add them now
             $buffer = null;
-            foreach(self::$stylesheets as $css)
-                $buffer .= "<link rel=\"stylesheet\" type=\"text/css\" href=\"{$css}\" media=\"screen\" />". PHP_EOL;
+            foreach (self::$stylesheets as $css)
+                $buffer .= "<link rel=\"stylesheet\" type=\"text/css\" href=\"{$css}\" media=\"screen\" />" . PHP_EOL;
 
-            $header = str_replace($this->LDelim ."VIEW_CSS". $this->RDelim, $buffer, $header);
+            $header = str_replace($this->LDelim . "VIEW_CSS" . $this->RDelim, $buffer, $header);
 
             // Add attached scripts
             $buffer = null;
-            foreach(self::$scripts as $script)
-                $buffer .= "<script type=\"{$script['type']}\" src=\"{$script['location']}\"></script>". PHP_EOL;
+            foreach (self::$scripts as $script)
+                $buffer .= "<script type=\"{$script['type']}\" src=\"{$script['location']}\"></script>" . PHP_EOL;
 
-            $header = str_replace($this->LDelim ."VIEW_JS". $this->RDelim, $buffer, $header);
-		}
+            $header = str_replace($this->LDelim . "VIEW_JS" . $this->RDelim, $buffer, $header);
+        }
 
-		// Load the source
-		$page = $header . $this->source . $footer;
+        // Load the source
+        $page = $header . $this->source . $footer;
 
-		// Parse the template source
-		$this->source = $this->parse($page, $this->variables);
+        // Parse the template source
+        $this->source = $this->parse($page, $this->variables);
 
-		// Prepare the output
-		$this->output();
-	}
+        // Prepare the output
+        $this->output();
+    }
 
     /**
      * This method outputs the page contents to the browser
      */
     protected function output()
-	{
-		// Include template file if it exists
-		$___file = ROOT . DS . 'frontend' . DS . 'template.php';
-		if(file_exists( $___file )) include( $___file );
-		unset($___file);
+    {
+        // Include template file if it exists
+        $___file = ROOT . DS . 'frontend' . DS . 'template.php';
+        if (file_exists($___file))
+        {
+            /** @noinspection PhpIncludeInspection */
+            include($___file);
+        }
+        unset($___file);
 
-		// use output buffering to catch the page. We do this so
+        // use output buffering to catch the page. We do this so
         // we can catch php errors in the template
         ob_start();
 
@@ -204,15 +209,15 @@ class View
         extract($this->variables);
 
         // Eval the page
-        eval('?>'. $this->source);
+        eval('?>' . $this->source);
 
         // Capture the contents and call it a day
         $this->source = ob_get_contents();
         ob_end_clean();
 
-		// Echo the page to the browser
+        // Echo the page to the browser
         echo $this->source;
-	}
+    }
 
     /**
      * Checks whether there is a template file and if its readable. Stores contents of file if read is successfull
@@ -227,11 +232,11 @@ class View
     protected function loadView($viewName, $moduleName = null)
     {
         $file = (empty($moduleName))
-            ? Path::Combine(ROOT, "frontend", "views", $viewName .'.tpl')
-            : Path::Combine(ROOT, "frontend", "modules", $moduleName, "views", $viewName .'.tpl');
-        
+            ? Path::Combine(ROOT, "frontend", "views", $viewName . '.tpl')
+            : Path::Combine(ROOT, "frontend", "modules", $moduleName, "views", $viewName . '.tpl');
+
         // Make sure the file exists!
-        if(!file_exists($file))
+        if (!file_exists($file))
             throw new \IOException("Unable to locate view file '$file'");
 
         // Get the file contents and return
@@ -259,25 +264,25 @@ class View
             $replaced_something = false;
 
             // Loop through the data and catch arrays
-            foreach($variables as $key => $value)
+            foreach ($variables as $key => $value)
             {
                 // If $value is an array, we need to process it as so
-                if(is_array($value))
+                if (is_array($value))
                 {
                     // First, we check for array blocks (Foreach blocks), you do so by checking: {/key}
                     // .. if one exists we preg_match the block
-                    if(strpos($source, $this->LDelim . '/' . $key . $this->RDelim) !== false)
+                    if (strpos($source, $this->LDelim . '/' . $key . $this->RDelim) !== false)
                     {
                         // Create our array block regex
-                        $regex = $this->LDelim . $key . $this->RDelim . "(.*)". $this->LDelim . '/' . $key . $this->RDelim;
+                        $regex = $this->LDelim . $key . $this->RDelim . "(.*)" . $this->LDelim . '/' . $key . $this->RDelim;
 
                         // Match all of our array blocks into an array, and parse each individually
                         preg_match_all("~" . $regex . "~iUs", $source, $matches, PREG_SET_ORDER);
-                        foreach($matches as $match)
+                        foreach ($matches as $match)
                         {
                             // Parse pair: Source, Match to be replaced, With what are we replacing?
                             $replacement = $this->parsePair($match[1], $value);
-                            if($replacement === "_PARSER_false_") continue;
+                            if ($replacement === "_PARSER_false_") continue;
 
                             // Main replacement
                             $source = str_replace($match[0], $replacement, $source);
@@ -286,22 +291,22 @@ class View
                     }
 
                     // Now that we are done checking for blocks, Create our array key identifier
-                    $key = $key .".";
+                    $key = $key . ".";
 
                     // Next, we check for nested array blocks, you do so by checking for: {/key.*}.
                     // ..if one exists we preg_match the block
-                    if(strpos($source, $this->LDelim . "/" . $key) !== false)
+                    if (strpos($source, $this->LDelim . "/" . $key) !== false)
                     {
                         // Create our regex
-                        $regex = $this->LDelim . $key ."(.*)". $this->RDelim . "(.*)". $this->LDelim . '/' . $key ."(.*)". $this->RDelim;
+                        $regex = $this->LDelim . $key . "(.*)" . $this->RDelim . "(.*)" . $this->LDelim . '/' . $key . "(.*)" . $this->RDelim;
 
                         // Match all of our array blocks into an array, and parse each individually
                         preg_match_all("~" . $regex . "~iUs", $source, $matches, PREG_SET_ORDER);
-                        foreach($matches as $match)
+                        foreach ($matches as $match)
                         {
                             // Parse pair: Source, Match to be replaced, With what are we replacing?
                             $replacement = $this->parsePair($match[2], $this->parseArray($match[1], $value));
-                            if($replacement === "_PARSER_false_") continue;
+                            if ($replacement === "_PARSER_false_") continue;
 
                             // Check for a false reading
                             $source = str_replace($match[0], $replacement, $source);
@@ -311,25 +316,25 @@ class View
 
                     // Lastly, we check just plain arrays. We do this by looking for: {key.*}
                     // .. if one exists we preg_match the array
-                    if(strpos($source, $this->LDelim . $key) !== false)
+                    if (strpos($source, $this->LDelim . $key) !== false)
                     {
                         // Create our regex
-                        $regex = $this->LDelim . $key . "(.*)".$this->RDelim;
+                        $regex = $this->LDelim . $key . "(.*)" . $this->RDelim;
 
                         // Match all of our arrays into an array, and parse each individually
                         preg_match_all("~" . $regex . "~iUs", $source, $matches, PREG_SET_ORDER);
-                        foreach($matches as $match)
+                        foreach ($matches as $match)
                         {
                             // process the array, If we got a false array parse, then skip the rest of this loop
                             $replacement = $this->parseArray($match[1], $value);
-                            if($replacement === "_PARSER_false_") continue;
+                            if ($replacement === "_PARSER_false_") continue;
 
                             // If our replacement is a array, it will cause an error, so just return "array"
-                            if(is_array($replacement)) $replacement = "array";
+                            if (is_array($replacement)) $replacement = "array";
 
                             // Main replacement
                             $source = str_replace($match[0], $replacement, $source);
-                            if($replacement != $match[0]) $replaced_something = true;
+                            if ($replacement != $match[0]) $replaced_something = true;
                         }
                     }
                 }
@@ -337,14 +342,14 @@ class View
 
             // Now parse singles. We do this last to catch variables that were
             // inside array blocks...
-            foreach($variables as $key => $value)
+            foreach ($variables as $key => $value)
             {
                 // We don't handle arrays here
-                if(is_array($value)) continue;
+                if (is_array($value)) continue;
 
                 // Find a match for our key, and replace it with value
                 $match = $this->LDelim . $key . $this->RDelim;
-                if(strpos($source, $match) !== false)
+                if (strpos($source, $match) !== false)
                 {
                     $source = str_replace($match, $value, $source);
                     $replaced_something = true;
@@ -352,12 +357,12 @@ class View
             }
 
             // If we did not replace anything, quit
-            if(!$replaced_something)
+            if (!$replaced_something)
                 break;
 
             // Raise the counter
             ++$count;
-        } while($count < 5);
+        } while ($count < 5);
 
         // Return the parsed source
         return $source;
@@ -374,19 +379,19 @@ class View
     protected function parseArray($key, $array)
     {
         // Check to see if this is even an array first
-        if(!is_array($array)) return $array;
+        if (!is_array($array)) return $array;
 
         // Check if this is a multi-dimensional array
-        if(strpos($key, '.') !== false)
+        if (strpos($key, '.') !== false)
         {
             $args = explode('.', $key);
             $count = count($args);
 
-            for($i = 0; $i < $count; $i++)
+            for ($i = 0; $i < $count; $i++)
             {
-                if(!isset($array[$args[$i]]))
+                if (!isset($array[$args[$i]]))
                     return "_PARSER_false_";
-                elseif($i == $count - 1)
+                elseif ($i == $count - 1)
                     return $array[$args[$i]];
                 else
                     $array = $array[$args[$i]];
@@ -397,7 +402,7 @@ class View
         else
         {
             // Check if variable exists in $array
-            if(array_key_exists($key, $array))
+            if (array_key_exists($key, $array))
                 return $array[$key];
         }
 
@@ -419,10 +424,10 @@ class View
         $final_out = '';
 
         // Make sure we are dealing with an array!
-        if(!is_array($val) || !is_string($match)) return "_PARSER_false_";
+        if (!is_array($val) || !is_string($match)) return "_PARSER_false_";
 
         // Remove nested vars, nested vars are for outside vars
-        if(strpos($match, $this->LDelim . $this->LDelim) !== false)
+        if (strpos($match, $this->LDelim . $this->LDelim) !== false)
         {
             $match = str_replace(
                 array($this->LDelim, $this->RDelim . $this->RDelim),
@@ -435,18 +440,18 @@ class View
         $i = 0;
 
         // Process the block loop here, We need to process each array $val
-        foreach($val as $key => $value)
+        foreach ($val as $key => $value)
         {
             // if value isn't an array, then we just replace {value} with string
-            if(is_array($value))
+            if (is_array($value))
                 // Parse our block. This will catch nested blocks and arrays as well
-            $block = $this->parse($match, $value);
+                $block = $this->parse($match, $value);
             else
                 // Just replace {value}, as we are dealing with a string
-            $block = str_replace('{value}', $value, $match);
+                $block = str_replace('{value}', $value, $match);
 
             // Setup a few variables to tell what loop number we are on
-            if(strpos($block, "{loop.") !== false)
+            if (strpos($block, "{loop.") !== false)
             {
                 $block = str_replace(
                     array("{loop.key}", "{loop.num}", "{loop.count}"),
@@ -461,7 +466,7 @@ class View
         }
 
         // Return nested vars
-        if(strpos($final_out, "<<!") !== false)
+        if (strpos($final_out, "<<!") !== false)
         {
             $final_out = str_replace(
                 array("<<!", "!>>"),
@@ -469,7 +474,9 @@ class View
                 $final_out
             );
         }
+
         return $final_out;
     }
 }
+
 ?>

@@ -3,10 +3,9 @@ use System\View;
 
 class Home
 {
-	public function Init() 
+	public function index()
 	{
-		$View = new View('index', 'Home');
+		$View = new View('index', 'home');
 		$View->render();
 	}
 }
-?>

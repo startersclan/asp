@@ -6,6 +6,7 @@
  * @license     GNU GPL v3
  */
 namespace System\Database;
+
 use PDO;
 
 /**
@@ -62,10 +63,10 @@ class DbConnection extends PDO
     public function delete($table, $where)
     {
         // Parse where clause
-        if(is_array($where))
+        if (is_array($where))
         {
             $sql = null;
-            foreach($where as $col => $value)
+            foreach ($where as $col => $value)
                 $sql .= "`{$col}`='{$value}' AND ";
 
             $where = substr($sql, 0, -5);
@@ -91,7 +92,7 @@ class DbConnection extends PDO
 
         // question marks for escaping values later on
         $count = count($data);
-        for($i = 0; $i < $count; $i++)
+        for ($i = 0; $i < $count; $i++)
             $values .= (is_numeric($data[$i])) ? $data[$i] . ", " : $this->quote($data[$i]) . ", ";
 
         // run the query
@@ -111,25 +112,25 @@ class DbConnection extends PDO
     public function update($table, $data, $where)
     {
         // Parse where clause
-        if(is_array($where))
+        if (is_array($where))
         {
             $sql = null;
-            foreach($where as $col => $value)
+            foreach ($where as $col => $value)
                 $sql .= "`{$col}`='{$value}' AND ";
 
             $where = substr($sql, 0, -5);
         }
 
         // Do we have a where tp process?
-        if($where != '')
+        if ($where != '')
             $where = ' WHERE ' . $where;
 
         // Our string of columns
         $cols = '';
 
         // start creating the SQL string and enclose field names in `
-        foreach($data as $key => $value)
-            $cols .= ', `' . $key . '` = '. (is_numeric($value)) ? $value : $this->quote($value);
+        foreach ($data as $key => $value)
+            $cols .= ', `' . $key . '` = ' . (is_numeric($value)) ? $value : $this->quote($value);
 
         // Build our query
         return $this->exec('UPDATE ' . $table . ' SET ' . ltrim($cols, ', ') . $where);

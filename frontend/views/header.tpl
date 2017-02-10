@@ -24,7 +24,7 @@
 	<link rel="stylesheet" type="text/css" href="frontend/css/jui/jquery.ui.css" media="screen" />
 
 	<!-- Theme Stylesheet -->
-	<link rel="stylesheet" type="text/css" href="frontend/css/<?php echo \Asp::$GameMode; ?>.theme.css" media="screen" />
+	<link rel="stylesheet" type="text/css" href="frontend/css/bf2.theme.css" media="screen" />
 
 	<!-- JavaScript Plugins -->
 	<script type="text/javascript" src="frontend/js/jquery-1.7.1.min.js"></script>

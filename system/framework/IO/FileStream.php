@@ -1,21 +1,24 @@
 <?php
 /**
- * Plexis Content Management Asp
+ * Plexis Framework
  *
- * @file        system/framework/IO/DirectoryInfo.php
- * @copyright   2013 Plexis Dev Team
+ * @file        system/framework/IO/FileStream.php
+ * @copyright   2013 - 2017 Plexis Dev Team
  * @license     GNU GPL v3
  */
 namespace System\IO;
+
+use ArgumentOutOfRangeException;
 use IOException;
+use ObjectDisposedException;
 
 /**
  * Provides properties and instance methods for various file stream operations
  *
  * Use the FileStream class to read from, write to, open, and close files on a file system
  *
- * @author      Steven Wilson 
- * @package     Asp
+ * @author      Steven Wilson
+ * @package     System
  * @subpackage  IO
  */
 class FileStream
@@ -42,31 +45,64 @@ class FileStream
     protected $mode;
 
     /**
+     * Gets a value indicating whether the current stream supports reading.
+     * @var  bool
+     */
+    protected $canRead;
+
+    /**
+     * Gets a value indicating whether the current stream supports writing.
+     * @var  bool
+     */
+    protected $canWrite;
+
+    /**
+     * Gets a value indicating whether the current stream is closed.
+     * @var  bool
+     */
+    protected $isClosed;
+
+    /**
+     * Specifies which file modes allow reading
+     * @var  string[]
+     */
+    protected static $readModes = ['r', 'r+', 'w+', 'a+', 'x+', 'c+'];
+
+    /**
+     * Specifies which file modes allow writing
+     * @var  string[]
+     */
+    protected static $writeModes = ['w', 'a', 'x', 'w+', 'a+', 'x+', 'r+', 'c'];
+
+    /**
      * Constructor
      *
-     * @param string|resource $file The full path to the file, or the file resource
- *       (opened with {@link fopen}).
-     *	 If the file does not exist, it will be created
+     * @param string $file The full path to the file. If the file does not exist, it will be created
      * @param string $mode The Read / Write mode of the file (See class Constants READ,
-     *	 WRITE, READWRITE etc ).
+     *     WRITE, READWRITE etc ).
      *
      * @throws IOException Thrown if opening of the file stream failed for any reason
+     * @throws FileNotFoundException
      */
     public function __construct($file, $mode = self::READWRITE)
     {
-        // Setup class vars
-        $this->stream = (is_resource($file)) ? $file : @fopen($file, $mode);
-        $this->mode = $mode;
+        // Open the file stream
+        $this->stream = @fopen($file, $mode);
 
         // Make sure our stream is valid
-        if($this->stream === false)
+        if ($this->stream === false)
         {
             $error = error_get_last();
-            if($error === null)
+            if ($error === null)
                 throw new IOException("Unable to open file stream for file \"{$file}\".");
             else
                 throw new IOException($error["message"]);
         }
+
+        // Set class variables
+        $this->mode = $mode;
+        $this->canRead = in_array($mode, self::$readModes);
+        $this->canWrite = in_array($mode, self::$writeModes);
 
         // Set write buffer to 0 to prevent multiple streams on this file messing up
         stream_set_write_buffer($this->stream, 0);
@@ -75,92 +111,264 @@ class FileStream
     /**
      * Reads data from file
      *
-     * @param int $maxsize The maximum amount of bytes to read. To read all data, set to -1
-     * @param int $offset The number of bytes to offset in the read operation
-     * @return string Returns the string data in the file
+     * @param int $numBytesToRead The maximum amount of bytes to read.
+     *
+     * @return string Returns the remaining contents in a string, up to $numBytesToRead bytes
+     *                and starting at the specified offset.
+     *
+     * @throws ObjectDisposedException The stream is closed.
+     * @throws IOException The stream does not support reading.
      */
-    public function read($maxsize = -1, $offset = 0)
+    public function read($numBytesToRead = 1)
     {
-        // If we are at the end of the file, return false
-        if(feof($this->stream))
-            return false;
+        // if a negative number is passed, just read to end
+        if ($numBytesToRead < 0)
+            return $this->readToEnd();
 
-        // Get contents
-        $contents = stream_get_contents($this->stream, $maxsize, $offset);
+        // Ensure the stream is open
+        $this->checkDisposed();
 
-        // Sometimes stream_get_contents does move the file pointer, so we do that here
-        if($maxsize > 0)
-            fseek($this->stream, $maxsize + $offset, SEEK_SET);
+        // Ensure we can read from this stream
+        $this->ensureCanRead();
 
-        return $contents;
+        // Read next characters
+        return fread($this->stream, $numBytesToRead);
     }
 
     /**
-     * Reads a line of text from the file
+     * Reads a line of characters from the current stream and returns the data as a string.
      *
-     * @param int $maxsize The maximum amount of bytes to read. To read all data, set to -1
      * @param string $delim The end of line delimiter. Do not set unless your having problems
-     *	 with detecting the end lines, or want to set a custom line break.
-     * @return string Returns the current line in the file
+     *     with detecting the end lines, or want to set a custom line break.
+     *
+     * @return string The next line from the input stream, or null if the end of the input stream is reached.
+     *
+     * @throws ObjectDisposedException The stream is closed.
+     * @throws IOException The stream does not support reading.
      */
-    public function readLine($maxsize = -1, $delim = null)
+    public function readLine($delim = null)
     {
-        // If we have no line delimiter, use fgets
-        if($delim === null)
-            return fgets($this->stream, $maxsize);
+        // Ensure the stream is open
+        $this->checkDisposed();
+
+        // Ensure we can read from this stream
+        $this->ensureCanRead();
+
+        // If we have no line delimiter, use fgets()
+        if ($delim === null)
+            return fgets($this->stream);
 
         $result = "";
-        $count = $maxsize;
-        while( !feof( $this->stream ) )
+        while (!feof($this->stream))
         {
-            // Break on max size
-            if($maxsize > 0 && $count == 0)
-                break;
-
             // Read next character
-            $tmp = fgetc( $this->stream );
+            $tmp = fgetc($this->stream);
 
             // If character is the delim, break
-            if( $tmp == $delim )
+            if ($tmp == $delim)
                 return $result;
-            else
-                $result .= $tmp;
 
-            --$count;
+            // Append character to string, and continue
+            $result .= $tmp;
         }
-        return (!empty($result)) ? $result : false;
+
+        return (strlen($result) == 0) ? null : $result;
     }
 
     /**
-     * Reads character from the file
+     * Reads all characters from the current position to the end of the stream.
+     *
+     * @return string The rest of the stream as a string, from the current position to the end.
+     *        If the current position is at the end of the stream, returns an empty string ("").
+     *
+     * @throws ObjectDisposedException The stream is closed.
+     * @throws IOException The stream does not support reading.
+     */
+    public function readToEnd()
+    {
+        // Ensure the stream is open
+        $this->checkDisposed();
+
+        // Ensure we can read from this stream
+        $this->ensureCanRead();
+
+        // Read the stream until the end of file
+        $result = "";
+        while (!feof($this->stream))
+        {
+            // Read next character
+            $result .= fread($this->stream, 4096);
+        }
+        return $result;
+    }
+
+    /**
+     * Reads the next character from the input stream and advances the character position by one character.
      *
      * @return string
+     *
+     * @throws ObjectDisposedException The stream is closed.
+     * @throws IOException The stream does not support reading.
      */
     public function readChar()
     {
-        return fgetc( $this->stream );
+        // Ensure the stream is open
+        $this->checkDisposed();
+
+        // Ensure we can read from this stream
+        $this->ensureCanRead();
+
+        // Return the next character, or an empty string if we are at the end of stream
+        return (!feof($this->stream)) ? fgetc($this->stream) : "";
+    }
+
+    /**
+     * Returns the next available $count of characters, but does not consume them.
+     *
+     * @param int $count The number of characters to peek from the current stream position
+     *
+     * @return string The next $count of characters, or an empty string if there are no characters to be read
+     *
+     * @throws ArgumentOutOfRangeException if $count is negative.
+     * @throws ObjectDisposedException The stream is closed.
+     * @throws IOException The stream does not support reading.
+     */
+    public function peek($count = 1)
+    {
+        // Ensure the stream is open
+        $this->checkDisposed();
+
+        // We must have a positive number
+        $count = (int)$count;
+        if ($count < 1)
+            throw new ArgumentOutOfRangeException("Peek count must be greater than zero.");
+
+        // Ensure we can read from this stream
+        $this->ensureCanRead();
+
+        // Read next character
+        $result = fread($this->stream, $count);
+
+        // Get previous position. We do not use ftell() here because it does
+        // not return the correct position if the file is opened with the WRITE
+        // attribute ('a'), and also does not count carriage returns ('\r').
+        $position = strlen($result);
+
+        // Reset position in stream
+        $this->seek(-$position, SEEK_SET);
+        return $result;
     }
 
     /**
      * Writes to the file stream
      *
      * @param string $stringData The string to write to the file
+     *
      * @return int Returns the number of bytes that were written
+     *
+     * @throws ObjectDisposedException The stream is closed.
+     * @throws IOException The stream does not support writing.
      */
     public function write($stringData)
     {
+        // Ensure the stream is open
+        $this->checkDisposed();
+
+        // Ensure we can write to this stream
+        $this->ensureCanWrite();
         return fwrite($this->stream, $stringData);
+    }
+
+    /**
+     * Writes a line terminator to the text string or stream.
+     *
+     * @param string $stringData The string to write to the file
+     *
+     * @return int Returns the number of bytes that were written
+     *
+     * @throws ObjectDisposedException The stream is closed.
+     * @throws IOException The stream does not support writing.
+     */
+    public function writeLine($stringData)
+    {
+        // Ensure the stream is open
+        $this->checkDisposed();
+
+        // Ensure we can write to this stream
+        $this->ensureCanWrite();
+        return fwrite($this->stream, $stringData . PHP_EOL);
     }
 
     /**
      * Truncates the file to the specified size
      *
-     * @param int $size The size to truncate to.
+     * @param int $size The size to truncate to. If size is larger than the file then the
+     *        file is extended with null bytes.
+     *
      * @return bool
+     *
+     * @throws ObjectDisposedException The stream is closed.
+     * @throws IOException The stream does not support writing.
      */
     public function truncate($size = 0)
     {
+        // Ensure the stream is open
+        $this->checkDisposed();
+
+        // Ensure we can write to this stream
+        $this->ensureCanWrite();
         return ftruncate($this->stream, $size);
+    }
+
+    /**
+     * Alias for FileStream->truncate(0)
+     *
+     * @param int $size The size to truncate to. If size is larger than the file then the
+     *        file is extended with null bytes.
+     *
+     * @return bool
+     *
+     * @throws ObjectDisposedException The stream is closed.
+     * @throws IOException The stream does not support writing.
+     */
+    public function setLength($size)
+    {
+        // Ensure the stream is open
+        $this->checkDisposed();
+
+        // Ensure we can write to this stream
+        $this->ensureCanWrite();
+        return ftruncate($this->stream, $size);
+    }
+
+    /**
+     * Gets the length in bytes of the stream.
+     *
+     * @return int
+     *
+     * @throws ObjectDisposedException The stream is closed.
+     */
+    public function getLength()
+    {
+        // Ensure the stream is open
+        $this->checkDisposed();
+
+        // Fetch stream stats using fstat()
+        $stat = fstat($this->stream);
+        return isset($stat['size']) ? $stat['size'] : 0;
+    }
+
+    /**
+     * Returns the current position of the file read/write pointer
+     *
+     * @return int
+     *
+     * @throws ObjectDisposedException The stream is closed.
+     */
+    public function getPosition()
+    {
+        $this->checkDisposed();
+        return (int)ftell($this->stream);
     }
 
     /**
@@ -172,35 +380,151 @@ class FileStream
      * @see http://www.php.net/manual/en/function.fseek.php
      *
      * @return bool Returns whether the seek was successful
+     *
+     * @throws ObjectDisposedException The stream is closed.
      */
     public function seek($position, $whence = SEEK_SET)
     {
+        // Ensure the stream is open
+        $this->checkDisposed();
         return (fseek($this->stream, $position, $whence) == 0);
     }
 
+    /**
+     * Locks the current file with an advisory level lock
+     *
+     * @param bool $exclusive
+     *
+     * @return bool
+     *
+     * @throws ObjectDisposedException The stream is closed.
+     */
     public function lock($exclusive = true)
     {
+        // Ensure the stream is open
+        $this->checkDisposed();
         return flock($this->stream, ($exclusive) ? LOCK_EX : LOCK_SH);
     }
 
+    /**
+     * Un-Locks the current file
+     *
+     * @return bool
+     *
+     * @throws ObjectDisposedException The stream is closed.
+     */
     public function unlock()
     {
+        // Ensure the stream is open
+        $this->checkDisposed();
         return flock($this->stream, LOCK_UN);
     }
 
-    public function getStream()
+    /**
+     * Flushes the output to a file
+     *
+     * @return bool
+     *
+     * @throws ObjectDisposedException The stream is closed.
+     * @throws IOException The stream does not support writing.
+     */
+    public function flush()
     {
-        return $this->stream;
+        // Ensure the stream is open
+        $this->checkDisposed();
+
+        // Ensure we can write to the stream
+        $this->ensureCanWrite();
+
+        // perform flush
+        return fflush($this->stream);
     }
 
     /**
-     * Closes the filestream
+     * Fetches the file handle stream
+     *
+     * @return resource
+
+    public function getStream() : resource
+     * {
+     * return $this->stream;
+     * }
+     */
+
+    /**
+     * Gets a value indicating whether the current stream supports reading.
+     *
+     * @return bool
+     */
+    public function canRead()
+    {
+        return $this->canRead;
+    }
+
+    /**
+     * Gets a value indicating whether the current stream supports writing.
+     *
+     * @return bool
+     */
+    public function canWrite()
+    {
+        return $this->canWrite;
+    }
+
+    /**
+     * Closes the file stream
      *
      * @return void
      */
     public function close()
     {
-        $this->read();
+        // Don't call close multiple times
+        if ($this->isClosed) return;
+
+        // Close the Stream
         fclose($this->stream);
+        $this->isClosed = true;
+    }
+
+    /**
+     * Checks if this stream can be written to, and throws an exception if not.
+     *
+     * @return void
+     *
+     * @throws ObjectDisposedException The stream is closed.
+     */
+    protected function checkDisposed()
+    {
+        // Ensure we can write to this stream
+        if ($this->isClosed || !is_resource($this->stream))
+            throw new ObjectDisposedException("The stream is closed.");
+    }
+
+    /**
+     * Checks if this stream can be written to, and throws an exception if not.
+     *
+     * @return void
+     *
+     * @throws IOException The stream does not support writing.
+     */
+    protected function ensureCanWrite()
+    {
+        // Ensure we can write to this stream
+        if (!$this->canWrite)
+            throw new IOException("The stream does not support writing.");
+    }
+
+    /**
+     * Checks if this stream can supports reading, and throws an exception if not.
+     *
+     * @return void
+     *
+     * @throws IOException The stream does not support reading.
+     */
+    protected function ensureCanRead()
+    {
+        // Ensure we can read from this stream
+        if (!$this->canRead)
+            throw new IOException("The stream does not support reading.");
     }
 }

@@ -45,7 +45,7 @@
             <h1><img src="frontend/images/icons/bf2.png">Private Stats Admin</h1>
             <div class="mws-login-lock"><img src="frontend/css/icons/24/locked-2.png" alt="" /></div>
             <div id="mws-login-form">
-                <form class="mws-form" action="index.php?task=<?php echo $_GET['task']; ?>" method="post">
+                <form class="mws-form" action="<?php echo $_GET['uri']; ?>" method="post">
 					<input type="hidden" name="action" value="login" />
                     <div class="mws-form-row">
                         <div class="mws-form-item large">

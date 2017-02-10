@@ -6,15 +6,15 @@ defined('BF2_ADMIN') or die('No Direct Access!');
 function build_navigation()
 {
     // Section links
-    $task = $_GET['task'];
+    $task = 'home';
     $system = array('editconfig','testconfig','installdb','upgradedb','cleardb','backupdb','restoredb');
     $players = array('manageplayers','mergeplayers','importplayer');
     $server = array('serverinfo','mapinfo','validateranks','checkawards','importlogs');
     
     // Prepare for open/closed sections
-    $Sys = (in_array($task, $system)) ? true : false;
-    $Plyrs = (in_array($task, $players)) ? true : false;
-    $Svr = (in_array($task, $server)) ? true : false;
+    $Sys = in_array($task, $system);
+    $Plyrs = in_array($task, $players);
+    $Svr = in_array($task, $server);
     if(!$Sys && !$Plyrs && !$Svr) $task = 'home';
     
     $html = '

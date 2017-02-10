@@ -2,8 +2,10 @@
 /**
  * BF2Statistics ASP Management Asp
  *
- * @copyright   2013, BF2Statistics.com
- * @license     GNU GPL v3
+ * Author:       Steven Wilson
+ * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
+ * License:      GNU GPL v3
+ *
  */
 namespace System;
 
@@ -54,7 +56,7 @@ class AspResponse
      */
     public function writeHeaderLine()
     {
-        $this->lines[] = "H\t". implode("\t", func_get_args());
+        $this->lines[] = "H\t" . implode("\t", func_get_args());
     }
 
     /**
@@ -65,11 +67,12 @@ class AspResponse
      */
     public function writeDataLine()
     {
-        $this->lines[] = "D\t". implode("\t", func_get_args());
+        $this->lines[] = "D\t" . implode("\t", func_get_args());
     }
 
     /**
      * This method adds an un-formatted line to the output
+     *
      * @param string $line
      */
     public function writeLine($line)
@@ -87,8 +90,8 @@ class AspResponse
      */
     public function writeHeaderDataArray($data)
     {
-        $this->lines[] = "H\t". implode("\t", array_keys($data));
-        $this->lines[] = "D\t". implode("\t", array_values($data));
+        $this->lines[] = "H\t" . implode("\t", array_keys($data));
+        $this->lines[] = "D\t" . implode("\t", array_values($data));
     }
 
     /**
@@ -100,7 +103,7 @@ class AspResponse
      */
     public function writeHeaderLineArray($headers)
     {
-        $this->lines[] = "H\t". implode("\t", $headers);
+        $this->lines[] = "H\t" . implode("\t", $headers);
     }
 
     /**
@@ -112,7 +115,7 @@ class AspResponse
      */
     public function writeDataLineArray($data)
     {
-        $this->lines[] = "D\t". implode("\t", $data);
+        $this->lines[] = "D\t" . implode("\t", $data);
     }
 
     /**
@@ -143,25 +146,24 @@ class AspResponse
     {
         // Initial line
         $line = (($this->error) ? "E" : "O");
-        if($this->errorCode != 0)
-            $line .= "\t". $this->errorCode;
+        if ($this->errorCode != 0)
+            $line .= "\t" . $this->errorCode;
 
         // Transpose output?
-        if($transpose)
+        if ($transpose)
         {
             // Add response type
-            $lines = array( $line );
+            $lines = array($line);
 
             // Line counter
             $i = 0;
-
-            foreach($this->lines as $line)
+            foreach ($this->lines as $line)
             {
                 // D's to print
                 $ds = 0;
 
                 // Only process new lines (headers)
-                if($line[0] == "H")
+                if ($line[0] == "H")
                 {
                     // next line
                     $j = $i + 1;
@@ -170,12 +172,12 @@ class AspResponse
                     $hLines = explode("\t", $line);
 
                     // Foreach following data line, add to the current header line
-                    while($this->lines[$j][0] == "D")
+                    while ($this->lines[$j][0] == "D")
                     {
                         // Add each data value to the corresponding header line
                         $data = explode("\t", $this->lines[$j]);
-                        for($n = 0; $n < sizeof($hLines); $n++)
-                            $hLines[$n] .= "\t". ((isset($data[$n])) ? $data[$n] : "");
+                        for ($n = 0; $n < sizeof($hLines); $n++)
+                            $hLines[$n] .= "\t" . ((isset($data[$n])) ? $data[$n] : "");
 
                         // Increment line counter, and Increment D's to print
                         $j++;
@@ -183,7 +185,7 @@ class AspResponse
                     }
 
                     // Add correct number of data columns
-                    $hLines[0] = "H". str_repeat("\tD", $ds);
+                    $hLines[0] = "H" . str_repeat("\tD", $ds);
 
                     // Add each header line to the lines array
                     $lines = array_merge($lines, $hLines);
@@ -209,7 +211,7 @@ class AspResponse
         }
 
         // Kill the script
-        if($killScript)
+        if ($killScript)
             die;
     }
 }

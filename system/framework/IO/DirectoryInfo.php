@@ -1,13 +1,14 @@
 <?php
+declare(strict_types=1);
 /**
- * Plexis Content Management Asp
+ * Plexis Content Management System
  *
  * @file        system/framework/IO/DirectoryInfo.php
  * @copyright   2013 Plexis Dev Team
  * @license     GNU GPL v3
  */
 namespace System\IO;
-use System\Collections\ListObject;
+
 use DirectoryNotFoundException;
 use IOException;
 use ObjectDisposedException;
@@ -19,21 +20,21 @@ use ObjectDisposedException;
  * because a folder exists check will not always be necessary, and will increase
  * performance over the static Directory class methods
  *
- * @author      Steven Wilson 
- * @package     Asp
+ * @author      Steven Wilson
+ * @package     System
  * @subpackage  IO
  */
 class DirectoryInfo
 {
     /**
      * An array of files in this directory
-     * @var FileInfo[] in a ListObject
+     * @var FileInfo[]
      */
     protected $filelist;
 
     /**
      * An array of sub directories in this directory
-     * @var DirectoryInfo[] in a ListObject
+     * @var DirectoryInfo[]
      */
     protected $subdirs;
 
@@ -79,10 +80,10 @@ class DirectoryInfo
     public function __construct($path, $create = false)
     {
         // If the directory doesn't exist
-        if(!is_dir($path))
+        if (!is_dir($path))
         {
             // Are we trying to create a new dir?
-            if($create)
+            if ($create)
                 Directory::CreateDirectory($path, 0755);
             else
                 // Cant continue from here D:
@@ -128,32 +129,32 @@ class DirectoryInfo
      * Returns a file list from the current directory matching the given search pattern.
      *
      * @param string $searchPattern The regex to run on the files. A file must match this regex
-     * 	 to be added to the list.
+     *     to be added to the list.
      *
      * @throws \ObjectDisposedException Thrown if the directory was deleted prior to calling
      *      this method.
      *
-     * @return \System\Collections\ListObject A list object filled with FileInfo objects
+     * @return FileInfo[] A list object filled with FileInfo objects
      */
     public function getFiles($searchPattern = null)
     {
         // Make sure we are not disposed from a deletion
-        if($this->disposed)
+        if ($this->disposed)
             throw new ObjectDisposedException("This Directory object has been disposed.");
 
         // Scan directory if we haven't already
-        if(!$this->scanned)
+        if (!$this->scanned)
             $this->refresh();
 
         // If we have a search pattern, we loop though each file, and do a compare
-        if(!empty($searchPattern))
+        if (!empty($searchPattern))
         {
             // Create a new ObjectListArray
-            $return = new ListObject();
-            foreach($this->filelist as $file)
+            $return = [];
+            foreach ($this->filelist as $file)
             {
                 // If filename matches the regex, add to list
-                if(preg_match("/{$searchPattern}/i", $file->name()))
+                if (preg_match("/{$searchPattern}/i", $file->name()))
                     $return[] = $file;
             }
 
@@ -167,31 +168,30 @@ class DirectoryInfo
      * Returns the subdirectories of the current directory matching the specified search pattern
      *
      * @param string $searchPattern The regex to run on the files. A file must match this regex
-     * 	 to be added to the list.
+     *     to be added to the list.
      *
      * @throws \ObjectDisposedException Thrown if the directory was deleted prior to calling
      *      this method.
      *
-     * @return \System\Collections\ListObject A list object filled with DirectoryInfo objects
+     * @return DirectoryInfo[] A list object filled with DirectoryInfo objects
      */
     public function getDirectories($searchPattern = null)
     {
         // Make sure we are not disposed from a deletion
-        if($this->disposed)
+        if ($this->disposed)
             throw new ObjectDisposedException("This Directory object has been disposed.");
 
         // Scan directory if we haven't already
-        if(!$this->scanned)
+        if (!$this->scanned)
             $this->refresh();
 
-        if(!empty($searchPattern))
+        if (!empty($searchPattern))
         {
-            // Create a new ObjectListArray
-            $return = new ListObject();
-            foreach($this->subdirs as $dir)
+            $return = [];
+            foreach ($this->subdirs as $dir)
             {
                 // If filename matches the regex, add to list
-                if(preg_match("/{$searchPattern}/i", $dir->name()))
+                if (preg_match("/{$searchPattern}/i", $dir->name()))
                     $return[] = $dir;
             }
 
@@ -201,30 +201,61 @@ class DirectoryInfo
         return $this->subdirs;
     }
 
-
     /**
-     * Fetches or sets the permissions of the directory
+     * Sets the access permissions of the directory
      *
-     * @param int $ch The permission level to set on the directory (chmod).
-     *   If left unset, the current chmod will be returned.
+     * @param int $chmod The permission level, as an octal, to set on the  directory (chmod).
      *
      * @throws \ObjectDisposedException Thrown if the directory was deleted prior to calling
      *      this method.
      *
-     * @return int|bool Returns the current folder chmod if $ch is left null,
-     *   otherwise, returns the success value of setting the permissions.
+     * @remarks
+     *		Permissions:
+     *			0 - no permissions,
+     *			1 – can execute,
+     *			2 – can write,
+     *			4 – can read
+     *
+     *		The octal number is the sum of those three permissions.
+     *
+     *		Position of the digit in value:
+     *			1 - Always zero, to signify an octal value!!
+     *			2 - what the owner can do,
+     *			3 - users in the file group,
+     *			4 - users not in the file group
+     *
+     * @example
+     *		0600 – owner can read and write
+     *		0700 – owner can read, write and execute
+     *		0666 – all can read and write
+     *		0777 – all can read, write and execute
+     *
+     * @return bool returns the success value of setting the permissions.
      */
-    public function chmod($ch = null)
+    public function setAccess($chmod)
     {
         // Make sure we are not disposed from a deletion
-        if($this->disposed)
+        if ($this->disposed)
             throw new ObjectDisposedException("This Directory object has been disposed.");
 
-        if(empty($ch))
-            return fileperms($this->rootPath);
+        return chmod($this->rootPath, $chmod);
+    }
 
-        /** @noinspection PhpParamsInspection */
-        return chmod($this->rootPath, $ch);
+    /**
+     * Gets the access permissions of the directory
+     *
+     * @throws \ObjectDisposedException Thrown if the directory was deleted prior to calling
+     *      this method.
+     *
+     * @return int the permissions on the directory
+     */
+    public function getAccess()
+    {
+        // Make sure we are not disposed from a deletion
+        if ($this->disposed)
+            throw new ObjectDisposedException("This Directory object has been disposed.");
+
+        return fileperms($this->rootPath);
     }
 
     /**
@@ -232,7 +263,7 @@ class DirectoryInfo
      *
      * The old directory will not be removed until the new directory is created successfully.
      *
-     * @param string $DestDirName The full path to move the contents of this
+     * @param string $destinationName The full path to move the contents of this
      *   folder to.
      *
      * @throws \IOException Thrown if there was an error creating the new directory path
@@ -241,21 +272,21 @@ class DirectoryInfo
      *
      * @return bool Returns the success value of the folder being moved.
      */
-    public function moveTo($DestDirName) 
+    public function moveTo($destinationName)
     {
-        // Make sure Dest directory exists
-        if( is_dir($DestDirName) )
-            throw new IOException("Destination directory \"{$DestDirName}\" already exists.", 1);
+        // Make sure the destination directory exists
+        if (is_dir($destinationName))
+            throw new IOException("Destination directory \"{$destinationName}\" already exists.", 1);
 
         // Rename this directory
-        if( @rename($this->rootPath, $DestDirName) == false)
+        if (@rename($this->rootPath, $destinationName) == false)
             return false;
 
         // Clear stats cache
         clearstatcache();
 
         // Reset the root path, and rescan
-        $this->rootPath = $DestDirName;
+        $this->rootPath = $destinationName;
         $this->parentDir = dirname($this->rootPath);
         $this->refresh();
 
@@ -273,37 +304,40 @@ class DirectoryInfo
     public function delete()
     {
         // Make sure we are not disposed from a deletion
-        if($this->disposed)
+        if ($this->disposed)
             throw new ObjectDisposedException("This Directory object has been disposed.");
 
         // Scan directory if we haven't already
-        if(!$this->scanned)
+        if (!$this->scanned)
             $this->refresh();
 
         // Remove directories first!
-        foreach($this->subdirs as $Dir)
+        foreach ($this->subdirs as $Dir)
         {
-            try {
+            try
+            {
                 $Dir->delete();
             }
-            catch( IOException $e ) {
+            catch (IOException $e)
+            {
                 throw $e;
             }
-            catch( \Exception $e ) {
-                throw new IOException('Could not remove directory: "'. $Dir->fullName() .'". Exception thrown : '. $e->getMessage());
+            catch (\Exception $e)
+            {
+                throw new IOException('Could not remove directory: "' . $Dir->fullName() . '". Exception thrown : ' . $e->getMessage());
             }
         }
 
         // Now Files
-        foreach($this->filelist as $f)
+        foreach ($this->filelist as $f)
         {
             // Throw exception if there is an error removing a file
-            if(@unlink($f->fullName()) == false)
-                throw new IOException("Could not remove file: ". $f->fullName());
+            if (@unlink($f->fullName()) == false)
+                throw new IOException("Could not remove file: " . $f->fullName());
         }
 
         // Remove self
-        if(@rmdir($this->rootPath) == false)
+        if (@rmdir($this->rootPath) == false)
         {
             $error = error_get_last();
             throw new IOException($error["message"]);
@@ -317,10 +351,10 @@ class DirectoryInfo
     /**
      * Gets last modification time of the folder
      *
-     * @return int|bool Returns the time the file was last modified, 
-     * or FALSE on failure. The time is returned as a Unix timestamp.
+     * @return int Returns the time the file was last modified.
+     *             The time is returned as a Unix timestamp.
      */
-    public function lastWriteTime() 
+    public function lastWriteTime()
     {
         return filemtime($this->rootPath . DIRECTORY_SEPARATOR . '.');
     }
@@ -328,10 +362,10 @@ class DirectoryInfo
     /**
      * Gets last access time of folder
      *
-     * @return int|bool Returns the time the file was last accessed, 
-     * or FALSE on failure. The time is returned as a Unix timestamp.
+     * @return int Returns the time the file was last accessed.
+     *             The time is returned as a Unix timestamp.
      */
-    public function lastAccessTime() 
+    public function lastAccessTime()
     {
         return fileatime($this->rootPath . DIRECTORY_SEPARATOR . '.');
     }
@@ -353,31 +387,37 @@ class DirectoryInfo
     public function size($format = false)
     {
         // Make sure we are not disposed from a deletion
-        if($this->disposed)
+        if ($this->disposed)
             throw new ObjectDisposedException("This Directory object has been disposed.");
 
         // Scan directory if we haven't already
-        if(!$this->scanned)
+        if (!$this->scanned)
             $this->refresh();
 
         $size = 0;
 
         // Directories first
-        foreach($this->subdirs as $Dir)
+        foreach ($this->subdirs as $Dir)
         {
-            try {
+            try
+            {
                 $size += $Dir->size();
             }
-            catch( \Exception $e ) {}
+            catch (\Exception $e)
+            {
+            }
         }
 
         // Now Files
-        foreach($this->filelist as $File)
+        foreach ($this->filelist as $File)
         {
-            try {
+            try
+            {
                 $size += $File->size();
             }
-            catch( \Exception $e ) {}
+            catch (\Exception $e)
+            {
+            }
         }
 
         return ($format) ? $this->formatSize($size) : $size;
@@ -388,10 +428,10 @@ class DirectoryInfo
      *
      * @return bool
      */
-    public function isWritable() 
+    public function isWritable()
     {
         // Fix path, and Create a tmp file
-        $file = $this->rootPath . uniqid(mt_rand()) .'.tmp';
+        $file = $this->rootPath . uniqid(mt_rand()) . '.tmp';
 
         // check tmp file for read/write capabilities
         $handle = @fopen($file, 'a');
@@ -416,24 +456,24 @@ class DirectoryInfo
     {
         // Open the directory
         $handle = @opendir($this->rootPath);
-        if($handle === false)
-            throw new \SecurityException('Unable to open folder "'. $this->rootPath .'"');
+        if ($handle === false)
+            throw new \SecurityException('Unable to open folder "' . $this->rootPath . '"');
 
         // Refresh vars
-        $this->subdirs = new ListObject();
-        $this->filelist = new ListObject();
+        $this->subdirs = [];
+        $this->filelist = [];
 
         // Loop through each file
-        while(false !== ($f = readdir($handle)))
+        while (false !== ($f = readdir($handle)))
         {
             // Skip "." and ".." directories
-            if($f == "." || $f == "..") continue;
+            if ($f == "." || $f == "..") continue;
 
             // make sure we establish the full path to the file again
             $file = $this->rootPath . DIRECTORY_SEPARATOR . $f;
 
             // If is directory, call this method again to loop and delete ALL sub dirs.
-            if( is_dir($file) ) 
+            if (is_dir($file))
                 $this->subdirs[] = new DirectoryInfo($file);
             else
                 $this->filelist[] = new FileInfo($file);

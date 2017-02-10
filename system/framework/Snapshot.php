@@ -1,0 +1,568 @@
+<?php
+/**
+ * BF2Statistics ASP Management Asp
+ *
+ * Author:       Steven Wilson
+ * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
+ * License:      GNU GPL v3
+ *
+ */
+
+namespace System;
+
+use Exception;
+use PDOStatement;
+use System\Collections\Dictionary;
+use System\Database\UpdateOrInsertQuery;
+use System\IO\Path;
+
+class Snapshot extends GameResult
+{
+    /**
+     * @var LogWriter
+     */
+    protected $logWriter;
+
+    /**
+     * @var bool
+     */
+    protected $isProcessed = false;
+
+    /**
+     * @var string
+     */
+    public $dataString;
+
+    /**
+     * Returns the server IP that posted this snapshot. If no Server
+     * IP is provided (Ex: loading snapshot from a file), then the local
+     * loopback address will be returned instead
+     *
+     * @var string
+     */
+    public $serverIp = '127.0.0.1';
+
+
+    /**
+     * Snapshot constructor.
+     *
+     * @param string $snapshotData
+     * @param string $serverIp
+     *
+     * @throws Exception
+     *
+     * @internal param array $data
+     */
+    public function __construct($snapshotData, $serverIp = '127.0.0.1')
+    {
+        $this->dataString = $snapshotData;
+        $this->serverIp = $serverIp;
+
+        $data = explode('\\', $snapshotData);
+        $length = count($data);
+
+        // Check for invalid snapshot string. All snapshots have at least 36 data pairs,
+        // and has an Even number of data sectors.
+        if ($length < 36 || $length % 2 != 0)
+            throw new Exception("Snapshot does not contain at least 36 elements, or contains an odd number of elements");
+
+        // local vars
+        $standardData = new Dictionary();
+
+        try
+        {
+            // Define some variables we will use here
+            $playerData = new Dictionary();
+            $killData = [];
+            $newPlayer = true;
+
+            // Convert our standard data into key => value pairs
+            for ($i = 2; $i < $length; $i += 2)
+            {
+                // Format: "DataKey_PlayerIndex". PlayerIndex is NOT the Player Id
+                $parts = explode('_', $data[$i]);
+
+                // If no underscore is detected in the key, this is NOT player data
+                if (count($parts) == 1)
+                {
+                    $standardData[$data[$i]] = $data[$i + 1];
+
+                    if ($parts[0] == 'EOF')
+                    {
+                        if (!$newPlayer)
+                        {
+                            // Save that last players stats!!
+                            $this->addPlayer(new Player($playerData, $killData));
+
+                            // Reset data for next player
+                            $playerData->clear();
+                            $killData = array();
+                        }
+                        break;
+                    }
+                }
+                // If the item key is "pID", then we have a new player record
+                else if ($parts[0] == "pID")
+                {
+                    // If we have data, complete this player and start a new
+                    if (!$newPlayer)
+                    {
+                        // Save that last players stats!!
+                        $this->addPlayer(new Player($playerData, $killData));
+
+                        // Reset data for next player
+                        $playerData->clear();
+                        $killData = array();
+                    }
+
+                    $newPlayer = false;
+                    $playerData[$data[$i]] = $data[$i + 1];
+                }
+                else if ($parts[0] == "mvks") // Skip mvks... kill data only needs processed once (mvns)
+                    continue;
+                else if ($parts[0] == "mvns") // Player kill data
+                    $killData[$data[$i + 1]] = $data[$i + 3];
+                else
+                    $playerData[$data[$i]] = $data[$i + 1];
+            }
+        }
+        catch (Exception $e)
+        {
+            throw new Exception("Error assigning Key => value pairs. See InnerException", $e);
+        }
+
+        // Make sure we have a completed snapshot
+        if (!isset($standardData["EOF"]))
+            throw new Exception("No End of File element was found, Snapshot assumed to be incomplete.");
+
+        // Server data
+        $this->serverPort = (int)$standardData["gameport"];
+        $this->queryPort = (int)$standardData["queryport"];
+
+        // Map Data
+        $this->mapName = $standardData["mapname"];
+        $this->mapId = (int)$standardData["mapid"];
+        $this->roundStartTime = (int)$standardData["mapstart"];
+        $this->roundEndTime = (int)$standardData["mapend"];
+
+        // Misc Data
+        $this->gameMode = (int)$standardData["gm"];
+        $this->mod = $standardData["v"]; // bf2 mod replaced the version key, since we dont care the version anyways
+        $this->playersConnected = (int)$standardData["pc"];
+
+        // Army Data... There is no RWA key if there was no winner...
+        $this->winningTeam = (int)$standardData["win"]; // Temp
+        $this->winningArmyId = ($standardData->containsKey("rwa")) ? (int)$standardData["rwa"] : -1;
+        $this->team1ArmyId = (int)$standardData["ra1"];
+        $this->team1Tickets = (int)$standardData["rs1"];
+        $this->team2ArmyId = (int)$standardData["ra2"];
+        $this->team2Tickets = (int)$standardData["rs2"];
+
+        // Grab database connection
+        $connection = Database::GetConnection("stats");
+
+        // Check for unknown map id
+        if ($this->mapId == 99)
+        {
+            $stmt = $connection->prepare("SELECT id FROM mapinfo WHERE name = :name");
+            $stmt->bindValue(':name', $this->mapName, \PDO::PARAM_STR);
+            if ($stmt->execute() && ($id = (int)$stmt->fetchColumn()))
+            {
+                $this->mapId = $id;
+            }
+            else
+                throw new Exception("Invalid map received: ". $this->mapName);
+        }
+        else
+        {
+            $stmt = $connection->prepare("SELECT COUNT(id) FROM mapinfo WHERE id = :id");
+            $stmt->bindValue(':id', $this->mapId, \PDO::PARAM_INT);
+            if (!$stmt->execute() || ($id = (int)$stmt->fetchColumn()) == 0)
+                throw new Exception("Invalid map received: {$this->mapName} [{$this->mapId}]");
+        }
+
+        // Check for processed snapshot
+        $query = "SELECT COUNT(id) FROM round_history WHERE mapid={$this->mapId}"
+            ." AND round_end={$this->roundEndTime} AND round_start={$this->roundStartTime}";
+        $result = $connection->query($query);
+        $this->isProcessed = ((int)$result->fetchColumn()) > 0;
+    }
+
+    /**
+     * Returns whether this snapshot has been processed into the database
+     *
+     * @return bool
+     */
+    public function isProcessed()
+    {
+        return $this->isProcessed;
+    }
+
+    /**
+     * Processes the snapshot data, inserted and updating player data in the gamespy database
+     *
+     * @throws Exception
+     */
+    public function processData()
+    {
+        // Make sure we are not processing the same data again
+        if ($this->isProcessed)
+            throw new Exception("Round data has already been processed!");
+
+        // Grab database connection and lets go!
+        $connection = Database::GetConnection("stats");
+
+        // Fetch the server
+        $ip = $connection->quote($this->serverIp);
+        $prefix = $connection->quote($this->serverPrefix);
+        $result = $connection->query("SELECT id FROM server WHERE ip={$ip} AND port={$this->serverPort}");
+        if (!($result instanceof PDOStatement) || ($serverId = (int)$result->fetchColumn()))
+        {
+            throw new Exception("Unknown server '{$ip}:{$this->serverPort}'!");
+        }
+
+        // Get a log file
+        if ($this->logWriter == null)
+        {
+            $this->logWriter = LogWriter::Instance("stats_debug");
+            if ($this->logWriter === false)
+            {
+                $this->logWriter = new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "stats_debug.log"), "stats_debug");
+                $this->logWriter->setLogLevel(Config::Get('debug_lvl'));
+            }
+        }
+
+        // Start logging information about this snapshot
+        $this->logWriter->logNotice("Begin Processing ({$this->mapName})...");
+        if ($this->isCustomMap)
+            $this->logWriter->logNotice("Custom Map ({$this->mapId})...");
+        else
+            $this->logWriter->logNotice("Standard Map ({$this->mapId})...");
+
+        // Log player count
+        $playerCount = count($this->players);
+        $this->logWriter->logNotice("Found (". $playerCount .") Player(s)...");
+
+        // Ensure the player count is within range of the config
+        if ($playerCount < Config::Get("stats_players_min"))
+        {
+            $this->logWriter->logWarning("Minimum round Player count does not meet the ASP requirement... Aborting");
+            throw new Exception("Minimum round Player count does not meet the ASP requirement");
+        }
+
+        // To prevent half complete snapshots due to exceptions,
+        // Put the whole thing in a try block, and rollback on error
+        try
+        {
+            // Wrap in a transaction to speed things up
+            $connection->beginTransaction();
+
+            // ********************************
+            // Process RoundInfo
+            // ********************************
+            $query = new UpdateOrInsertQuery($connection, 'round_history');
+            $query->set('mapid', '=', $this->mapId);
+            $query->set('serverid', '=', $serverId);
+            $query->set('round_start', '+', $this->roundStartTime);
+            $query->set('round_end', '+', $this->roundEndTime);
+            $query->set('gamemode', '+', $this->gameMode);
+            $query->set('mod', '=', $this->mod);
+            $query->set('winner', '=', $this->winningTeam);
+            $query->set('team1', '=', $this->team1ArmyId);
+            $query->set('team2', '=', $this->team2ArmyId);
+            $query->set('tickets1', '=', $this->team1Tickets);
+            $query->set('tickets2', '=', $this->team2Tickets);
+            $query->set('pids1', '=', $this->team1Players);
+            $query->set('pids1_end', '=', $this->team1PlayersEnd);
+            $query->set('pids2', '=', $this->team2Players);
+            $query->set('pids2_end', '=', $this->team2PlayersEnd);
+            $query->executeInsert();
+
+            // Grab round ID
+            $roundId = $connection->lastInsertId("id");
+
+            // ********************************
+            // Process Players
+            // ********************************
+
+            // Loop through each player, and process them
+            foreach ($this->players as $player)
+            {
+                // Player meets min round time or are we ignoring AI?
+                if ($player->roundTime < Config::Get('stats_min_player_game_time') || $player->isAi && Config::Get('stats_ignore_ai'))
+                    continue;
+
+                // Write log
+                $this->logWriter->logNotice("Processing Player (". $player->pid .")");
+
+                // Define some variables
+                $onWinningTeam = $player->team == $this->winningTeam;
+
+                // Prepare for player update / insertion
+                $query = new UpdateOrInsertQuery($connection, 'player');
+                $query->set('time', '+', $player->roundTime);
+                $query->set('rounds', '+', (int)$player->completedRound);
+                $query->set('lastip', '=', $player->ipAddress);
+                $query->set('score', '+', $player->roundScore);
+                $query->set('cmdscore', '+', $player->commandScore);
+                $query->set('skillscore', '+', $player->skillScore);
+                $query->set('teamscore', '+', $player->teamScore);
+                $query->set('kills', '+', $player->kills);
+                $query->set('deaths', '+', $player->deaths);
+                $query->set('captures', '+', $player->flagCaptures);
+                $query->set('captureassists', '+', $player->flagCaptureAssists);
+                $query->set('defends', '+', $player->flagDefends);
+                $query->set('damageassists', '+', $player->damageAssists);
+                $query->set('heals', '+', $player->heals);
+                $query->set('revives', '+', $player->revives);
+                $query->set('ammos', '+', $player->ammos);
+                $query->set('repairs', '+', $player->repairs);
+                $query->set('targetassists', '+', $player->targetAssists);
+                $query->set('driverspecials', '+', $player->driverSpecials);
+                $query->set('teamkills', '+', $player->teamKills);
+                $query->set('teamdamage', '+', $player->teamDamage);
+                $query->set('teamvehicledamage', '+', $player->teamVehicleDamage);
+                $query->set('suicides', '+', $player->suicides);
+                $query->set('rank', '=', $player->rank);
+                $query->set('banned', '+', $player->timesBanned);
+                $query->set('kicked', '+', $player->timesKicked);
+                $query->set('cmdtime', '+', $player->cmdTime);
+                $query->set('sqltime', '+', $player->sqlTime);
+                $query->set('sqmtime', '+', $player->sqmTime);
+                $query->set('lwtime', '+', $player->lwTime);
+                $query->set('wins', '+', $onWinningTeam ? 1 : 0);
+                $query->set('losses', '+', (!$onWinningTeam) ? 1 : 0);
+                $query->set('rndscore', '+', $player->roundScore);
+                $query->set('lastonline', '=', $this->roundEndTime);
+                $query->set('mode0', '+', ($this->gameMode == 0) ? 1 : 0);
+                $query->set('mode1', '+', ($this->gameMode == 1) ? 1 : 0);
+                $query->set('mode2', '+', ($this->gameMode == 2) ? 1 : 0);
+                $query->set('isbot', '=', $player->isAi ? 1 : 0);
+
+                // Check if player exists already
+                $sql = "SELECT lastip, country, rank, killstreak, deathstreak, rndscore FROM player WHERE id={$player->pid} LIMIT 1";
+                $result = $connection->query($sql);
+
+                if ($result instanceof PDOStatement && ($row = $result->fetch()))
+                {
+                    // Write log
+                    $this->logWriter->logNotice("Updating EXISTING Player (". $player->pid .")");
+
+                    // Correct rank if needed
+                    $rank = (int)$row['rank'];
+                    if ($rank > $player->rank && $rank != 11 && $rank != 21)
+                    {
+                        $player->rank = $rank;
+                        $this->logWriter->logNotice("Rank correction ({$player->pid}), Using database rank ({$rank})");
+                    }
+
+                    // Calculate best killstreak/deathstreak
+                    if ($player->killStreak > (int)$row['killstreak'])
+                        $query->set('killstreak', '=', $player->killStreak);
+
+                    if ($player->deathStreak > (int)$row['deathstreak'])
+                        $query->set('deathstreak', '=', $player->deathStreak);
+
+                    if ($player->roundScore > (int)$row['rndscore'])
+                        $query->set('rndscore', '=', $player->roundScore);
+
+                    // Execute the update
+                    $query->where('id', '=', $player->pid);
+                    $query->executeUpdate();
+                }
+                else
+                {
+                    // Skip em
+                    continue;
+
+                    // Write log
+                    //$this->logWriter->logNotice("Adding NEW Player (". $player->pid .")");
+
+                    //$countryCode = ''; // TODO finish meh
+                    //$query->set('id', '=', $player->pid);
+                    //$query->set('name', '=', $player->name);
+                    //$query->set('country', '=', $countryCode);
+                    //$query->set('joined', '=', this.RoundEndTime);
+                    //$query->executeInsert();
+                }
+
+                // ********************************
+                // Insert Player history.
+                // ********************************
+                $query = new UpdateOrInsertQuery($connection, 'player_history');
+                $query->set('pid', '=', $player->pid);
+                $query->set('roundid', '=', $roundId);
+                $query->set('team', '=', $player->team);
+                $query->set('timestamp', '+', $this->roundEndTime);
+                $query->set('time', '=', $player->roundTime);
+                $query->set('score', '=', $player->roundScore);
+                $query->set('cmdscore', '=', $player->commandScore);
+                $query->set('skillscore', '=', $player->skillScore);
+                $query->set('teamscore', '=', $player->teamScore);
+                $query->set('kills', '=', $player->kills);
+                $query->set('deaths', '=', $player->deaths);
+                $query->set('rank', '=', $player->rank);
+                $query->executeInsert();
+
+                // ********************************
+                // Process Player Army Data
+                // ********************************
+                $i = 0;
+                foreach ($player->timeAsArmy as $time)
+                {
+                    // Skip un-played armies
+                    if ($time == 0)
+                    {
+                        $i++;
+                        continue;
+                    }
+
+                    $query = new UpdateOrInsertQuery($connection, 'player_army');
+                    $query->where('id', '=', $i);
+                    $query->where('pid', '=', $player->pid);
+                    $query->set('time', '+', $time);
+
+                    // If the player ended the game as this army, update with round info
+                    if ($player->armyId == $i)
+                    {
+                        $query->set('wins', '+', $onWinningTeam ? 1 : 0);
+                        $query->set('losses', '+', $onWinningTeam ? 0 : 1);
+                        $query->set('best', 'g', $player->roundScore);
+                        $query->set('worst', 'l', $player->roundScore);
+                    }
+
+                    $query->execute();
+                    $i++;
+                }
+
+                // ********************************
+                // Process Player Kills
+                // ********************************
+                $query = new UpdateOrInsertQuery($connection, 'player_kill');
+                $query->where('attacker', '=', $player->pid);
+                foreach ($player->victims as $pid => $count)
+                {
+                    $query->where('victim', '=', $pid);
+                    $query->set('count', '+', $count);
+                    $query->execute();
+                }
+
+                // ********************************
+                // Process Player Kit Data
+                // ********************************
+                $query = new UpdateOrInsertQuery($connection, 'player_kit');
+                $query->where('pid', '=', $player->pid);
+                foreach ($player->kitData as $id => $object)
+                {
+                    $query->set('time', '+', $object->time);
+                    $query->set('kills', '+', $object->kills);
+                    $query->set('deaths', '+', $object->deaths);
+                    $query->where('id', '=', $id);
+                    $query->execute();
+                }
+
+                // ********************************
+                // Process Player Map Data
+                // ********************************
+                $query = new UpdateOrInsertQuery($connection, 'player_map');
+                $query->set('time', '+', $player->roundTime);
+                $query->set('wins', '+', $onWinningTeam ? 1 : 0);
+                $query->set('losses', '+', $onWinningTeam ? 0 : 1);
+                $query->set('bestscore', 'g', $player->roundScore);
+                $query->set('worstscore', 'l', $player->roundScore);
+                $query->where('pid', '=', $player->pid);
+                $query->where('mapid', '=', $this->mapId);
+                $query->execute();
+
+                // ********************************
+                // Process Player Vehicle Data
+                // ********************************
+                $query = new UpdateOrInsertQuery($connection, 'player_vehicle');
+                $query->where('pid', '=', $player->pid);
+                foreach ($player->kitData as $id => $object)
+                {
+                    $query->set('time', '+', $object->time);
+                    $query->set('kills', '+', $object->kills);
+                    $query->set('deaths', '+', $object->deaths);
+                    $query->set('roadkills', '+', $object->roadKills);
+                    $query->where('id', '=', $id);
+                    $query->execute();
+                }
+
+                // ********************************
+                // Process Player Weapon Data
+                // ********************************
+                $query = new UpdateOrInsertQuery($connection, 'player_weapon');
+                $query->where('pid', '=', $player->pid);
+                foreach ($player->weaponData as $id => $object)
+                {
+                    $query->set('time', '+', $object->time);
+                    $query->set('kills', '+', $object->kills);
+                    $query->set('deaths', '+', $object->deaths);
+                    $query->set('fired', '+', $object->fired);
+                    $query->set('hits', '+', $object->hits);
+                    $query->where('id', '=', $id);
+                    $query->execute();
+                }
+
+                // ********************************
+                // Process Player Awards Data
+                // ********************************
+
+            } // End player loop
+
+            // ********************************
+            // Process ServerInfo
+            // ********************************
+
+            // ********************************
+            // Process MapInfo
+            // ********************************
+            $query = new UpdateOrInsertQuery($connection, 'mapinfo');
+            $query->set('time', '+', $this->roundTime);
+            $query->set('score', '+', $this->mapScore);
+            $query->set('times', '+', 1);
+            $query->set('kills', '+', $this->mapKills);
+            $query->set('deaths', '+', $this->mapDeaths);
+            $query->where('id', '=', $this->mapId);
+            $query->executeUpdate();
+
+            // ********************************
+            // Process Smoc And General Ranks
+            // ********************************
+
+            // ********************************
+            // Commit the Transaction and Log
+            // ********************************
+            $connection->commit();
+        }
+        catch (Exception $e)
+        {
+            $connection->rollBack();
+        }
+    }
+
+    protected function addPlayer(Player $player)
+    {
+        $this->players[] = $player;
+
+        // Add map data
+        $this->mapScore += $player->roundScore;
+        $this->mapKills += $player->kills;
+        $this->mapDeaths += $player->deaths;
+
+        // DO team counts
+        if ($player->armyId == $this->team1ArmyId)
+        {
+            $this->team1Players++;
+            if ($player->completedRound) // Completed round?
+                $this->team1PlayersEnd++;
+        }
+        else
+        {
+            $this->team2Players++;
+            if ($player->completedRound) // Completed round?
+                $this->team2PlayersEnd++;
+        }
+    }
+}
