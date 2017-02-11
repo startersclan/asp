@@ -172,7 +172,7 @@ class AspResponse
                     $hLines = explode("\t", $line);
 
                     // Foreach following data line, add to the current header line
-                    while ($this->lines[$j][0] == "D")
+                    while (isset($this->lines[$j]) && $this->lines[$j][0] == "D")
                     {
                         // Add each data value to the corresponding header line
                         $data = explode("\t", $this->lines[$j]);

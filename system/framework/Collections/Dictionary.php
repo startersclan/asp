@@ -50,10 +50,16 @@ class Dictionary implements \IteratorAggregate, \ArrayAccess, \Countable, \Seria
      * Constructor
      *
      * @param bool $readOnly
+     * @param array $items
      */
-    public function __construct($readOnly = false)
+    public function __construct($readOnly = false, array $items = [])
     {
         $this->isReadOnly = $readOnly;
+        if ($items !== null)
+        {
+            $this->data = $items;
+            $this->size = count($items);
+        }
     }
 
     /**

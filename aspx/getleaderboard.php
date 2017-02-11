@@ -56,6 +56,10 @@ else
     $min = ($pos - 1) - $before;
     $max = $after + 1;
 
+    // Correction
+    if ($min < 0) $min = 0;
+    if ($max < 0) $max = 0;
+
     if ($type == 'score')
     {
         if ($id == 'overall')
@@ -91,9 +95,10 @@ else
                 $result = $connection->query($query);
                 if ($result instanceof PDOStatement && ($row = $result->fetch()))
                 {
-                    $num = intval($connection->query("SELECT COUNT(id) FROM player WHERE score > {$row['score']}")->fetchColumn()) + 1;
+                    $query = "SELECT COUNT(id) FROM player WHERE score > %d";
+                    $stmt = $connection->query( vsprintf($query, [$row['score']]) );
                     $Response->writeDataLine(
-                        $num,
+                        ((int)$stmt->fetchColumn(0)) + 1,
                         $row['id'],
                         trim($row['name']),
                         $row['score'],
@@ -110,7 +115,7 @@ else
             $Response->writeDataLine($result->fetchColumn(), time());
             $Response->writeHeaderLine("n", "pid", "nick", "coscore", "cotime", "playerrank", "countrycode");
 
-            if (!$pid)
+            if ($pid == 0)
             {
                 $query = "SELECT id, name, rank, country, cmdtime, cmdscore FROM player WHERE cmdscore > 0"
                     . " ORDER BY cmdscore DESC, name DESC LIMIT {$min}, {$max}";
@@ -137,9 +142,10 @@ else
                 $result = $connection->query($query);
                 if ($result instanceof PDOStatement && ($row = $result->fetch()))
                 {
-                    $num = intval($connection->query("SELECT COUNT(id) FROM player WHERE cmdscore > {$row['cmdscore']}")->fetchColumn()) + 1;
+                    $query = "SELECT COUNT(id) FROM player WHERE cmdscore > %d";
+                    $stmt = $connection->query( vsprintf($query, [$row['cmdcore']]) );
                     $Response->writeDataLine(
-                        $num,
+                        ((int)$stmt->fetchColumn(0)) + 1,
                         $row['id'],
                         trim($row['name']),
                         $row['cmdscore'],
@@ -156,7 +162,7 @@ else
             $Response->writeDataLine($result->fetchColumn(), time());
             $Response->writeHeaderLine("n", "pid", "nick", "teamscore", "totaltime", "playerrank", "countrycode");
 
-            if (!$pid)
+            if ($pid == 0)
             {
                 $query = "SELECT id, name, rank, country, time, teamscore FROM player WHERE teamscore > 0
 				    ORDER BY teamscore DESC, name DESC LIMIT " . $min . ", " . $max;
@@ -183,9 +189,10 @@ else
                 $result = $connection->query($query);
                 if ($result instanceof PDOStatement && ($row = $result->fetch()))
                 {
-                    $num = intval($connection->query("SELECT COUNT(id) FROM player WHERE teamscore > {$row['teamscore']}")->fetchColumn()) + 1;
+                    $query = "SELECT COUNT(id) FROM player WHERE teamscore > %d";
+                    $stmt = $connection->query( vsprintf($query, [$row['teamscore']]) );
                     $Response->writeDataLine(
-                        $num,
+                        ((int)$stmt->fetchColumn(0)) + 1,
                         $row['id'],
                         trim($row['name']),
                         $row['teamscore'],
@@ -230,9 +237,10 @@ else
                 $result = $connection->query($query);
                 if ($result instanceof PDOStatement && ($row = $result->fetch()))
                 {
-                    $num = intval($connection->query("SELECT COUNT(id) FROM player WHERE skillscore > {$row['skillscore']}")->fetchColumn()) + 1;
+                    $query = "SELECT COUNT(id) FROM player WHERE skillscore > %d";
+                    $stmt = $connection->query( vsprintf($query, [$row['skillscore']]) );
                     $Response->writeDataLine(
-                        $num,
+                        ((int)$stmt->fetchColumn(0)) + 1,
                         $row['id'],
                         trim($row['name']),
                         $row['skillscore'],
@@ -248,7 +256,8 @@ else
     # Need weekly score calculations!
     elseif ($type == 'risingstar')
     {
-        $query = "SELECT COUNT(DISTINCT(pid)) FROM player_history WHERE score > 0 AND timestamp >= (UNIX_TIMESTAMP() - (60*60*24*7))";
+        $timestamp = time() - (60*60*24*7);
+        $query = "SELECT COUNT(DISTINCT(pid)) FROM player_history WHERE score > 0 AND timestamp >= ". $timestamp;
         $result = $connection->query($query);
         $Response->writeDataLine($result->fetchColumn(), time());
         $Response->writeHeaderLine("n", "pid", "nick", "weeklyscore", "totaltime", "date", "playerrank", "countrycode");
@@ -257,7 +266,7 @@ else
         {
             $query = "SELECT p.id, p.name, p.rank, p.country, p.time, sum(h.score) AS weeklyscore, p.joined
 				FROM player AS p JOIN player_history AS h ON p.id = h.pid
-				WHERE h.score > 0 AND h.timestamp >= (UNIX_TIMESTAMP() - (60*60*24*7))
+				WHERE h.score > 0 AND h.timestamp >= $timestamp
 				GROUP BY p.id
 				ORDER BY weeklyscore DESC, name DESC
 				LIMIT " . $min . ", " . $max;
@@ -281,35 +290,37 @@ else
         }
         else
         {
-            $query = "SELECT p.id, p.name, p.rank, p.country, p.time, sum(h.score) AS weeklyscore, p.joined
-				FROM player AS p JOIN player_history AS h ON p.id = h.pid
-				WHERE h.score > 0 AND h.timestamp >= (UNIX_TIMESTAMP() - (60*60*24*7))
-				GROUP BY p.id
-				ORDER BY weeklyscore DESC, name DESC";
+            // Ensure Player exists by PID
+            $query = "SELECT `id`, `name`, `rank`, `country`, `time`, `joined` FROM player WHERE id={$pid} LIMIT 1";
             $result = $connection->query($query);
-            if ($result instanceof PDOStatement)
+            if (!($result instanceof PDOStatement) || !($player = $result->fetch()))
             {
-                $pos = 1;
-                while ($row = $result->fetch())
-                {
-                    if ($row['id'] == $pid)
-                    {
-                        /** @noinspection PhpUnusedLocalVariableInspection */
-                        $Response->writeDataLine(
-                            $pos++,
-                            $row['id'],
-                            trim($row['name']),
-                            $row['weeklyscore'],
-                            $row['time'],
-                            date('m/d/y h:i:00 A', $row['joined']),
-                            $row['rank'],
-                            strtoupper($row['country'])
-                        );
-                        break;
-                    }
-                    $pos++;
-                }
+                $Response->send();
+                die;
             }
+
+            // Grab player weekly score
+            $query = "SELECT COALESCE(sum(score), 0) AS score FROM player_history WHERE pid=%d AND timestamp >= %d";
+            $result = $connection->query(vsprintf($query, [$pid, $timestamp]));
+            $score = ((int)$result->fetchColumn(0));
+
+            // Get players position relative to everyone else
+            $query = <<<SQL
+SELECT COUNT(*) FROM (
+  SELECT sum(score) AS score FROM player_history WHERE score > %d AND timestamp >= %d GROUP BY pid
+) AS tbl
+SQL;
+            $result = $connection->query(vsprintf($query, [$score, $timestamp]));
+            $Response->writeDataLine(
+                ((int)$result->fetchColumn(0)) + 1,
+                $player['id'],
+                trim($player['name']),
+                $score,
+                $player['time'],
+                date('m/d/y h:i:00 A', $player['joined']),
+                $player['rank'],
+                strtoupper($player['country'])
+            );
         }
     }
     elseif ($type == 'kit')
@@ -329,7 +340,7 @@ SELECT
 FROM player_kit AS k
 INNER JOIN player AS p ON k.pid = p.id
 WHERE k.id = $id AND k.kills > 0
-ORDER BY kills DESC, deaths ASC
+ORDER BY kills DESC, time DESC
 LIMIT $min, $max
 SQL;
             $result = $connection->query($query);
@@ -353,26 +364,31 @@ SQL;
         else // Searching by PID
         {
             // Ensure Player exists by PID
-            $query = "SELECT `id`, `name`, `rank`, `country` FROM player WHERE id={$pid}";
+            $query = "SELECT `id`, `name`, `rank`, `country` FROM player WHERE id={$pid} LIMIT 1";
             $result = $connection->query($query);
-            if (!($result instanceof PDOStatement))
+            if (!($result instanceof PDOStatement) || !($player = $result->fetch()))
             {
                 $Response->send();
+                die;
             }
-            $player = $result->fetch();
 
             // Fetch players kit if he has one...
-            $query = "SELECT `kills`, `deaths`, `time` FROM player_kit WHERE pid={$pid} AND id={$id}";
+            $query = "SELECT `kills`, `deaths`, `time` FROM player_kit WHERE pid={$pid} AND id={$id} LIMIT 1";
             $result = $connection->query($query);
-            if (!($result instanceof PDOStatement))
+            if ($result instanceof PDOStatement && ($row = $result->fetch()))
             {
-                $Response->send();
+                $player += $row;
             }
-            $player += $result->fetch();
+            else
+            {
+                $player['kills'] = 0;
+                $player['deaths'] = 0;
+                $player['time'] = 0;
+            }
 
             // Get player position relative to everyone else
-            $query = "SELECT COUNT(id) FROM player_kit WHERE id={$id} AND kills > {$player['kills']}";
-            $result = $connection->query($query);
+            $query = "SELECT COUNT(id) FROM player_kit WHERE id=%d AND kills > %d AND time > %d";
+            $result = $connection->query(vsprintf($query, [$id, $player['kills'], $player['time']]));
             $pos = ((int)$result->fetchColumn()) + 1;
 
             // Send response
@@ -403,7 +419,7 @@ SELECT
 FROM player_vehicle AS k
 INNER JOIN player AS p ON k.pid = p.id
 WHERE k.id = $id AND k.kills > 0
-ORDER BY kills DESC, deaths ASC
+ORDER BY kills DESC, time DESC
 LIMIT $min, $max
 SQL;
             $result = $connection->query($query);
@@ -427,26 +443,31 @@ SQL;
         else // Searching by PID
         {
             // Ensure Player exists by PID
-            $query = "SELECT `id`, `name`, `rank`, `country` FROM player WHERE id={$pid}";
+            $query = "SELECT `id`, `name`, `rank`, `country` FROM player WHERE id={$pid} LIMIT 1";
             $result = $connection->query($query);
-            if (!($result instanceof PDOStatement))
+            if (!($result instanceof PDOStatement) || !($player = $result->fetch()))
             {
                 $Response->send();
+                die;
             }
-            $player = $result->fetch();
 
             // Fetch players kit if he has one...
-            $query = "SELECT `kills`, `deaths`, `time` FROM player_vehicle WHERE pid={$pid} AND id={$id}";
+            $query = "SELECT `kills`, `deaths`, `time` FROM player_vehicle WHERE pid={$pid} AND id={$id} LIMIT 1";
             $result = $connection->query($query);
-            if (!($result instanceof PDOStatement))
+            if ($result instanceof PDOStatement && ($row = $result->fetch()))
             {
-                $Response->send();
+                $player += $row;
             }
-            $player += $result->fetch();
+            else
+            {
+                $player['kills'] = 0;
+                $player['deaths'] = 0;
+                $player['time'] = 0;
+            }
 
             // Get player position relative to everyone else
-            $query = "SELECT COUNT(id) FROM player_vehicle WHERE id={$id} AND kills > {$player['kills']}";
-            $result = $connection->query($query);
+            $query = "SELECT COUNT(id) FROM player_vehicle WHERE id=%d AND kills > %d AND time > %d";
+            $result = $connection->query(vsprintf($query, [$id, $player['kills'], $player['time']]));
             $pos = ((int)$result->fetchColumn()) + 1;
 
             // Send response
@@ -504,26 +525,32 @@ SQL;
         else // Searching by PID
         {
             // Ensure Player exists by PID
-            $query = "SELECT `id`, `name`, `rank`, `country` FROM player WHERE id={$pid}";
+            $query = "SELECT `id`, `name`, `rank`, `country` FROM player WHERE id={$pid} LIMIT 1";
             $result = $connection->query($query);
-            if (!($result instanceof PDOStatement))
+            if (!($result instanceof PDOStatement) || !($player = $result->fetch()))
             {
                 $Response->send();
+                die;
             }
-            $player = $result->fetch();
 
             // Fetch players kit if he has one...
-            $query = "SELECT `kills`, `deaths`, `time`, `fired`, `hits`, `accuracy` FROM player_weapon_view WHERE pid={$pid} AND id={$id}";
-            $result = $connection->query($query);
-            if (!($result instanceof PDOStatement))
+            $query = "SELECT `kills`, `deaths`, `time`, `accuracy` FROM player_weapon_view WHERE pid=%d AND id=%d LIMIT 1";
+            $result = $connection->query( vsprintf($query, [$pid, $id]) );
+            if ($result instanceof PDOStatement && ($row = $result->fetch()))
             {
-                $Response->send();
+                $player += $row;
             }
-            $player += $result->fetch();
+            else
+            {
+                $player['kills'] = 0;
+                $player['deaths'] = 0;
+                $player['time'] = 0;
+                $player['accuracy'] = 0;
+            }
 
             // Get player position relative to everyone else
-            $query = "SELECT COUNT(id) FROM player_weapon_view WHERE id={$id} AND kills > {$player['kills']} AND accuracy > '{$player['accuracy']}'";
-            $result = $connection->query($query);
+            $query = "SELECT COUNT(id) FROM player_weapon_view WHERE id=%d AND kills > %d AND accuracy > %f";
+            $result = $connection->query( vsprintf($query, [$id, $player['kills'], $player['accuracy']]) );
             $pos = ((int)$result->fetchColumn()) + 1;
 
             // Send response

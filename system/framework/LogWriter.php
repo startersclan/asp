@@ -217,15 +217,26 @@ class LogWriter
      * the sprints with the supplied arguments
      *
      * @param string $message The message to be formatted and logged
-     * @param string[] $args An array of replacements for the $message sprints
+     * @param string|string[] $args An array of replacements for the $message sprints
      * @param bool|int $mode The log level of this message.
      *
      * @return string Returns the formatted message.
      */
     public function format($message, $args, $mode = false)
     {
+        // Trim message
+        $message = trim($message);
+
+        // Correctly format args
+        if (!empty($args))
+        {
+            if (!is_array($args))
+                $args = array($args);
+
+            $message = vsprintf($message, $args);
+        }
+
         // Process initial string value
-        $message = (is_array($args)) ? vsprintf(trim($message), $args) : trim($message);
         $start = date($this->dataFormat, time());
         switch ($mode)
         {

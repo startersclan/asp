@@ -7,10 +7,12 @@
 -- Delete Tables/Views/Triggers First
 -- --------------------------------------------------------
 
-DROP TRIGGER `player_joined`;
-DROP TRIGGER `_version_inserttime`;
-DROP TRIGGER  `player_award_timestamps`;
-DROP VIEW `player_weapon_view`;
+DROP TRIGGER IF EXISTS `server_update`;
+DROP TRIGGER IF EXISTS `player_joined`;
+DROP TRIGGER IF EXISTS `_version_inserttime`;
+DROP TRIGGER IF EXISTS `player_award_timestamps`;
+DROP VIEW IF EXISTS `player_weapon_view`;
+DROP PROCEDURE IF EXISTS `create_player`;
 DROP TABLE IF EXISTS `ip2nationcountries`;
 DROP TABLE IF EXISTS `ip2nation`;
 DROP TABLE IF EXISTS `player_weapon`;
@@ -43,7 +45,7 @@ CREATE TABLE `_version` (
   `version` VARCHAR(10) NOT NULL,
   `time` INT DEFAULT 0,
   PRIMARY KEY(`updateid`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TRIGGER `_version_inserttime` BEFORE INSERT ON `_version`
 FOR EACH ROW SET new.time = UNIX_TIMESTAMP();
@@ -57,7 +59,7 @@ CREATE TABLE `army` (
   `name` VARCHAR(32) NOT NULL,
   `desc` VARCHAR(32) DEFAULT NULL,
   PRIMARY KEY(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `mapinfo`
@@ -73,7 +75,7 @@ CREATE TABLE `mapinfo` (
   `deaths` INT UNSIGNED NOT NULL DEFAULT 0,
   `custom` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `server`
@@ -87,10 +89,12 @@ CREATE TABLE `server` (
   `port` SMALLINT UNSIGNED DEFAULT 0,
   `queryport` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `banned` TINYINT(1) NOT NULL DEFAULT 0,
-  `lastupdate` INT NOT NULL DEFAULT UNIX_TIMESTAMP(),
+  `lastupdate` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY(`id`),
   UNIQUE KEY `ip-prefix-unq` (`ip`,`prefix`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TRIGGER `server_update` BEFORE UPDATE ON `server` FOR EACH ROW SET new.lastupdate = CURRENT_TIMESTAMP;
 
 --
 -- Table structure for table `round_history`
@@ -104,7 +108,7 @@ CREATE TABLE `round_history` (
   `round_end` INT UNSIGNED NOT NULL,
   `gamemode` TINYINT UNSIGNED NOT NULL,
   `mod` VARCHAR(20) NOT NULL,
-  `winner` TINYINT UNSIGNED NOT NULL,
+  `winner` TINYINT NOT NULL,
   `team1` TINYINT UNSIGNED NOT NULL,
   `team2` TINYINT UNSIGNED NOT NULL,
   `tickets1` SMALLINT UNSIGNED NOT NULL,
@@ -116,7 +120,7 @@ CREATE TABLE `round_history` (
   PRIMARY KEY(`id`),
   FOREIGN KEY(`mapid`) REFERENCES mapinfo(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   FOREIGN KEY(`serverid`) REFERENCES server(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `unlock`
@@ -127,7 +131,7 @@ CREATE TABLE `unlock` (
   `kit` TINYINT NOT NULL,
   `name` VARCHAR(32) NOT NULL,
   `desc` VARCHAR(32) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 -- Stats: Player Tables
@@ -199,9 +203,8 @@ CREATE TABLE `player` (
   `mode2` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `permban` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
   `clantag` VARCHAR(20) NOT NULL DEFAULT '',
-  `isbot` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 delimiter $$
 
@@ -231,7 +234,7 @@ CREATE TABLE `player_army` (
   PRIMARY KEY(`pid`,`id`),
   FOREIGN KEY(`id`) REFERENCES army(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `player_award`
@@ -247,7 +250,7 @@ CREATE TABLE `player_award` (
   PRIMARY KEY(`pid`,`id`,`level`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`roundid`) REFERENCES round_history(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 delimiter $$
 
@@ -255,9 +258,6 @@ CREATE TRIGGER `player_award_timestamps` BEFORE INSERT ON `player_award`
 FOR EACH ROW BEGIN
   IF new.earned = 0 THEN
     SET new.earned = UNIX_TIMESTAMP();
-  END IF;
-  IF new.first = 0 THEN
-    SET new.first = new.earned;
   END IF;
 END $$
 
@@ -274,7 +274,7 @@ CREATE TABLE `player_kill` (
   PRIMARY KEY(`attacker`,`victim`),
   FOREIGN KEY(`attacker`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`victim`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `player_map`
@@ -291,7 +291,7 @@ CREATE TABLE `player_map` (
   PRIMARY KEY(`pid`,`mapid`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`mapid`) REFERENCES mapinfo(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `player_kit`
@@ -305,7 +305,7 @@ CREATE TABLE `player_kit` (
   `deaths` INT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`pid`,`id`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `player_history`
@@ -327,7 +327,7 @@ CREATE TABLE `player_history` (
   PRIMARY KEY(`pid`,`roundid`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`roundid`) REFERENCES round_history(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `player_unlock`
@@ -354,7 +354,7 @@ CREATE TABLE `player_vehicle` (
   `roadkills` INT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`pid`,`id`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `weapons`
@@ -370,7 +370,7 @@ CREATE TABLE `player_weapon` (
   `hits` INT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`pid`,`id`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `ip2nation`
@@ -380,7 +380,7 @@ CREATE TABLE `ip2nation` (
   `ip` INT UNSIGNED NOT NULL DEFAULT 0,
   `country` char(2) NOT NULL DEFAULT '',
   PRIMARY KEY(`ip`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -397,7 +397,7 @@ CREATE TABLE `ip2nationcountries` (
   `lat` float NOT NULL DEFAULT 0,
   `lon` float NOT NULL DEFAULT 0,
   PRIMARY KEY(`code`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=UTF8;
 
 
 -- --------------------------------------------------------
@@ -405,8 +405,29 @@ CREATE TABLE `ip2nationcountries` (
 -- --------------------------------------------------------
 
 CREATE OR REPLACE VIEW `player_weapon_view` AS
-  SELECT `id`, `pid`, `time`, `kills`, `deaths`, `fired`, `hits`, (`hits` * 1.0) / `fired` AS `accuracy`
+  SELECT `id`, `pid`, `time`, `kills`, `deaths`, `fired`, `hits`, COALESCE((`hits` * 1.0) / `fired`, 0) AS `accuracy`
   FROM `player_weapon`;
+
+-- --------------------------------------------------------
+-- Create Procedures
+-- --------------------------------------------------------
+delimiter $$
+
+CREATE PROCEDURE `create_player`(
+  IN `playerName` VARCHAR(32),
+  IN `playerPassword` VARCHAR(32), -- MD5 Hash
+  IN `countryCode` VARCHAR(2),
+  IN `ipAddress` VARCHAR(46),
+  OUT `pid` INT
+)
+BEGIN
+  SELECT COALESCE(max(id), 29000000) + 1 INTO pid FROM player;
+  INSERT INTO player(`id`, `name`, `password`, `country`, `lastip`)
+    VALUES(pid, playerName, playerPassword, countryCode, ipAddress);
+  SELECT pid;
+END $$
+
+delimiter ;
 
 
 -- --------------------------------------------------------
@@ -470,3 +491,8 @@ INSERT INTO `army` VALUES (24, 'U.S Army Rangers', null);
 -- Dumping data for table `_version`
 --
 INSERT INTO `_version`(`updateid`, `version`) VALUES (30000, '3.0.0');
+
+INSERT INTO `server`(`ip`, `prefix`, `name`, `port`, `queryport`) VALUES ('127.0.0.1', 'w212', 'Local Server 1', 16567, 29900);
+INSERT INTO `server`(`ip`, `prefix`, `name`, `port`, `queryport`) VALUES ('::1', 'w212', 'Local Server 2', 16567, 29900);
+
+INSERT INTO `player`(`id`, `name`, `country`, `password`) VALUES (101249154, ' wilson212', 'US', '');

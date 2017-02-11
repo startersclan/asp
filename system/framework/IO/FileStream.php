@@ -82,7 +82,6 @@ class FileStream
      *     WRITE, READWRITE etc ).
      *
      * @throws IOException Thrown if opening of the file stream failed for any reason
-     * @throws FileNotFoundException
      */
     public function __construct($file, $mode = self::READWRITE)
     {

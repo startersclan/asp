@@ -10,11 +10,15 @@
 
 namespace System;
 
-
 use System\Collections\Dictionary;
 
 class Player
 {
+    /**
+     * @var string A regular expression for BF2 player name validation
+     */
+    const NAME_REGEX = 'A-Za-z0-9_\.<>=\-\s\@\{\}\*\|\[\]\(\)';
+
     /**
      * @var int The players PID
      */
@@ -181,7 +185,7 @@ class Player
          * thrown if a key does not exist!
          */
         $this->pid = (int)$playerData['pID'];
-        $this->name = $playerData['name'];
+        $this->name = preg_replace("/[^". Player::NAME_REGEX ."]/", '', $playerData['name']);
         $this->rank = (int)$playerData['rank'];
         $this->roundScore = (int)$playerData['rs'];
         $this->roundTime = (int)$playerData['ctime'];
@@ -297,11 +301,16 @@ class Player
         if ($this->lwTime < 0) $this->lwTime = 0;
 
         // Extract player awards
-        foreach ($playerData as $item)
+        foreach (BackendAwardData::$Awards as $name => $id)
         {
-            // Make sure that the award given exists in the Awards List
-            //if (BackendAwardData.Awards.ContainsKey(Item.Key))
-                //this.EarnedAwards.Add(BackendAwardData.Awards[Item.Key], Int32.Parse(Item.Value));
+            if (isset($playerData[$name]))
+                $this->earnedAwards[ $id ] = (int)$playerData[$name];
+        }
+
+        // Extract player kill data
+        foreach ($killData as $pid => $count)
+        {
+            $this->victims[$pid] = $count;
         }
     }
 }

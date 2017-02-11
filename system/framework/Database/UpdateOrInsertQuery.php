@@ -54,6 +54,10 @@ class UpdateOrInsertQuery
      */
     public function set($column, $operator, $value)
     {
+        // Correct bools
+        if (is_bool($value))
+            $value = ($value) ? 1 : 0;
+
         $this->columns[$column] = array($operator, $value);
     }
 
@@ -66,6 +70,10 @@ class UpdateOrInsertQuery
      */
     public function where($column, $operator, $value)
     {
+        // Correct bools
+        if (is_bool($value))
+            $value = ($value) ? 1 : 0;
+
         $this->where[$column] = array($operator, $value);
     }
 
@@ -107,7 +115,7 @@ class UpdateOrInsertQuery
         foreach ($this->columns as $col => $values)
         {
             list($operator, $value) = $values;
-            $value = (is_numeric($value)) ? $value : $this->connection->quote($value);
+            $value = (is_int($value)) ? $value : $this->connection->quote($value);
 
             switch ($operator)
             {
@@ -146,20 +154,20 @@ class UpdateOrInsertQuery
         {
             list($operator, $value) = $values;
             if (!isset($this->columns[$col]))
-                $statements[$col] = (is_numeric($value)) ? $value : $this->connection->quote($value);
+                $statements[$col] = (is_int($value)) ? $value : $this->connection->quote($value);
         }
 
         // start creating the SQL string and enclose field names in `
         foreach ($this->columns as $col => $values)
         {
             list($operator, $value) = $values;
-            $statements[$col] = (is_numeric($value)) ? $value : $this->connection->quote($value);
+            $statements[$col] = (is_int($value)) ? $value : $this->connection->quote($value);
         }
 
-        $cols = implode(", ", array_keys($statements));
+        $cols = implode("`, `", array_keys($statements));
         $values = implode(", ", array_values($statements));
 
         // Build our query
-        return $this->connection->exec("INSERT INTO `{$this->table}`({$cols}) VALUES({$values})");
+        return $this->connection->exec("INSERT INTO `{$this->table}`(`{$cols}`) VALUES({$values})");
     }
 }

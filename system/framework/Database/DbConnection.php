@@ -35,20 +35,8 @@ class DbConnection extends PDO
     public function __construct($server, $port, $dbname, $username, $password)
     {
         // Connect using the PDO Constructor
-        $dsn = "mysql:host={$server};port={$port};dbname={$dbname}";
+        $dsn = "mysql:host={$server};port={$port};dbname={$dbname};charset=UTF8";
         parent::__construct($dsn, $username, $password, array(\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION));
-    }
-
-    /**
-     * Executes an SQL query on the database
-     *
-     * @param string $query The sql query to execute
-     *
-     * @return \PDOStatement
-     */
-    public function query($query)
-    {
-        return parent::query($query);
     }
 
     /**
@@ -86,17 +74,19 @@ class DbConnection extends PDO
      */
     public function insert($table, $data)
     {
+        // Escape values for the query
+        foreach ($data as $key => $value)
+        {
+            if (!is_int($value))
+                $data[$key] = $this->quote($value);
+        }
+
         // enclose the column names in grave accents
-        $cols = '`' . implode('`,`', array_keys($data)) . '`';
-        $values = '';
+        $columns = implode('`, `', array_keys($data));
+        $values =  implode(', ', array_values($data));
 
-        // question marks for escaping values later on
-        $count = count($data);
-        for ($i = 0; $i < $count; $i++)
-            $values .= (is_numeric($data[$i])) ? $data[$i] . ", " : $this->quote($data[$i]) . ", ";
-
-        // run the query
-        return $this->exec('INSERT INTO ' . $table . '(' . $cols . ') VALUES (' . rtrim($values, ', ') . ')');
+        // Run the query
+        return $this->exec("INSERT INTO `{$table}`(`{$columns}`) VALUES ({$values})");
     }
 
     /**

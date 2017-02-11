@@ -36,6 +36,7 @@ $pid = (isset($_GET['pid'])) ? (int)$_GET['pid'] : 0;
 $mapid = (isset($_GET['mapid'])) ? (int)$_GET['mapid'] : 0;
 $mapname = (isset($_GET['mapname'])) ? $_GET['mapname'] : '';
 $limit = (isset($_GET['customonly'])) ? (int)$_GET['customonly'] : 0;
+$transpose = (isset($_GET['transpose'])) ? (int)$_GET['transpose'] : 0;
 
 // Limit results to custom maps ONLY
 $maplimit = ($limit == 1) ? " AND id >= " . Config::Get('game_custom_mapid') : '';
@@ -55,10 +56,10 @@ if ($pid > 0)
                 $row['mapid'],
                 $row['mapname'],
                 $row['time'],
-                $row['win'],
-                $row['loss'],
-                $row['best'],
-                $row['worst']
+                $row['wins'],
+                $row['losses'],
+                $row['bestscore'],
+                $row['worstscore']
             );
         } while ($row = $result->fetch());
     }
@@ -121,4 +122,4 @@ else
 }
 
 // Output data
-$Response->send();
+$Response->send($transpose);

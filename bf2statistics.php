@@ -32,7 +32,7 @@ namespace System
     define('DS', DIRECTORY_SEPARATOR);
     define('ROOT', __DIR__);
     define('SYSTEM_PATH', ROOT . DS . 'system');
-    define('SNAPSHOT_TEMP_PATH', SYSTEM_PATH . DS . 'snapshots' . DS . 'temp');
+    define('SNAPSHOT_TEMP_PATH', SYSTEM_PATH . DS . 'snapshots' . DS . 'unprocessed');
     define('SNAPSHOT_STORE_PATH', SYSTEM_PATH . DS . 'snapshots' . DS . 'processed');
     define("_ERR_RESPONSE", "E\nH\tresponse\nD\t");
 
@@ -127,7 +127,7 @@ namespace System
     try
     {
         // Create and write the snapshot data into a backup file
-        $file = new FileStream(SNAPSHOT_TEMP_PATH . DS . $fileName, 'wb');
+        $file = new FileStream(SNAPSHOT_TEMP_PATH . DS . $fileName, FileStream::WRITE);
         $file->write($rawdata);
         $file->close();
 
@@ -144,9 +144,8 @@ namespace System
     }
     catch (Exception $e)
     {
-        $errmsg = "Unable to create a new SNAPSHOT Data Logfile (%s)! Please make sure SNAPSHOT paths are writable!";
-        $LogWriter->logError($errmsg, $fileName);
-        die(_ERR_RESPONSE . "Unable to create a new SNAPSHOT Data Logfile");
+        $LogWriter->logError("Unable to create a new SNAPSHOT Data Logfile (%s): %s", [$fileName, $e->getMessage()]);
+        die(_ERR_RESPONSE . "Unable to create a new SNAPSHOT Data Logfile!");
     }
 
 /*
@@ -154,8 +153,10 @@ namespace System
 | Process SNAPSHOT
 | ---------------------------------------------------------------
 */
+
     try
     {
+        // Execute snapshot
         $snapshot->processData();
     }
     catch (Exception $e)
@@ -164,5 +165,6 @@ namespace System
     }
 
     // Finally, move the file
-    File::Move($fileName, SNAPSHOT_STORE_PATH . DS . $fileName);
+    if ($snapshot->isProcessed())
+        File::Move(SNAPSHOT_TEMP_PATH . DS . $fileName, SNAPSHOT_STORE_PATH . DS . $fileName);
 }

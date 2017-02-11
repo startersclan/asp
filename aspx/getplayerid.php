@@ -45,9 +45,16 @@ else
     $nick = (isset($_GET['nick'])) ? $_GET['nick'] : '';
 }
 
+$isAi= (isset($_GET['ai'])) ? (int)$_GET['ai'] : 0;
+$isAi = ($isAi > 0);
+
 
 if (!empty($nick))
 {
+    // Sanitize nick
+    $pattern = Player::NAME_REGEX;
+    $nick = preg_replace("/[^{$pattern}]/", '', $nick);
+
     // Try to fetch players id
     $result = $connection->prepare("SELECT id FROM player WHERE name = :nick LIMIT 1");
     $result->bindValue(":nick", $nick, PDO::PARAM_STR);
@@ -55,11 +62,28 @@ if (!empty($nick))
     // Player does not exist
     if (!$result->execute() || !($pid = $result->fetchColumn()))
     {
-        $Response->responseError(true);
-        $Response->writeHeaderLine("asof", "err");
-        $Response->writeDataLine(time(), "Player Not Found!");
-        $Response->send();
-        die;
+        if ($isAi)
+        {
+            // Use the internal procedure
+            $stmt = $connection->prepare("CALL `create_player` (?, ?, ? , ?, @pid)");
+            $stmt->bindValue(1, $nick, PDO::PARAM_STR);
+            $stmt->bindValue(2, '', PDO::PARAM_STR);
+            $stmt->bindValue(3, 'US', PDO::PARAM_STR);
+            $stmt->bindValue(4, '127.0.0.1', PDO::PARAM_STR);
+            $stmt->execute();
+
+            // Fetch Player id from procedure parameter
+            $stmt->bindColumn(1, $pid, PDO::PARAM_INT);
+            $stmt->fetch(PDO::FETCH_BOUND);
+        }
+        else
+        {
+            $Response->responseError(true);
+            $Response->writeHeaderLine("asof", "err");
+            $Response->writeDataLine(time(), "Player Not Found!");
+            $Response->send();
+            die;
+        }
     }
 
     // Send response
