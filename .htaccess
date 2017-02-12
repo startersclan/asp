@@ -8,7 +8,7 @@
     # We don't want to pass calls to css, script, and image files to the index,
     # whether they exist or not. So quit right here, and allow direct access
     # to common format files. Add formats here to allow direct link access
-    RewriteRule ^.*\.(gif|png|jpe?g|bmp|css|js|swf|wav|avi|mpg|ttf)$ - [NC,L]
+    RewriteRule ^.*\.(gif|png|jpe?g|bmp|css|js|swf|wav|avi|mpg|ttf|woff)$ - [NC,L]
 
     # Deny access to the aspx, frontend and system folders. All defined
     # file extensions from the previous rewrite rule wont make it here, which allows

@@ -301,7 +301,7 @@ else
 
             // Grab player weekly score
             $query = "SELECT COALESCE(sum(score), 0) AS score FROM player_history WHERE pid=%d AND timestamp >= %d";
-            $result = $connection->query(vsprintf($query, [$pid, $timestamp]));
+            $result = $connection->query(sprintf($query, $pid, $timestamp));
             $score = ((int)$result->fetchColumn(0));
 
             // Get players position relative to everyone else
@@ -310,7 +310,7 @@ SELECT COUNT(*) FROM (
   SELECT sum(score) AS score FROM player_history WHERE score > %d AND timestamp >= %d GROUP BY pid
 ) AS tbl
 SQL;
-            $result = $connection->query(vsprintf($query, [$score, $timestamp]));
+            $result = $connection->query(sprintf($query, $score, $timestamp));
             $Response->writeDataLine(
                 ((int)$result->fetchColumn(0)) + 1,
                 $player['id'],
@@ -388,7 +388,7 @@ SQL;
 
             // Get player position relative to everyone else
             $query = "SELECT COUNT(id) FROM player_kit WHERE id=%d AND kills > %d AND time > %d";
-            $result = $connection->query(vsprintf($query, [$id, $player['kills'], $player['time']]));
+            $result = $connection->query(sprintf($query, $id, $player['kills'], $player['time']));
             $pos = ((int)$result->fetchColumn()) + 1;
 
             // Send response
@@ -467,7 +467,7 @@ SQL;
 
             // Get player position relative to everyone else
             $query = "SELECT COUNT(id) FROM player_vehicle WHERE id=%d AND kills > %d AND time > %d";
-            $result = $connection->query(vsprintf($query, [$id, $player['kills'], $player['time']]));
+            $result = $connection->query(sprintf($query, $id, $player['kills'], $player['time']));
             $pos = ((int)$result->fetchColumn()) + 1;
 
             // Send response
@@ -535,7 +535,7 @@ SQL;
 
             // Fetch players kit if he has one...
             $query = "SELECT `kills`, `deaths`, `time`, `accuracy` FROM player_weapon_view WHERE pid=%d AND id=%d LIMIT 1";
-            $result = $connection->query( vsprintf($query, [$pid, $id]) );
+            $result = $connection->query( sprintf($query, $pid, $id) );
             if ($result instanceof PDOStatement && ($row = $result->fetch()))
             {
                 $player += $row;
@@ -550,7 +550,7 @@ SQL;
 
             // Get player position relative to everyone else
             $query = "SELECT COUNT(id) FROM player_weapon_view WHERE id=%d AND kills > %d AND accuracy > %f";
-            $result = $connection->query( vsprintf($query, [$id, $player['kills'], $player['accuracy']]) );
+            $result = $connection->query( sprintf($query, $id, $player['kills'], $player['accuracy']) );
             $pos = ((int)$result->fetchColumn()) + 1;
 
             // Send response

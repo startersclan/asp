@@ -10,44 +10,42 @@
 	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,maximum-scale=1" />
 
 	<!-- Required Stylesheets -->
-	<link rel="icon" type="image/png" href="frontend/images/icons/bf2.png">
-	<link rel="stylesheet" type="text/css" href="frontend/css/reset.css" media="screen" />
-	<link rel="stylesheet" type="text/css" href="frontend/css/text.css" media="screen" />
-	<link rel="stylesheet" type="text/css" href="frontend/css/fonts/ptsans/stylesheet.css" media="screen" />
-	<link rel="stylesheet" type="text/css" href="frontend/css/fluid.css" media="screen" />
-	<link rel="stylesheet" type="text/css" href="frontend/css/mws.style.css" media="screen" />
-	<link rel="stylesheet" type="text/css" href="frontend/css/icons/24x24.css" media="screen" />
+	<link rel="stylesheet" type="text/css" href="./frontend/css/bootstrap.min.css" media="screen">
+	<link rel="stylesheet" type="text/css" href="./frontend/css/fonts/ptsans/stylesheet.css" media="screen">
+	<link rel="stylesheet" type="text/css" href="./frontend/css/fonts/icomoon/style.css" media="screen">
 
-	<!-- Plugin Stylesheets -->
-	<link rel="stylesheet" type="text/css" href="frontend/plugins/tipsy/tipsy.css" media="screen" />
-	<link rel="stylesheet" type="text/css" href="frontend/plugins/jgrowl/jquery.jgrowl.css" media="screen" />
-	<link rel="stylesheet" type="text/css" href="frontend/css/jui/jquery.ui.css" media="screen" />
+	<link rel="stylesheet" type="text/css" href="./frontend/css/mws-style.css" media="screen">
+	<link rel="stylesheet" type="text/css" href="./frontend/css/icons/icol16.css" media="screen">
+	<link rel="stylesheet" type="text/css" href="./frontend/css/icons/icol32.css" media="screen">
+
+	<!-- jQuery-UI Stylesheet -->
+	<link rel="stylesheet" type="text/css" href="./frontend/jui/css/jquery.ui.all.css" media="screen">
+	<link rel="stylesheet" type="text/css" href="./frontend/jui/jquery-ui.custom.css" media="screen">
 
 	<!-- Theme Stylesheet -->
-	<link rel="stylesheet" type="text/css" href="frontend/css/bf2.theme.css" media="screen" />
+	<link rel="stylesheet" type="text/css" href="./frontend/css/bf2.theme.css" media="screen" />
 
 	<!-- JavaScript Plugins -->
-	<script type="text/javascript" src="frontend/js/jquery-1.7.1.min.js"></script>
-	<script type="text/javascript" src="frontend/js/jquery.mousewheel.js"></script>
-	<script type="text/javascript" src="frontend/js/jquery.form.js"></script>
+    <script type="text/javascript" src="./frontend/js/jquery-1.8.3.min.js"></script>
+	<script type="text/javascript" src="./frontend/js/jquery.mousewheel.js"></script>
+	<script type="text/javascript" src="./frontend/js/jquery.form.js"></script>
+    <script type="text/javascript" src="./frontend/js/placeholder/jquery.placeholder.min.js"></script>
 
-	<!-- jQuery-UI Dependent Scripts -->
-	<script type="text/javascript" src="frontend/js/jquery-ui.js"></script>
-	<script type="text/javascript" src="frontend/js/jquery.ui.touch-punch.min.js"></script>
+    <!-- jQuery-UI Dependent Scripts -->
+    <script type="text/javascript" src="./frontend/jui/js/jquery-ui-1.9.2.min.js"></script>
+    <script type="text/javascript" src="./frontend/jui/jquery-ui.custom.min.js"></script>
+    <script type="text/javascript" src="./frontend/jui/js/jquery.ui.touch-punch.js"></script>
 
-	<!-- Plugin Scripts -->
-	<script type="text/javascript" src="frontend/plugins/jgrowl/jquery.jgrowl-min.js"></script>
-	<script type="text/javascript" src="frontend/plugins/datatables/jquery.dataTables-min.js"></script>
+    <!-- Plugin Scripts -->
+    <script type="text/javascript" src="./frontend/js/datatables/jquery.dataTables.min.js"></script>
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="./frontend/js/excanvas.min.js"></script>
+    <![endif]-->
+    <script type="text/javascript" src="./frontend/js/validate/jquery.validate-min.js"></script>
 
-	<!--[if lt IE 9]>
-	<script type="text/javascript" src="frontend/plugins/excanvas.min.js"></script>
-	<![endif]-->
-	<script type="text/javascript" src="frontend/plugins/tipsy/jquery.tipsy-min.js"></script>
-	<script type="text/javascript" src="frontend/plugins/placeholder/jquery.placeholder-min.js"></script>
-	<script type="text/javascript" src="frontend/plugins/validate/jquery.validate-min.js"></script>
-
-	<!-- Core Script -->
-	<script type="text/javascript" src="frontend/js/mws.js"></script>
+    <!-- Core Scripts -->
+    <script src="./frontend/js/bootstrap/bootstrap.min.js"></script>
+	<script type="text/javascript" src="./frontend/js/mws.js"></script>
 	
 	{VIEW_CSS}
 	{VIEW_JS}
@@ -97,16 +95,13 @@
             <div class="container">
 			<?php 
 				// Process DB version messages
-				if(DB_VER == '0.0.0') 
+				if(DB_VER == '0.0.0')
 				{
-					if($_GET['task'] !== 'installdb' && $_GET['task'] !== 'editconfig')
-					{
-						echo '<div class="alert global">Unable to establish a database connection. If you need to setup the ASP, 
-						<a href="?task=installdb">Click Here to begin Installation</a></div>';
-					}
-				} 
+                    echo '<div class="alert global">Unable to establish a database connection. If you need to setup the ASP,
+                    <a href="./install">Click Here to begin Installation</a></div>';
+				}
 				elseif(DB_VER !== CODE_VER)
 				{
-					echo '<div class="alert global">Database is outdated. Please <a href="?task=upgradedb">Click Here</a> to upgrade your database to the corrent version</div>';
+					echo '<div class="alert global">Database is outdated. Please <a href="./database/upgrade">Click Here</a> to upgrade your database to the corrent version</div>';
 				}
 			?>

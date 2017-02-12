@@ -50,7 +50,7 @@ class BackendAward
          * @noinspection SqlResolve
          */
         $query = "SELECT COALESCE(max(level), 0) FROM player_award WHERE pid=%d AND id=%d";
-        $result = $connection->query(vsprintf($query, [$player->pid, $this->awardId]));
+        $result = $connection->query(sprintf($query, $player->pid, $this->awardId));
         $awardCount = (int) $result->fetchColumn();
         $isRibbon = ($this->awardId > 3000000);
 

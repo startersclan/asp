@@ -1,6 +1,6 @@
 <?php
 /*
-	Copyright (C) 2006-2013  BF2Statistics
+	Copyright (C) 2006-2017  BF2Statistics
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-// Namespace
 namespace System
 {
     use Exception;
@@ -52,9 +51,7 @@ namespace System
     set_time_limit(300);
     ignore_user_abort(true);
 
-    /**
-     * Register Autoloader
-     */
+    // Register Class Autoloader
     include SYSTEM_PATH . DS . "framework" . DS . "Autoloader.php";
     Autoloader::Register();
 

@@ -305,7 +305,7 @@ class Directory
         foreach ($Source->getFiles() as $File)
         {
             $destFileName = Path::Combine($destination, $File->name());
-            if (!$overwrite && $Dest->getFiles()->contains($destFileName))
+            if (!$overwrite && in_array($destFileName, $Dest->getFiles()))
                 continue;
 
             $File->moveTo($destFileName);

@@ -184,7 +184,7 @@ class Asp
         $uri = (isset($_GET['uri']) && !empty($_GET['uri'])) ? $_GET['uri'] : 'home';
         $parts = explode('/', $uri);
         $length = count($parts);
-        $controller = ($length > 0) ? $parts[0] : 'home';
+        $GLOBALS['controller'] = $controller = ($length > 0) ? $parts[0] : 'home';
         $action = ($length > 1) ? $parts[1] : 'index';
         $params = array_slice($parts, 2);
 
@@ -215,8 +215,9 @@ class Asp
             if (!file_exists($file))
             {
                 // 404
-                $Template = new View('404');
-                $Template->render();
+                $view = new View('404');
+                $view->set('module_name', $modNMame);
+                $view->render();
                 return;
             }
 

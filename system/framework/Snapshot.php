@@ -184,9 +184,8 @@ class Snapshot extends GameResult
         }
 
         // Check for processed snapshot
-        $query = "SELECT COUNT(id) FROM round_history WHERE mapid={$this->mapId}"
-            ." AND round_end={$this->roundEndTime} AND round_start={$this->roundStartTime}";
-        $result = $connection->query($query);
+        $query = "SELECT COUNT(id) FROM round_history WHERE mapid=%d AND round_end=%d AND round_start=%d";
+        $result = $connection->query(sprintf($query, $this->mapId, $this->roundEndTime, $this->roundStartTime));
         $this->isProcessed = ((int)$result->fetchColumn()) > 0;
     }
 
@@ -237,13 +236,13 @@ class Snapshot extends GameResult
         // Start logging information about this snapshot
         $this->logWriter->logNotice("Begin Processing (%s) From Server ID (%d)...", [$this->mapName, $serverId]);
         if ($this->isCustomMap)
-            $this->logWriter->logNotice("Custom Map ({$this->mapId})...");
+            $this->logWriter->logNotice("Custom Map (%d)...", $this->mapId);
         else
-            $this->logWriter->logNotice("Standard Map ({$this->mapId})...");
+            $this->logWriter->logNotice("Standard Map (%d)...", $this->mapId);
 
         // Log player count
         $playerCount = count($this->players);
-        $this->logWriter->logNotice("Found (". $playerCount .") Player(s)...");
+        $this->logWriter->logNotice("Found (%d) Player(s)...", $playerCount);
 
         // Ensure the player count is within range of the config
         if ($playerCount < Config::Get("stats_players_min"))
@@ -346,8 +345,8 @@ class Snapshot extends GameResult
                 $query->set('mode2', '+', ($this->gameMode == 2) ? 1 : 0);
 
                 // Check if player exists already
-                $sql = "SELECT lastip, country, rank, killstreak, deathstreak, rndscore FROM player WHERE id={$player->pid} LIMIT 1";
-                $result = $connection->query($sql);
+                $sql = "SELECT lastip, country, rank, killstreak, deathstreak, rndscore FROM player WHERE id=%d LIMIT 1";
+                $result = $connection->query(sprintf($sql, $player->pid));
 
                 if ($result instanceof PDOStatement && ($row = $result->fetch()))
                 {
@@ -563,7 +562,7 @@ class Snapshot extends GameResult
                             $query .= " AND level=". (int)$value;
 
                         // Check for prior awarding of award
-                        $result = $connection->query( vsprintf($query, [$player->pid, $key]) . ' LIMIT 1');
+                        $result = $connection->query( sprintf($query, $player->pid, $key) . ' LIMIT 1');
                         if (!($result instanceof PDOStatement) || ($count = (int)$result->fetchColumn(0)) == 0)
                         {
                             // Need to do extra work for Badges as more than one badge level may have been awarded.
@@ -576,7 +575,7 @@ class Snapshot extends GameResult
                                 {
                                     /** @noinspection SqlResolve */
                                     $query = "SELECT COUNT(*) FROM player_award WHERE pid=%d AND id=%d AND level=%d LIMIT 1";
-                                    $result = $connection->query( vsprintf($query, [$player->pid, $key, $j]) );
+                                    $result = $connection->query( sprintf($query, $player->pid, $key, $j) );
                                     if (!($result instanceof PDOStatement) || ($count = (int)$result->fetchColumn(0)) == 0)
                                     {
                                         // Prepare Query
@@ -672,7 +671,7 @@ class Snapshot extends GameResult
         // Generate SNAPSHOT Filename
         $mapdate = date('Ymd_Hi', time());
         $prefix  = '';
-        if ($this->serverPrefix != '')
+        if (!empty($this->serverPrefix))
             $prefix .= $this->serverPrefix . '-';
 
         return $prefix . $this->mapName . '_' . $mapdate . '.txt';

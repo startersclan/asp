@@ -9,7 +9,7 @@
 $db_expected_ver = '3.0.0';
 $admin_user = 'admin';
 $admin_pass = 'admin';
-$admin_hosts = array('127.0.0.1','192.168.2.0/24','localhost','192.168.1.102','192.168.1.110','::1');
+$admin_hosts = array('127.0.0.1','::1');
 $admin_backup_path = 'C:/wamp/www/ASP/system/database/backups/';
 $admin_backup_ext = '.bak';
 $admin_ignore_ai = 0;
