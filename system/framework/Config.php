@@ -7,7 +7,9 @@
  */
 namespace System;
 
-class Config 
+use System\IO\File;
+
+class Config
 {
 	protected static $data = array();
 	protected static $configFile;
@@ -138,7 +140,8 @@ class Config
 		
 		// Copy the current config file for backup, and write the new config values to the new config
         copy( self::$configFile, self::$configFile .'.bak' );
-        return (file_put_contents( self::$configFile, $cfg ));
+
+        return File::WriteAllText( self::$configFile, $cfg );
 	}
 	
 /*

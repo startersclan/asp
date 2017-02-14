@@ -270,6 +270,7 @@ class Snapshot extends GameResult
             $query->set('serverid', '=', $serverId);
             $query->set('round_start', '=', $this->roundStartTime);
             $query->set('round_end', '=', $this->roundEndTime);
+            $query->set('imported', '=', time());
             $query->set('gamemode', '=', $this->gameMode);
             $query->set('mod', '=', $this->mod);
             $query->set('winner', '=', $this->winningTeam);
@@ -630,6 +631,7 @@ class Snapshot extends GameResult
             $query = new UpdateOrInsertQuery($connection, 'server');
             $query->set('name', '=', $this->serverName);
             $query->set('queryport', '=', $this->queryPort);
+            $query->set('lastupdate', '=', time());
             $query->where('id', '=', $serverId);
             $query->executeUpdate();
 
@@ -652,8 +654,8 @@ class Snapshot extends GameResult
             $this->isProcessed = true;
 
             // Create log entry
-            $time = round(microtime(true) - $start, 4);
-            $this->logWriter->logNotice("Snapshot (%s) processed in %f milliseconds", [$this->getFilename(), $time]);
+            $time = round(microtime(true) - $start, 3) * 1000;
+            $this->logWriter->logNotice("Snapshot (%s) processed in %d milliseconds", [$this->getFilename(), $time]);
         }
         catch (Exception $e)
         {

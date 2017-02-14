@@ -108,7 +108,13 @@ class UpdateOrInsertQuery
 
         // Do we have a where tp process?
         if ($where != '')
+        {
             $where = ' WHERE ' . $where;
+            /*
+            $result = (int)$this->connection->query("SELECT COUNT(*) FROM `{$this->table}`". $where)->fetchColumn(0);
+            if ($result == 0) return 0;
+            */
+        }
 
         // start creating the SQL string and enclose field names in `
         $statements = array();

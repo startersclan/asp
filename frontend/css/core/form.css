@@ -384,28 +384,28 @@ input[type="color"] {
 
 .mws-form-message.error {
     background-color: #ffcbca;
-    background-image: url(../../../images/core/message-error.png);
+    background-image: url(../../images/core/message-error.png);
     border-color: #eb979b;
     color: #9b4449;
 }
 
 .mws-form-message.success {
     background-color: #e1f1c0;
-    background-image: url(../../../images/core/message-success.png);
+    background-image: url(../../images/core/message-success.png);
     border-color: #b5d56d;
     color: #62a426;
 }
 
 .mws-form-message.warning {
     background-color: #fef0b1;
-    background-image: url(../../../images/core/message-warning.png);
+    background-image: url(../../images/core/message-warning.png);
     border-color: #ddca76;
     color: #a98b15;
 }
 
 .mws-form-message.info {
     background-color: #bce5f7;
-    background-image: url(../../../images/core/message-info.png);
+    background-image: url(../../images/core/message-info.png);
     border-color: #a6d3e8;
     color: #11689E;
 }
@@ -443,7 +443,7 @@ input[type="color"] {
 ================================================== */
 
 .mws-colorpicker {
-    background-image: url(../../../images/core/cpicker.png);
+    background-image: url(../../images/core/cpicker.png);
     background-repeat: no-repeat;
     background-position: right center;
     padding-right: 32px;

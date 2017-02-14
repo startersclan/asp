@@ -2,55 +2,51 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="icon" type="image/png" href="/ASP/frontend/images/icons/bf2.png">
+	<title>Private Stats Admin</title>
 
-	<!-- Apple iOS and Android stuff (do not remove) -->
-	<meta name="apple-mobile-web-app-capable" content="no" />
-	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
-
-	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,maximum-scale=1" />
+    <!-- Viewport Metatag -->
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
 	<!-- Required Stylesheets -->
-	<link rel="stylesheet" type="text/css" href="./frontend/css/bootstrap.min.css" media="screen">
-	<link rel="stylesheet" type="text/css" href="./frontend/css/fonts/ptsans/stylesheet.css" media="screen">
-	<link rel="stylesheet" type="text/css" href="./frontend/css/fonts/icomoon/style.css" media="screen">
+	<link rel="stylesheet" type="text/css" href="/ASP/frontend/css/bootstrap.min.css" media="screen">
+	<link rel="stylesheet" type="text/css" href="/ASP/frontend/css/fonts/ptsans/stylesheet.css" media="screen">
+	<link rel="stylesheet" type="text/css" href="/ASP/frontend/css/fonts/icomoon/style.css" media="screen">
 
-	<link rel="stylesheet" type="text/css" href="./frontend/css/mws-style.css" media="screen">
-	<link rel="stylesheet" type="text/css" href="./frontend/css/icons/icol16.css" media="screen">
-	<link rel="stylesheet" type="text/css" href="./frontend/css/icons/icol32.css" media="screen">
+	<link rel="stylesheet" type="text/css" href="/ASP/frontend/css/mws-style.css" media="screen">
+	<link rel="stylesheet" type="text/css" href="/ASP/frontend/css/icons/icol16.css" media="screen">
+	<link rel="stylesheet" type="text/css" href="/ASP/frontend/css/icons/icol32.css" media="screen">
 
 	<!-- jQuery-UI Stylesheet -->
-	<link rel="stylesheet" type="text/css" href="./frontend/jui/css/jquery.ui.all.css" media="screen">
-	<link rel="stylesheet" type="text/css" href="./frontend/jui/jquery-ui.custom.css" media="screen">
+	<link rel="stylesheet" type="text/css" href="/ASP/frontend/jui/css/jquery.ui.all.css" media="screen">
+	<link rel="stylesheet" type="text/css" href="/ASP/frontend/jui/jquery-ui.custom.css" media="screen">
 
-	<!-- Theme Stylesheet -->
-	<link rel="stylesheet" type="text/css" href="./frontend/css/bf2.theme.css" media="screen" />
+	<!-- Theme and Page specific Stylesheet -->
+	<link rel="stylesheet" type="text/css" href="/ASP/frontend/css/bf2.theme.css" media="screen" />
+    {VIEW_CSS}
 
 	<!-- JavaScript Plugins -->
-    <script type="text/javascript" src="./frontend/js/jquery-1.8.3.min.js"></script>
-	<script type="text/javascript" src="./frontend/js/jquery.mousewheel.js"></script>
-	<script type="text/javascript" src="./frontend/js/jquery.form.js"></script>
-    <script type="text/javascript" src="./frontend/js/placeholder/jquery.placeholder.min.js"></script>
+    <script type="text/javascript" src="/ASP/frontend/js/jquery-1.8.3.min.js"></script>
+	<script type="text/javascript" src="/ASP/frontend/js/jquery.mousewheel.js"></script>
+	<script type="text/javascript" src="/ASP/frontend/js/jquery.form.js"></script>
+    <script type="text/javascript" src="/ASP/frontend/js/placeholder/jquery.placeholder.min.js"></script>
 
     <!-- jQuery-UI Dependent Scripts -->
-    <script type="text/javascript" src="./frontend/jui/js/jquery-ui-1.9.2.min.js"></script>
-    <script type="text/javascript" src="./frontend/jui/jquery-ui.custom.min.js"></script>
-    <script type="text/javascript" src="./frontend/jui/js/jquery.ui.touch-punch.js"></script>
+    <script type="text/javascript" src="/ASP/frontend/jui/js/jquery-ui-1.9.2.min.js"></script>
+    <script type="text/javascript" src="/ASP/frontend/jui/jquery-ui.custom.min.js"></script>
+    <script type="text/javascript" src="/ASP/frontend/jui/js/jquery.ui.touch-punch.js"></script>
 
     <!-- Plugin Scripts -->
-    <script type="text/javascript" src="./frontend/js/datatables/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="/ASP/frontend/js/datatables/jquery.dataTables.min.js"></script>
     <!--[if lt IE 9]>
-    <script type="text/javascript" src="./frontend/js/excanvas.min.js"></script>
+    <script type="text/javascript" src="/ASP/frontend/js/excanvas.min.js"></script>
     <![endif]-->
-    <script type="text/javascript" src="./frontend/js/validate/jquery.validate-min.js"></script>
+    <script type="text/javascript" src="/ASP/frontend/js/validate/jquery.validate-min.js"></script>
 
-    <!-- Core Scripts -->
-    <script src="./frontend/js/bootstrap/bootstrap.min.js"></script>
-	<script type="text/javascript" src="./frontend/js/mws.js"></script>
-	
-	{VIEW_CSS}
+    <!-- Core and Page specific Scripts -->
+    <script type="text/javascript" src="/ASP/frontend/js/bootstrap/bootstrap.min.js"></script>
+	<script type="text/javascript" src="/ASP/frontend/js/mws.js"></script>
 	{VIEW_JS}
-
-	<title>Private Stats Admin</title>
 </head>
 <body>
 	<!-- Header -->
@@ -61,7 +57,7 @@
         
         	<!-- Logo Wrapper, images put within this wrapper will always be vertically centered -->
         	<div id="mws-logo-wrap">
-            	<img id="logo" src="frontend/images/bf2logo.png" alt="BF2 Private Stats Admin" />
+            	<img id="logo" src="/ASP/frontend/images/bf2logo.png" alt="BF2 Private Stats Admin" />
 			</div>
         </div>
 		
@@ -105,3 +101,4 @@
 					echo '<div class="alert global">Database is outdated. Please <a href="./database/upgrade">Click Here</a> to upgrade your database to the corrent version</div>';
 				}
 			?>
+            {GLOBAL_MESSAGES}

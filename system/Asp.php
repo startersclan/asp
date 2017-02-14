@@ -141,8 +141,9 @@ class Asp
                 )
             );
 
-            $stmt = $DB->query("SELECT `version` FROM `_version`;");
-            define('DB_VER', $stmt->fetchColumn());
+            $stmt = $DB->query("SELECT `version` FROM `_version` ORDER BY `updateid` DESC LIMIT 1;");
+            $result = $stmt->fetchColumn();
+            define('DB_VER', ($result === false) ? '0.0.0' : $result);
         }
         catch (Exception $e)
         {
@@ -185,7 +186,7 @@ class Asp
         $parts = explode('/', $uri);
         $length = count($parts);
         $GLOBALS['controller'] = $controller = ($length > 0) ? $parts[0] : 'home';
-        $action = ($length > 1) ? $parts[1] : 'index';
+        $action = ($length > 1 && !empty($parts[1])) ? $parts[1] : 'index';
         $params = array_slice($parts, 2);
 
         // Load task
@@ -226,24 +227,30 @@ class Asp
             require $file;
         }
 
+        // Load the controller reflection
+        $rController = new \ReflectionClass($className);
+
+        // Make sure the controller is not abstract object
+        if ($rController->isAbstract())
+            die('Module controller "'. $className .'" is abstract, and cannot be called via url');
+
         // Construct our controller
         $controller = new $className();
 
-        // Create a reflection of the controller method
-        try
-        {
-            $method = new \ReflectionMethod($controller, $action);
-
-            // If the method is not public, then we don't allow URL access!
-            if (!$method->isPublic())
-                die("Method \"{$action}\" is not a public method, and cannot be called via URL.");
-
-            // Invoke the module controller and action
-            $method->invokeArgs($controller, $params);
-        }
-        catch (\ReflectionException $e)
-        {
+        // Check request method prefix'd action
+        if ($rController->hasMethod(Request::Method() . ucfirst($action)))
+            $action = Request::Method() . ucfirst($action);
+        elseif (!$rController->hasMethod($action))
             die("Controller \"{$className}\" does not contain the method \"{$action}\"");
-        }
+
+        // Create a reflection of the controller method
+        $method = new \ReflectionMethod($controller, $action);
+
+        // If the method is not public, then we don't allow URL access!
+        if (!$method->isPublic())
+            die("Method \"{$action}\" is not a public method, and cannot be called via URL.");
+
+        // Invoke the module controller and action
+        $method->invokeArgs($controller, $params);
     }
 }

@@ -89,12 +89,12 @@ CREATE TABLE `server` (
   `port` SMALLINT UNSIGNED DEFAULT 0,
   `queryport` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `banned` TINYINT(1) NOT NULL DEFAULT 0,
-  `lastupdate` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `lastupdate` INT NOT NULL DEFAULT  0,
   PRIMARY KEY(`id`),
   UNIQUE KEY `ip-prefix-unq` (`ip`,`prefix`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TRIGGER `server_update` BEFORE UPDATE ON `server` FOR EACH ROW SET new.lastupdate = CURRENT_TIMESTAMP;
+CREATE TRIGGER `server_update` BEFORE UPDATE ON `server` FOR EACH ROW SET new.lastupdate = UNIX_TIMESTAMP();
 
 --
 -- Table structure for table `round_history`
@@ -106,6 +106,7 @@ CREATE TABLE `round_history` (
   `serverid` SMALLINT UNSIGNED NOT NULL,
   `round_start` INT UNSIGNED NOT NULL,
   `round_end` INT UNSIGNED NOT NULL,
+  `imported` INT UNSIGNED NOT NULL,
   `gamemode` TINYINT UNSIGNED NOT NULL,
   `mod` VARCHAR(20) NOT NULL,
   `winner` TINYINT NOT NULL,
@@ -150,11 +151,11 @@ CREATE TABLE `unlock` (
 --
 
 CREATE TABLE `player` (
-  `id` INT UNSIGNED NOT NULL,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(25) UNIQUE NOT NULL,
   `password` VARCHAR(32) NOT NULL,
   `country` CHAR(2) NOT NULL DEFAULT 'xx',
-  `lastip` VARCHAR(15) NOT NULL DEFAULT '',
+  `lastip` VARCHAR(15) NOT NULL DEFAULT '0.0.0.0',
   `joined` INT UNSIGNED NOT NULL DEFAULT 0,
   `lastonline` INT UNSIGNED NOT NULL DEFAULT 0,
   `time` INT UNSIGNED NOT NULL DEFAULT 0,
@@ -216,6 +217,8 @@ FOR EACH ROW BEGIN
 END $$
 
 delimiter ;
+
+ALTER TABLE player AUTO_INCREMENT=2900000;
 
 --
 -- Table structure for table `player_army`
@@ -421,7 +424,7 @@ CREATE PROCEDURE `create_player`(
   OUT `pid` INT
 )
 BEGIN
-  SELECT COALESCE(max(id), 29000000) + 1 INTO pid FROM player;
+  -- SELECT COALESCE(max(id), 29000000) + 1 INTO pid FROM player;
   INSERT INTO player(`id`, `name`, `password`, `country`, `lastip`)
     VALUES(pid, playerName, playerPassword, countryCode, ipAddress);
   SELECT pid;

@@ -201,6 +201,7 @@
 			btnContainer.append( [ prevButton, nextButton, submitButton ] ).appendTo( this.element );
 
 			return {
+                buttonContainer: btnContainer,
 				prev: prevButton, 
 				next: nextButton, 
 				responsivePrev: responsivePrevButton, 
@@ -362,8 +363,60 @@
 
 			// Go to first step
 			this._navigate( this.steps.eq( 0 ).data( 'wzd-id' ), true );
-		}
-	}
+
+			// Enable buttons
+            this.nextButtonDisabled(false);
+            this.prevButtonDisabled(false);
+		},
+
+		nextButtonDisabled: function( lock ) {
+            this.buttons.next.add( this.buttons.responsiveNext ).attr( 'disabled', lock );
+		},
+
+        prevButtonDisabled: function( lock ) {
+            this.buttons.prev.add( this.buttons.responsiveNext ).attr( 'disabled', lock );
+        },
+
+        navigateTo: function( page ) {
+            // Hide Steps
+            this.steps.hide();
+
+            // Go to first step
+            this._navigate( this.steps.eq( page ).data( 'wzd-id' ), true );
+        },
+
+        skipNextPages: function (count) {
+		    var id = this._activeWzdId;
+
+		    // Skip, but still activate the next steps excluding the desired step
+		    for (var i = 0; i < count - 1; i++) {
+                if (!this._isLastStep(id)) {
+                    id = this._findStep(id).next().data('wzd-id');
+                    this._activateStep( id );
+                }
+            }
+
+            // Show the next step
+            if (!this._isLastStep(id)) {
+                id = this._findStep(id).next().data('wzd-id');
+                this._navigate(id, true);
+            }
+            else {
+                this._showStep( id );
+            }
+        },
+
+        forwardOnly: function( is ) {
+		    this.options.forwardOnly = is;
+        },
+
+        hideButtonRow: function( hide ) {
+		    if (hide)
+                this.buttons.buttonContainer.hide();
+		    else
+                this.buttons.buttonContainer.show();
+        }
+	};
 	
 	$.fn.wizard = function(options) {
 

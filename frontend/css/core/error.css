@@ -39,10 +39,12 @@ div#mws-error-container p
  * ================================================== */
 
 .alert {
+    width: 95%;
+    margin: 10px auto 9px;
+
     border: 1px solid;
     clear: both;
-    margin-bottom: 9px;
-    margin-top: 10px;
+
     padding: 10px 10px 10px 35px;
     -webkit-border-radius: 5px 5px 5px 5px;
     -moz-border-radius: 5px 5px 5px 5px;
@@ -50,6 +52,7 @@ div#mws-error-container p
     background-repeat: no-repeat;
     background-position: 10px 10px;
 }
+
 
 .alert.no-margin {
     border-radius: 0 0 0 0;
@@ -77,10 +80,6 @@ div#mws-error-container p
 }
 
 .alert.global {
-    width: 95%;
-    margin-left: auto;
-    margin-right: auto;
-
     text-align: center;
     background-color: #fdefbd;
     border-color: #d4b64b;

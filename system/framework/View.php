@@ -64,6 +64,12 @@ class View
     protected $moduleName;
 
     /**
+     * Array of template messages
+     * @var array[] ('level', 'message')
+     */
+    protected static $messages = array();
+
+    /**
      * Constructor
      *
      * @param string $viewName The name of the view file, no extension
@@ -143,6 +149,19 @@ class View
     }
 
     /**
+     * Adds a message to be displayed in the Global Messages container of the layout
+     *
+     * @param string $type The html class type ie: "error", "info", "warning" etc
+     * @param string $message The string message to display to the client
+     *
+     * @return void
+     */
+    public function displayMessage($type, $message)
+    {
+       self::$messages[] = array($type, $message);
+    }
+
+    /**
      * This method displays the page. It loads the header, footer, and view of the page.
      *
      * @param bool $full Load header and footer as well?
@@ -163,18 +182,25 @@ class View
             $footer = $this->loadView('footer');
 
             // if we have attached stylesheets, add them now
-            $buffer = null;
+            $buffer = '';
             foreach (self::$stylesheets as $css)
                 $buffer .= "<link rel=\"stylesheet\" type=\"text/css\" href=\"{$css}\" media=\"screen\" />" . PHP_EOL;
 
             $header = str_replace($this->LDelim . "VIEW_CSS" . $this->RDelim, $buffer, $header);
 
             // Add attached scripts
-            $buffer = null;
+            $buffer = '';
             foreach (self::$scripts as $script)
                 $buffer .= "<script type=\"{$script['type']}\" src=\"{$script['location']}\"></script>" . PHP_EOL;
 
             $header = str_replace($this->LDelim . "VIEW_JS" . $this->RDelim, $buffer, $header);
+
+            // Display Global Messages
+            $buffer = '';
+            foreach (self::$messages as $message)
+                $buffer .= "<div class=\"alert {$message[0]}\">". $message[1] ."</div>" . PHP_EOL;
+
+            $header = str_replace($this->LDelim . "GLOBAL_MESSAGES" . $this->RDelim, $buffer, $header);
         }
 
         // Load the source

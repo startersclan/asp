@@ -1,7 +1,8 @@
 <?php
 use System\Config;
 use System\Database;
-use System\Response;
+use System\Database\SqlFileParser;
+use System\LogWriter;
 use System\View;
 
 /**
@@ -14,51 +15,18 @@ use System\View;
  */
 class Install
 {
-    public function index()
+    /**
+     * GET /ASP/install
+     */
+    public function getIndex()
     {
-        if (isset($_POST['action']) && $_POST['action'] == 'save')
-        {
-            foreach ($_POST as $item => $val)
-            {
-                $key = explode('__', $item);
-                if($key[0] == 'cfg')
-                {
-                    Config::Set($key[1], $val);
-                }
-            }
-
-            // Save changes
-            Config::Save();
-
-            // Try to connect to the database with new settings
-            try
-            {
-                Database::Connect('stats',
-                    array(
-                        'driver' => 'mysql',
-                        'host' => Config::Get('db_host'),
-                        'port' => Config::Get('db_port'),
-                        'database' => Config::Get('db_name'),
-                        'username' => Config::Get('db_user'),
-                        'password' => Config::Get('db_pass')
-                    )
-                );
-
-                // Success!
-                Response::Redirect('./home');
-                die;
-            }
-            catch (Exception $e)
-            {
-                // ignore
-            }
-        }
+        $items = implode("\n", Config::Get('admin_hosts'));
 
         // Create view
         $view = new View('index', 'install');
         $view->set('admin_user', Config::Get('admin_user'));
         $view->set('admin_pass', Config::Get('admin_pass'));
-        $view->set('ip_list', htmlentities(implode("\n", Config::Get('admin_hosts')), ENT_HTML5, "UTF-8"));
+        $view->set('ip_list', htmlentities($items, ENT_HTML5, "UTF-8"));
 
         $view->set('db_host', Config::Get('db_host'));
         $view->set('db_port', Config::Get('db_port'));
@@ -68,10 +36,151 @@ class Install
 
         // Attach stylesheets and scripts for the wizard form
         $view->attachStylesheet("./frontend/js/wizard/wizard.css");
-        $view->attachScript("./frontend/js/wizard/wizard.min.js");
+        $view->attachScript("./frontend/js/wizard/wizard.js");
         $view->attachScript("./frontend/modules/install/js/wizard.js");
 
         // Render view
         $view->render();
+    }
+
+    /**
+     * POST /ASP/install
+     */
+    public function postIndex()
+    {
+        // Form post?
+        if (!isset($_POST['process']) || $_POST['process'] != 'config')
+        {
+            $this->getIndex();
+            die;
+        }
+
+        foreach ($_POST as $item => $val)
+        {
+            $key = explode('__', $item);
+            if ($key[0] == 'cfg')
+            {
+                // Fix array
+                if ($key[1] == 'admin_hosts')
+                    $val = array_map('trim', explode("\n", trim($val)));
+
+                Config::Set($key[1], $val);
+            }
+        }
+
+        // Save changes
+        Config::Save();
+
+        // Try to connect to the database with new settings
+        try
+        {
+            $DB = Database::Connect('stats',
+                array(
+                    'driver' => 'mysql',
+                    'host' => Config::Get('db_host'),
+                    'port' => Config::Get('db_port'),
+                    'database' => Config::Get('db_name'),
+                    'username' => Config::Get('db_user'),
+                    'password' => Config::Get('db_pass')
+                )
+            );
+        }
+        catch (Exception $e)
+        {
+            echo json_encode(
+                array(
+                    'success' => false,
+                    'tablesExist' => false,
+                    'message' => 'Failed to establish connection to (' . Config::Get('db_host') . '): ' . $e->getMessage()
+                )
+            );
+            die;
+        }
+
+        // Fetch tables version
+        try
+        {
+            $stmt = $DB->query("SELECT `version` FROM `_version`;");
+            $versions = $stmt->fetchAll();
+            if (!empty($versions))
+            {
+                echo json_encode(
+                    array(
+                        'success' => true,
+                        'tablesExist' => true,
+                        'message' => ''
+                    )
+                );
+                die;
+            }
+        }
+        catch (Exception $e)
+        {
+            // Successful connection
+            echo json_encode(
+                array(
+                    'success' => true,
+                    'tablesExist' => false,
+                    'message' => ''
+                )
+            );
+            die;
+        }
+    }
+
+    /**
+     * POST /ASP/install/tables
+     */
+    public function postTables()
+    {
+        // Form post?
+        if (!isset($_POST['process']) || $_POST['process'] != 'installdb')
+        {
+            $this->getIndex();
+            die;
+        }
+
+        $DB = Database::GetConnection('stats');
+        $current = '';
+
+        // Fetch tables version
+        try
+        {
+            $DB->beginTransaction();
+
+            // Create parser
+            $parser = new SqlFileParser(SYSTEM_PATH . DS . 'sql' . DS . 'schema.sql');
+            $queries = $parser->getStatements();
+
+            // Read file contents
+            foreach ($queries as $query)
+                $DB->exec($query);
+
+            // Commit changes
+            $DB->commit();
+
+            // Successful connection
+            echo json_encode(['success' => true, 'message' => '']);
+            die;
+        }
+        catch (Exception $e)
+        {
+            if ($DB instanceof PDO)
+            {
+                $DB->rollBack();
+            }
+
+            $logWriter = new LogWriter(SYSTEM_PATH . DS . 'logs' . DS . 'php_errors.log');
+            $logWriter->logDebug('Query Failed: ' . $current);
+
+            // Successful connection
+            echo json_encode(
+                array(
+                    'success' => false,
+                    'message' => 'Failed to install database tables! ' . $e->getMessage()
+                )
+            );
+            die;
+        }
     }
 }
