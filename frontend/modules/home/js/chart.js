@@ -20,6 +20,13 @@
                     }
                 },
                 tooltip: true,
+                tooltipOpts: {
+                    content: function(label, xval, yval, flotItem){ // expects to pass these arguments
+                        return "%s : %y";
+                    },
+                    defaultTheme: false,
+                    cssClass: 'flotTip'
+                },
                 grid: {
                     hoverable: true,
                     borderWidth: 0

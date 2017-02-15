@@ -70,7 +70,11 @@
                     onStepShown: function (wizard, step) {
 
                         var i = step.index();
-                        if (i > 2) {
+                        if (i == 2)
+                        {
+                            //$('#table-message').delay(500).slideDown(600).delay(5000).slideUp(600);
+                        }
+                        else if (i > 2) {
                             wizard.prevButtonDisabled(true);
                             wizard.hideButtonRow(true);
                         }
@@ -78,7 +82,7 @@
                             wizard.submitForm();
                         }
                         else if (i == 4 && !$tablesExist) {
-                            // Re-log in here, incase user changed password
+                            // Re-log in here, in-case user changed password
                             $.post( "/ASP/install/tables", { process: "installdb", action: "login", username: $adminUser, password: $adminPass })
                                 .done(function( data ) {
 

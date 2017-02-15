@@ -574,7 +574,6 @@ class Snapshot extends GameResult
                                 // Check all prior badge levels, and make sure the player has them
                                 for ($j = 1; $j < $value; $j++)
                                 {
-                                    /** @noinspection SqlResolve */
                                     $query = "SELECT COUNT(*) FROM player_award WHERE pid=%d AND id=%d AND level=%d LIMIT 1";
                                     $result = $connection->query( sprintf($query, $player->pid, $key, $j) );
                                     if (!($result instanceof PDOStatement) || ($count = (int)$result->fetchColumn(0)) == 0)

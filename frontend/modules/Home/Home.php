@@ -7,6 +7,11 @@ use System\View;
 
 class Home
 {
+    /**
+     * @protocol    ANY
+     * @request     /ASP/[?:home/]
+     * @output      html
+     */
 	public function index()
 	{
 	    // Require database connection
@@ -74,14 +79,20 @@ class Home
 
         // Attach chart plotting scripts
         $View->attachScript("./frontend/js/flot/jquery.flot.min.js");
+        $View->attachScript("./frontend/js/flot/plugins/jquery.flot.tooltip.js");
         $View->attachScript("./frontend/modules/home/js/chart.js");
+
+        // Attach stylesheets
+        $View->attachStylesheet("/ASP/frontend/css/icons/icol32.css");
 
         // Draw View
 		$View->render();
 	}
 
     /**
-     *
+     * @protocol    GET
+     * @request     /ASP/home/chartData
+     * @output      json
      */
     public function getChartData()
     {

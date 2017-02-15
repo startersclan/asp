@@ -16,10 +16,13 @@ use System\View;
 class Install
 {
     /**
-     * GET /ASP/install
+     * @protocol    GET
+     * @request     /ASP/install/[?:index]
+     * @output      html
      */
     public function getIndex()
     {
+        // Convert admin hosts array to a string
         $items = implode("\n", Config::Get('admin_hosts'));
 
         // Create view
@@ -34,17 +37,25 @@ class Install
         $view->set('db_pass', Config::Get('db_pass'));
         $view->set('db_name', Config::Get('db_name'));
 
-        // Attach stylesheets and scripts for the wizard form
-        $view->attachStylesheet("./frontend/js/wizard/wizard.css");
-        $view->attachScript("./frontend/js/wizard/wizard.js");
-        $view->attachScript("./frontend/modules/install/js/wizard.js");
+        // Attach stylesheets for the wizard form
+        $view->attachStylesheet("/ASP/frontend/js/wizard/wizard.css");
+        $view->attachStylesheet("/ASP/frontend/css/icons/icol16.css");
+        $view->attachStylesheet("/ASP/frontend/css/icons/icol32.css");
+
+        // Attach scripts for the wizard form
+        $view->attachScript("/ASP/frontend/js/wizard/wizard.js");
+        $view->attachScript("/ASP/frontend/js/jquery.form.js");
+        $view->attachScript("/ASP/frontend/js/validate/jquery.validate-min.js");
+        $view->attachScript("/ASP/frontend/modules/install/js/wizard.js");
 
         // Render view
         $view->render();
     }
 
     /**
-     * POST /ASP/install
+     * @protocol    POST
+     * @request     /ASP/install/[?:index]
+     * @output      json
      */
     public function postIndex()
     {
@@ -129,7 +140,9 @@ class Install
     }
 
     /**
-     * POST /ASP/install/tables
+     * @protocol    POST
+     * @request     /ASP/install/tables
+     * @output      json
      */
     public function postTables()
     {

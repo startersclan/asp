@@ -12,10 +12,7 @@
 	<link rel="stylesheet" type="text/css" href="/ASP/frontend/css/bootstrap.min.css" media="screen">
 	<link rel="stylesheet" type="text/css" href="/ASP/frontend/css/fonts/ptsans/stylesheet.css" media="screen">
 	<link rel="stylesheet" type="text/css" href="/ASP/frontend/css/fonts/icomoon/style.css" media="screen">
-
 	<link rel="stylesheet" type="text/css" href="/ASP/frontend/css/mws-style.css" media="screen">
-	<link rel="stylesheet" type="text/css" href="/ASP/frontend/css/icons/icol16.css" media="screen">
-	<link rel="stylesheet" type="text/css" href="/ASP/frontend/css/icons/icol32.css" media="screen">
 
 	<!-- jQuery-UI Stylesheet -->
 	<link rel="stylesheet" type="text/css" href="/ASP/frontend/jui/css/jquery.ui.all.css" media="screen">
@@ -25,11 +22,8 @@
 	<link rel="stylesheet" type="text/css" href="/ASP/frontend/css/bf2.theme.css" media="screen" />
     {VIEW_CSS}
 
-	<!-- JavaScript Plugins -->
+	<!-- Required JavaScript Plugins -->
     <script type="text/javascript" src="/ASP/frontend/js/jquery-1.8.3.min.js"></script>
-	<script type="text/javascript" src="/ASP/frontend/js/jquery.mousewheel.js"></script>
-	<script type="text/javascript" src="/ASP/frontend/js/jquery.form.js"></script>
-    <script type="text/javascript" src="/ASP/frontend/js/placeholder/jquery.placeholder.min.js"></script>
 
     <!-- jQuery-UI Dependent Scripts -->
     <script type="text/javascript" src="/ASP/frontend/jui/js/jquery-ui-1.9.2.min.js"></script>
@@ -37,16 +31,14 @@
     <script type="text/javascript" src="/ASP/frontend/jui/js/jquery.ui.touch-punch.js"></script>
 
     <!-- Plugin Scripts -->
-    <script type="text/javascript" src="/ASP/frontend/js/datatables/jquery.dataTables.min.js"></script>
     <!--[if lt IE 9]>
     <script type="text/javascript" src="/ASP/frontend/js/excanvas.min.js"></script>
     <![endif]-->
-    <script type="text/javascript" src="/ASP/frontend/js/validate/jquery.validate-min.js"></script>
 
     <!-- Core and Page specific Scripts -->
     <script type="text/javascript" src="/ASP/frontend/js/bootstrap/bootstrap.min.js"></script>
+    {VIEW_JS}
 	<script type="text/javascript" src="/ASP/frontend/js/mws.js"></script>
-	{VIEW_JS}
 </head>
 <body>
 	<!-- Header -->

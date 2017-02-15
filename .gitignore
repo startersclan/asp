@@ -2,4 +2,5 @@
 system/logs/*.log
 system/snapshots/bf2/*.txt
 system/snapshots/bf2142/*.txt
+system/snapshots/processed/*.txt
 system/snapshots/unprocessed/*.txt

@@ -156,7 +156,7 @@
 /* (2) Flot Tooltips
 ================================================== */
 
-#flotTip {
+.flotTip {
     padding: 3px 6px !important;
     color: #ffffff !important;
     font-size: 11px !important;

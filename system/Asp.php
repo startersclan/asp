@@ -127,7 +127,6 @@ class Asp
         $LogWriter = new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "asp_debug.log"), "Asp");
 
         // Connect to the stats database
-        $DB = false;
         try
         {
             $DB = Database::Connect('stats',
@@ -238,10 +237,11 @@ class Asp
         $controller = new $className();
 
         // Check request method prefix'd action
-        if ($rController->hasMethod(Request::Method() . ucfirst($action)))
-            $action = Request::Method() . ucfirst($action);
+        $m = Request::Method() . ucfirst($action);
+        if ($rController->hasMethod($m))
+            $action = $m;
         elseif (!$rController->hasMethod($action))
-            die("Controller \"{$className}\" does not contain the method \"{$action}\"");
+            die("Controller \"{$className}\" does not contain the method \"{$action}\" or \"{$m}\"");
 
         // Create a reflection of the controller method
         $method = new \ReflectionMethod($controller, $action);

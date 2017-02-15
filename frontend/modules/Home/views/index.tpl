@@ -42,7 +42,7 @@
 		<!-- Statistic Content -->
 		<span class="mws-stat-content">
 			<span class="mws-stat-title">Active Players (7 days)</span>
-			<span class="mws-stat-value{active_raise}">{num_active_players}</span>
+			<span class="mws-stat-value{active_player_raise}">{num_active_players}</span>
 		</span>
 	</a>
 
@@ -53,7 +53,7 @@
 		<!-- Statistic Content -->
 		<span class="mws-stat-content">
 			<span class="mws-stat-title">Active Servers (7 Days)</span>
-			<span class="mws-stat-value">{num_active_servers}</span>
+			<span class="mws-stat-value{active_server_raise}">{num_active_servers}</span>
 		</span>
 	</a>
 </div>
@@ -65,7 +65,7 @@
 		<span><i class="icon-graph"></i> Games Processed</span>
 	</div>
 	<div class="mws-panel-body">
-		<div id="mws-dashboard-chart" style="height: 222px;"></div>
+		<div id="mws-dashboard-chart" style="height: 275px; margin: auto 20px;"></div>
         <div class="mws-form-row">
             <div style="text-align: center; margin-top: 15px">
                 <div class="mws-form-item">

@@ -40,6 +40,12 @@
                 <legend class="wizard-label"><i class="icol-database"></i> Database Setup</legend>
                 <div id="ajax-message-1"></div>
                 <div id class="mws-form-row">
+                    <div id="table-message" > <!-- class="alert info" style="display: none;"> -->
+                        If the connecting database already contains the "_version" table, then the table
+                        installation be skipped.
+                    </div>
+                </div>
+                <div id class="mws-form-row">
                     <label class="mws-form-label">Database Host <span class="required">*</span></label>
                     <div class="mws-form-item">
                         <input type="text" name="cfg__db_host" class="required large" value="{db_host}">
