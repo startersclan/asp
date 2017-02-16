@@ -314,4 +314,24 @@ class Directory
         // Remove the source directory
         @rmdir($source);
     }
+
+    /**
+     * Returns whether the specified directory is writable or not.
+     *
+     * @param string $path The full path
+     *
+     * @return bool true if the directory exists and is writable, false otherwise.
+     */
+    public static function IsWritable($path)
+    {
+        try
+        {
+            $dir = new DirectoryInfo($path, false);
+            return $dir->isWritable();
+        }
+        catch (\Exception $e)
+        {
+            return false;
+        }
+    }
 }

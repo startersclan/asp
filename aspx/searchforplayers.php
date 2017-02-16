@@ -57,32 +57,30 @@ else
     // Fetch matching players, using a prepared statement for SQL injection immunity
     $query = "SELECT `id`, `name`, `score` FROM `player` WHERE `name` LIKE :search ORDER BY name {$sorting} LIMIT 20";
     $result = $connection->prepare($query);
-    if ($result instanceof PDOStatement)
-    {
-        switch ($where)
-        {
-            default:
-            case 'a': // any
-                $result->bindValue(":search", "%{$nick}%", \PDO::PARAM_STR);
-                break;
-            case 'b': // begins with
-                $result->bindValue(":search", "{$nick}%", \PDO::PARAM_STR);
-                break;
-            case 'e': // ends with
-                $result->bindValue(":search", "%{$nick}", \PDO::PARAM_STR);
-                break;
-            case 'x': // exactly
-                $result->bindValue(":search", "{$nick}", \PDO::PARAM_STR);
-                break;
-        }
 
-        // Execute the query
-        if ($result->execute())
-        {
-            $num = 1;
-            while ($row = $result->fetch())
-                $Response->writeDataLine($num++, $row['id'], $row['name'], $row['score']);
-        }
+    switch ($where)
+    {
+        default:
+        case 'a': // any
+            $result->bindValue(":search", "%{$nick}%", \PDO::PARAM_STR);
+            break;
+        case 'b': // begins with
+            $result->bindValue(":search", "{$nick}%", \PDO::PARAM_STR);
+            break;
+        case 'e': // ends with
+            $result->bindValue(":search", "%{$nick}", \PDO::PARAM_STR);
+            break;
+        case 'x': // exactly
+            $result->bindValue(":search", "{$nick}", \PDO::PARAM_STR);
+            break;
+    }
+
+    // Execute the query
+    if ($result->execute())
+    {
+        $num = 1;
+        while ($row = $result->fetch())
+            $Response->writeDataLine($num++, $row['id'], $row['name'], $row['score']);
     }
 
     $Response->send();

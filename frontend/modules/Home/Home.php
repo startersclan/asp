@@ -18,7 +18,7 @@ class Home
         $pdo = Database::GetConnection('stats');
         if ($pdo === false || DB_VER == '0.0.0')
         {
-            Response::Redirect('./install');
+            Response::Redirect('install');
             die;
         }
 
@@ -32,12 +32,9 @@ class Home
 	    // Get database size
         $size = 0;
         $q = $pdo->query("SHOW TABLE STATUS");
-        if ($q instanceof PDOStatement)
+        while ($row = $q->fetch())
         {
-            while ($row = $q->fetch())
-            {
-                $size += $row["Data_length"] + $row["Index_length"];
-            }
+            $size += $row["Data_length"] + $row["Index_length"];
         }
         $View->set('db_size', number_format($size / (1024*1024), 2));
 
@@ -46,8 +43,8 @@ class Home
         $View->set('num_rounds', number_format($rounds));
 
         // Failed count
-        $path = Path::Combine(SYSTEM_PATH, 'snapshots', 'unprocessed');
-        $count = count(Directory::GetFiles($path));
+        $path = Path::Combine(SYSTEM_PATH, 'snapshots', 'failed');
+        $count = count(Directory::GetFiles($path, '^(.*)\.txt$'));
         $View->set('failed_snapshots', number_format($count));
 
         // Number of players
@@ -127,13 +124,11 @@ class Home
 
         $query = "SELECT `imported` FROM round_history WHERE `imported` > $timestamp";
         $result = $pdo->query($query);
-        if ($result instanceof PDOStatement)
+
+        while ($row = $result->fetch())
         {
-            while ($row = $result->fetch())
-            {
-                $key = date("l (m/d)", (int)$row['imported']);
-                $temp[$key] += 1;
-            }
+            $key = date("l (m/d)", (int)$row['imported']);
+            $temp[$key] += 1;
         }
 
         $i = 0;
@@ -227,5 +222,25 @@ class Home
 
         // Output
         echo json_encode($output); die;
+    }
+
+    protected function getApacheVersion()
+    {
+        if (function_exists('apache_get_version'))
+        {
+            if (preg_match('|Apache\/(\d+)\.(\d+)\.(\d+)|', apache_get_version(), $version))
+            {
+                return $version[1].'.'.$version[2].'.'.$version[3];
+            }
+        }
+        elseif (isset($_SERVER['SERVER_SOFTWARE']))
+        {
+            if (preg_match('|Apache\/(\d+)\.(\d+)\.(\d+)|', $_SERVER['SERVER_SOFTWARE'], $version))
+            {
+                return $version[1].'.'.$version[2].'.'.$version[3];
+            }
+        }
+
+        return '(unknown)';
     }
 }

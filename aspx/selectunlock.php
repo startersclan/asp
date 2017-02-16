@@ -46,12 +46,8 @@ else
     $connection = Database::GetConnection("stats");
 
     // Check if unlock is already selected first!
-    $result = $connection->query("SELECT * FROM `player_unlock` WHERE `unlockid` = $id AND `pid` = $pid");
-    if ($result instanceof PDOStatement && ($exists = $result->fetch()))
-    {
-        // unlock exists, do nothing!
-    }
-    else
+    $result = $connection->query("SELECT * FROM `player_unlock` WHERE `unlockid` = $id AND `pid` = $pid LIMIT 1");
+    if (!($exists = $result->fetch()))
     {
         /** TODO prevent cheating here via HTTP calls! */
         $connection->exec("INSERT INTO player_unlock VALUES ($pid, $id)");

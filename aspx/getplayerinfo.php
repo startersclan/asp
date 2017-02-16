@@ -58,7 +58,7 @@ else
     {
         // Fetch Player Data
         $result = $connection->query("SELECT * FROM player WHERE id = {$pid}");
-        if (!($result instanceof PDOStatement) || !($row = $result->fetch()))
+        if (!($row = $result->fetch()))
         {
             $Response->responseError(true);
             $Response->writeHeaderLine("asof", "err");
@@ -171,9 +171,8 @@ else
     {
         // NOTE: xpack and bf2 have same return
         // Make sure the Player exists
-        $row = array();
         $result = $connection->query("SELECT * FROM `player` WHERE `id` = {$pid}");
-        if (!($result instanceof PDOStatement) || !($row = $result->fetch()))
+        if (!($row = $result->fetch()))
         {
             $Response->responseError(true);
             $Response->writeHeaderLine("asof", "err");
@@ -222,40 +221,37 @@ else
         }
 
         $result = $connection->query("SELECT * FROM `player_weapon` WHERE `pid` = {$pid}");
-        if ($result instanceof PDOStatement)
+        while ($roww = $result->fetch())
         {
-            while ($roww = $result->fetch())
+            $i = (int)$roww['id'];
+
+            // Tactical weapons
+            if ($i > 14 && $includeTacticals)
             {
-                $i = (int)$roww['id'];
+                switch ($i)
+                {
+                    case 18:
+                        $Output['de-6'] = $roww['fired'];
+                        break;
+                    case 17:
+                        $Output['de-8'] = $roww['fired'];
+                        break;
+                    case 16:
+                        $Output['de-7'] = $roww['fired'];
+                        break;
+                    default:
+                        continue;
+                }
+            }
 
-                // Tactical weapons
-                if ($i > 14 && $includeTacticals)
-                {
-                    switch ($i)
-                    {
-                        case 18:
-                            $Output['de-6'] = $roww['fired'];
-                            break;
-                        case 17:
-                            $Output['de-8'] = $roww['fired'];
-                            break;
-                        case 16:
-                            $Output['de-7'] = $roww['fired'];
-                            break;
-                        default:
-                            continue;
-                    }
-                }
-
-                // check for explosive, which are all combined into wkl-11
-                else if (in_array($i, EXPLOSIVE_IDS))
-                {
-                    $Output["wkl-11"] += (int)$roww['kills'];
-                }
-                else
-                {
-                    $Output["wkl-{$i}"] = $roww['kills'];
-                }
+            // check for explosive, which are all combined into wkl-11
+            else if (in_array($i, EXPLOSIVE_IDS))
+            {
+                $Output["wkl-11"] += (int)$roww['kills'];
+            }
+            else
+            {
+                $Output["wkl-{$i}"] = $roww['kills'];
             }
         }
 
@@ -267,14 +263,11 @@ else
         }
 
         $result = $connection->query("SELECT * FROM `player_kit` WHERE `pid` = {$pid}");
-        if ($result instanceof PDOStatement)
+        while ($rowk = $result->fetch())
         {
-            while ($rowk = $result->fetch())
-            {
-                $i = $rowk["id"];
-                $Output["ktm-$i"] = $rowk["time"]; // Time
-                $Output["kkl-$i"] = $rowk["kills"]; // Kills
-            }
+            $i = $rowk["id"];
+            $Output["ktm-$i"] = $rowk["time"]; // Time
+            $Output["kkl-$i"] = $rowk["kills"]; // Kills
         }
 
         // Vehicles
@@ -285,14 +278,11 @@ else
         }
 
         $result = $connection->query("SELECT * FROM `player_vehicle` WHERE `pid` = {$pid}");
-        if ($result instanceof PDOStatement)
+        while ($rowv = $result->fetch())
         {
-            while ($rowv = $result->fetch())
-            {
-                $i = $rowv["id"];
-                $Output["vtm-$i"] = $rowv["time"]; // Time
-                $Output["vkl-$i"] = $rowv["kills"]; // Kills
-            }
+            $i = $rowv["id"];
+            $Output["vtm-$i"] = $rowv["time"]; // Time
+            $Output["vkl-$i"] = $rowv["kills"]; // Kills
         }
 
         // Army
@@ -304,15 +294,12 @@ else
         }
 
         $result = $connection->query("SELECT * FROM `player_army` WHERE pid = {$pid}");
-        if ($result instanceof PDOStatement)
+        while ($rowa = $result->fetch())
         {
-            while ($rowa = $result->fetch())
-            {
-                $i = $rowa["id"];
-                $Output["atm-{$i}"] = $rowa["time"];
-                $Output["abr-{$i}"] = $rowa["best"];
-                $Output["awn-{$i}"] = $rowa["wins"];
-            }
+            $i = $rowa["id"];
+            $Output["atm-{$i}"] = $rowa["time"];
+            $Output["abr-{$i}"] = $rowa["best"];
+            $Output["awn-{$i}"] = $rowa["wins"];
         }
 
         #vac-
@@ -334,7 +321,7 @@ else
         // Fetch Player, make sure he exists
         $query = "SELECT `name` FROM `player` WHERE `id` = {$pid}";
         $result = $connection->query($query);
-        if (!($result instanceof PDOStatement) || !($name = $result->fetchColumn()))
+        if (!($name = $result->fetchColumn()))
         {
             $Response->responseError(true);
             $Response->writeHeaderLine("asof", "err");
@@ -350,22 +337,22 @@ else
         // Kits
         $query = "SELECT `time` FROM `player_kit` WHERE `pid`={$pid} AND `id`={$kit}";
         $result = $connection->query($query);
-		$kitt = ($result instanceof PDOStatement) ? $result->fetchColumn() : 0;
+		$kitt = (int)$result->fetchColumn();
 
         // Vehicles
         $query = "SELECT `time` FROM `player_vehicle` WHERE `pid` = {$pid} AND `id`={$vehicle}";
         $result = $connection->query($query);
-		$vehiclet = ($result instanceof PDOStatement) ? $result->fetchColumn() : 0;
+		$vehiclet = (int)$result->fetchColumn();
 
         // Weapons
         $query = "SELECT `time` FROM `player_weapon` WHERE `pid` = {$pid} AND `id`={$weapon}";
         $result = $connection->query($query);
-        $weapont = ($result instanceof PDOStatement) ? $result->fetchColumn() : 0;
+        $weapont = (int)$result->fetchColumn();
 
         // Maps
         $query = "SELECT `time` FROM `player_map` WHERE (`pid` = {$pid}) AND (`mapid` = {$map})";
         $result = $connection->query($query);
-		$mapt = ($result instanceof PDOStatement) ? $result->fetchColumn() : 0;
+		$mapt = (int)$result->fetchColumn();
 
 		// Write and send response
         $Response->writeDataLine($pid, $name, $kitt, $vehiclet, $weapont, $mapt);
@@ -378,7 +365,7 @@ else
         $query = "SELECT `name` FROM `player` WHERE `id` = {$pid}";
         $result = $connection->query($query);
         $name = null;
-        if (!($result instanceof PDOStatement) || !($name = $result->fetchColumn()))
+        if (!($name = $result->fetchColumn()))
         {
             $Response->responseError(true);
             $Response->writeHeaderLine("asof", "err");
@@ -456,7 +443,7 @@ else
         // Fetch map data from DB
         $query = "SELECT * FROM `player_map` WHERE {$where}";
         $result = $connection->query($query);
-        if ($result instanceof PDOStatement && ($row = $result->fetch()))
+        if ($row = $result->fetch())
         {
             do
             {
@@ -504,7 +491,7 @@ else
     {
         $query = "SELECT `id`, `name`, `rank`, `chng`, `decr` FROM `player` WHERE `id` = {$pid}";
         $result = $connection->query($query);
-        if (!($result instanceof PDOStatement) || !($row = $result->fetch()))
+        if (!($row = $result->fetch()))
         {
             $Response->responseError(true);
             $Response->writeHeaderLine("asof", "err");
@@ -577,59 +564,56 @@ function addWeaponData(&$Output, $pid)
 
     // Weapons
     $result = $connection->query("SELECT * FROM player_weapon WHERE pid = {$pid} ORDER BY id");
-    if ($result instanceof PDOStatement)
+    while ($row = $result->fetch())
     {
-        while ($row = $result->fetch())
+        $i = (int)$row['id'];
+
+        // Exclude Tactical weapons
+        if ($i < NUM_WEAPONS)
         {
-            $i = (int)$row['id'];
+            // Define whether this weapon is an explosive
+            $isExplosive = in_array($i, EXPLOSIVE_IDS);
+            if ($isExplosive)
+                $i = 11;
 
-            // Exclude Tactical weapons
-            if ($i < NUM_WEAPONS)
+            // Convert weapon stats to integers
+            $time = (int)$row["time"];
+            $kills = (int)$row["kills"];
+            $deaths = (int)$row["deaths"];
+            $hits = (int)$row["hits"];
+            $fired = (int)$row["fired"];
+            $acc = ($fired != 0 && $hits != 0) ? round(($hits / $fired) * 100, 0) : 0;
+            $tempAcc += $acc;
+
+            // Define favorite based on Time Played
+            if ($time > $favTime)
             {
-                // Define whether this weapon is an explosive
-                $isExplosive = in_array($i, EXPLOSIVE_IDS);
-                if ($isExplosive)
-                    $i = 11;
+                $Output['fwea'] = $i;
+                $favTime = $time;
+            }
 
-                // Convert weapon stats to integers
-                $time = (int)$row["time"];
-                $kills = (int)$row["kills"];
-                $deaths = (int)$row["deaths"];
-                $hits = (int)$row["hits"];
-                $fired = (int)$row["fired"];
-                $acc = ($fired != 0 && $hits != 0) ? round(($hits / $fired) * 100, 0) : 0;
-                $tempAcc += $acc;
+            // Set weapon data
+            $Output["wtm-$i"] += $time;      // Time
+            $Output["wkl-$i"] += $kills;     // Kills
+            $Output["wdt-$i"] += $deaths;    // Deaths
+            $Output["wac-$i"] += $acc;       // Accuracy
 
-                // Define favorite based on Time Played
-                if ($time > $favTime)
+            // check for explosive, which are all combined into wkl-11
+            if ($isExplosive)
+            {
+                $eKills += $kills;
+                $eDeaths += $deaths;
+            }
+            else
+            {
+                // K/D Ratio
+                if ($deaths != 0)
                 {
-                    $Output['fwea'] = $i;
-                    $favTime = $time;
-                }
-
-                // Set weapon data
-                $Output["wtm-$i"] += $time;      // Time
-                $Output["wkl-$i"] += $kills;     // Kills
-                $Output["wdt-$i"] += $deaths;    // Deaths
-                $Output["wac-$i"] += $acc;       // Accuracy
-
-                // check for explosive, which are all combined into wkl-11
-                if ($isExplosive)
-                {
-                    $eKills += $kills;
-                    $eDeaths += $deaths;
+                    $den = denominator($kills, $deaths);
+                    $Output["wkd-$i"] = ($kills / $den) . ':' . ($deaths / $den);
                 }
                 else
-                {
-                    // K/D Ratio
-                    if ($deaths != 0)
-                    {
-                        $den = denominator($kills, $deaths);
-                        $Output["wkd-$i"] = ($kills / $den) . ':' . ($deaths / $den);
-                    }
-                    else
-                        $Output["wkd-$i"] = $kills . ':0';
-                }
+                    $Output["wkd-$i"] = $kills . ':0';
             }
         }
 
@@ -691,39 +675,36 @@ function addVehicleData(&$Output, $pid)
 
     // Vehicles
     $result = $connection->query("SELECT * FROM player_vehicle WHERE pid = {$pid} ORDER BY id");
-    if ($result instanceof PDOStatement)
+    while ($row = $result->fetch())
     {
-        while ($row = $result->fetch())
+        $i = (int)$row['id'];
+
+        // Vars
+        $time = (int)$row["time"];
+        $kills = (int)$row["kills"];
+        $deaths = (int)$row["deaths"];
+        $roadKills = (int)$row["roadkills"];
+
+        // Add data
+        $Output["vtm-$i"] = $time;
+        $Output["vkl-$i"] = $kills;
+        $Output["vdt-$i"] = $deaths;
+        $Output["vkr-$i"] = $roadKills;
+
+        // K/D Ratio
+        if ($deaths != 0)
         {
-            $i = (int)$row['id'];
+            $den = denominator($kills, $deaths);
+            $Output["vkd-{$i}"] = ($kills / $den) . ':' . ($deaths / $den);
+        }
+        else
+            $Output["vkd-{$i}"] = $kills . ':0';
 
-            // Vars
-            $time = (int)$row["time"];
-            $kills = (int)$row["kills"];
-            $deaths = (int)$row["deaths"];
-            $roadKills = (int)$row["roadkills"];
-
-            // Add data
-            $Output["vtm-$i"] = $time;
-            $Output["vkl-$i"] = $kills;
-            $Output["vdt-$i"] = $deaths;
-            $Output["vkr-$i"] = $roadKills;
-
-            // K/D Ratio
-            if ($deaths != 0)
-            {
-                $den = denominator($kills, $deaths);
-                $Output["vkd-{$i}"] = ($kills / $den) . ':' . ($deaths / $den);
-            }
-            else
-                $Output["vkd-{$i}"] = $kills . ':0';
-
-            // Favorite?
-            if ($time > $favTime)
-            {
-                $Output['fveh'] = $i;
-                $favTime = $time;
-            }
+        // Favorite?
+        if ($time > $favTime)
+        {
+            $Output['fveh'] = $i;
+            $favTime = $time;
         }
     }
 
@@ -765,16 +746,13 @@ function addArmyData(&$Output, $pid)
 
     // Weapons
     $result = $connection->query("SELECT * FROM player_army WHERE pid = {$pid} AND id < 10 ORDER BY id");
-    if ($result instanceof PDOStatement)
+    while ($row = $result->fetch())
     {
-        while ($row = $result->fetch())
-        {
-            $i = (int)$row['id'];
-            $Output["atm-$i"] = $row["time"];
-            $Output["awn-$i"] = $row["wins"];
-            $Output["alo-$i"] = $row["losses"];
-            $Output["abr-$i"] = $row["best"];
-        }
+        $i = (int)$row['id'];
+        $Output["atm-$i"] = $row["time"];
+        $Output["awn-$i"] = $row["wins"];
+        $Output["alo-$i"] = $row["losses"];
+        $Output["abr-$i"] = $row["best"];
     }
 }
 
@@ -815,38 +793,35 @@ function addKitData(&$Output, $pid)
 
     // Weapons
     $result = $connection->query("SELECT * FROM player_kit WHERE pid = {$pid} ORDER BY id");
-    if ($result instanceof PDOStatement)
+    while ($row = $result->fetch())
     {
-        while ($row = $result->fetch())
+        $i = (int)$row['id'];
+
+        // Convert some vars to ints
+        $time = (int)$row["time"];
+        $kills = (int)$row["kills"];
+        $deaths = (int)$row["deaths"];
+
+        // Favorite
+        if ($time > $favTime)
         {
-            $i = (int)$row['id'];
-
-            // Convert some vars to ints
-            $time = (int)$row["time"];
-            $kills = (int)$row["kills"];
-            $deaths = (int)$row["deaths"];
-
-            // Favorite
-            if ($time > $favTime)
-            {
-                $Output['fkit'] = $i;
-                $favTime = $time;
-            }
-
-            // Add Data
-            $Output["ktm-$i"] = $time;
-            $Output["kkl-$i"] = $kills;
-            $Output["kdt-$i"] = $deaths;
-
-            // K/D Ratio
-            if ($deaths != 0)
-            {
-                $den = denominator($kills, $deaths);
-                $Output["kkd-{$i}"] = ($kills / $den) . ':' . ($deaths / $den);
-            }
-            else
-                $Output["kkd-{$i}"] = $kills . ':0';
+            $Output['fkit'] = $i;
+            $favTime = $time;
         }
+
+        // Add Data
+        $Output["ktm-$i"] = $time;
+        $Output["kkl-$i"] = $kills;
+        $Output["kdt-$i"] = $deaths;
+
+        // K/D Ratio
+        if ($deaths != 0)
+        {
+            $den = denominator($kills, $deaths);
+            $Output["kkd-{$i}"] = ($kills / $den) . ':' . ($deaths / $den);
+        }
+        else
+            $Output["kkd-{$i}"] = $kills . ':0';
     }
 }
 
@@ -873,13 +848,10 @@ function addTacticalData(&$Output, $pid)
 
     // Weapons
     $result = $connection->query("SELECT * FROM player_weapon WHERE pid = {$pid} AND id > 15");
-    if ($result instanceof PDOStatement)
+    while ($row = $result->fetch())
     {
-        while ($row = $result->fetch())
-        {
-            $i = ((int)$row['id']) - 10;
-            $Output["de-$i"] = (int)$row['fired'];
-        }
+        $i = ((int)$row['id']) - 10;
+        $Output["de-$i"] = (int)$row['fired'];
     }
 }
 
@@ -896,12 +868,12 @@ function addPlayerTopVictimAndOpp(&$Output, $pid)
 
     // Fetch Fav Victim
     $result = $connection->query("SELECT victim, `count` FROM player_kill WHERE attacker={$pid} ORDER BY `count` DESC LIMIT 1");
-    if ($result instanceof PDOStatement && ($row = $result->fetch()))
+    if ($row = $result->fetch())
     {
         $victim = $row['victim'];
         $count = $row['count'];
         $result = $connection->query("SELECT name, rank FROM player WHERE id={$victim}");
-        if ($result instanceof PDOStatement && ($row = $result->fetch()))
+        if ($row = $result->fetch())
         {
             $Output['tvcr'] = $victim;
             $Output['mvks'] = $count;
@@ -912,12 +884,12 @@ function addPlayerTopVictimAndOpp(&$Output, $pid)
 
     // Fetch Fav Opponent
     $result = $connection->query("SELECT attacker, `count` FROM player_kill WHERE victim={$pid} ORDER BY `count` DESC LIMIT 1");
-    if ($result instanceof PDOStatement && ($row = $result->fetch()))
+    if ($row = $result->fetch())
     {
         $attacker = $row['attacker'];
         $count = $row['count'];
         $result = $connection->query("SELECT name, rank FROM player WHERE id={$attacker}");
-        if ($result instanceof PDOStatement && ($row = $result->fetch()))
+        if ($row = $result->fetch())
         {
             $Output['topr'] = $attacker;
             $Output['vmks'] = $count;
@@ -940,7 +912,7 @@ function getFavMap(&$Output, $pid)
 
     // Fetch Fav Victim
     $result = $connection->query("SELECT mapid FROM player_map WHERE pid={$pid} AND mapid < 700 ORDER BY time DESC LIMIT 1");
-    if ($result instanceof PDOStatement && ($id = $result->fetchColumn()))
+    if ($id = $result->fetchColumn())
     {
         $Output['fmap'] = $id;
     }

@@ -31,10 +31,10 @@ namespace System
     define('DS', DIRECTORY_SEPARATOR);
     define('ROOT', __DIR__);
     define('SYSTEM_PATH', ROOT . DS . 'system');
+    define('SNAPSHOT_FAIL_PATH', SYSTEM_PATH . DS . 'snapshots' . DS . 'failed');
     define('SNAPSHOT_TEMP_PATH', SYSTEM_PATH . DS . 'snapshots' . DS . 'unprocessed');
     define('SNAPSHOT_STORE_PATH', SYSTEM_PATH . DS . 'snapshots' . DS . 'processed');
     define("_ERR_RESPONSE", "E\nH\tresponse\nD\t");
-
 
     /**
      * Set Error Reporting and Zlib Compression
@@ -158,7 +158,9 @@ namespace System
     }
     catch (Exception $e)
     {
-        // No need to log here... a message will be logged automatically!
+        // No need to log here... a message will be logged automatically within the Snapshot class!
+        // Move unprocessed file to the failed folder
+        File::Move(SNAPSHOT_TEMP_PATH . DS . $fileName, SNAPSHOT_FAIL_PATH . DS . $fileName);
     }
 
     // Finally, move the file

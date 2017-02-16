@@ -44,7 +44,7 @@ else
     $connection = Database::GetConnection("stats");
 
 	$result = $connection->query("SELECT `rank` FROM `player` WHERE `id` = {$pid}");
-	if(!($result instanceof PDOStatement) || !($row = $result->fetch()))
+	if(!($row = $result->fetch()))
 	{
         $Response->responseError(true);
         $Response->writeLine("Player Not Found");

@@ -47,7 +47,7 @@ if ($pid > 0)
     $query = "SELECT m.*, mi.name AS mapname FROM player_map AS m JOIN mapinfo AS mi ON m.mapid = mi.id " .
         "WHERE m.pid = {$pid} ORDER BY mapid";
     $result = $connection->query($query);
-    if ($result instanceof PDOStatement && ($row = $result->fetch()))
+    if ($row = $result->fetch())
     {
         $Response->writeHeaderLine("mapid", "mapname", "time", "win", "loss", "best", "worst");
         do

@@ -19,11 +19,6 @@ use PDO;
 class DbConnection extends PDO
 {
     /**
-     * The result of the last query
-     */
-    public $result;
-
-    /**
      * Constructor
      *
      * @param string $server The database server ip
@@ -36,7 +31,11 @@ class DbConnection extends PDO
     {
         // Connect using the PDO Constructor
         $dsn = "mysql:host={$server};port={$port};dbname={$dbname};charset=UTF8";
-        parent::__construct($dsn, $username, $password, array(\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION));
+        $opt = [
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+        ];
+        parent::__construct($dsn, $username, $password, $opt);
     }
 
     /**

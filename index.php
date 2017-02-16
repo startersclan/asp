@@ -20,7 +20,7 @@ define('ROOT', __DIR__);
 define('SYSTEM_PATH', ROOT . DS . 'system');
 define('TIME_START', microtime(true));
 
-// Make sure we are running php version 5.3.2 or newer!!!!
+// Make sure we are running php version 5.6.2 or newer!!!!
 if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50602)
     die("PHP version 5.6.2 or newer required to run the ASP administration panel. Your version: " . PHP_VERSION);
 

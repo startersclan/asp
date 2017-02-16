@@ -271,4 +271,24 @@ class File
         $file = new FileInfo($source);
         $file->moveTo($destination);
     }
+
+    /**
+     * Returns whether the specified file is writable or not.
+     *
+     * @param string $path The full path
+     *
+     * @return bool true if the file exists and is writable, false otherwise.
+     */
+    public static function IsWritable($path)
+    {
+        try
+        {
+            $file = new FileStream($path, 'r+');
+            return $file->canWrite();
+        }
+        catch (\Exception $e)
+        {
+            return false;
+        }
+    }
 }

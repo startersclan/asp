@@ -49,7 +49,7 @@ else
         case 0:
             // Get Player Data
             $result = $connection->query("SELECT `name`, `score`, `rank` FROM `player` WHERE `id` = {$pid}");
-            if (!($result instanceof PDOStatement) || !($row = $result->fetch()))
+            if (!($row = $result->fetch()))
             {
                 $Response->writeHeaderLine("pid", "nick", "asof");
                 $Response->writeDataLine($pid, "No_Player", time());
@@ -87,7 +87,7 @@ else
                 // Get players current unlocks
                 $query = "SELECT unlockid FROM `player_unlock` WHERE `pid`={$pid} ORDER BY `unlockid` ASC";
                 $result = $connection->query($query);
-                if ($result instanceof PDOStatement && ($row = $result->fetch()))
+                if ($row = $result->fetch())
                 {
                     do
                     {
@@ -109,7 +109,7 @@ else
             // Get all current unlocks
             $query = "SELECT `id` FROM `unlock` ORDER BY `id` ASC";
             $result = $connection->query($query);
-            if ($result instanceof PDOStatement && ($row = $result->fetch()))
+            if ($row = $result->fetch())
             {
                 do
                 {
@@ -129,7 +129,7 @@ else
             // Get all current unlocks
             $query = "SELECT `id` FROM `unlock` ORDER BY `id` ASC";
             $result = $connection->query($query);
-            if ($result instanceof PDOStatement && ($row = $result->fetch()))
+            if ($row = $result->fetch())
             {
                 do
                 {
@@ -251,5 +251,5 @@ WHERE `pid` = $pid
 SQL;
 
     $result = $connection->query($query);
-    return ($result instanceof PDOStatement) ? (int)$result->fetchColumn() : 0;
+    return (int)$result->fetchColumn();
 }

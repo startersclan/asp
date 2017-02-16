@@ -74,12 +74,9 @@ class BackendAward
             ]);
 
             $result = $connection->query($query);
-            if ($result instanceof \PDOStatement)
-            {
-                $row = $result->fetch();
-                if (empty($row) || !$criteria->checkCriteria($row, $awardCount))
-                        return false;
-            }
+            $row = $result->fetch();
+            if (empty($row) || !$criteria->checkCriteria($row, $awardCount))
+                return false;
         }
 
         return true;

@@ -49,7 +49,7 @@ else // Player exists
     $result = $connection->query($query);
 
     // Query failed or player does not exist
-    if (!($result instanceof PDOStatement) || !($row = $result->fetch()))
+    if (!($row = $result->fetch()))
     {
         $Response->responseError(true);
         $Response->writeHeaderLine("asof", "err");

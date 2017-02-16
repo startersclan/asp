@@ -45,6 +45,7 @@ function build_navigation()
                         <ul'; if($Sys == false) $html .= ' class="closed"'; $html .= '>
                             <li><a href="/ASP/config">System Configuration</a></li>
                             <li><a href="/ASP/install">System Installation</a></li>
+                            <li><a href="/ASP/config/test">System Tests</a></li>
                             <li><a href="/ASP/database/upgrade">Upgrade Database</a></li>
                             <li><a href="/ASP/database/clear">Clear Database</a></li>
                             <li><a href="/ASP/database">Backup Database</a></li>
@@ -62,7 +63,7 @@ function build_navigation()
                         </ul>
                     </li>
                     <li'; if($Svr == true) $html .= ' class="active"'; $html .= '>
-                        <a href="#"><i class="icon-graph"></i> Server Admin</a>
+                        <a href="#"><i class="icon-business-card"></i> Server Admin</a>
                         <ul'; if($Svr == false) $html .= ' class="closed"'; $html .= '>
                             <li><a href="/ASP/servers">Server Info</a></li>
                             <li><a href="/ASP/mapinfo">Map Info</a></li>

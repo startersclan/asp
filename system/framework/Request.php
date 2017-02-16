@@ -129,7 +129,7 @@ class Request
                 self::$protocol = 'http';
 
             // build our base url
-            $site_url = preg_replace('~(/{2,})~', '/', strtolower(self::$domain . '/' . self::$webroot));
+            $site_url = preg_replace('~(/{2,})~', '/', self::$domain . '/' . self::$webroot);
             self::$baseurl = str_replace('\\', '', self::$protocol . '://' . rtrim($site_url, '/'));
         }
     }

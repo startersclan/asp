@@ -10,36 +10,69 @@
 
 namespace System\Database;
 
-
 use System\IO\File;
 
+/**
+ * A simple class that parses SQL files into an array of statements.
+ *
+ * This parser supports all MySQL statements including delimiter changes.
+ * Any and all SQL comments are stripped before parsing begins.
+ *
+ * @author Tony Hudgins
+ * @author Steven Wilson
+ *
+ * @package System\Database
+ */
 class SqlFileParser
 {
-    private $i;
-    private $end;
+    /**
+     * @var int Internal SQL string position
+     */
+    private $position;
+
+    /**
+     * @var int The length of the internal $sql string
+     */
+    private $length;
+
+    /**
+     * @var string The internal SQL string
+     */
     private $sql;
 
+    /**
+     * SqlFileParser constructor.
+     *
+     * @param string $filePath The file path to the SQL file
+     */
     public function __construct($filePath)
     {
         // Get SQl statements
-        $query = File::ReadAllText($filePath);
+        $contents = File::ReadAllText($filePath);
 
         // Prepare query for comment extraction!
-        $this->end = strlen($query) - 1;
-        $this->sql = $query;
+        $this->length = strlen($contents) - 1;
+        $this->sql = $contents;
 
         // Remove comments
         $this->sql = $this->removeComments();
-        $this->end = strlen($this->sql) - 1;
+        $this->length = strlen($this->sql) - 1;
     }
 
+    /**
+     * Fetches all SQL statements as an array. Each array element is a single SQL statement.
+     *
+     * @remarks All comments are excluded from the array.
+     *
+     * @return string[]
+     */
     public function getStatements()
     {
         $sqlList = array();
 
         $query = "";
         $delimiter = ';';
-        $this->i = 0;
+        $this->position = 0;
 
         // Parsing the SQL file content
         while (!$this->eof())
@@ -53,7 +86,7 @@ class SqlFileParser
                 // Skip until we hit our quote term
                 while ($this->peek() !== $term && !$this->eof())
                 {
-                    // Qoute term escaped? If so take twice and keep skipping
+                    // Quote term escaped? If so take twice and keep skipping
                     if ($this->peek() === "\\" && $this->peek(1) === $term)
                         $query .= $this->take();
 
@@ -101,9 +134,14 @@ class SqlFileParser
         return $sqlList;
     }
 
+    /**
+     * Returns any and all comments from the SQL string, and returns the result
+     *
+     * @return string
+     */
     protected function removeComments()
     {
-        $this->i = 0;
+        $this->position = 0;
         $clean = "";
 
         while (!$this->eof())
@@ -164,55 +202,94 @@ class SqlFileParser
         return $clean;
     }
 
+    /**
+     * Returns whether the current position of SQL string position is at the end.
+     *
+     * @return bool
+     */
     private function eof()
     {
-        return $this->i >= $this->end;
+        return $this->position >= $this->length;
     }
 
+    /**
+     * Determines if the next set of characters matches the provided string.
+     *
+     * @param string $search the character(s) to check against the current SQL string position
+     * @param bool $caseSensitive true if case sensitive search, false otherwise
+     *
+     * @return bool
+     */
     private function isNext($search, $caseSensitive = true)
     {
         $len = strlen($search);
-        if ($this->i + $len >= $this->end)
+        if ($this->position + $len >= $this->length)
             return false;
 
-        $compare = substr($this->sql, $this->i, $len);
+        $compare = substr($this->sql, $this->position, $len);
         return ($caseSensitive)
             ? $search === $compare
             : strtolower($search) == strtolower($compare);
     }
 
+    /**
+     * Determines if the next set of characters matches the provided string,
+     * and consumes them if true.
+     *
+     * @param string $search the character(s) to consume if next in the SQL string
+     * @param bool $caseSensitive true if case sensitive search, false otherwise
+     *
+     * @return bool true if the $search matched the next set of character(2), otherwise false
+     */
     private function takeIfNext($search, $caseSensitive = true)
     {
         if ($this->isNext($search, $caseSensitive))
         {
-            $this->i += strlen($search);
-
+            $this->position += strlen($search);
             return true;
         }
 
         return false;
     }
 
+    /**
+     * Returns the next character in the SQL string, but does
+     * not consume it.
+     *
+     * @param int $n offset from the current position
+     *
+     * @return string
+     */
     private function peek($n = 0)
     {
-        $newIndex = $this->i + $n;
-        if ($newIndex >= $this->end)
+        $newIndex = $this->position + $n;
+        if ($newIndex >= $this->length)
             return "";
 
         return $this->sql[$newIndex];
     }
 
+    /**
+     * Takes the next character in the SQL string
+     *
+     * @return string
+     */
     private function take()
     {
         if ($this->eof())
             return "";
 
         $c = $this->peek();
-        $this->i += 1;
+        $this->position += 1;
 
         return $c;
     }
 
+    /**
+     * Takes the next character in the string if it is whitespace
+     *
+     * @return void
+     */
     public function takeWhiteSpace()
     {
         // Skip next whitespace characters from query
@@ -220,41 +297,13 @@ class SqlFileParser
             $this->take();
     }
 
+    /**
+     * Determines whether the next character is whitespace
+     *
+     * @return bool
+     */
     public function nextIsWhiteSpace()
     {
         return trim($this->peek()) == '';
-    }
-
-    /**
-     * Determines whether the beginning of a string matches a specified string
-     *
-     * @param string $string The haystack
-     * @param string $sub The needle
-     * @param bool $caseSensitive true if case sensitive search, false otherwise
-     *
-     * @return bool
-     */
-    private function startsWith($string, $sub, $caseSensitive = true)
-    {
-        return ($caseSensitive)
-            ? substr_compare($string, $sub, 0, strlen($sub)) === 0
-            : substr_compare(strtolower($string), strtolower($sub), 0, strlen($sub)) === 0;
-    }
-
-    /**
-     * Determines whether the end of a string matches the specified string
-     *
-     * @param string $string The haystack
-     * @param string $sub The needle
-     * @param bool $caseSensitive true if case sensitive search, false otherwise
-     *
-     * @return bool
-     */
-    private function endsWith($string, $sub, $caseSensitive = true)
-    {
-        $len = strlen($sub);
-        return ($caseSensitive)
-            ? substr_compare($string, $sub, -$len, $len) === 0
-            : substr_compare(strtolower($string), strtolower($sub), -$len, $len) === 0;
     }
 }

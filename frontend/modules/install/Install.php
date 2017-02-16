@@ -125,18 +125,17 @@ class Install
                 die;
             }
         }
-        catch (Exception $e)
-        {
-            // Successful connection
-            echo json_encode(
-                array(
-                    'success' => true,
-                    'tablesExist' => false,
-                    'message' => ''
-                )
-            );
-            die;
-        }
+        catch (Exception $e) {}
+
+        // Successful connection
+        echo json_encode(
+            array(
+                'success' => true,
+                'tablesExist' => false,
+                'message' => ''
+            )
+        );
+        die;
     }
 
     /**

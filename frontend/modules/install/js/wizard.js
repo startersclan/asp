@@ -89,11 +89,12 @@
                                     $.wait(500).then( function () {
 
                                         wizard.next();
+                                        var result = jQuery.parseJSON(data);
 
-                                        if (data.success == false) {
+                                        if (result.success == false) {
                                             $('#install-failed').show();
                                             $('#install-success').hide();
-                                            $('#fail-message').html(data.message);
+                                            $('#fail-message').html(result.message);
                                         }
                                     });
                                 });

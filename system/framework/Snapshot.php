@@ -11,7 +11,6 @@
 namespace System;
 
 use Exception;
-use PDOStatement;
 use System\Collections\Dictionary;
 use System\Database\UpdateOrInsertQuery;
 use System\IO\Path;
@@ -50,8 +49,6 @@ class Snapshot extends GameResult
      * @param string $serverIp
      *
      * @throws Exception
-     *
-     * @internal param array $data
      */
     public function __construct($snapshotData, $serverIp = '127.0.0.1')
     {
@@ -177,7 +174,7 @@ class Snapshot extends GameResult
         else
         {
             $result = $connection->query("SELECT COUNT(id) FROM mapinfo WHERE id = ". $this->mapId);
-            if (!($result instanceof PDOStatement) || ($id = (int)$result->fetchColumn()) == 0)
+            if (($id = (int)$result->fetchColumn()) == 0)
             {
                 $connection->insert('mapinfo', ['id' => $this->mapId, 'name' => $this->mapName]);
             }
@@ -227,7 +224,7 @@ class Snapshot extends GameResult
         // Fetch the server
         $ip = $connection->quote($this->serverIp);
         $result = $connection->query("SELECT id FROM server WHERE `ip`={$ip} AND `port`={$this->serverPort}");
-        if (!($result instanceof PDOStatement) || !($serverId = (int)$result->fetchColumn()))
+        if (!($serverId = (int)$result->fetchColumn()))
         {
             $this->logWriter->logError("Unknown server '{$this->serverIp}:{$this->serverPort}'!");
             throw new Exception("Unknown server '{$this->serverIp}:{$this->serverPort}'!");
@@ -242,10 +239,10 @@ class Snapshot extends GameResult
 
         // Log player count
         $playerCount = count($this->players);
-        $this->logWriter->logNotice("Found (%d) Player(s)...", $playerCount);
+        $this->logWriter->logNotice("Found (". $playerCount .") Player(s)...");
 
         // Ensure the player count is within range of the config
-        if ($playerCount < Config::Get("stats_players_min"))
+        if ($playerCount < (int)Config::Get("stats_players_min"))
         {
             $this->logWriter->logWarning("Minimum round Player count does not meet the ASP requirement... Aborting");
             throw new Exception("Minimum round Player count does not meet the ASP requirement");
@@ -349,7 +346,7 @@ class Snapshot extends GameResult
                 $sql = "SELECT lastip, country, rank, killstreak, deathstreak, rndscore FROM player WHERE id=%d LIMIT 1";
                 $result = $connection->query(sprintf($sql, $player->pid));
 
-                if ($result instanceof PDOStatement && ($row = $result->fetch()))
+                if ($row = $result->fetch())
                 {
                     // Write log
                     $this->logWriter->logNotice("Updating EXISTING Player (". $player->pid .")");
@@ -554,17 +551,14 @@ class Snapshot extends GameResult
                         $isMedal = ($key > 2000000 && $key < 3000000);
                         $isBadge = ($key < 2000000);
 
-                        /**
-                         * Build our query
-                         * @noinspection SqlResolve
-                         */
+                        // Check is player has this award already
                         $query = "SELECT COUNT(*) FROM player_award WHERE pid=%d AND id=%d";
                         if ($isBadge)
                             $query .= " AND level=". (int)$value;
 
                         // Check for prior awarding of award
                         $result = $connection->query( sprintf($query, $player->pid, $key) . ' LIMIT 1');
-                        if (!($result instanceof PDOStatement) || ($count = (int)$result->fetchColumn(0)) == 0)
+                        if (($count = (int)$result->fetchColumn(0)) == 0)
                         {
                             // Need to do extra work for Badges as more than one badge level may have been awarded.
                             // The snapshot will only post the highest awarded level of a badge, so here we award
@@ -576,7 +570,7 @@ class Snapshot extends GameResult
                                 {
                                     $query = "SELECT COUNT(*) FROM player_award WHERE pid=%d AND id=%d AND level=%d LIMIT 1";
                                     $result = $connection->query( sprintf($query, $player->pid, $key, $j) );
-                                    if (!($result instanceof PDOStatement) || ($count = (int)$result->fetchColumn(0)) == 0)
+                                    if (($count = (int)$result->fetchColumn(0)) == 0)
                                     {
                                         // Prepare Query
                                         $query = new UpdateOrInsertQuery($connection, 'player_award');
@@ -667,6 +661,11 @@ class Snapshot extends GameResult
         }
     }
 
+    /**
+     * Returns the snapshot filename for this snapshot
+     *
+     * @return string
+     */
     public function getFilename()
     {
         // Generate SNAPSHOT Filename
@@ -678,6 +677,12 @@ class Snapshot extends GameResult
         return $prefix . $this->mapName . '_' . $mapdate . '.txt';
     }
 
+    /**
+     * Adds a player to the list of round players, and adds their
+     * stats to the map stats variables.
+     *
+     * @param Player $player
+     */
     protected function addPlayer(Player $player)
     {
         $this->players[] = $player;

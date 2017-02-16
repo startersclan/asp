@@ -93,16 +93,13 @@ if (!empty($nick))
 }
 elseif ($pidlist != 0)
 {
+    $Response->writeHeaderLine("pid");
+
     // Get a list of all PIDS from the database where the IP is non local
     $query = "SELECT id FROM player WHERE lastip <> '127.0.0.1'";
     $result = $connection->query($query);
-    $Response->writeHeaderLine("pid");
-
-    if ($result instanceof PDOStatement)
-    {
-        while ($row = $result->fetch())
-            $Response->writeDataLine($row['id']);
-    }
+    while ($row = $result->fetch())
+        $Response->writeDataLine($row['id']);
 
     $Response->send();
 
