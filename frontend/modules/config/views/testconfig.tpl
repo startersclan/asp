@@ -1,6 +1,6 @@
 <div class="mws-panel grid_8">
     <div class="mws-panel-header">
-        <span class="mws-i-24 i-cog-5">System Tests</span>
+        <span><i class="icon-list-2"></i> System Tests</span>
     </div>
     <div class="mws-panel-body">
         <div class="mws-panel-content">

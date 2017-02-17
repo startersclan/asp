@@ -9,7 +9,7 @@ function build_navigation()
     $task = $GLOBALS['controller'];
     $system = array('config', 'install', 'database');
     $players = array('players');
-    $server = array('serverinfo','mapinfo', 'snapshots');
+    $server = array('servers','mapinfo', 'snapshots');
     
     // Prepare for open/closed sections
     $Sys = in_array($task, $system);

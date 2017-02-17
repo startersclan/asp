@@ -88,10 +88,10 @@ CREATE TABLE `server` (
   `name` VARCHAR(100) DEFAULT NULL,
   `port` SMALLINT UNSIGNED DEFAULT 0,
   `queryport` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-  `banned` TINYINT(1) NOT NULL DEFAULT 0,
-  `lastupdate` INT NOT NULL DEFAULT  0,
+  `authorized` TINYINT(1) NOT NULL DEFAULT 1, -- Servers are allowed to post snapshots
+  `lastupdate` INT NOT NULL DEFAULT 0,
   PRIMARY KEY(`id`),
-  UNIQUE KEY `ip-prefix-unq` (`ip`,`prefix`)
+  CONSTRAINT `ip-port-unq` UNIQUE (`ip`, `port`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TRIGGER `server_update` BEFORE UPDATE ON `server` FOR EACH ROW SET new.lastupdate = UNIX_TIMESTAMP();

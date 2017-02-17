@@ -19,6 +19,11 @@ use PDO;
 class DbConnection extends PDO
 {
     /**
+     * @var string
+     */
+    public $lastQuery;
+
+    /**
      * Constructor
      *
      * @param string $server The database server ip
@@ -60,7 +65,8 @@ class DbConnection extends PDO
         }
 
         // Return TRUE or FALSE
-        return ($this->exec('DELETE FROM ' . $table . ($where != '' ? ' WHERE ' . $where : '')) > 0);
+        $this->lastQuery = 'DELETE FROM ' . $table . ($where != '' ? ' WHERE ' . $where : '');
+        return $this->exec($this->lastQuery) > 0;
     }
 
     /**
@@ -85,7 +91,8 @@ class DbConnection extends PDO
         $values =  implode(', ', array_values($data));
 
         // Run the query
-        return $this->exec("INSERT INTO `{$table}`(`{$columns}`) VALUES ({$values})");
+        $this->lastQuery = "INSERT INTO `{$table}`(`{$columns}`) VALUES ({$values})";
+        return $this->exec($this->lastQuery);
     }
 
     /**
@@ -100,28 +107,43 @@ class DbConnection extends PDO
      */
     public function update($table, $data, $where)
     {
-        // Parse where clause
-        if (is_array($where))
-        {
-            $sql = null;
-            foreach ($where as $col => $value)
-                $sql .= "`{$col}`='{$value}' AND ";
-
-            $where = substr($sql, 0, -5);
-        }
-
-        // Do we have a where tp process?
-        if ($where != '')
-            $where = ' WHERE ' . $where;
-
         // Our string of columns
-        $cols = '';
+        $query = "UPDATE `{$table}` SET ";
 
         // start creating the SQL string and enclose field names in `
+        $first = true;
         foreach ($data as $key => $value)
-            $cols .= ', `' . $key . '` = ' . (is_numeric($value)) ? $value : $this->quote($value);
+        {
+            if (!$first)
+            {
+                $query .= ', ';
+            }
+
+            $first = false;
+            $val = (is_int($value)) ? $value : $this->quote($value);
+            $query .= "`{$key}`={$val}";
+        }
+
+        // Parse where clause
+        if (!empty($where))
+        {
+            if (is_array($where))
+            {
+                $sql = ' WHERE ';
+                foreach ($where as $col => $value)
+                {
+                    $val = (is_int($value)) ? $value : $this->quote($value);
+                    $sql .= "`{$col}`={$val} AND ";
+                }
+
+                $query .= substr($sql, 0, -5);
+            }
+            else
+                $query .= $where;
+        }
 
         // Build our query
-        return $this->exec('UPDATE ' . $table . ' SET ' . ltrim($cols, ', ') . $where);
+        $this->lastQuery = $query;
+        return $this->exec($this->lastQuery);
     }
 }

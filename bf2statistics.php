@@ -61,6 +61,31 @@ namespace System
 
 /*
 | ---------------------------------------------------------------
+| Connect to database
+| ---------------------------------------------------------------
+*/
+    // Connect to the database
+    try
+    {
+        $connection = Database::Connect('stats',
+            array(
+                'driver' => 'mysql',
+                'host' => Config::Get('db_host'),
+                'port' => Config::Get('db_port'),
+                'database' => Config::Get('db_name'),
+                'username' => Config::Get('db_user'),
+                'password' => Config::Get('db_pass')
+            )
+        );
+    }
+    catch (Exception $e)
+    {
+        $LogWriter->logError("Failed to establish Database connection: " . $e->getMessage());
+        die(_ERR_RESPONSE . "Failed to establish Database connection");
+    }
+
+/*
+| ---------------------------------------------------------------
 | Security Check
 | ---------------------------------------------------------------
 */
@@ -73,7 +98,7 @@ namespace System
 
 /*
 | ---------------------------------------------------------------
-| Connect to database and parse SNAPSHOT
+| Parse SNAPSHOT
 | ---------------------------------------------------------------
 */
     // Connect to the database
@@ -93,7 +118,7 @@ namespace System
     catch (Exception $e)
     {
         $LogWriter->logError("Failed to establish Database connection: " . $e->getMessage());
-        die(_ERR_RESPONSE . "Failed to establish Database connection");
+        die(_ERR_RESPONSE . "Stats Database Offline");
     }
 
     // Read snapshot data from input

@@ -1,6 +1,6 @@
 <div class="mws-panel grid_8">
     <div class="mws-panel-header">
-        <span class="mws-i-24 i-create">Edit Config</span>
+        <span><i class="icon-tools"></i> Edit Config</span>
     </div>
     <div id="mws-jui-dialog">
         <div class="mws-dialog-inner"><p>HI</p></div>

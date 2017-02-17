@@ -134,6 +134,8 @@ class Snapshot extends GameResult
             throw new Exception("No End of File element was found, Snapshot assumed to be incomplete.");
 
         // Server data
+        $this->serverPrefix = $data[0];
+        $this->serverName = $data[1];
         $this->serverPort = (int)$standardData["gameport"];
         $this->queryPort = (int)$standardData["queryport"];
 
@@ -221,13 +223,17 @@ class Snapshot extends GameResult
             }
         }
 
-        // Fetch the server
+        // Ensure this is an authorized server
         $ip = $connection->quote($this->serverIp);
-        $result = $connection->query("SELECT id FROM server WHERE `ip`={$ip} AND `port`={$this->serverPort}");
-        if (!($serverId = (int)$result->fetchColumn()))
+        $result = $connection->query("SELECT id, authorized FROM server WHERE `ip`={$ip} AND `port`={$this->serverPort} LIMIT 1");
+        if (!($row = $result->fetch()) || (int)$row['authorized'] == 0)
         {
-            $this->logWriter->logError("Unknown server '{$this->serverIp}:{$this->serverPort}'!");
-            throw new Exception("Unknown server '{$this->serverIp}:{$this->serverPort}'!");
+            $this->logWriter->logSecurity("Unauthorised Game Server '{$this->serverIp}:{$this->serverPort}' attempted to send snapshot data!");
+            throw new Exception("Unauthorised Game Server!");
+        }
+        else
+        {
+            $serverId = (int)$row['id'];
         }
 
         // Start logging information about this snapshot
@@ -672,7 +678,7 @@ class Snapshot extends GameResult
         $mapdate = date('Ymd_Hi', time());
         $prefix  = '';
         if (!empty($this->serverPrefix))
-            $prefix .= $this->serverPrefix . '-';
+            $prefix = $this->serverPrefix . '-';
 
         return $prefix . $this->mapName . '_' . $mapdate . '.txt';
     }
