@@ -86,8 +86,15 @@ div#mws-error-container p
     color: #675100;
     font-size: 125%;
 }
-.alert a:link { color: #0000EE; }
-.alert a:visited { color: #551A8B; }
+.alert a:link {
+    color: #0000EE;
+    text-decoration: underline;
+}
+
+.alert a:visited {
+    color: #551A8B;
+    text-decoration: underline;
+}
 
 .alert.success { background-image: url("../../images/core/alerts/tick-circle.png"); background-color: #d1e8d2; border-color: #339933; color: #00632E; }
 .alert.error { background-image: url("../../images/core/alerts/cross-circle.png"); background-color: #facfcf; border-color: #dc1c1c; color: #820101; }

@@ -14,8 +14,10 @@
                     <div class="mws-form-row">
                         <div id="js_message" style="display: none;"></div>
                         <p>
-                            This area allows you to alter the configuration of the Battlefield 2 Private Statistics system. This only alters the global settings defined on the "Gamespy"
-                            database server. To alter in-game configurations, please edit the "python/bf2/BF2StatisticsConfig.py" file on your game server.
+                            This area allows you to alter the configuration of the Battlefield 2 Private Statistics system.
+                            This only alters the global settings defined on the "Gamespy" database server. To alter in-game
+                            configurations, please edit the "python/bf2/BF2StatisticsConfig.py" file on your game server.
+                            <b>Hover over each field's label to get a description of each setting.</b>
                         </p>
                     </div>
                 </fieldset>
@@ -33,7 +35,7 @@
                             Ignore AI Players:
                         </label>
                         <div class="mws-form-item">
-                            <select class="small" name="cfg__stats_ignore_ai">
+                            <select class="small" name="cfg__stats_ignore_ai" title="">
                                 <option value="1" <?php if('{config.stats_ignore_ai}' == '1') echo 'selected="selected"'; ?>>Yes</option>
                                 <option value="0" <?php if('{config.stats_ignore_ai}' == '0') echo 'selected="selected"'; ?>>No</option>
                             </select>
@@ -50,7 +52,7 @@
                         </label>
                         <div class="mws-form-item">
                             <div class="small">
-                                <input type="text" id="s1" name="cfg__stats_min_game_time" class="required mws-spinner" value="{config.stats_min_game_time}">
+                                <input type="text" id="s1" name="cfg__stats_min_game_time" class="required mws-spinner" value="{config.stats_min_game_time}" title="">
                                 <label for="s1" class="error" generated="true" style="display:none"></label>
                             </div>
                         </div>
@@ -113,35 +115,9 @@
                             Rank Checking:
                         </label>
                         <div class="mws-form-item">
-                            <select class="small" name="cfg__stats_rank_check"">
+                            <select class="small" name="cfg__stats_rank_check" title="">
                                 <option value="1" <?php if('{config.stats_rank_check}' == '1') echo 'selected="selected"'; ?>>Enabled</option>
                                 <option value="0" <?php if('{config.stats_rank_check}' == '0') echo 'selected="selected"'; ?>>Disabled</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="mws-form-row">
-                        <label class="mws-form-label">Rank Tenure:</label>
-                        <div class="mws-form-item">
-                            <input type="text" class="small required" name="cfg__stats_rank_tenure" value="{config.stats_rank_tenure}" title="Minimum time to hold special ranks (ie, Sergeant Major of the Corps (SMoC) & General (GEN)). in DAYS"/>
-                        </div>
-                    </div>
-                    <div class="mws-form-row">
-                        <label class="mws-form-label">Auto Process SMOC:</label>
-                        <div class="mws-form-item">
-                            <select class="small" name="cfg__stats_process_smoc" title="Enabeling this option will enable SMOC promotion checking everytime a snapshot is pushed to the server. Rank tenure and score will be used to determine if a new
-                                Sergeant Major gets promoted to SMOC">
-                                <option value="1" <?php if('{config.stats_process_smoc}' == '1') echo 'selected="selected"'; ?>>Enabled</option>
-                                <option value="0" <?php if('{config.stats_process_smoc}' == '0') echo 'selected="selected"'; ?>>Disabled</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="mws-form-row">
-                        <label class="mws-form-label">GEN Rank Tenure:</label>
-                        <div class="mws-form-item">
-                            <select class="small" name="cfg__stats_process_gen" title="Enableing this option will only allow 1 general to have the 4 star rank at a time, Much like the SMOC rank. Rank tenure will be used to determine if a new 3
-                                star GEN (with the highest global score), gets promoted to 4 stars">
-                                <option value="1" <?php if('{config.stats_process_gen}' == '1') echo 'selected="selected"'; ?>>Enabled</option>
-                                <option value="0" <?php if('{config.stats_process_gen}' == '0') echo 'selected="selected"'; ?>>Disabled</option>
                             </select>
                         </div>
                     </div>
@@ -171,7 +147,7 @@
                             Lan IP Override:
                         </label>
                         <div class="mws-form-item">
-                            <input type="text" class="small required" name="cfg__stats_lan_override" value="{config.stats_lan_override}">
+                            <input type="text" class="small required" name="cfg__stats_lan_override" value="{config.stats_lan_override}" title="">
                         </div>
                     </div>
                     <div class="mws-form-row">
@@ -184,7 +160,7 @@
                             Local Player IP Override:
                         </label>
                         <div class="mws-form-item">
-                            <textarea class="small" name="cfg__stats_local_pids" rows="50%" cols="100%"><?php echo implode("\n", \System\Config::Get('stats_local_pids')); ?></textarea>
+                            <textarea class="small" name="cfg__stats_local_pids" rows="50%" cols="100%" title=""><?php echo implode("\n", \System\Config::Get('stats_local_pids')); ?></textarea>
                         </div>
                     </div>
                 </fieldset>
@@ -192,26 +168,6 @@
                 <!-- Global Config -->
                 <fieldset class="mws-form-inline">
                     <legend>Global Game Server Configuration</legend>
-                    <div class="mws-form-row">
-                        <label class="mws-form-label">Authorized Server Ip Adresses:</label>
-                        <div class="mws-form-item">
-                            <textarea class="small" name="cfg__game_hosts" rows="50%" cols="100%"
-                                      title="Authorised Game Servers. Enter one IPv4 Address per line (Supports CIDR x.x.x.x/y notation)."><?php echo implode("\n", \System\Config::Get('game_hosts')); ?>
-                            </textarea>
-                        </div>
-                    </div>
-                    <div class="mws-form-row">
-                        <label class="mws-form-label">Custom MapID:</label>
-                        <div class="mws-form-item">
-                            <div class="small">
-                                <input type="text" id="s6" name="cfg__game_custom_mapid" class="required mws-spinner" value="{config.game_custom_mapid}"
-                                       title="Default Custom MapID. This will be used for the first custom map detetced, all others will increment from this value (Default: 700).
-                                            NOTE: All Custom MapID's will be assigned based on the HIGHEST existing MapID.
-                                            WARNING: Set this ONLY once or you may lose access to you custom map data!">
-                                <label for="s6" class="error" generated="true" style="display:none"></label>
-                            </div>
-                        </div>
-                    </div>
                     <div class="mws-form-row">
                         <label class="mws-form-label">Unlocks Option:</label>
                         <div class="mws-form-item">
@@ -223,9 +179,16 @@
                         </div>
                     </div>
                     <div class="mws-form-row">
-                        <label class="mws-form-label">Bonus Unlocks:</label>
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
+                               data-original-title="Bonus Unlocks"
+                               data-content="Allow bonus Unlocks based on Kit Badges?">
+                            Bonus Unlocks:
+                        </label>
                         <div class="mws-form-item">
-                            <select class="small" name="cfg__game_unlocks_bonus" title="Allow bonus Unlocks based on Kit Badges?">
+                            <select class="small" name="cfg__game_unlocks_bonus" title="">
                                 <option value="0" <?php if('{config.game_unlocks_bonus}' == '0') echo 'selected="selected"'; ?>>&lt;None&gt;</option>
                                 <option value="1" <?php if('{config.game_unlocks_bonus}' == '1') echo 'selected="selected"'; ?>>Basic</option>
                                 <option value="2" <?php if('{config.game_unlocks_bonus}' == '2') echo 'selected="selected"'; ?>>Veteran</option>
@@ -234,9 +197,16 @@
                         </div>
                     </div>
                     <div class="mws-form-row">
-                        <label class="mws-form-label">Min Rank for unlocks:</label>
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
+                               data-original-title="Minimum Rank for Unlocks"
+                               data-content="Minimum Rank before allowing bonus unlocks.">
+                            Min Rank for unlocks:
+                        </label>
                         <div class="mws-form-item">
-                            <select class="small" name="cfg__game_unlocks_bonus_min" title="Minimum Rank before allowing bonus unlocks">
+                            <select class="small" name="cfg__game_unlocks_bonus_min" title="">
                                 <option value="0" <?php if('{config.game_unlocks_bonus_min}' == '0') echo 'selected="selected"'; ?>>Private (0)</option>
                                 <option value="1" <?php if('{config.game_unlocks_bonus_min}' == '1') echo 'selected="selected"'; ?>>Pvt First Class (1)</option>
                                 <option value="2" <?php if('{config.game_unlocks_bonus_min}' == '2') echo 'selected="selected"'; ?>>Lance Corporal (2)</option>
@@ -255,29 +225,56 @@
                 <fieldset class="mws-form-inline">
                     <legend>Admin Config</legend>
                     <div class="mws-form-row">
-                        <label class="mws-form-label">Admin Username:</label>
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
+                               data-original-title="Admin Panel Username"
+                               data-content="Username for access to BF2 Stats Admin System. NOTE: You will be forced to re-logon after this has been saved.">
+                            Admin Username:
+                        </label>
                         <div class="mws-form-item">
-                            <input type="text" class="small required" name="cfg__admin_user" value="{config.admin_user}" title="Username for access to BF2 Stats Admin System. NOTE: You will be forced to re-logon after this has been saved."/>
+                            <input type="text" class="small required" name="cfg__admin_user" value="{config.admin_user}" title="">
                         </div>
                     </div>
                     <div class="mws-form-row">
-                        <label class="mws-form-label">Admin Password:</label>
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
+                               data-original-title="Admin Panel Password"
+                               data-content="Password for access to BF2 Stats Admin System. NOTE: You will be forced to re-logon after this has been saved.">
+                            Admin Password:
+                        </label>
                         <div class="mws-form-item">
-                            <input type="password" class="small required" name="cfg__admin_pass" value="{config.admin_pass}" title="Password for access to BF2 Stats Admin System. NOTE: You will be forced to re-logon after this has been saved."/>
+                            <input type="password" class="small required" name="cfg__admin_pass" value="{config.admin_pass}" title="">
                         </div>
                     </div>
                     <div class="mws-form-row">
-                        <label class="mws-form-label">Auth. Admin Ips:</label>
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
+                               data-original-title="Admin Panel IP Whitelist"
+                               data-content="Authorised IP Addresses for Admin System (Localhost is ALWAYS enabled). Enter one IPv4 Address per line (Supports CIDR x.x.x.x/y notation).">
+                            Auth. Admin Ips:
+                        </label>
                         <div class="mws-form-item">
-                            <textarea class="small" name="cfg__admin_hosts" rows="50%" cols="100%" title="Authorised IP Addresses for Admin System (Localhost is ALWAYS enabled).
-                                Enter one IPv4 Address per line (Supports CIDR x.x.x.x/y notation)."><?php echo implode("\n", \System\Config::Get('admin_hosts')); ?>
+                            <textarea class="small" name="cfg__admin_hosts" rows="50%" cols="100%" title=""><?php echo implode("\n", \System\Config::Get('admin_hosts')); ?>
                             </textarea>
                         </div>
                     </div>
                     <div class="mws-form-row">
-                        <label class="mws-form-label">Stats Logging:</label>
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
+                               data-original-title="Stats Logging Level"
+                               data-content="Stats Debug Logging Level (Includes all message above selected option).">
+                            Stats Logging:
+                        </label>
                         <div class="mws-form-item">
-                            <select class="small" name="cfg__debug_lvl" title="Stats Debug Logging Level (Includes all message above selected option).">
+                            <select class="small" name="cfg__debug_lvl" title="">
                                 <option value="0" <?php if('{config.debug_lvl}' == '0') echo 'selected="selected"'; ?>>Security (0)</option>
                                 <option value="1" <?php if('{config.debug_lvl}' == '1') echo 'selected="selected"'; ?>>Errors (1)</option>
                                 <option value="2" <?php if('{config.debug_lvl}' == '2') echo 'selected="selected"'; ?>>Warning (2)</option>
@@ -287,17 +284,29 @@
                         </div>
                     </div>
                     <div class="mws-form-row">
-                        <label class="mws-form-label">DB Backup Path:</label>
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
+                               data-original-title="Database Backup Path"
+                               data-content="Path to store database backup data (Include trailing '/'). This should be an absolute path as it is MySQL using it, not PHP (execpt for restores, then PHP needs it).">
+                            DB Backup Path:
+                        </label>
                         <div class="mws-form-item">
-                            <input type="text" class="small required" name="cfg__admin_backup_path" value="{config.admin_backup_path}" title="Path to store database backup data (Include trailing '/').
-                                This should be an absolute path as it is MySQL using it, not PHP (execpt for restores, then PHP needs it)."
-                            />
+                            <input type="text" class="small required" name="cfg__admin_backup_path" value="{config.admin_backup_path}" title="">
                         </div>
                     </div>
                     <div class="mws-form-row">
-                        <label class="mws-form-label">Ignore AI Players:</label>
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
+                               data-original-title="Ignore AI Players"
+                               data-content="Ignore AI players in player lists?">
+                            Ignore AI Players:
+                        </label>
                         <div class="mws-form-item">
-                            <select class="small" name="cfg__admin_ignore_ai" title="Ignore AI players in player lists?">
+                            <select class="small" name="cfg__admin_ignore_ai" title="">
                                 <option value="1" <?php if('{config.admin_ignore_ai}' == '1') echo 'selected="selected"'; ?>>Yes</option>
                                 <option value="0" <?php if('{config.admin_ignore_ai}' == '0') echo 'selected="selected"'; ?>>No</option>
                             </select>

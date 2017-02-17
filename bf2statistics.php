@@ -20,6 +20,8 @@
 namespace System
 {
     use Exception;
+    use SecurityException;
+    use System\IO\Directory;
     use System\IO\File;
     use System\IO\FileStream;
     use System\IO\Path;
@@ -31,6 +33,7 @@ namespace System
     define('DS', DIRECTORY_SEPARATOR);
     define('ROOT', __DIR__);
     define('SYSTEM_PATH', ROOT . DS . 'system');
+    define('SNAPSHOT_AUTH_PATH', SYSTEM_PATH . DS . 'snapshots' . DS . 'unauthorized');
     define('SNAPSHOT_FAIL_PATH', SYSTEM_PATH . DS . 'snapshots' . DS . 'failed');
     define('SNAPSHOT_TEMP_PATH', SYSTEM_PATH . DS . 'snapshots' . DS . 'unprocessed');
     define('SNAPSHOT_STORE_PATH', SYSTEM_PATH . DS . 'snapshots' . DS . 'processed');
@@ -56,49 +59,23 @@ namespace System
     Autoloader::Register();
 
     // Initiate the log writer
-    $LogWriter = new LogWriter(Path::Combine(SYSTEM_PATH, 'logs', 'stats_debug.log'), 'stats_debug');
-    $LogWriter->setLogLevel(Config::Get('debug_lvl'));
+    try
+    {
+        $LogWriter = new LogWriter(Path::Combine(SYSTEM_PATH, 'logs', 'stats_debug.log'), 'stats_debug');
+        $LogWriter->setLogLevel(Config::Get('debug_lvl'));
+
+        // Log this access
+        $LogWriter->logNotice("Incoming snapshot data from (%s): ", Request::ClientIp());
+    }
+    catch (Exception $e)
+    {
+        error_log($e->getMessage(), 1);
+        die(_ERR_RESPONSE . "Internal Server Error");
+    }
 
 /*
 | ---------------------------------------------------------------
 | Connect to database
-| ---------------------------------------------------------------
-*/
-    // Connect to the database
-    try
-    {
-        $connection = Database::Connect('stats',
-            array(
-                'driver' => 'mysql',
-                'host' => Config::Get('db_host'),
-                'port' => Config::Get('db_port'),
-                'database' => Config::Get('db_name'),
-                'username' => Config::Get('db_user'),
-                'password' => Config::Get('db_pass')
-            )
-        );
-    }
-    catch (Exception $e)
-    {
-        $LogWriter->logError("Failed to establish Database connection: " . $e->getMessage());
-        die(_ERR_RESPONSE . "Failed to establish Database connection");
-    }
-
-/*
-| ---------------------------------------------------------------
-| Security Check
-| ---------------------------------------------------------------
-*/
-    if (!Security::IsAuthorizedGameServer(Request::ClientIp()))
-    {
-        $LogWriter->logSecurity("Unauthorised Access Attempted! (IP: %s)", Request::ClientIp());
-        die(_ERR_RESPONSE . "Unauthorised Gameserver");
-    }
-
-
-/*
-| ---------------------------------------------------------------
-| Parse SNAPSHOT
 | ---------------------------------------------------------------
 */
     // Connect to the database
@@ -121,6 +98,24 @@ namespace System
         die(_ERR_RESPONSE . "Stats Database Offline");
     }
 
+/*
+| ---------------------------------------------------------------
+| Security Check
+| ---------------------------------------------------------------
+
+    if (!Security::IsAuthorizedGameServer(Request::ClientIp()))
+    {
+        $LogWriter->logSecurity("Unauthorised Access Attempted! (IP: %s)", Request::ClientIp());
+        die(_ERR_RESPONSE . "Unauthorised Gameserver");
+    }
+*/
+
+/*
+| ---------------------------------------------------------------
+| Parse SNAPSHOT
+| ---------------------------------------------------------------
+*/
+
     // Read snapshot data from input
     $rawdata = file_get_contents('php://input');
     if (!$rawdata)
@@ -141,7 +136,12 @@ namespace System
     catch (Exception $e)
     {
         $LogWriter->logError($e);
-        die(_ERR_RESPONSE . $e);
+
+        // If error code is unknown map
+        if ($e->getCode() == 99)
+            die(_ERR_RESPONSE . $e);
+        else
+            die(_ERR_RESPONSE . "SNAPSHOT Data Incomplete");
     }
 
     // Create SNAPSHOT backup file
@@ -180,6 +180,23 @@ namespace System
     {
         // Execute snapshot
         $snapshot->processData();
+    }
+    catch (SecurityException $e)
+    {
+        $path = SNAPSHOT_AUTH_PATH . DS . Request::ClientIp();
+        try
+        {
+            // Sub dir name is the client IP address
+            if (!Directory::Exists($path))
+                Directory::CreateDirectory($path, 0775);
+
+            // Move unprocessed file to the failed folder
+            File::Move(SNAPSHOT_TEMP_PATH . DS . $fileName, $path . DS . $fileName);
+        }
+        catch (Exception $e)
+        {
+            $LogWriter->logError("Unable to create a new Un-Authorized SNAPSHOT Folder (%s): %s", [$path, $e->getMessage()]);
+        }
     }
     catch (Exception $e)
     {

@@ -110,9 +110,6 @@ class LogWriter
      */
     public function setLogLevel($level)
     {
-        if ($level > 4 || $level < 0)
-            return;
-
         $this->logLevel = $level;
     }
 
@@ -138,7 +135,9 @@ class LogWriter
      */
     public function logSecurity($message, $args = false)
     {
-        $this->writeLine($this->format($message, $args, self::SECURITY));
+        // Make sure we want to log this
+        if ($this->logLevel >= self::SECURITY)
+            $this->writeLine($this->format($message, $args, self::SECURITY));
     }
 
     /**
@@ -151,7 +150,9 @@ class LogWriter
      */
     public function logError($message, $args = false)
     {
-        $this->writeLine($this->format($message, $args, self::ERROR));
+        // Make sure we want to log this
+        if ($this->logLevel >= self::ERROR)
+            $this->writeLine($this->format($message, $args, self::ERROR));
     }
 
     /**

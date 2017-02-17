@@ -11,6 +11,7 @@
 namespace System;
 
 use Exception;
+use SecurityException;
 use System\Collections\Dictionary;
 use System\Database\UpdateOrInsertQuery;
 use System\IO\Path;
@@ -172,7 +173,7 @@ class Snapshot extends GameResult
                 $this->mapId = (int)$id;
             }
             else
-                throw new Exception("Invalid map received (Unknown Map ID): ". $this->mapName);
+                throw new Exception("Invalid map received (Unknown Map ID): ". $this->mapName, 99);
         }
         else
         {
@@ -230,7 +231,7 @@ class Snapshot extends GameResult
         if (!($row = $result->fetch()) || (int)$row['authorized'] == 0)
         {
             $this->logWriter->logSecurity("Unauthorised Game Server '{$this->serverIp}:{$this->serverPort}' attempted to send snapshot data!");
-            throw new Exception("Unauthorised Game Server!");
+            throw new SecurityException("Unauthorised Game Server!", empty($row) ? 0 : 1);
         }
         else
         {

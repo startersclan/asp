@@ -236,6 +236,19 @@ class Config
             $out .= __PASS;
         }
 
+        // Snapshot Un-Authorized store Path
+        $out .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- SNAPSHOT Un-Authorized Path Writable (system/snapshots/unauthorized): ";
+        $path = SYSTEM_PATH . DS .'snapshots'. DS .'unauthorized'. DS;
+        if (!Directory::IsWritable( $path ))
+        {
+            $out .= __FAIL;
+            $errors = true;
+        }
+        else
+        {
+            $out .= __PASS;
+        }
+
         // Check Admin Backup Write Access
         $out .= " > Checking Database Backup Storage Path...<br />";
         $path = str_replace(array('/', '\\'), DS, ltrim(Cfg::Get('admin_backup_path'), '/'));

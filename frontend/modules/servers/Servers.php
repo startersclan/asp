@@ -31,7 +31,7 @@ class Servers
         // Fetch server list!
         $pdo = Database::GetConnection('stats');
         $result = $pdo->query("SELECT * FROM `server` ORDER BY id ASC");
-        $servers = $result->fetchAll() or [];;
+        $servers = $result->fetchAll() or [];
 
         // Select counts of snapshots received by each server
         $counts = [];
