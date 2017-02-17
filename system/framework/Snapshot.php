@@ -134,8 +134,8 @@ class Snapshot extends GameResult
             throw new Exception("No End of File element was found, Snapshot assumed to be incomplete.");
 
         // Server data
-        $this->serverPrefix = $data[0];
-        $this->serverName = $data[1];
+        $this->serverPrefix = preg_replace("/[^A-Za-z0-9_]/", '', $data[0]);
+        $this->serverName = preg_replace("/[^". Player::NAME_REGEX ."]/", '',$data[1]);
         $this->serverPort = (int)$standardData["gameport"];
         $this->queryPort = (int)$standardData["queryport"];
 
