@@ -31,17 +31,21 @@ class Servers
         // Fetch server list!
         $pdo = Database::GetConnection('stats');
         $result = $pdo->query("SELECT * FROM `server` ORDER BY id ASC");
-        $servers = $result->fetchAll();
-
-        // Correction on false return
-        if ($servers === false)
-            $servers = [];
+        $servers = $result->fetchAll() or [];;
 
         // Select counts of snapshots received by each server
+        $counts = [];
+        $res = $pdo->query("SELECT `serverid`, COUNT(*) AS `count` FROM `round_history` GROUP BY `serverid`")->fetchAll();
+        foreach ($res as $row)
+        {
+            $key = (int)$row['serverid'];
+            $counts[$key] = (int)$row['count'];
+        }
+
         for ($i = 0; $i < count($servers); $i++)
         {
-            $id = (int)$servers[$i]['id'];
-            $servers[$i]['snapshots'] = $pdo->query("SELECT COUNT(*) FROM `round_history` WHERE serverid={$id}")->fetchColumn(0);
+            $key = (int)$servers[$i]['id'];
+            $servers[$i]['snapshots'] = (!isset($counts[$key])) ? 0 : $counts[$key];
         }
 
         // Load view
@@ -91,8 +95,16 @@ class Servers
 
                     // Get insert ID
                     $id = $pdo->lastInsertId('id');
-
-                    echo json_encode(array('success' => true, 'message' => $id));
+                    echo json_encode([
+                        'success' => true,
+                        'mode' => 'add',
+                        'serverId' => $id,
+                        'serverName' => $items['serverName'],
+                        'serverPrefix' => $items['serverPrefix'],
+                        'serverIp' => $items['serverIp'],
+                        'serverPort' => $items['serverPort'],
+                        'serverQueryPort' => $items['serverQueryPort']
+                    ]);
                     break;
                 case 'edit':
                     $pdo->update('server', [
@@ -103,7 +115,16 @@ class Servers
                         'queryport' => (int)$items['serverQueryPort']
                     ], ['id' => $id]);
 
-                    echo json_encode(array('success' => true, 'message' => $id));
+                    echo json_encode([
+                        'success' => true,
+                        'mode' => 'update',
+                        'serverId' => $id,
+                        'serverName' => $items['serverName'],
+                        'serverPrefix' => $items['serverPrefix'],
+                        'serverIp' => $items['serverIp'],
+                        'serverPort' => $items['serverPort'],
+                        'serverQueryPort' => $items['serverQueryPort']
+                    ]);
                     break;
                 default:
                     echo json_encode(array('success' => false, 'message' => 'Invalid Action'));

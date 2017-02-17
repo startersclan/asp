@@ -2,7 +2,7 @@
 <div class="mws-stat-container clearfix">
 
 	<!-- Statistic Item -->
-	<a class="mws-stat" href="#">
+	<a class="mws-stat" href="/ASP/mapinfo">
 		<!-- Statistic Icon (edit to change icon) -->
 		<span class="mws-stat-icon icol32-monitor-lightning"></span>
 
@@ -46,7 +46,7 @@
 		</span>
 	</a>
 
-	<a class="mws-stat" href="#">
+	<a class="mws-stat" href="/ASP/servers">
 		<!-- Statistic Icon (edit to change icon) -->
 		<span class="mws-stat-icon icol32-application-osx-terminal"></span>
 

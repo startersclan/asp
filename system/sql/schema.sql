@@ -45,7 +45,7 @@ CREATE TABLE `_version` (
   `version` VARCHAR(10) NOT NULL,
   `time` INT DEFAULT 0,
   PRIMARY KEY(`updateid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
 
 CREATE TRIGGER `_version_inserttime` BEFORE INSERT ON `_version`
 FOR EACH ROW SET new.time = UNIX_TIMESTAMP();
@@ -59,7 +59,7 @@ CREATE TABLE `army` (
   `name` VARCHAR(32) NOT NULL,
   `desc` VARCHAR(32) DEFAULT NULL,
   PRIMARY KEY(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
 
 --
 -- Table structure for table `mapinfo`
@@ -75,7 +75,7 @@ CREATE TABLE `mapinfo` (
   `deaths` INT UNSIGNED NOT NULL DEFAULT 0,
   `custom` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
 
 --
 -- Table structure for table `server`
@@ -92,9 +92,7 @@ CREATE TABLE `server` (
   `lastupdate` INT NOT NULL DEFAULT 0,
   PRIMARY KEY(`id`),
   CONSTRAINT `ip-port-unq` UNIQUE (`ip`, `port`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TRIGGER `server_update` BEFORE UPDATE ON `server` FOR EACH ROW SET new.lastupdate = UNIX_TIMESTAMP();
+) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
 
 --
 -- Table structure for table `round_history`
@@ -121,7 +119,7 @@ CREATE TABLE `round_history` (
   PRIMARY KEY(`id`),
   FOREIGN KEY(`mapid`) REFERENCES mapinfo(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   FOREIGN KEY(`serverid`) REFERENCES server(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
 
 --
 -- Table structure for table `unlock`
@@ -132,7 +130,7 @@ CREATE TABLE `unlock` (
   `kit` TINYINT NOT NULL,
   `name` VARCHAR(32) NOT NULL,
   `desc` VARCHAR(32) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
 
 -- --------------------------------------------------------
 -- Stats: Player Tables
@@ -205,7 +203,7 @@ CREATE TABLE `player` (
   `permban` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
   `clantag` VARCHAR(20) NOT NULL DEFAULT '',
   PRIMARY KEY(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
 
 delimiter $$
 
@@ -237,7 +235,7 @@ CREATE TABLE `player_army` (
   PRIMARY KEY(`pid`,`id`),
   FOREIGN KEY(`id`) REFERENCES army(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
 
 --
 -- Table structure for table `player_award`
@@ -253,7 +251,7 @@ CREATE TABLE `player_award` (
   PRIMARY KEY(`pid`,`id`,`level`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`roundid`) REFERENCES round_history(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
 
 delimiter $$
 
@@ -277,7 +275,7 @@ CREATE TABLE `player_kill` (
   PRIMARY KEY(`attacker`,`victim`),
   FOREIGN KEY(`attacker`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`victim`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
 
 --
 -- Table structure for table `player_map`
@@ -294,7 +292,7 @@ CREATE TABLE `player_map` (
   PRIMARY KEY(`pid`,`mapid`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`mapid`) REFERENCES mapinfo(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
 
 --
 -- Table structure for table `player_kit`
@@ -308,7 +306,7 @@ CREATE TABLE `player_kit` (
   `deaths` INT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`pid`,`id`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
 
 --
 -- Table structure for table `player_history`
@@ -330,7 +328,7 @@ CREATE TABLE `player_history` (
   PRIMARY KEY(`pid`,`roundid`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`roundid`) REFERENCES round_history(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
 
 --
 -- Table structure for table `player_unlock`
@@ -342,7 +340,7 @@ CREATE TABLE `player_unlock` (
   PRIMARY KEY(`pid`,`unlockid`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`unlockid`) REFERENCES `unlock`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET utf8_general_ci;
 
 --
 -- Table structure for table `player_vehicle`
@@ -357,7 +355,7 @@ CREATE TABLE `player_vehicle` (
   `roadkills` INT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`pid`,`id`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
 
 --
 -- Table structure for table `weapons`
@@ -373,7 +371,7 @@ CREATE TABLE `player_weapon` (
   `hits` INT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`pid`,`id`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
 
 --
 -- Table structure for table `ip2nation`
@@ -383,7 +381,7 @@ CREATE TABLE `ip2nation` (
   `ip` INT UNSIGNED NOT NULL DEFAULT 0,
   `country` char(2) NOT NULL DEFAULT '',
   PRIMARY KEY(`ip`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
 
 -- --------------------------------------------------------
 
@@ -400,7 +398,7 @@ CREATE TABLE `ip2nationcountries` (
   `lat` float NOT NULL DEFAULT 0,
   `lon` float NOT NULL DEFAULT 0,
   PRIMARY KEY(`code`)
-) ENGINE=InnoDB DEFAULT CHARSET=UTF8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
 
 
 -- --------------------------------------------------------

@@ -42,7 +42,7 @@ $(document).ready(function() {
         });
 
 	/* Responsive Layout Script */
-	$("div#mws-navigation").live('click', function(event) {
+	$("div#mws-navigation").on("click", function(event) {
 		if(event.target === this) {
 			$(this).toggleClass('toggled');
 		}

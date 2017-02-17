@@ -144,6 +144,7 @@ class Snapshot extends GameResult
         $this->mapId = (int)$standardData["mapid"];
         $this->roundStartTime = (int)$standardData["mapstart"];
         $this->roundEndTime = (int)$standardData["mapend"];
+        $this->roundTime = $this->roundEndTime - $this->roundStartTime;
 
         // Misc Data
         $this->gameMode = (int)$standardData["gm"];
