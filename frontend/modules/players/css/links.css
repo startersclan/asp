@@ -1,0 +1,13 @@
+.mws-table tr td a:link {
+    color: #000000;
+}
+
+.mws-table tr td a:visited {
+    color: #000000;
+    text-decoration: underline;
+}
+
+img.center {
+    display: block;
+    margin: 0 auto;
+}

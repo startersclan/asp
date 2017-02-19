@@ -70,11 +70,7 @@ div#dbver {
 
 #mws-searchbox .mws-search-submit,
 .mws-panel .mws-panel-header .mws-collapse-button span,
-.dataTables_wrapper .dataTables_paginate .paginate_disabled_previous,
-.dataTables_wrapper .dataTables_paginate .paginate_enabled_previous,
-.dataTables_wrapper .dataTables_paginate .paginate_disabled_next,
-.dataTables_wrapper .dataTables_paginate .paginate_enabled_next,
-.dataTables_wrapper .dataTables_paginate .paginate_active,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
 .mws-table tbody tr.odd:hover td,
 .mws-table tbody tr.even:hover td,
 .ui-slider-horizontal .ui-slider-range,

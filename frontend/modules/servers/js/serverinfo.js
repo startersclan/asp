@@ -69,6 +69,7 @@
 
                 // Show dialog form
                 $("#add-server-form").dialog("option", {
+                    title: "Add New Server",
                     modal: true
                 }).dialog("open");
 
@@ -106,6 +107,7 @@
                 }
             }
         });
+
         //noinspection JSJQueryEfficiency
         $("#mws-validate").ajaxForm({
             beforeSubmit: function (arr, data, options)
@@ -168,7 +170,13 @@
 
         // Tooltips
         //noinspection JSUnresolvedVariable
-        $.fn.tooltip && $('[rel="tooltip"]').tooltip();
+        $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
+
+        // Bind tooltips to new rows added from Ajax
+        $('.mws-datatable-fn').on( 'draw.dt', function () {
+            //noinspection JSUnresolvedVariable
+            $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
+        });
 
         // Row Button Clicks
         $(document).on('click', 'a.btn-small', function(e) {
@@ -199,6 +207,7 @@
 
                 // Show dialog form
                 $("#add-server-form").dialog("option", {
+                    title: 'Update Server Info',
                     modal: true
                 }).dialog("open");
             }

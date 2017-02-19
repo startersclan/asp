@@ -15,7 +15,7 @@ class Mapinfo
 {
     /**
      * @protocol    ANY
-     * @request     /ASP/servers
+     * @request     /ASP/mapinfo
      * @output      html
      */
     public function index()

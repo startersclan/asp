@@ -253,4 +253,28 @@ class Asp
         // Invoke the module controller and action
         $method->invokeArgs($controller, $params);
     }
+
+    public static function LogException(Exception $e)
+    {
+        $log = LogWriter::Instance('Asp');
+        $log->logError('Exception Type: '. get_class($e));
+        $log->writeLine("\tMessage: ". $e->getMessage());
+        $log->writeLine("\tCode: ". $e->getCode());
+        $log->writeLine("\tFile: ". $e->getFile());
+        $log->writeLine("\tLine: ". $e->getLine());
+        $log->writeLine("\tStack Trace: ");
+        foreach ($e->getTrace() as $message)
+        {
+            $log->writeLine("\t\t- ". $message);
+        }
+
+        if ($ex = $e->getPrevious())
+        {
+            $log->writeLine("\tInner Exceptions: ");
+            do {
+                $log->writeLine(sprintf("\t\t- %s [%s] (%d) : %s", $ex->getMessage(), $ex->getFile(), $ex->getLine(), get_class($ex)));
+            }
+            while ($ex = $e->getPrevious());
+        }
+    }
 }

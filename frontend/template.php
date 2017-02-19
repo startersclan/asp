@@ -10,12 +10,14 @@ function build_navigation()
     $system = array('config', 'install', 'database');
     $players = array('players');
     $server = array('servers','mapinfo', 'snapshots');
+    $game = array('gamedata');
     
     // Prepare for open/closed sections
     $Sys = in_array($task, $system);
     $Plyrs = in_array($task, $players);
     $Svr = in_array($task, $server);
-    if(!$Sys && !$Plyrs && !$Svr) $task = 'home';
+    $Data = in_array($task, $game);
+    if (!$Sys && !$Plyrs && !$Svr && !$Data) $task = 'home';
     
     $html = '
                 <li'; if($task == 'home') $html .= ' class="active"'; $html .= '>
@@ -69,6 +71,9 @@ function build_navigation()
                             <li><a href="/ASP/mapinfo">Map Info</a></li>
                             <li><a href="/ASP/snapshots">Manage Snapshots</a></li>
                         </ul>
+                    </li>
+                    <li'; if($Data == true) $html .= ' class="active"'; $html .= '>
+                        <a href="/ASP/gamedata"><i class="icon-link"></i> Game Data</a>
                     </li>';
                 }
     $html .= '

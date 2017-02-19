@@ -167,7 +167,7 @@ namespace System
     catch (Exception $e)
     {
         $LogWriter->logError("Unable to create a new SNAPSHOT Data Logfile (%s): %s", [$fileName, $e->getMessage()]);
-        die(_ERR_RESPONSE . "Unable to create a new SNAPSHOT Data Logfile!");
+        die(_ERR_RESPONSE . "Internal Server Error");
     }
 
 /*

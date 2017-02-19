@@ -62,7 +62,7 @@ class Home
         // Set arrow direction (with leading space) for active player count
         $result = $pdo->query("SELECT COUNT(id) FROM player WHERE lastonline BETWEEN $twoWeekAgo AND $oneWeekAgo");
         $inactive = (int)$result->fetchColumn(0);
-        $View->set('active_player_raise', ($inactive > $active) ? ' down' : ' up');
+        $View->set('active_player_raise', ($inactive == $active) ? '' : (($inactive > $active) ? ' down' : ' up'));
 
         // Number of Active servers
         $result = $pdo->query("SELECT COUNT(id) FROM server WHERE lastupdate > ". $oneWeekAgo);
@@ -72,7 +72,7 @@ class Home
         // Number of Active players
         $result = $pdo->query("SELECT COUNT(id) FROM server WHERE lastupdate BETWEEN $twoWeekAgo AND $oneWeekAgo");
         $inactive = (int)$result->fetchColumn(0);
-        $View->set('active_server_raise', ($inactive > $active) ? ' down' : ' up');
+        $View->set('active_server_raise', ($inactive == $active) ? '' : (($inactive > $active) ? ' down' : ' up'));
 
         // Attach chart plotting scripts
         $View->attachScript("./frontend/js/flot/jquery.flot.min.js");

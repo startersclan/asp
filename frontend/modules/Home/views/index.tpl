@@ -13,7 +13,7 @@
 		</span>
 	</a>
 
-	<a class="mws-stat" href="#">
+	<a class="mws-stat" href="/ASP/snapshots">
 		<!-- Statistic Icon (edit to change icon) -->
 		<span class="mws-stat-icon icol32-lightning-delete"></span>
 
@@ -24,7 +24,7 @@
 		</span>
 	</a>
 
-	<a class="mws-stat" href="#">
+	<a class="mws-stat" href="/ASP/players">
 		<!-- Statistic Icon (edit to change icon) -->
 		<span class="mws-stat-icon icol32-group"></span>
 
@@ -35,7 +35,7 @@
 		</span>
 	</a>
 
-	<a class="mws-stat" href="#">
+	<a class="mws-stat" href="/ASP/players">
 		<!-- Statistic Icon (edit to change icon) -->
 		<span class="mws-stat-icon icol32-user-green"></span>
 

@@ -29,7 +29,7 @@
                 <th style="width: 7%">Query Port</th>
                 <th style="width: 6%">Snapshots</th>
                 <th style="width: 6%">Authorized</th>
-                <th style="width: 7%"></th>
+                <th style="width: 7%">Actions</th>
             </tr>
             </thead>
             <tbody>

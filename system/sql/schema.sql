@@ -25,10 +25,13 @@ DROP TABLE IF EXISTS `player_kit`;
 DROP TABLE IF EXISTS `player_army`;
 DROP TABLE IF EXISTS `player_award`;
 DROP TABLE IF EXISTS `player`;
+DROP TABLE IF EXISTS `weapon`;
+DROP TABLE IF EXISTS `vehicle`;
 DROP TABLE IF EXISTS `unlock`;
 DROP TABLE IF EXISTS `round_history`;
 DROP TABLE IF EXISTS `server`;
 DROP TABLE IF EXISTS `mapinfo`;
+DROP TABLE IF EXISTS `kit`;
 DROP TABLE IF EXISTS `army`;
 DROP TABLE IF EXISTS `_version`;
 
@@ -45,7 +48,7 @@ CREATE TABLE `_version` (
   `version` VARCHAR(10) NOT NULL,
   `time` INT DEFAULT 0,
   PRIMARY KEY(`updateid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TRIGGER `_version_inserttime` BEFORE INSERT ON `_version`
 FOR EACH ROW SET new.time = UNIX_TIMESTAMP();
@@ -57,9 +60,19 @@ FOR EACH ROW SET new.time = UNIX_TIMESTAMP();
 CREATE TABLE `army` (
   `id` TINYINT UNSIGNED,
   `name` VARCHAR(32) NOT NULL,
-  `desc` VARCHAR(32) DEFAULT NULL,
   PRIMARY KEY(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `kit`
+--
+
+CREATE TABLE `kit` (
+  `id` TINYINT UNSIGNED,
+  `name` VARCHAR(32) NOT NULL,
+  PRIMARY KEY(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 --
 -- Table structure for table `mapinfo`
@@ -75,7 +88,7 @@ CREATE TABLE `mapinfo` (
   `deaths` INT UNSIGNED NOT NULL DEFAULT 0,
   `custom` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `server`
@@ -92,7 +105,7 @@ CREATE TABLE `server` (
   `lastupdate` INT NOT NULL DEFAULT 0,
   PRIMARY KEY(`id`),
   CONSTRAINT `ip-port-unq` UNIQUE (`ip`, `port`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `round_history`
@@ -119,7 +132,7 @@ CREATE TABLE `round_history` (
   PRIMARY KEY(`id`),
   FOREIGN KEY(`mapid`) REFERENCES mapinfo(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   FOREIGN KEY(`serverid`) REFERENCES server(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `unlock`
@@ -130,7 +143,29 @@ CREATE TABLE `unlock` (
   `kit` TINYINT NOT NULL,
   `name` VARCHAR(32) NOT NULL,
   `desc` VARCHAR(32) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `vehicle`
+--
+
+CREATE TABLE `vehicle` (
+  `id` TINYINT UNSIGNED,
+  `name` VARCHAR(32) NOT NULL,
+  PRIMARY KEY(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `weapon`
+--
+
+CREATE TABLE `weapon` (
+  `id` TINYINT UNSIGNED,
+  `name` VARCHAR(32) NOT NULL,
+  PRIMARY KEY(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 
 -- --------------------------------------------------------
 -- Stats: Player Tables
@@ -203,7 +238,7 @@ CREATE TABLE `player` (
   `permban` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
   `clantag` VARCHAR(20) NOT NULL DEFAULT '',
   PRIMARY KEY(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 delimiter $$
 
@@ -233,9 +268,9 @@ CREATE TABLE `player_army` (
   `worst` SMALLINT NOT NULL DEFAULT 0,
   `brnd` SMALLINT NOT NULL DEFAULT 0,
   PRIMARY KEY(`pid`,`id`),
-  FOREIGN KEY(`id`) REFERENCES army(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`id`) REFERENCES army(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `player_award`
@@ -251,7 +286,7 @@ CREATE TABLE `player_award` (
   PRIMARY KEY(`pid`,`id`,`level`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`roundid`) REFERENCES round_history(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 delimiter $$
 
@@ -275,7 +310,7 @@ CREATE TABLE `player_kill` (
   PRIMARY KEY(`attacker`,`victim`),
   FOREIGN KEY(`attacker`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`victim`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `player_map`
@@ -292,7 +327,7 @@ CREATE TABLE `player_map` (
   PRIMARY KEY(`pid`,`mapid`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`mapid`) REFERENCES mapinfo(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `player_kit`
@@ -305,8 +340,9 @@ CREATE TABLE `player_kit` (
   `kills` INT UNSIGNED NOT NULL DEFAULT 0,
   `deaths` INT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`pid`,`id`),
-  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
+  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`id`) REFERENCES kit(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `player_history`
@@ -328,7 +364,7 @@ CREATE TABLE `player_history` (
   PRIMARY KEY(`pid`,`roundid`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`roundid`) REFERENCES round_history(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `player_unlock`
@@ -340,7 +376,7 @@ CREATE TABLE `player_unlock` (
   PRIMARY KEY(`pid`,`unlockid`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`unlockid`) REFERENCES `unlock`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET utf8;
 
 --
 -- Table structure for table `player_vehicle`
@@ -354,8 +390,9 @@ CREATE TABLE `player_vehicle` (
   `deaths` INT UNSIGNED NOT NULL DEFAULT 0,
   `roadkills` INT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`pid`,`id`),
-  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
+  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`id`) REFERENCES vehicle(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `weapons`
@@ -370,8 +407,9 @@ CREATE TABLE `player_weapon` (
   `fired` INT UNSIGNED NOT NULL DEFAULT 0,
   `hits` INT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`pid`,`id`),
-  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
+  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`id`) REFERENCES weapon(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `ip2nation`
@@ -381,7 +419,7 @@ CREATE TABLE `ip2nation` (
   `ip` INT UNSIGNED NOT NULL DEFAULT 0,
   `country` char(2) NOT NULL DEFAULT '',
   PRIMARY KEY(`ip`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -398,7 +436,7 @@ CREATE TABLE `ip2nationcountries` (
   `lat` float NOT NULL DEFAULT 0,
   `lon` float NOT NULL DEFAULT 0,
   PRIMARY KEY(`code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 -- --------------------------------------------------------
@@ -435,10 +473,52 @@ delimiter ;
 -- Insert Default Data
 -- --------------------------------------------------------
 
+--
+-- Dumping data for table `army`
+--
+
+INSERT INTO `army` VALUES (0, 'U.S Marines');
+INSERT INTO `army` VALUES (1, 'Middle Eastern Collation');
+INSERT INTO `army` VALUES (2, 'Peoples Liberation Army');
+INSERT INTO `army` VALUES (3, 'Navy Seals');
+INSERT INTO `army` VALUES (4, 'SAS');
+INSERT INTO `army` VALUES (5, 'SPETZNAS');
+INSERT INTO `army` VALUES (6, 'MEC Special Forces');
+INSERT INTO `army` VALUES (7, 'Rebels');
+INSERT INTO `army` VALUES (8, 'Insurgents');
+INSERT INTO `army` VALUES (9, 'Euro Forces');
+INSERT INTO `army` VALUES (10, 'German Forces');
+INSERT INTO `army` VALUES (11, 'Ukrainian Forces');
+INSERT INTO `army` VALUES (12, 'United Nations');
+INSERT INTO `army` VALUES (13, 'Canadian Forces');
+INSERT INTO `army` VALUES (14, 'Blackwater');
+INSERT INTO `army` VALUES (15, 'Taliban');
+INSERT INTO `army` VALUES (16, 'Australian Forces');
+INSERT INTO `army` VALUES (17, 'Russian Forces');
+INSERT INTO `army` VALUES (18, 'British Forces');
+INSERT INTO `army` VALUES (19, 'NATO Forces');
+INSERT INTO `army` VALUES (20, 'ISIS');
+INSERT INTO `army` VALUES (21, 'Iraqi Forces');
+INSERT INTO `army` VALUES (22, 'U.S Marine Corps');
+INSERT INTO `army` VALUES (23, 'Somalian Forces');
+INSERT INTO `army` VALUES (24, 'U.S Army Rangers');
+
+--
+-- Dumping data for table `kit`
+--
+
+INSERT INTO `kit` VALUES (0, 'Anti-Tank');
+INSERT INTO `kit` VALUES (1, 'Assault');
+INSERT INTO `kit` VALUES (2, 'Engineer');
+INSERT INTO `kit` VALUES (3, 'Medic');
+INSERT INTO `kit` VALUES (4, 'Special Ops');
+INSERT INTO `kit` VALUES (5, 'Support');
+INSERT INTO `kit` VALUES (6, 'Sniper');
 
 --
 -- Dumping data for table `unlock`
 --
+
 INSERT INTO `unlock` VALUES (11, 0, 'Chsht_protecta', 'Protecta shotgun with slugs');
 INSERT INTO `unlock` VALUES (22, 1, 'Usrif_g3a3', 'H&K G3');
 INSERT INTO `unlock` VALUES (33, 2, 'USSHT_Jackhammer', 'Jackhammer shotgun');
@@ -455,38 +535,39 @@ INSERT INTO `unlock` VALUES (444, 0, 'eurif_fnp90', 'P90');
 INSERT INTO `unlock` VALUES (555, 6, 'gbrif_l96a1', 'L96A1');
 
 --
--- Dumping data for table `army`
---
-INSERT INTO `army` VALUES (0, 'U.S Marines', null);
-INSERT INTO `army` VALUES (1, 'Middle Eastern Collation', null);
-INSERT INTO `army` VALUES (2, 'Peoples Liberation Army', null);
-INSERT INTO `army` VALUES (3, 'Navy Seals', null);
-INSERT INTO `army` VALUES (4, 'SAS', null);
-INSERT INTO `army` VALUES (5, 'SPETZNAS', null);
-INSERT INTO `army` VALUES (6, 'MEC Special Forces', null);
-INSERT INTO `army` VALUES (7, 'Rebels', null);
-INSERT INTO `army` VALUES (8, 'Insurgents', null);
-INSERT INTO `army` VALUES (9, 'Euro Forces', null);
-INSERT INTO `army` VALUES (10, 'German Forces', null);
-INSERT INTO `army` VALUES (11, 'Ukrainian Forces', null);
-INSERT INTO `army` VALUES (12, 'United Nations', null);
-INSERT INTO `army` VALUES (13, 'Canadian Forces', null);
-INSERT INTO `army` VALUES (14, 'Blackwater', null);
-INSERT INTO `army` VALUES (15, 'Taliban', null);
-INSERT INTO `army` VALUES (16, 'Australian Forces', null);
-INSERT INTO `army` VALUES (17, 'Russian Forces', null);
-INSERT INTO `army` VALUES (18, 'British Forces', null);
-INSERT INTO `army` VALUES (19, 'NATO Forces', null);
-INSERT INTO `army` VALUES (20, 'ISIS', null);
-INSERT INTO `army` VALUES (21, 'Iraqi Forces', null);
-INSERT INTO `army` VALUES (22, 'U.S Marine Corps', null);
-INSERT INTO `army` VALUES (23, 'Somalian Forces', null);
-INSERT INTO `army` VALUES (24, 'U.S Army Rangers', null);
-
---
--- Dumping data for table `mapinfo`
+-- Dumping data for table `vehicle`
 --
 
+INSERT INTO `vehicle` VALUES (0, 'Armor');
+INSERT INTO `vehicle` VALUES (1, 'Aviator');
+INSERT INTO `vehicle` VALUES (2, 'Air Defense');
+INSERT INTO `vehicle` VALUES (3, 'Helicopter');
+INSERT INTO `vehicle` VALUES (4, 'Transport');
+INSERT INTO `vehicle` VALUES (5, 'Artillery');
+INSERT INTO `vehicle` VALUES (6, 'Ground Defense');
+
+--
+-- Dumping data for table `weapon`
+--
+
+INSERT INTO `weapon` VALUES (0, 'Assault Rifle');
+INSERT INTO `weapon` VALUES (1, 'Assault Grenade');
+INSERT INTO `weapon` VALUES (2, 'Carbine');
+INSERT INTO `weapon` VALUES (3, 'Light Machine Gun');
+INSERT INTO `weapon` VALUES (4, 'Sniper Rifle');
+INSERT INTO `weapon` VALUES (5, 'Pistol');
+INSERT INTO `weapon` VALUES (6, 'Anti-Tank / Anti-Air');
+INSERT INTO `weapon` VALUES (7, 'Sub Machine Gun');
+INSERT INTO `weapon` VALUES (8, 'Shotgun');
+INSERT INTO `weapon` VALUES (9, 'Knife');
+INSERT INTO `weapon` VALUES (10, 'Defibrillator');
+INSERT INTO `weapon` VALUES (11, 'C4');
+INSERT INTO `weapon` VALUES (12, 'Hand Grenade');
+INSERT INTO `weapon` VALUES (13, 'Claymore');
+INSERT INTO `weapon` VALUES (14, 'Anti-Tank Mine');
+INSERT INTO `weapon` VALUES (15, 'Grappling Hook');
+INSERT INTO `weapon` VALUES (16, 'Zipline');
+INSERT INTO `weapon` VALUES (17, 'Tactical');
 
 --
 -- Dumping data for table `_version`
