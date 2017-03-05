@@ -255,8 +255,7 @@ class Gamedata extends Controller
                     echo json_encode($data);
                     break;
                 case 'edit':
-                    $origId = (int)$items['originalId'];
-                    $pdo->update('award', $data, ['id' => $origId]);
+                    $pdo->update('award', $data, ['id' => (int)$items['originalId']]);
 
                     $data['success'] = true;
                     $data['mode'] = 'edit';

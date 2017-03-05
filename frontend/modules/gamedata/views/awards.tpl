@@ -1,7 +1,7 @@
 <div id="jui-message" style="display: none;"></div>
 <div class="mws-panel grid_8">
     <div class="mws-panel-header">
-        <span><i class="icon-check"></i> Awards</span>
+        <span><i class="icon-trophy-2"></i> Awards</span>
     </div>
     <div class="mws-panel-toolbar">
         <div class="btn-toolbar">

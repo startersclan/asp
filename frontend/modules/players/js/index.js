@@ -179,7 +179,8 @@
             var id = sid[sid.length-1];
 
             // Always have the user confirm his action here!
-            var name = $(this).closest('tr').find('td:eq(2) a').html();
+            var tr = $(this).closest('tr');
+            var name = tr.find('td:eq(2) a').html();
 
             if (action == 'edit') {
 
@@ -266,7 +267,7 @@
                                             }
                                             else {
                                                 // Update html and button displays
-                                                Table.row( $(this).closest('tr') ).remove().draw();
+                                                Table.row( tr ).remove().draw();
                                             }
                                         });
 

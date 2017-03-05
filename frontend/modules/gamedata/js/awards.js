@@ -2,10 +2,13 @@
 
     $(document).ready(function() {
 
-        // Data Tables
+        // Data Table
         var Table = $(".mws-datatable-fn").DataTable({
             pagingType: "full_numbers"
         });
+
+        // Selected row node, when we click an action button
+        var selectedRowNode;
 
         // Ajax and form Validation
         //noinspection JSJQueryEfficiency
@@ -19,7 +22,7 @@
                 awardId: {
                     required: true,
                     min: 1000000,
-                    max: 3999999
+                    max: 3400000
                 }
             },
             invalidHandler: function (form, validator) {
@@ -30,6 +33,29 @@
                 } else {
                     $("#mws-validate-error").hide();
                 }
+            }
+        });
+
+        /**
+         * Updates the award ID rules with the award type changes
+         */
+        $('#awardType').change(function() {
+            var selector = $('#awardId');
+            selector.rules('remove', 'min');
+            selector.rules('remove', 'max');
+
+            var i = parseInt($(this).val());
+            switch (i)
+            {
+                case 0:
+                    selector.rules('add', { min: 3000000, max: 3400000 });
+                    break;
+                case 1:
+                    selector.rules('add', { min: 1000000, max: 1400000 });
+                    break;
+                case 2:
+                    selector.rules('add', { min: 2000000, max: 2400000 });
+                    break;
             }
         });
 
@@ -70,7 +96,7 @@
 
                 // Set hidden input value
                 $('input[name="action"]').val('add');
-                $('input[name="originalId"]').val(0);
+                $('input[name="originalId"]').val('add');
 
                 // Set form default values
                 $('input[name="awardName"]').val("");
@@ -125,12 +151,11 @@
                         $( rowNode ).attr('id', 'tr-award-' + id);
                     }
                     else if (result.mode == 'edit') {
-                        rowNode = $('#tr-award-' + id);
-                        rowNode.find('td:eq(0)').html(result.id);
-                        rowNode.find('td:eq(1)').html(result.name);
-                        rowNode.find('td:eq(2)').html(result.code);
-                        rowNode.find('td:eq(3)').html(typeToString(result.type));
-                        rowNode.find('td:eq(4)').html(backend);
+                        selectedRowNode.find('td:eq(0)').html(result.id);
+                        selectedRowNode.find('td:eq(1)').html(result.name);
+                        selectedRowNode.find('td:eq(2)').html(result.code);
+                        selectedRowNode.find('td:eq(3)').html(typeToString(result.type));
+                        selectedRowNode.find('td:eq(4)').html(backend);
                     }
 
                     // Close dialog
@@ -142,6 +167,7 @@
             },
             error: function(request, status, error) {
                 $('#jui-message').attr('class', 'alert error').html('AJAX Error! Please check the console log.').slideDown(500);
+                console.log(error);
             },
             timeout: 5000
         });
@@ -177,15 +203,15 @@
             e.preventDefault();
 
             // Extract the server ID
+            selectedRowNode = $(this).closest('tr');
             var sid = $(this).attr('id').split("-");
             var action = sid[0];
-            var id = sid[sid.length-1];
 
             // Always have the user confirm his action here!
-            var tr = $(this).closest('tr');
-            var name = tr.find('td:eq(1)').html();
-            var code = tr.find('td:eq(2)').html();
-            var backend = tr.find('td:eq(4)').html();
+            var id = selectedRowNode.find('td:eq(0)').html();
+            var name = selectedRowNode.find('td:eq(1)').html();
+            var code = selectedRowNode.find('td:eq(2)').html();
+            var backend = selectedRowNode.find('td:eq(4)').html();
 
             if (action == 'edit') {
 
@@ -227,7 +253,9 @@
             else if (action == 'delete') {
                 // Show dialog form
                 $("#mws-jui-dialog")
-                    .html('Are you sure you want to delete award "' + name + '"? This action cannot be undone.')
+                    .html('Are you sure you want to delete award "' + name + '"? This action cannot be <b>reversed</b>! \
+                        All Players who have earned this award will have this award removed from their awards list.'
+                    )
                     .dialog("option", {
                         modal: true,
                         buttons: [
@@ -245,7 +273,7 @@
                                             }
                                             else {
                                                 // Update html and button displays
-                                                Table.row( tr ).remove().draw();
+                                                Table.row( selectedRowNode ).remove().draw();
                                             }
                                         });
 
