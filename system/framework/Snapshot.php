@@ -60,13 +60,13 @@ class Snapshot extends GameResult
         $data = explode('\\', $snapshotData);
         $length = count($data);
 
-        // Load award data
-        AwardData::Load();
-
         // Check for invalid snapshot string. All snapshots have at least 36 data pairs,
         // and has an Even number of data sectors.
         if ($length < 36 || $length % 2 != 0)
             throw new Exception("Snapshot does not contain at least 36 elements, or contains an odd number of elements");
+
+        // Load award data
+        AwardData::Load();
 
         // local vars
         $standardData = new Dictionary();

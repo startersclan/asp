@@ -12,6 +12,7 @@ use System\Config AS Cfg;
 use System\Database;
 use System\IO\Directory;
 use System\IO\File;
+use System\IO\Path;
 use System\Response;
 use System\View;
 
@@ -251,9 +252,9 @@ class Config
 
         // Check Admin Backup Write Access
         $out .= " > Checking Database Backup Storage Path...<br />";
-        $path = str_replace(array('/', '\\'), DS, ltrim(Cfg::Get('admin_backup_path'), '/'));
+        $path = Path::Combine(SYSTEM_PATH, "backups");
         $out .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Backup Path Writable ({$path}): ";
-        if (!File::IsWritable( $path ))
+        if (!Directory::IsWritable( $path ))
         {
             $out .= __FAIL;
             $errors = true;

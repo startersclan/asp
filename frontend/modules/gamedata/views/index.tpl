@@ -148,7 +148,7 @@
     </div>
 </div>
 
-<!-- Add New Player Ajax Model -->
+<!-- Add New Item Ajax Model -->
 <div id="editor-form">
     <form id="mws-validate" class="mws-form" method="post" action="/ASP/gamedata/add">
         <input id="post-action" type="hidden" name="action" value="add">

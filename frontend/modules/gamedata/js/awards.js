@@ -2,53 +2,26 @@
 
     $(document).ready(function() {
 
-        /**
-         * Extracts the filename, without extension from a path
-         *
-         * @param extension The filepath
-         * @returns {string} Returns the filename, without extension
-         */
-        String.prototype.filename = function(extension){
-            var s = this.replace(/\\/g, '/');
-            s = s.substring(s.lastIndexOf('/')+ 1);
-            return extension ? s.replace(/[?#].+$/, '') : s.split('.')[0];
-        };
-
         // Data Tables
         var Table = $(".mws-datatable-fn").DataTable({
-            pagingType: "full_numbers",
-            processing: false,
-            serverSide: true,
-            ajax: {
-                url: "/ASP/players/list",
-                type: "POST"
-            },
-            columns: [
-                { "data": "id" },
-                { "data": "rank" },
-                { "data": "name" },
-                { "data": "score" },
-                { "data": "country" },
-                { "data": "joined" },
-                { "data": "online" },
-                { "data": "clan" },
-                { "data": "permban" },
-                { "data": "actions" }
-            ],
-            columnDefs: [
-                { "searchable": false, "targets": 1 },
-                { "searchable": false, "targets": 3 },
-                { "searchable": false, "targets": 5 },
-                { "searchable": false, "targets": 6 },
-                { "searchable": false, "targets": 7 },
-                { "searchable": false, "targets": 8 },
-                { "searchable": false, "orderable": false, "targets": 9 }
-            ]
+            pagingType: "full_numbers"
         });
 
         // Ajax and form Validation
         //noinspection JSJQueryEfficiency
         var validator = $("#mws-validate").validate({
+            rules: {
+                awardCode: {
+                    required: true,
+                    minlength: 1,
+                    maxlength: 6
+                },
+                awardId: {
+                    required: true,
+                    min: 1000000,
+                    max: 3999999
+                }
+            },
             invalidHandler: function (form, validator) {
                 var errors = validator.numberOfInvalids();
                 if (errors) {
@@ -63,9 +36,9 @@
         // Modal forms
         //noinspection JSUnresolvedVariable
         if( $.fn.dialog ) {
-            $("#add-player-form").dialog({
+            $("#editor-form").dialog({
                 autoOpen: false,
-                title: "Add New Player",
+                title: "Add New Award",
                 modal: true,
                 width: "640",
                 resizable: false,
@@ -97,9 +70,16 @@
 
                 // Set hidden input value
                 $('input[name="action"]').val('add');
+                $('input[name="originalId"]').val(0);
 
                 // Set form default values
                 $('input[name="awardName"]').val("");
+                $('input[name="awardCode"]').val("");
+                $('input[name="awardId"]').val("");
+
+
+                $("#awardType").val(0);
+                $("#awardBackend").val(0);
 
                 // Show dialog form
                 $("#editor-form").dialog("option", {
@@ -123,12 +103,38 @@
                 // Parse the JSON response
                 var result = jQuery.parseJSON(response);
                 if (result.success == true) {
+                    var id = result.id;
+                    var rowNode;
+                    var backend = (parseInt(result.backend) == 1) ? 'Yes' : 'No';
 
-                    // Reload the table
-                    Table.ajax.reload();
+                    if (result.mode == 'add') {
+                        // Add award to table
+                        //noinspection JSUnresolvedFunction
+                        rowNode = Table.row.add([
+                            result.id,
+                            result.name,
+                            result.code,
+                            typeToString(result.type),
+                            backend,
+                            '<span class="btn-group"> \
+                                <a id="edit-' + id + '" href="#"  rel="tooltip" title="Edit Award" class="btn btn-small"><i class="icon-pencil"></i></a> \
+                                <a id="delete-' + id + '" href="#" class="btn btn-small" rel="tooltip" title="Delete Award" ><i class="icon-trash"></i></a> \
+                            </span>'
+                        ]).draw().node();
+
+                        $( rowNode ).attr('id', 'tr-award-' + id);
+                    }
+                    else if (result.mode == 'edit') {
+                        rowNode = $('#tr-award-' + id);
+                        rowNode.find('td:eq(0)').html(result.id);
+                        rowNode.find('td:eq(1)').html(result.name);
+                        rowNode.find('td:eq(2)').html(result.code);
+                        rowNode.find('td:eq(3)').html(typeToString(result.type));
+                        rowNode.find('td:eq(4)').html(backend);
+                    }
 
                     // Close dialog
-                    $("#add-player-form").dialog("close");
+                    $("#editor-form").dialog("close");
                 }
                 else {
                     $('#jui-message').attr('class', 'alert error').html(result.message).slideDown(500);
@@ -140,19 +146,16 @@
             timeout: 5000
         });
 
-        // Spinners
-        //noinspection JSUnresolvedVariable
-        $.fn.spinner && $('.mws-spinner').spinner();
-
-        /* Chosen Select Box Plugin */
-        $.fn.select2 && $("select.mws-select2").select2();
-
         // Tooltips
         // Bind tooltips to new rows added from Ajax
         $('.mws-datatable-fn').on( 'draw.dt', function () {
             //noinspection JSUnresolvedVariable
             $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
         });
+
+        // Spinners
+        //noinspection JSUnresolvedVariable
+        $.fn.spinner && $('.mws-spinner').spinner();
 
         // Refresh Click
         $("#refresh").click(function(e) {
@@ -161,7 +164,7 @@
             e.preventDefault();
 
             // Reload page (temporary).
-            Table.ajax.reload();
+            location.reload();
 
             // Just to be sure, older IE's needs this
             return false;
@@ -179,7 +182,10 @@
             var id = sid[sid.length-1];
 
             // Always have the user confirm his action here!
-            var name = $(this).closest('tr').find('td:eq(2) a').html();
+            var tr = $(this).closest('tr');
+            var name = tr.find('td:eq(1)').html();
+            var code = tr.find('td:eq(2)').html();
+            var backend = tr.find('td:eq(4)').html();
 
             if (action == 'edit') {
 
@@ -187,68 +193,41 @@
                 $("#mws-validate-error").hide();
                 validator.resetForm();
 
-                // Set hidden input values
+                // Set hidden input value
                 $('input[name="action"]').val('edit');
-                $('input[name="playerId"]').val(id);
+                $('input[name="originalId"]').val(id);
 
-                // Set form values
-                $('input[name="playerName"]').val(name);
-                $('input[name="playerPassword"]').val("").rules('remove', 'required');
-                $('#passwordLabel').html('Update Password');
+                // Set form default values
+                $('input[name="awardName"]').val(name);
+                $('input[name="awardCode"]').val(code);
+                $('input[name="awardId"]').val(id);
+                $("#awardBackend").val( (backend == 'Yes') ? 1 : 0 );
 
-                // Set player rank
-                var rankHtml = $(this).closest('tr').find('td:eq(1)').html();
-                var rank =  rankHtml.filename().split('_')[1];
-                $("#rankSelect").val(rank);
-
-                // Select users country
-                var cntry = $(this).closest('tr').find('td:eq(4)').html();
-                $("select.mws-select2").val(cntry).change();
+                // Set award type
+                var awardType = $("#awardType");
+                switch (id[0])
+                {
+                    case "1":
+                        awardType.val(1);
+                        break;
+                    case "2":
+                        awardType.val(2);
+                        break;
+                    case "3":
+                        awardType.val(0);
+                        break;
+                }
 
                 // Show dialog form
-                $("#add-player-form").dialog("option", {
+                $("#editor-form").dialog("option", {
                     modal: true,
-                    title: 'Update Existing Player'
+                    title: 'Update Existing Award'
                 }).dialog("open");
-            }
-            else if (action == 'unban') {
-                // Push the request
-                $.post( "/ASP/players/authorize", { action: "unban", playerId: id })
-                    .done(function( data ) {
-                        // Parse response
-                        var result = jQuery.parseJSON(data);
-                        if (result.success == false) {
-                            $('#jui-message').attr('class', 'alert error').html(result.message).slideDown(500);
-                        }
-                        else {
-                            // Update html and button displays
-                            $('#unban-btn-' + id).closest('tr').find('td:eq(8)').html('<font color="green">No</font>');
-                            $('#unban-btn-' + id).hide();
-                            $('#ban-btn-' + id).show();
-                        }
-                    });
-            }
-            else if (action == 'ban') {
-                // Push the request
-                $.post( "/ASP/players/authorize", { action: "ban", playerId: id })
-                    .done(function( data ) {
-                        // Parse response
-                        var result = jQuery.parseJSON(data);
-                        if (result.success == false) {
-                            $('#jui-message').attr('class', 'alert error').html(result.message).slideDown(500);
-                        }
-                        else {
-                            // Update html and button displays
-                            $('#unban-btn-' + id).closest('tr').find('td:eq(8)').html('<font color="red">Yes</font>');
-                            $('#unban-btn-' + id).show();
-                            $('#ban-btn-' + id).hide();
-                        }
-                    });
             }
             else if (action == 'delete') {
                 // Show dialog form
                 $("#mws-jui-dialog")
-                    .html('Are you sure you want to delete player "' + name + '"? This action cannot be undone.')
+                    .html('Are you sure you want to delete award "' + name + '"? This action cannot be undone.')
                     .dialog("option", {
                         modal: true,
                         buttons: [
@@ -257,7 +236,7 @@
                                 class: "btn btn-danger",
                                 click: function () {
 
-                                    $.post( "/ASP/players/delete", { action: "delete", playerId: id })
+                                    $.post( "/ASP/gamedata/deleteAward", { action: "delete", awardId: id })
                                         .done(function( data ) {
                                             // Parse response
                                             var result = jQuery.parseJSON(data);
@@ -266,7 +245,7 @@
                                             }
                                             else {
                                                 // Update html and button displays
-                                                Table.row( $(this).closest('tr') ).remove().draw();
+                                                Table.row( tr ).remove().draw();
                                             }
                                         });
 
@@ -288,5 +267,19 @@
         });
 
     });
+
+    function typeToString(type)
+    {
+        switch (parseInt(type))
+        {
+            default:
+            case 0:
+                return "Ribbon";
+            case 1:
+                return "Badge";
+            case 2:
+                return "Medal";
+        }
+    }
 
 }) (jQuery, window, document);

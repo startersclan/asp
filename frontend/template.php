@@ -73,7 +73,12 @@ function build_navigation()
                         </ul>
                     </li>
                     <li'; if($Data == true) $html .= ' class="active"'; $html .= '>
-                        <a href="/ASP/gamedata"><i class="icon-link"></i> Game Data</a>
+                        <a href="#"><i class="icon-link"></i> Game Data</a>
+                        <ul'; if($Data == false) $html .= ' class="closed"'; $html .= '>
+                            <li><a href="/ASP/gamedata">Armies and Object Types</a></li>
+                            <li><a href="/ASP/gamedata/awards">Manage Awards</a></li>
+                            <li><a href="/ASP/gamedata/unlocks">Manage Unlocks</a></li>
+                        </ul>
                     </li>';
                 }
     $html .= '

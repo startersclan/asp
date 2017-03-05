@@ -150,19 +150,6 @@
                             <input type="text" class="small required" name="cfg__stats_lan_override" value="{config.stats_lan_override}" title="">
                         </div>
                     </div>
-                    <div class="mws-form-row">
-                        <label class="mws-form-label"
-                               rel="popover"
-                               data-trigger="hover"
-                               data-placement="right"
-                               data-original-title="Local Player IP Override"
-                               data-content="Individual Players IP 'Override' for Country Code Lookup. Enter one per line.">
-                            Local Player IP Override:
-                        </label>
-                        <div class="mws-form-item">
-                            <textarea class="small" name="cfg__stats_local_pids" rows="50%" cols="100%" title=""><?php echo implode("\n", \System\Config::Get('stats_local_pids')); ?></textarea>
-                        </div>
-                    </div>
                 </fieldset>
 
                 <!-- Global Config -->
@@ -281,19 +268,6 @@
                                 <option value="3" <?php if('{config.debug_lvl}' == '3') echo 'selected="selected"'; ?>>Notice (3)</option>
                                 <option value="4" <?php if('{config.debug_lvl}' == '4') echo 'selected="selected"'; ?>>Detailed (4)</option>
                             </select>
-                        </div>
-                    </div>
-                    <div class="mws-form-row">
-                        <label class="mws-form-label"
-                               rel="popover"
-                               data-trigger="hover"
-                               data-placement="right"
-                               data-original-title="Database Backup Path"
-                               data-content="Path to store database backup data (Include trailing '/'). This should be an absolute path as it is MySQL using it, not PHP (execpt for restores, then PHP needs it).">
-                            DB Backup Path:
-                        </label>
-                        <div class="mws-form-item">
-                            <input type="text" class="small required" name="cfg__admin_backup_path" value="{config.admin_backup_path}" title="">
                         </div>
                     </div>
                     <div class="mws-form-row">

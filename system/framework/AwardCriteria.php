@@ -43,7 +43,8 @@ class AwardCriteria
      * @param string $table The table to run the query
      * @param string $field The field (or columns) to run the query on
      * @param string $where The where statement when running the query
-     * @param callable $function
+     * @param callable $function The function that determines if the criteria is met
+     *  based upon the results of the query.
      */
     public function __construct($table, $field, $where, callable $function)
     {

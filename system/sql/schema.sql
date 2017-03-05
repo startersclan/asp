@@ -12,6 +12,7 @@ DROP TRIGGER IF EXISTS `player_joined`;
 DROP TRIGGER IF EXISTS `_version_inserttime`;
 DROP TRIGGER IF EXISTS `player_award_timestamps`;
 DROP VIEW IF EXISTS `player_weapon_view`;
+DROP VIEW IF EXISTS `player_awards_view`;
 DROP PROCEDURE IF EXISTS `create_player`;
 DROP TABLE IF EXISTS `ip2nationcountries`;
 DROP TABLE IF EXISTS `ip2nation`;
@@ -296,8 +297,8 @@ CREATE TABLE `player_award` (
   `level` TINYINT UNSIGNED NOT NULL DEFAULT 1, -- Badges ONLY, 1 = bronze, 2 = silver, 3 = gold
   PRIMARY KEY(`pid`, `id`, `roundid`, `level`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY(`id`) REFERENCES award(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY(`roundid`) REFERENCES round_history(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  FOREIGN KEY(`id`) REFERENCES award(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY(`roundid`) REFERENCES round_history(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE INDEX `idx_player_awards` ON player_award(`pid`, `id`);
