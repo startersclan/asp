@@ -158,7 +158,7 @@ class View
      */
     public function displayMessage($type, $message)
     {
-       self::$messages[] = array($type, $message);
+        self::$messages[] = array($type, $message);
     }
 
     /**
@@ -198,7 +198,7 @@ class View
             // Display Global Messages
             $buffer = '';
             foreach (self::$messages as $message)
-                $buffer .= "<div class=\"alert {$message[0]}\">". $message[1] ."</div>" . PHP_EOL;
+                $buffer .= "<div class=\"alert {$message[0]}\">" . $message[1] . "</div>" . PHP_EOL;
 
             $header = str_replace($this->LDelim . "GLOBAL_MESSAGES" . $this->RDelim, $buffer, $header);
         }

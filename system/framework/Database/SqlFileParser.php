@@ -146,6 +146,7 @@ class SqlFileParser
 
         while (!$this->eof())
         {
+			// Take all quoted items
             if ($this->peek() === "'" || $this->peek() === "\"")
             {
                 $term = $this->peek();
@@ -163,8 +164,10 @@ class SqlFileParser
                 continue;
             }
 
+			// Remove single line comments
             if ($this->takeIfNext("--") || $this->takeIfNext("#"))
             {
+				// Take until we hit a new line
                 while ($this->peek() !== "\n" && !$this->eof())
                     $this->take();
 
@@ -172,6 +175,7 @@ class SqlFileParser
                 continue;
             }
 
+			// Remove Multi-line comments
             if ($this->takeIfNext("/*"))
             {
                 $nest = 1;
@@ -196,6 +200,7 @@ class SqlFileParser
             $clean .= $this->take();
         }
 
+		// Remove last delimiter
         if (strrpos($clean, ";") === strlen($clean) - 1)
             $clean = substr($clean, 0, strlen($clean) - 1);
 

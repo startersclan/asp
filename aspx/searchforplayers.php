@@ -1,6 +1,6 @@
 <?php
 /*
-    Copyright (C) 2006-2013  BF2Statistics
+    Copyright (C) 2006-2017  BF2Statistics
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@
 // Namespace
 namespace System;
 
-use PDOStatement;
-
 // No direct access
 defined("BF2_ADMIN") or die("No Direct Access");
 
@@ -29,9 +27,15 @@ defined("BF2_ADMIN") or die("No Direct Access");
 $Response = new AspResponse();
 
 // Fetch URL parameter values
-$nick = (isset($_GET['nick'])) ? $_GET['nick'] : '';
+$nick = '';
 $where = (isset($_GET['where'])) ? $_GET['where'] : 'a';
 $sort = (isset($_GET['sort'])) ? $_GET['sort'] : 'a';
+if (isset($_GET['nick']))
+{
+	// Sanitize nick
+    $pattern = Player::NAME_REGEX;
+    $nick = preg_replace("/[^{$pattern}]/", '', $nick);
+}
 
 // Make sure we have a Nick to go by
 if (empty($nick))

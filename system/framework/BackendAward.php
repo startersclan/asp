@@ -12,6 +12,12 @@ namespace System;
 
 use System\Database\DbConnection;
 
+/**
+ * This class represents a Backend Award with a series of criteria's that
+ * can be tested against a player
+ *
+ * @package System
+ */
 class BackendAward
 {
     /**
@@ -37,19 +43,22 @@ class BackendAward
     }
 
     /**
-     * @param Player $player
-     * @param DbConnection $connection
-     * @param int $level
+     * Determines whether or not a player has met all of the required criteria to
+     * earn this backend award.
      *
-     * @return bool
+     * This method does properly allow multiple awarding of backend medals
+     *
+     * @param Player $player The player to run the criteria against
+     * @param DbConnection $connection Stats database connection
+     * @param int $awardCount [Reference Variable] Returns the amount of times the Award has
+     *  been awarded to the player.
+     *
+     * @return bool true if the player has met the criteria to earn this award, or false
      */
-    public function criteriaMet(Player $player, DbConnection $connection, &$level)
+    public function criteriaMet(Player $player, DbConnection $connection, &$awardCount)
     {
-        /**
-         * Get the award count (or level for badges) for this award
-         * @noinspection SqlResolve
-         */
-        $query = "SELECT COALESCE(max(level), 0) FROM player_award WHERE pid=%d AND id=%d";
+        // Get the award count (or level for badges) for this award
+        $query = "SELECT COUNT(id) FROM player_award WHERE pid=%d AND id=%d";
         $result = $connection->query(sprintf($query, $player->pid, $this->awardId));
         $awardCount = (int) $result->fetchColumn();
         $isRibbon = ($this->awardId > 3000000);
@@ -58,14 +67,11 @@ class BackendAward
         if ($isRibbon && $awardCount > 0)
             return false;
 
-        // Set output variable
-        $level = $awardCount;
-
         // Loop through each criteria and see if we have met the criteria
         foreach ($this->awardCriteria as $criteria)
         {
             // Build the query. We always use a count() or sum() to return a sortof bool.
-            $where = str_replace('###', $level, $criteria->where);
+            $where = str_replace('###', $awardCount, $criteria->where);
             $query = vsprintf("SELECT %s FROM `%s` WHERE `pid`=%d AND %s LIMIT 1", [
                 $criteria->field,
                 $criteria->table,
@@ -73,8 +79,7 @@ class BackendAward
                 $where
             ]);
 
-            $result = $connection->query($query);
-            $row = $result->fetch();
+            $row = $connection->query($query)->fetch();
             if (empty($row) || !$criteria->checkCriteria($row, $awardCount))
                 return false;
         }

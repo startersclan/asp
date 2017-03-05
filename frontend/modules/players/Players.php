@@ -71,7 +71,7 @@ class Players
         }
 
         // Load view
-        $view = new View('404', 'players');
+        $view = new View('view', 'players');
         $view->set('id', $id);
 
         // Send output

@@ -10,6 +10,11 @@
 
 namespace System;
 
+/**
+ * Defines a method in which a Player can be tested against a BackendAward criteria
+ *
+ * @package System
+ */
 class AwardCriteria
 {
     /**
@@ -52,13 +57,13 @@ class AwardCriteria
      * Determines if the player has met the criteria to earn an award
      *
      * @param string[] $row The resulting row from the database
-     * @param int $level The award level, or amount of times the Award has been awarded to the player
+     * @param int $awardCount The amount of times the Award has been awarded to the player
      *
      * @return bool true of the criteria for this award has been met for this award
      */
-    public function checkCriteria($row, $level)
+    public function checkCriteria($row, $awardCount)
     {
         $function = $this->function;
-        return $function($row, $level);
+        return $function($row, $awardCount);
     }
 }

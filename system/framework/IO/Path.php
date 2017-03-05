@@ -25,15 +25,16 @@ class Path
     public static function ChangeExtension($path, $extension)
     {
         // If the path has an extension, change it
-        if(($pos = strripos($path, '.')) !== false)
+        if (($pos = strripos($path, '.')) !== false)
         {
             $parts = substr($path, 0, $pos);
-            return (empty($extension)) ? $parts : $parts .'.'. ltrim($extension, '.');
+
+            return (empty($extension)) ? $parts : $parts . '.' . ltrim($extension, '.');
         }
         else
         {
             // Add extension
-            return (empty($extension)) ? $path : $path .'.'. ltrim($extension, '.');
+            return (empty($extension)) ? $path : $path . '.' . ltrim($extension, '.');
         }
     }
 
@@ -55,10 +56,10 @@ class Path
         $parts = array();
 
         // Trim our paths to remove spaces and new lines
-        foreach($args as $part)
+        foreach ($args as $part)
         {
             // If part is array, then implode and continue
-            if(is_array($part))
+            if (is_array($part))
             {
                 // Remove empty entries
                 $part = array_filter($part, 'strlen');
@@ -68,16 +69,16 @@ class Path
 
             // String
             $part = trim($part);
-            if($part == '.' || empty($part))
+            if ($part == '.' || empty($part))
                 continue;
-            elseif($part == '..')
+            elseif ($part == '..')
                 array_pop($parts);
             else
                 $parts[] = $part;
         }
 
         // Get our cleaned path into a variable with the correct directory separator
-        return implode( DIRECTORY_SEPARATOR, $parts );
+        return implode(DIRECTORY_SEPARATOR, $parts);
     }
 
     /**

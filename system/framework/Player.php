@@ -175,14 +175,17 @@ class Player
     /**
      * Player constructor.
      *
+     * Award data is expected to be loaded already before constructing!
+     *
      * @param Dictionary $playerData
      * @param array $killData
      */
     public function __construct(Dictionary $playerData, array $killData)
     {
         /**
-         * We use a dictionary here, so that we get a nice exception
-         * thrown if a key does not exist!
+         * We use a dictionary here, so that we get a detailed exception
+         * thrown if a key does not exist! Helpful for debugging and
+         * validating that there are no missing array keys from the snapshot
          */
         $this->pid = (int)$playerData['pID'];
         $this->name = preg_replace("/[^". Player::NAME_REGEX ."]/", '', $playerData['name']);
@@ -301,7 +304,7 @@ class Player
         if ($this->lwTime < 0) $this->lwTime = 0;
 
         // Extract player awards
-        foreach (BackendAwardData::$Awards as $name => $id)
+        foreach (AwardData::$PythonAwards as $name => $id)
         {
             if (isset($playerData[$name]))
                 $this->earnedAwards[ $id ] = (int)$playerData[$name];

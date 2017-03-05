@@ -1,6 +1,6 @@
 <?php
 /*
-    Copyright (C) 2006-2016  BF2Statistics
+    Copyright (C) 2006-2017  BF2Statistics
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@
 
 // Namespace
 namespace System;
-
-use PDO;
 
 // No direct access
 defined("BF2_ADMIN") or die("No Direct Access");
@@ -51,18 +49,13 @@ else
     $Response->writeHeaderLine("award", "level", "when", "first");
 
     // Query and get all of the Players awards
-    // Use a prepared statement to prevent Sql Injection (level 1)
-    $stmt = $connection->prepare("SELECT `id`, `level`, `earned`, `first` FROM player_award WHERE `pid`=:pid ORDER BY `id`");
-    $stmt->bindValue(':pid', $pid, PDO::PARAM_INT);
-    if ($stmt->execute())
+    $stmt = $connection->query("SELECT * FROM `player_awards_view` WHERE `pid`=$pid ORDER BY `id`");
+    while ($award = $stmt->fetch())
     {
-        // Output awards
-        while ($row = $stmt->fetch())
-        {
-            // Ribbons will get a 'first' value of 0
-            $first = (($row['id'] > 2000000) && ($row['id'] < 3000000)) ? $row['first'] : 0;
-            $Response->writeDataLine($row['id'], $row['level'], $row['earned'], $first);
-        }
+        // Ribbons will get a 'first' value of 0
+        $id = (int)$award['id'];
+        $first = (($id > 2000000) && ($id < 3000000)) ? $award['first'] : 0;
+        $Response->writeDataLine($id, $award['level'], $award['last'], $first);
     }
 
     $Response->send($transpose);

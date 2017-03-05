@@ -32,6 +32,7 @@ DROP TABLE IF EXISTS `round_history`;
 DROP TABLE IF EXISTS `server`;
 DROP TABLE IF EXISTS `mapinfo`;
 DROP TABLE IF EXISTS `kit`;
+DROP TABLE IF EXISTS `award`;
 DROP TABLE IF EXISTS `army`;
 DROP TABLE IF EXISTS `_version`;
 
@@ -64,6 +65,19 @@ CREATE TABLE `army` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
+-- Table structure for table `award`
+--
+
+CREATE TABLE `award` (
+  `id` MEDIUMINT UNSIGNED,              -- Award id, as defined in the medal_data.py
+  `code` VARCHAR(6) UNIQUE NOT NULL,    -- Snapshot award short name, case sensitive
+  `name` VARCHAR(64) NOT NULL,          -- Full name of the award, human readable
+  `type` TINYINT NOT NULL,              -- 0 = ribbon, 1 = Badge, 2 = medal
+  `backend` TINYINT NOT NULL DEFAULT 0, -- Bool: Awarded in the ASP snapshot processor?
+  PRIMARY KEY(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
 -- Table structure for table `kit`
 --
 
@@ -72,7 +86,6 @@ CREATE TABLE `kit` (
   `name` VARCHAR(32) NOT NULL,
   PRIMARY KEY(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 
 --
 -- Table structure for table `mapinfo`
@@ -277,27 +290,17 @@ CREATE TABLE `player_army` (
 --
 
 CREATE TABLE `player_award` (
-  `id` MEDIUMINT UNSIGNED NOT NULL,
-  `pid` INT UNSIGNED NOT NULL,
-  `roundid` INT UNSIGNED DEFAULT NULL,
-  `level` TINYINT UNSIGNED NOT NULL DEFAULT 0,
-  `earned` INT UNSIGNED NOT NULL DEFAULT 0,
-  `first` INT UNSIGNED NOT NULL DEFAULT 0,
-  PRIMARY KEY(`pid`,`id`,`level`),
+  `id` MEDIUMINT UNSIGNED NOT NULL,   -- Award ID
+  `pid` INT UNSIGNED NOT NULL,        -- Player ID
+  `roundid` INT UNSIGNED NOT NULL,    -- The round this award was earned in
+  `level` TINYINT UNSIGNED NOT NULL DEFAULT 1, -- Badges ONLY, 1 = bronze, 2 = silver, 3 = gold
+  PRIMARY KEY(`pid`, `id`, `roundid`, `level`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`id`) REFERENCES award(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`roundid`) REFERENCES round_history(`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-delimiter $$
-
-CREATE TRIGGER `player_award_timestamps` BEFORE INSERT ON `player_award`
-FOR EACH ROW BEGIN
-  IF new.earned = 0 THEN
-    SET new.earned = UNIX_TIMESTAMP();
-  END IF;
-END $$
-
-delimiter ;
+CREATE INDEX `idx_player_awards` ON player_award(`pid`, `id`);
 
 --
 -- Table structure for table `player_kill`
@@ -447,6 +450,12 @@ CREATE OR REPLACE VIEW `player_weapon_view` AS
   SELECT `id`, `pid`, `time`, `kills`, `deaths`, `fired`, `hits`, COALESCE((`hits` * 1.0) / `fired`, 0) AS `accuracy`
   FROM `player_weapon`;
 
+CREATE OR REPLACE VIEW `player_awards_view` AS
+  SELECT a.id AS `id`, MAX(r.round_end) AS `earned`, MIN(r.round_end) AS `first`, COUNT(`level`) AS `level`
+  FROM player_award AS a
+    JOIN round_history AS r ON a.roundid = r.id
+  GROUP BY a.id;
+
 -- --------------------------------------------------------
 -- Create Procedures
 -- --------------------------------------------------------
@@ -502,6 +511,104 @@ INSERT INTO `army` VALUES (21, 'Iraqi Forces');
 INSERT INTO `army` VALUES (22, 'U.S Marine Corps');
 INSERT INTO `army` VALUES (23, 'Somalian Forces');
 INSERT INTO `army` VALUES (24, 'U.S Army Rangers');
+
+--
+-- Dumping data for table `award`
+--
+
+INSERT INTO `award` VALUES (1031406, 'kcb', 'Knife Combat Badge', 1, 0);
+INSERT INTO `award` VALUES (1031619, 'pcb', 'Pistol Combat Badge', 1, 0);
+INSERT INTO `award` VALUES (1031119, 'Acb', 'Assault Combat Badge', 1, 0);
+INSERT INTO `award` VALUES (1031120, 'Atcb', 'Anti-Tank Combat Badge', 1, 0);
+INSERT INTO `award` VALUES (1031109, 'Sncb', 'Sniper Combat Badge', 1, 0);
+INSERT INTO `award` VALUES (1031115, 'Socb', 'Spec Ops Combat Badge', 1, 0);
+INSERT INTO `award` VALUES (1031121, 'Sucb', 'Support Combat Badge', 1, 0);
+INSERT INTO `award` VALUES (1031105, 'Ecb', 'Engineer Combat Badge', 1, 0);
+INSERT INTO `award` VALUES (1031113, 'Mcb', 'Medic Combat Badge', 1, 0);
+INSERT INTO `award` VALUES (1032415, 'Eob', 'Explosive Ordinance Badge', 1, 0);
+INSERT INTO `award` VALUES (1190601, 'Fab', 'First Aid Badge', 1, 0);
+INSERT INTO `award` VALUES (1190507, 'Eb', 'Engineer Badge', 1, 0);
+INSERT INTO `award` VALUES (1191819, 'Rb', 'Resupply Badge', 1, 0);
+INSERT INTO `award` VALUES (1190304, 'Cb', 'Command Badge', 1, 0);
+INSERT INTO `award` VALUES (1220118, 'Ab', 'Armour Badge', 1, 0);
+INSERT INTO `award` VALUES (1222016, 'Tb', 'Transport Badge', 1, 0);
+INSERT INTO `award` VALUES (1220803, 'Hb', 'Helicopter Badge', 1, 0);
+INSERT INTO `award` VALUES (1220122, 'Avb', 'Aviator Badge', 1, 0);
+INSERT INTO `award` VALUES (1220104, 'adb', 'Air Defence Badge', 1, 0);
+INSERT INTO `award` VALUES (1031923, 'Swb', 'Ground Defence Badge', 1, 0);
+INSERT INTO `award` VALUES (1261119, 'X1Acb', 'SF Assault Combat Badge', 1, 0);
+INSERT INTO `award` VALUES (1261120, 'X1Atcb', 'SF Anti-Tank Combat Badge', 1, 0);
+INSERT INTO `award` VALUES (1261109, 'X1Sncb', 'SF Sniper Combat Badge', 1, 0);
+INSERT INTO `award` VALUES (1261115, 'X1Socb', 'SF Spec Ops Combat Badge', 1, 0);
+INSERT INTO `award` VALUES (1261121, 'X1Sucb', 'SF Support Combat Badge', 1, 0);
+INSERT INTO `award` VALUES (1261105, 'X1Ecb', 'SF Engineer Combat Badge', 1, 0);
+INSERT INTO `award` VALUES (1261113, 'X1Mcb', 'SF Medic Combat Badge', 1, 0);
+INSERT INTO `award` VALUES (1260602, 'X1fbb', 'SF Tactical Support Combat Badge', 1, 0);
+INSERT INTO `award` VALUES (1260708, 'X1ghb', 'Grappling Hook Usage', 1, 0);
+INSERT INTO `award` VALUES (1262612, 'X1zlb', 'Zip Line Usage', 1, 0);
+
+INSERT INTO `award` VALUES (3240301, 'Car', 'Combat Action Ribbon', 0, 0);
+INSERT INTO `award` VALUES (3211305, 'Mur', 'Meritorious Unit Ribbon', 0, 0);
+INSERT INTO `award` VALUES (3150914, 'Ior', 'Infantry Officer Ribbon', 0, 0);
+INSERT INTO `award` VALUES (3151920, 'Sor', 'Staff Officer Ribbon', 0, 0);
+INSERT INTO `award` VALUES (3190409, 'Dsr', 'Distinguished Service Ribbon', 0, 0);
+INSERT INTO `award` VALUES (3242303, 'Wcr', 'War College Ribbon', 0, 0);
+INSERT INTO `award` VALUES (3212201, 'Vur', 'Valorous Unit Ribbon', 0, 0);
+INSERT INTO `award` VALUES (3241213, 'Lmr', 'Legion of Merit Ribbon', 0, 0);
+INSERT INTO `award` VALUES (3190318, 'Csr', 'Crew Service Ribbon', 0, 0);
+INSERT INTO `award` VALUES (3190118, 'Arr', 'Armoured Service Ribbon', 0, 0);
+INSERT INTO `award` VALUES (3190105, 'Aer', 'Aerial Service Ribbon', 0, 0);
+INSERT INTO `award` VALUES (3190803, 'Hsr', 'Helicopter Service Ribbon', 0, 0);
+INSERT INTO `award` VALUES (3040109, 'Adr', 'Air-Defence Ribbon', 0, 0);
+INSERT INTO `award` VALUES (3040718, 'Gdr', 'Ground Defence Ribbon', 0, 0);
+INSERT INTO `award` VALUES (3240102, 'Ar', 'Airborne Ribbon', 0, 0);
+INSERT INTO `award` VALUES (3240703, 'gcr', 'Good Conduct Ribbon', 0, 0);
+INSERT INTO `award` VALUES (3260318, 'X1Csr', 'SF Crew Service Ribbon', 0, 0);
+INSERT INTO `award` VALUES (3260118, 'X1Arr', 'SF Armoured Service Ribbon', 0, 0);
+INSERT INTO `award` VALUES (3260105, 'X1Aer', 'SF Aerial Service Ribbon', 0, 0);
+INSERT INTO `award` VALUES (3260803, 'X1Hsr', 'SF Helicopter Service Ribbon', 0, 0);
+
+INSERT INTO `award` VALUES (2191608, 'ph', 'Purple Heart', 2, 0);
+INSERT INTO `award` VALUES (2191319, 'msm', 'Meritorious Service Medal', 2, 0);
+INSERT INTO `award` VALUES (2190303, 'Cam', 'Combat Action Medal', 2, 0);
+INSERT INTO `award` VALUES (2190309, 'Acm', 'Air Combat Medal', 2, 0);
+INSERT INTO `award` VALUES (2190318, 'Arm', 'Armour Combat Medal', 2, 0);
+INSERT INTO `award` VALUES (2190308, 'Hcm', 'Helicopter Combat Medal', 2, 0);
+INSERT INTO `award` VALUES (2190703, 'gcm', 'Good Conduct Medal', 2, 0);
+INSERT INTO `award` VALUES (2020903, 'Cim', 'Combat Infantry Medal', 2, 0);
+INSERT INTO `award` VALUES (2020913, 'Mim', 'Marksman Infantry Medal', 2, 0);
+INSERT INTO `award` VALUES (2020919, 'Sim', 'Sharpshooter Infantry Medal', 2, 0);
+INSERT INTO `award` VALUES (2021322, 'Mvm', 'Medal of Valour', 2, 0);
+INSERT INTO `award` VALUES (2020419, 'Dsm', 'Distinguished Service Medal', 2, 0);
+
+INSERT INTO `award` VALUES (2051907, 'erg', 'End of Round Gold Star', 2, 0);
+INSERT INTO `award` VALUES (2051919, 'ers', 'End of Round Silver Star', 2, 0);
+INSERT INTO `award` VALUES (2051902, 'erb', 'End of Round Bronze Star', 2, 0);
+
+--
+-- Backend Awards
+--
+
+INSERT INTO `award` VALUES (3191305, 'Msr', 'Mid-East Service Ribbon', 0, 1);
+INSERT INTO `award` VALUES (3190605, 'Fsr', 'Far-East Service Ribbon', 0, 1);
+INSERT INTO `award` VALUES (2021403, 'Ncm', 'Navy Cross', 2, 1);
+INSERT INTO `award` VALUES (2020719, 'Gsm', 'Golden Scimitar', 2, 1);
+INSERT INTO `award` VALUES (2021613, 'pmm', 'People''s Medallion', 2, 1);
+INSERT INTO `award` VALUES (2270521, 'Eun', 'European Union Special Service Medal', 2, 1);
+INSERT INTO `award` VALUES (3270519, 'Esr', 'European Union Service Ribbon', 0, 1);
+INSERT INTO `award` VALUES (3271401, 'Nas', 'North American Service Ribbon', 0, 1);
+INSERT INTO `award` VALUES (2261913, 'X1Nsm', 'Navy Seal Special Service Medal', 2, 1);
+INSERT INTO `award` VALUES (2261919, 'X1Ssm', 'SAS Special Service Medal', 2, 1);
+INSERT INTO `award` VALUES (2261613, 'X1Spm', 'SPETZ Special Service Medal', 2, 1);
+INSERT INTO `award` VALUES (2261303, 'X1Mcm', 'MECSF Special Service Medal', 2, 1);
+INSERT INTO `award` VALUES (2261802, 'X1Rbm', 'Rebel Special Service Medal', 2, 1);
+INSERT INTO `award` VALUES (2260914, 'X1Inm', 'Insurgent Special Service Medal', 2, 1);
+INSERT INTO `award` VALUES (3261919, 'X1Nss', 'Navy Seal Service Ribbon', 0, 1);
+INSERT INTO `award` VALUES (3261901, 'X1Sas', 'SAS Service Ribbon', 0, 1);
+INSERT INTO `award` VALUES (3261819, 'X1Rsz', 'SPETZNAS Service Ribbon', 0, 1);
+INSERT INTO `award` VALUES (3261319, 'X1Msf', 'MECSF Service Ribbon', 0, 1);
+INSERT INTO `award` VALUES (3261805, 'X1Reb', 'Rebel Service Ribbon', 0, 1);
+INSERT INTO `award` VALUES (3260914, 'X1Ins', 'Insurgent Service Ribbon', 0, 1);
 
 --
 -- Dumping data for table `kit`

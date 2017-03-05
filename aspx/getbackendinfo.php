@@ -1,6 +1,6 @@
 <?php
 /*
-    Copyright (C) 2006-2012  BF2Statistics
+    Copyright (C) 2006-2017  BF2Statistics
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,26 +40,3 @@ while ($row = $stmt->fetch())
 }
 
 $Response->send();
-
-
-/** Prepare output
-$Response = new AspResponse();
-$Response->writeHeaderLine("ver", "now");
-$Response->writeDataLine("0.1", time());
-$Response->writeHeaderLine("id", "kit", "name", "descr");
-$Response->writeDataLine("11", "0", "Chsht_protecta", "Protecta shotgun with slugs");
-$Response->writeDataLine("22", "1", "Usrif_g3a3", "H&K G3");
-$Response->writeDataLine("33", "2", "USSHT_Jackhammer", "Jackhammer shotgun");
-$Response->writeDataLine("44", "3", "Usrif_sa80", "SA-80");
-$Response->writeDataLine("55", "4", "Usrif_g36c", "G36C");
-$Response->writeDataLine("66", "5", "RULMG_PKM", "PKM");
-$Response->writeDataLine("77", "6", "USSNI_M95_Barret", "Barret M82A2 (.50 cal rifle)");
-$Response->writeDataLine("88", "1", "sasrif_fn2000", "FN2000");
-$Response->writeDataLine("99", "2", "sasrif_mp7", "MP-7");
-$Response->writeDataLine("111", "3", "sasrif_g36e", "G36E");
-$Response->writeDataLine("222", "4", "usrif_fnscarl", "FN SCAR - L");
-$Response->writeDataLine("333", "5", "sasrif_mg36", "MG36");
-$Response->writeDataLine("444", "0", "eurif_fnp90", "P90");
-$Response->writeDataLine("555", "6", "gbrif_l96a1", "L96A1");
-$Response->send();
- */

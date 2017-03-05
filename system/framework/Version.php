@@ -2,22 +2,47 @@
 /**
  * BF2Statistics ASP Management Asp
  *
- * @copyright   2013, BF2Statistics.com
- * @license     GNU GPL v3
+ * Author:       Steven Wilson
+ * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
+ * License:      GNU GPL v3
+ *
  */
 namespace System;
 
-
+/**
+ * Represents a version number
+ *
+ * @package System
+ */
 class Version
 {
+    /**
+     * @var int The major component of this version number
+     */
     public $major = 0;
 
+    /**
+     * @var int The minor component of this version number
+     */
     public $minor = 0;
 
+    /**
+     * @var int The revision component of this version number
+     */
     public $revision = 0;
 
+    /**
+     * @var int The integer representation of this version
+     */
     protected $intVal = 0;
 
+    /**
+     * Version constructor.
+     *
+     * @param int $major The major component of the version number
+     * @param int $minor The minor component of the version number
+     * @param int $revision The revision component of the version number
+     */
     public function __construct($major, $minor = 0, $revision = 0)
     {
         $this->major = $major;
@@ -25,8 +50,16 @@ class Version
         $this->revision = $revision;
     }
 
+    /**
+     * Converts the string representation of a version number to an equivalent Version object.
+     *
+     * @param string $version A string that contains a version number to convert.
+     *
+     * @return Version
+     */
     public static function Parse($version)
     {
+        // Ensure valid characters are passed
         if (!preg_match("/[0-9.]+/i", $version))
             throw new \InvalidArgumentException("Version string contains illegal characters");
 
@@ -48,7 +81,7 @@ class Version
             return new Version($major, $minor, 0);
         }
         else
-            return new Version(intval($ver_arr[0]));
+            return new Version((int)$ver_arr[0]);
     }
 
     /**
@@ -62,6 +95,7 @@ class Version
      */
     public function compare($version)
     {
+        // Ensure we have a Version object before proceeding
         if (!($version instanceof Version))
             $version = Version::Parse($version);
 
@@ -73,6 +107,11 @@ class Version
             return 1;
     }
 
+    /**
+     * Converts this Version object into a comparable integer.
+     *
+     * @return int
+     */
     public function toInt()
     {
         if ($this->intVal == 0)
@@ -83,5 +122,115 @@ class Version
         }
 
         return $this->intVal;
+    }
+
+    /**
+     * Determines whether the first specified Version object equals
+     * the second specified Version object.
+     *
+     * @param Version|string $v1 The first version.
+     * @param Version|string $v2 The second version
+     *
+     * @return bool
+     */
+    public static function Equals($v1, $v2)
+    {
+        // Ensure we have a Version object before proceeding
+        if (!($v1 instanceof Version))
+            $v1 = Version::Parse($v1);
+
+        // Ensure we have a Version object before proceeding
+        if (!($v2 instanceof Version))
+            $v2 = Version::Parse($v2);
+
+        return ($v1->toInt() == $v2->toInt());
+    }
+
+    /**
+     * Determines whether the first specified Version object is greater
+     * than the second specified Version object.
+     *
+     * @param Version|string $v1 The first version.
+     * @param Version|string $v2 The second version
+     *
+     * @return bool
+     */
+    public static function GreaterThan($v1, $v2)
+    {
+        // Ensure we have a Version object before proceeding
+        if (!($v1 instanceof Version))
+            $v1 = Version::Parse($v1);
+
+        // Ensure we have a Version object before proceeding
+        if (!($v2 instanceof Version))
+            $v2 = Version::Parse($v2);
+
+        return ($v1->toInt() > $v2->toInt());
+    }
+
+    /**
+     * Determines whether the first specified Version object is greater
+     * than or equal to the second specified Version object.
+     *
+     * @param Version|string $v1 The first version.
+     * @param Version|string $v2 The second version
+     *
+     * @return bool
+     */
+    public static function GreaterThanOrEqual($v1, $v2)
+    {
+        // Ensure we have a Version object before proceeding
+        if (!($v1 instanceof Version))
+            $v1 = Version::Parse($v1);
+
+        // Ensure we have a Version object before proceeding
+        if (!($v2 instanceof Version))
+            $v2 = Version::Parse($v2);
+
+        return ($v1->toInt() >= $v2->toInt());
+    }
+
+    /**
+     * Determines whether the first specified Version object is less
+     * than the second specified Version object.
+     *
+     * @param Version|string $v1 The first version.
+     * @param Version|string $v2 The second version
+     *
+     * @return bool
+     */
+    public static function LessThan($v1, $v2)
+    {
+        // Ensure we have a Version object before proceeding
+        if (!($v1 instanceof Version))
+            $v1 = Version::Parse($v1);
+
+        // Ensure we have a Version object before proceeding
+        if (!($v2 instanceof Version))
+            $v2 = Version::Parse($v2);
+
+        return ($v1->toInt() < $v2->toInt());
+    }
+
+    /**
+     * Determines whether the first specified Version object is less
+     * than or equal to the second specified Version object.
+     *
+     * @param Version|string $v1 The first version.
+     * @param Version|string $v2 The second version
+     *
+     * @return bool
+     */
+    public static function LessThanOrEqual($v1, $v2)
+    {
+        // Ensure we have a Version object before proceeding
+        if (!($v1 instanceof Version))
+            $v1 = Version::Parse($v1);
+
+        // Ensure we have a Version object before proceeding
+        if (!($v2 instanceof Version))
+            $v2 = Version::Parse($v2);
+
+        return ($v1->toInt() <= $v2->toInt());
     }
 }

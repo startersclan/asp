@@ -56,8 +56,12 @@ class Snapshot extends GameResult
         $this->dataString = $snapshotData;
         $this->serverIp = $serverIp;
 
+        // Convert data string to an array
         $data = explode('\\', $snapshotData);
         $length = count($data);
+
+        // Load award data
+        AwardData::Load();
 
         // Check for invalid snapshot string. All snapshots have at least 36 data pairs,
         // and has an Even number of data sectors.
@@ -255,9 +259,6 @@ class Snapshot extends GameResult
             $this->logWriter->logWarning("Minimum round Player count does not meet the ASP requirement... Aborting");
             throw new Exception("Minimum round Player count does not meet the ASP requirement");
         }
-
-        // Import backend awards
-        BackendAwardData::Load();
 
         // To prevent half complete snapshots due to exceptions,
         // Put the whole thing in a try block, and rollback on error
@@ -544,7 +545,7 @@ class Snapshot extends GameResult
                 if ($player->completedRound || !Config::Get('stats_awds_complete'))
                 {
                     // Add Backend awards to player
-                    foreach (BackendAwardData::$BackendAwards as $award)
+                    foreach (AwardData::$BackendAwards as $award)
                     {
                         if ($award->criteriaMet($player, $connection, $level))
                             $player->earnedAwards[$award->awardId] = $level;
@@ -586,20 +587,17 @@ class Snapshot extends GameResult
                                         $query->set('id', '=', $key);
                                         $query->set('roundid', '=', $roundId);
                                         $query->set('level', '=', $j);
-                                        $query->set('earned', '=', $this->roundEndTime + 5 + $j);
-                                        $query->set('first', '=', 0);
                                         $query->executeInsert();
                                     }
                                 }
                             }
 
+                            // Add player award
                             $query = new UpdateOrInsertQuery($connection, 'player_award');
                             $query->set('pid', '=', $player->pid);
                             $query->set('id', '=', $key);
                             $query->set('roundid', '=', $roundId);
                             $query->set('level', '=', $value);
-                            $query->set('earned', '=', $this->roundEndTime);
-                            $query->set('first', '=', ($isMedal) ? $this->roundEndTime : 0);
                             $query->executeInsert();
                         }
                         else if ($isMedal) // === Player has received this award prior === //
@@ -608,9 +606,8 @@ class Snapshot extends GameResult
                             $query->where('pid', '=', $player->pid);
                             $query->where('id', '=', $key);
                             $query->set('roundid', '=', $roundId);
-                            $query->set('level', '+', 1);
-                            $query->set('earned', '=', $this->roundEndTime);
-                            $query->executeUpdate();
+                            $query->set('level', '=', 1);
+                            $query->executeInsert();
                         }
 
                         // Add best round count if player earned best round medal

@@ -1,6 +1,6 @@
 <?php
 /*
-    Copyright (C) 2006-2013  BF2Statistics
+    Copyright (C) 2006-2017 BF2Statistics
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@
 
 // Namespace
 namespace System;
-
-use PDOStatement;
 
 // No direct access
 defined("BF2_ADMIN") or die("No Direct Access");
@@ -72,7 +70,7 @@ else
                 // Check Used Unlocks
                 $query = "SELECT COUNT(`pid`) AS `count` FROM `player_unlock` WHERE `pid` = {$pid}";
                 $result = $connection->query($query);
-                $usedunlocks = (int)$result->fetchColumn();
+                $usedunlocks = (int)$result->fetchColumn(0);
 
                 // Determine available unlocks count
                 $availunlocks = max(0, ($rankunlocks + $bonusunlocks) - $usedunlocks);
@@ -87,13 +85,8 @@ else
                 // Get players current unlocks
                 $query = "SELECT unlockid FROM `player_unlock` WHERE `pid`={$pid} ORDER BY `unlockid` ASC";
                 $result = $connection->query($query);
-                if ($row = $result->fetch())
-                {
-                    do
-                    {
-                        $Response->writeDataLine($row['unlockid'], 's');
-                    } while ($row = $result->fetch());
-                }
+                while ($row = $result->fetch())
+					$Response->writeDataLine($row['unlockid'], 's');
 
                 // Send response
                 $Response->send();
@@ -107,15 +100,9 @@ else
             $Response->writeHeaderLine("id", "state");
 
             // Get all current unlocks
-            $query = "SELECT `id` FROM `unlock` ORDER BY `id` ASC";
-            $result = $connection->query($query);
-            if ($row = $result->fetch())
-            {
-                do
-                {
-                    $Response->writeDataLine($row['id'], 's');
-                } while ($row = $result->fetch());
-            }
+            $result = $connection->query("SELECT `id` FROM `unlock` ORDER BY `id` ASC");
+            while ($row = $result->fetch())
+				$Response->writeDataLine($row['id'], 's');
 
             $Response->send();
             break;
@@ -129,13 +116,8 @@ else
             // Get all current unlocks
             $query = "SELECT `id` FROM `unlock` ORDER BY `id` ASC";
             $result = $connection->query($query);
-            if ($row = $result->fetch())
-            {
-                do
-                {
-                    $Response->writeDataLine($row['id'], 'n');
-                } while ($row = $result->fetch());
-            }
+            while ($row = $result->fetch())
+				$Response->writeDataLine($row['id'], 'n');
 
             $Response->send();
             break;
@@ -251,5 +233,5 @@ WHERE `pid` = $pid
 SQL;
 
     $result = $connection->query($query);
-    return (int)$result->fetchColumn();
+    return (int)$result->fetchColumn(0);
 }

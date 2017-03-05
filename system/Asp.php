@@ -150,9 +150,12 @@ class Asp
             $LogWriter->logDebug("Database connection failed: " . $e->getMessage());
         }
 
+        // Parse version strings
+        $dVer = Version::Parse(DB_VER);
+        $cVer = Version::Parse(Config::Get('db_expected_ver'));
+
         // Make sure config expected DB version is up to date
-        $DbVer = Version::Parse(DB_VER);
-        if ($DbVer->compare(Config::Get('db_expected_ver')) == 1)
+        if (Version::GreaterThan($dVer, $cVer))
         {
             Config::Set('db_expected_ver', DB_VER);
             Config::Save();

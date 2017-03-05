@@ -202,8 +202,8 @@ class Autoloader
                         $file = $dir . DIRECTORY_SEPARATOR . str_replace(array('_', '\\'), DIRECTORY_SEPARATOR, $class) . '.php';
                         if (file_exists($file))
                         {
+                            /** @noinspection PhpIncludeInspection */
                             require $file;
-
                             return true;
                         }
                     }
@@ -239,8 +239,8 @@ class Autoloader
                         $file = $dir . DIRECTORY_SEPARATOR . str_replace(array('_', '\\'), DIRECTORY_SEPARATOR, $class) . '.php';
                         if (file_exists($file))
                         {
+                            /** @noinspection PhpIncludeInspection */
                             require $file;
-
                             return true;
                         }
                     }
@@ -262,8 +262,8 @@ class Autoloader
             $file = $dir . DIRECTORY_SEPARATOR . str_replace(array('_', '\\', '/'), DIRECTORY_SEPARATOR, $class) . '.php';
             if (file_exists($file))
             {
+                /** @noinspection PhpIncludeInspection */
                 require $file;
-
                 return true;
             }
         }

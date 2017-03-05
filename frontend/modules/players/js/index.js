@@ -9,9 +9,9 @@
          * @returns {string} Returns the filename, without extension
          */
         String.prototype.filename = function(extension){
-            var s= this.replace(/\\/g, '/');
-            s= s.substring(s.lastIndexOf('/')+ 1);
-            return extension? s.replace(/[?#].+$/, ''): s.split('.')[0];
+            var s = this.replace(/\\/g, '/');
+            s = s.substring(s.lastIndexOf('/')+ 1);
+            return extension ? s.replace(/[?#].+$/, '') : s.split('.')[0];
         };
 
         // Data Tables

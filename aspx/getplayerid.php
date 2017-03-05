@@ -48,7 +48,7 @@ else
 $isAi= (isset($_GET['ai'])) ? (int)$_GET['ai'] : 0;
 $isAi = ($isAi > 0);
 
-
+// Search by name?
 if (!empty($nick))
 {
     // Sanitize nick
@@ -60,7 +60,7 @@ if (!empty($nick))
     $result->bindValue(":nick", $nick, PDO::PARAM_STR);
 
     // Player does not exist
-    if (!$result->execute() || !($pid = $result->fetchColumn()))
+    if (!$result->execute() || !($pid = $result->fetchColumn(0)))
     {
         if ($isAi)
         {
