@@ -8,9 +8,9 @@
             if (split.length != 4)
                 return false;
 
-            for (var i=0; i<split.length; i++) {
+            for (var i = 0; i < split.length; i++) {
                 var s = split[i];
-                if (s.length==0 || isNaN(s) || s<0 || s>255)
+                if (s.length == 0 || isNaN(s) || s < 0 || s > 255)
                     return false;
             }
             return true;
@@ -19,8 +19,50 @@
 
         // Data Tables
         var Table = $(".mws-datatable-fn").DataTable({
-            sPaginationType: "full_numbers",
+            pagingType: "full_numbers",
             bSort: false
+        }).on( 'draw.dt', function () {
+            //noinspection JSUnresolvedVariable
+            $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
+        });
+
+        // Selected row node, when we click an action button
+        var selectedRowNode;
+
+        // Ajax and form Validation
+        //noinspection JSJQueryEfficiency
+        var validator = $("#mws-validate").validate({
+            rules: {
+                serverName: {
+                    required: true,
+                    minlength: 3,
+                    maxlength: 100
+                },
+                serverIp: {
+                    required: true,
+                    validIP: true
+                },
+                serverPort: {
+                    required: true,
+                    min: 1,
+                    max: 65535
+                },
+                serverQueryPort: {
+                    required: true,
+                    min: 1,
+                    max: 65535
+                }
+            },
+            invalidHandler: function (form, validator) {
+                var errors = validator.numberOfInvalids();
+                if (errors) {
+                    var message = errors == 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
+                    $("#mws-validate-error").html(message).show();
+                    $('#jui-message').hide();
+                } else {
+                    $("#mws-validate-error").hide();
+                }
+            }
         });
 
         // Modal forms
@@ -54,6 +96,11 @@
                 // For all modern browsers, prevent default behavior of the click
                 e.preventDefault();
 
+                // Hide previous errors
+                $('#jui-message').hide();
+                $("#mws-validate-error").hide();
+                validator.resetForm();
+
                 // Set hidden input value
                 $('input[name="action"]').val('add');
 
@@ -63,9 +110,6 @@
                 $('input[name="serverIp"]').val("");
                 $('input[name="serverPort"]').val(16567);
                 $('input[name="serverQueryPort"]').val(29900);
-
-                // Hide previous errors
-                $("#mws-validate-error").hide();
 
                 // Show dialog form
                 $("#add-server-form").dialog("option", {
@@ -78,41 +122,12 @@
             });
         }
 
-        // Ajax and form Validation
-        //noinspection JSJQueryEfficiency
-        $("#mws-validate").validate({
-            rules: {
-                serverIp: {
-                    required: true,
-                    validIP: true
-                },
-                serverPort: {
-                    required: true,
-                    min: 1,
-                    max: 65535
-                },
-                serverQueryPort: {
-                    required: true,
-                    min: 1,
-                    max: 65535
-                }
-            },
-            invalidHandler: function (form, validator) {
-                var errors = validator.numberOfInvalids();
-                if (errors) {
-                    var message = errors == 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
-                    $("#mws-validate-error").html(message).show();
-                } else {
-                    $("#mws-validate-error").hide();
-                }
-            }
-        });
-
         //noinspection JSJQueryEfficiency
         $("#mws-validate").ajaxForm({
             beforeSubmit: function (arr, data, options)
             {
                 $("#mws-validate-error").hide();
+                $('#jui-message').attr('class', 'alert loading').html("Submitting form data...").slideDown(200);
                 return true;
             },
             success: function (response, statusText, xhr, $form) {
@@ -144,11 +159,11 @@
                         $( rowNode ).attr('id', 'tr-server-' + id);
                     }
                     else if (result.mode == 'update') {
-                        $('#tr-server-' + id).find('td:eq(2)').html(result.serverName);
-                        $('#tr-server-' + id).find('td:eq(3)').html(result.serverPrefix);
-                        $('#tr-server-' + id).find('td:eq(4)').html(result.serverIp);
-                        $('#tr-server-' + id).find('td:eq(5)').html(result.serverPort);
-                        $('#tr-server-' + id).find('td:eq(6)').html(result.serverQueryPort);
+                        selectedRowNode.find('td:eq(2)').html(result.serverName);
+                        selectedRowNode.find('td:eq(3)').html(result.serverPrefix);
+                        selectedRowNode.find('td:eq(4)').html(result.serverIp);
+                        selectedRowNode.find('td:eq(5)').html(result.serverPort);
+                        selectedRowNode.find('td:eq(6)').html(result.serverQueryPort);
                     }
 
                     // Close dialog
@@ -172,12 +187,6 @@
         //noinspection JSUnresolvedVariable
         $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
 
-        // Bind tooltips to new rows added from Ajax
-        $('.mws-datatable-fn').on( 'draw.dt', function () {
-            //noinspection JSUnresolvedVariable
-            $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
-        });
-
         // Row Button Clicks
         $(document).on('click', 'a.btn-small', function(e) {
 
@@ -185,11 +194,17 @@
             e.preventDefault();
 
             // Extract the server ID
+            selectedRowNode = $(this).closest('tr');
             var sid = $(this).attr('id').split("-");
             var action = sid[0];
             var id = sid[sid.length-1];
 
             if (action == 'edit') {
+
+                // Hide previous errors
+                $('#jui-message').hide();
+                $("#mws-validate-error").hide();
+                validator.resetForm();
 
                 // Set hidden input values
                 $('input[name="action"]').val('edit');
@@ -201,9 +216,6 @@
                 $('input[name="serverIp"]').val($('#tr-server-' + id).find('td:eq(4)').html());
                 $('input[name="serverPort"]').val($('#tr-server-' + id).find('td:eq(5)').html());
                 $('input[name="serverQueryPort"]').val($('#tr-server-' + id).find('td:eq(6)').html());
-
-                // Hide previous errors
-                $("#mws-validate-error").hide();
 
                 // Show dialog form
                 $("#add-server-form").dialog("option", {
@@ -218,7 +230,12 @@
                         // Parse response
                         var result = jQuery.parseJSON(data);
                         if (result.success == false) {
-                            $('#jui-message').attr('class', 'alert error').html(result.message).slideDown(500);
+                            $('#jui-global-message')
+                                .attr('class', 'alert error')
+                                .html(result.message)
+                                .slideDown(500)
+                                .delay(5000)
+                                .fadeOut('slow');
                         }
                         else {
                             // Update html and button displays
@@ -235,7 +252,12 @@
                         // Parse response
                         var result = jQuery.parseJSON(data);
                         if (result.success == false) {
-                            $('#jui-message').attr('class', 'alert error').html(result.message).slideDown(500);
+                            $('#jui-global-message')
+                                .attr('class', 'alert error')
+                                .html(result.message)
+                                .slideDown(500)
+                                .delay(5000)
+                                .fadeOut('slow');
                         }
                         else {
                             // Update html and button displays
@@ -345,7 +367,12 @@
                     // Parse response
                     var result = jQuery.parseJSON(data);
                     if (result.success == false) {
-                        $('#jui-message').attr('class', 'alert error').html(result.message).slideDown(500);
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
                     }
                     else {
                         // Remove each row
@@ -382,7 +409,12 @@
                     // Parse response
                     var result = jQuery.parseJSON(data);
                     if (result.success == false) {
-                        $('#jui-message').attr('class', 'alert error').html(result.message).slideDown(500);
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
                     }
                     else {
                         // Remove each row
@@ -421,7 +453,12 @@
                     // Parse response
                     var result = jQuery.parseJSON(data);
                     if (result.success == false) {
-                        $('#jui-message').attr('class', 'alert error').html(result.message).slideDown(500);
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
                     }
                     else {
                         // Remove each row

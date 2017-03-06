@@ -67,7 +67,7 @@ div#mws-error-container p
 }
 
 .alert.no-margin.bottom {
-    border-width: 1px 0 0px 0;
+    border-width: 1px 0 0 0;
     margin-bottom: 0;
 }
 

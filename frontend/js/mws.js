@@ -48,8 +48,17 @@ $(document).ready(function() {
 		}
 	});
 
-    /* Form Messages */
-    $(".mws-form-message").on("click", function() {
+    /* Hide validation messages on double click */
+    $(".mws-form-message").on("dblclick", function() {
+        $(this).animate({ opacity:0 }, function() {
+            $(this).slideUp("normal", function() {
+                $(this).css("opacity", '');
+            });
+        });
+    });
+
+    /* Hide alerts on double click */
+    $(".alert").on("dblclick", function() {
         $(this).animate({ opacity:0 }, function() {
             $(this).slideUp("normal", function() {
                 $(this).css("opacity", '');
@@ -77,18 +86,15 @@ $(document).ready(function() {
 		$('[placeholder]').placeholder();
 	}
 
-	/* Cookies */
+    /* Cookies */
 	function setCookie(name, value, days)
 	{
+        var expires = "";
 		if( days )
 		{
 			var date = new Date();
 			date.setTime( date.getTime() + (days * 24 * 60 * 60 * 1000) );
-			var expires = "; expires=" + date.toGMTString();
-		}
-		else
-		{
-			var expires = "";
+			expires = "; expires=" + date.toGMTString();
 		}
 		document.cookie = name + "=" + value + expires + "; path=/";
 	}

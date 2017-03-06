@@ -2,61 +2,50 @@
 
     $(document).ready(function() {
 
-        /**
-         * Extracts the filename, without extension from a path
-         *
-         * @param extension The filepath
-         * @returns {string} Returns the filename, without extension
-         */
-        String.prototype.filename = function(extension){
-            var s = this.replace(/\\/g, '/');
-            s = s.substring(s.lastIndexOf('/')+ 1);
-            return extension ? s.replace(/[?#].+$/, '') : s.split('.')[0];
-        };
+        function htmlDecode(value) {
+            return $("<div/>").html(value).text();
+        }
 
-        // Data Tables
+        function htmlEncode(value) {
+            return $('<div/>').text(value).html();
+        }
+
+        /**
+         * nameRegex : specifies the characters allowed in an unlock name
+         */
+        $.validator.addMethod("nameRegex", function(value, element) {
+            return this.optional(element) || /^[a-z0-9_]+$/i.test(value);
+        }, "Unlock name must contain only letters, numbers, or underscores.");
+
+        // Data Table
         var Table = $(".mws-datatable-fn").DataTable({
-            pagingType: "full_numbers",
-            processing: false,
-            serverSide: true,
-            ajax: {
-                url: "/ASP/players/list",
-                type: "POST"
-            },
-            columns: [
-                { "data": "id" },
-                { "data": "rank" },
-                { "data": "name" },
-                { "data": "score" },
-                { "data": "country" },
-                { "data": "joined" },
-                { "data": "online" },
-                { "data": "clan" },
-                { "data": "permban" },
-                { "data": "actions" }
-            ],
-            columnDefs: [
-                { "searchable": false, "targets": 1 },
-                { "searchable": false, "targets": 3 },
-                { "searchable": false, "targets": 5 },
-                { "searchable": false, "targets": 6 },
-                { "searchable": false, "targets": 7 },
-                { "searchable": false, "targets": 8 },
-                { "searchable": false, "orderable": false, "targets": 9 }
-            ]
+            pagingType: "full_numbers"
         }).on( 'draw.dt', function () {
-            //noinspection JSUnresolvedVariable
+            // Add tooltips to dynamically added rows
+            // noinspection JSUnresolvedVariable
             $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
         });
+
+        // Selected row node, when we click an action button
+        var selectedRowNode;
 
         // Ajax and form Validation
         //noinspection JSJQueryEfficiency
         var validator = $("#mws-validate").validate({
             rules: {
-                playerName: {
+                unlockId: {
                     required: true,
-                    minlength: 3,
-                    maxlength: 32
+                    min: 1,
+                    max: 999999
+                },
+                unlockName: {
+                    required: true,
+                    maxlength: 32,
+                    nameRegex: true
+                },
+                unlockDesc: {
+                    required: true,
+                    maxlength: 64
                 }
             },
             invalidHandler: function (form, validator) {
@@ -67,16 +56,17 @@
                     $('#jui-message').hide();
                 } else {
                     $("#mws-validate-error").hide();
+
                 }
             }
         });
 
         // Modal forms
-        //noinspection JSUnresolvedVariable
+        // noinspection JSUnresolvedVariable
         if( $.fn.dialog ) {
-            $("#add-player-form").dialog({
+            $("#editor-form").dialog({
                 autoOpen: false,
-                title: "Add New Player",
+                title: "Add New Unlock",
                 modal: true,
                 width: "640",
                 resizable: false,
@@ -90,7 +80,7 @@
 
             $("#mws-jui-dialog").dialog({
                 autoOpen: false,
-                title: "Confirm Delete Award",
+                title: "Confirm Delete Unlock",
                 modal: true,
                 width: "640",
                 resizable: false
@@ -103,20 +93,24 @@
                 e.preventDefault();
 
                 // Hide previous errors
-                $("#mws-validate-error").hide();
                 $('#jui-message').hide();
+                $("#mws-validate-error").hide();
                 validator.resetForm();
 
                 // Set hidden input value
                 $('input[name="action"]').val('add');
+                $('input[name="originalId"]').val('0');
 
                 // Set form default values
-                $('input[name="awardName"]').val("");
+                $('input[name="unlockName"]').val("");
+                $('input[name="unlockDesc"]').val("");
+                $('input[name="unlockId"]').val("");
+                $("#unlockKit").val(0);
 
                 // Show dialog form
                 $("#editor-form").dialog("option", {
                     modal: true,
-                    title: "Create New Award"
+                    title: "Create New Unlock"
                 }).dialog("open");
 
                 // Just to be sure, older IE's needs this
@@ -124,11 +118,12 @@
             });
         }
 
-        //noinspection JSJQueryEfficiency
+        // Ajax Form
+        // noinspection JSJQueryEfficiency
         $("#mws-validate").ajaxForm({
             beforeSubmit: function (arr, data, options)
             {
-                $("#mws-validate-error").hide();
+                $('#mws-validate-error').hide();
                 $('#jui-message').attr('class', 'alert loading').html("Submitting form data...").slideDown(200);
                 return true;
             },
@@ -136,33 +131,53 @@
                 // Parse the JSON response
                 var result = jQuery.parseJSON(response);
                 if (result.success == true) {
+                    var id = result.id;
+                    var rowNode;
 
-                    // Reload the table
-                    Table.ajax.reload();
+                    if (result.mode == 'add') {
+                        // Add award to table
+                        //noinspection JSUnresolvedFunction
+                        rowNode = Table.row.add([
+                            result.id,
+                            result.name,
+                            result.desc,
+                            result.kit,
+                            '<span class="btn-group"> \
+                                <a id="edit-' + id + '" href="#"  rel="tooltip" title="Edit Unlock" class="btn btn-small"><i class="icon-pencil"></i></a> \
+                                <a id="delete-' + id + '" href="#" class="btn btn-small" rel="tooltip" title="Delete Unlock" ><i class="icon-trash"></i></a> \
+                            </span>'
+                        ]).draw().node();
+
+                        $( rowNode ).attr('id', 'tr-unlock-' + id);
+                    }
+                    else if (result.mode == 'edit') {
+                        selectedRowNode.find('td:eq(0)').html(result.id);
+                        selectedRowNode.find('td:eq(1)').html(result.name);
+                        selectedRowNode.find('td:eq(2)').html(result.desc);
+                        selectedRowNode.find('td:eq(3)').html(result.kit);
+                    }
 
                     // Close dialog
-                    $("#add-player-form").dialog("close");
+                    $("#editor-form").dialog("close");
                 }
                 else {
-                    $('#jui-message').attr('class', 'alert error').html(result.message).slideDown(500);
+                    $('#jui-message').attr('class', 'alert error').html(result.message);
                 }
             },
             error: function(request, status, error) {
-                $('#jui-message').attr('class', 'alert error').html('AJAX Error! Please check the console log.').slideDown(500);
+                $('#jui-message').attr('class', 'alert error').html('AJAX Error! Please check the console log.');
+                console.log(error);
             },
             timeout: 5000
         });
 
         // Spinners
-        //noinspection JSUnresolvedVariable
+        // noinspection JSUnresolvedVariable
         $.fn.spinner && $('.mws-spinner').spinner();
 
         // Tooltips
-        //noinspection JSUnresolvedVariable
+        // noinspection JSUnresolvedVariable
         $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
-
-        /* Chosen Select Box Plugin */
-        $.fn.select2 && $("select.mws-select2").select2();
 
         // Refresh Click
         $("#refresh").click(function(e) {
@@ -171,7 +186,7 @@
             e.preventDefault();
 
             // Reload page (temporary).
-            Table.ajax.reload();
+            location.reload();
 
             // Just to be sure, older IE's needs this
             return false;
@@ -184,93 +199,45 @@
             e.preventDefault();
 
             // Extract the server ID
+            selectedRowNode = $(this).closest('tr');
             var sid = $(this).attr('id').split("-");
             var action = sid[0];
-            var id = sid[sid.length-1];
 
             // Always have the user confirm his action here!
-            var tr = $(this).closest('tr');
-            var name = tr.find('td:eq(2) a').html();
+            var id = selectedRowNode.find('td:eq(0)').html();
+            var name = selectedRowNode.find('td:eq(1)').html();
+            var desc = htmlDecode( selectedRowNode.find('td:eq(2)').html() );
+            var kit = selectedRowNode.find('td:eq(3)').html();
 
             if (action == 'edit') {
 
                 // Hide previous errors
-                $("#mws-validate-error").hide();
                 $('#jui-message').hide();
+                $("#mws-validate-error").hide();
                 validator.resetForm();
 
-                // Set hidden input values
+                // Set hidden input value
                 $('input[name="action"]').val('edit');
-                $('input[name="playerId"]').val(id);
+                $('input[name="originalId"]').val(id);
 
-                // Set form values
-                $('input[name="playerName"]').val(name);
-                $('input[name="playerPassword"]').val("").rules('remove', 'required');
-                $('#passwordLabel').html('Update Password');
-
-                // Set player rank
-                var rankHtml = $(this).closest('tr').find('td:eq(1)').html();
-                var rank =  rankHtml.filename().split('_')[1];
-                $("#rankSelect").val(rank);
-
-                // Select users country
-                var cntry = $(this).closest('tr').find('td:eq(4)').html();
-                $("select.mws-select2").val(cntry).change();
+                // Set form default values
+                $('input[name="unlockName"]').val(name);
+                $('input[name="unlockDesc"]').val(desc);
+                $('input[name="unlockId"]').val(id);
+                $("#unlockKit").find("option:contains(" + kit + ")").prop("selected", "selected");
 
                 // Show dialog form
-                $("#add-player-form").dialog("option", {
+                $("#editor-form").dialog("option", {
                     modal: true,
-                    title: 'Update Existing Player'
+                    title: 'Update Existing Award'
                 }).dialog("open");
-            }
-            else if (action == 'unban') {
-                // Push the request
-                $.post( "/ASP/players/authorize", { action: "unban", playerId: id })
-                    .done(function( data ) {
-                        // Parse response
-                        var result = jQuery.parseJSON(data);
-                        if (result.success == false) {
-                            $('#jui-global-message')
-                                .attr('class', 'alert error')
-                                .html(result.message)
-                                .slideDown(500)
-                                .delay(5000)
-                                .fadeOut('slow');
-                        }
-                        else {
-                            // Update html and button displays
-                            $('#unban-btn-' + id).closest('tr').find('td:eq(8)').html('<font color="green">No</font>');
-                            $('#unban-btn-' + id).hide();
-                            $('#ban-btn-' + id).show();
-                        }
-                    });
-            }
-            else if (action == 'ban') {
-                // Push the request
-                $.post( "/ASP/players/authorize", { action: "ban", playerId: id })
-                    .done(function( data ) {
-                        // Parse response
-                        var result = jQuery.parseJSON(data);
-                        if (result.success == false) {
-                            $('#jui-global-message')
-                                .attr('class', 'alert error')
-                                .html(result.message)
-                                .slideDown(500)
-                                .delay(5000)
-                                .fadeOut('slow');
-                        }
-                        else {
-                            // Update html and button displays
-                            $('#unban-btn-' + id).closest('tr').find('td:eq(8)').html('<font color="red">Yes</font>');
-                            $('#unban-btn-' + id).show();
-                            $('#ban-btn-' + id).hide();
-                        }
-                    });
             }
             else if (action == 'delete') {
                 // Show dialog form
                 $("#mws-jui-dialog")
-                    .html('Are you sure you want to delete player "' + name + '"? This action cannot be undone.')
+                    .html('Are you sure you want to delete unlock "' + name + '"? This action cannot be <b>reversed</b>! \
+                        All Players who have earned this unlock will be giving a new unlock to choose from in the BFHQ.'
+                    )
                     .dialog("option", {
                         modal: true,
                         buttons: [
@@ -279,7 +246,7 @@
                                 class: "btn btn-danger",
                                 click: function () {
 
-                                    $.post( "/ASP/players/delete", { action: "delete", playerId: id })
+                                    $.post( "/ASP/gamedata/deleteUnlock", { action: "delete", unlockId: id })
                                         .done(function( data ) {
                                             // Parse response
                                             var result = jQuery.parseJSON(data);
@@ -289,11 +256,11 @@
                                                     .html(result.message)
                                                     .slideDown(500)
                                                     .delay(5000)
-                                                    .fadeOut('slow');
+                                                    .slideUp(500);
                                             }
                                             else {
                                                 // Update html and button displays
-                                                Table.row( tr ).remove().draw();
+                                                Table.row( selectedRowNode ).remove().draw();
                                             }
                                         });
 

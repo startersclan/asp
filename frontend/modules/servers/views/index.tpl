@@ -1,4 +1,4 @@
-<div id="jui-message" style="display: none;"></div>
+<div id="jui-global-message" class="alert" style="display: none;"></div>
 <div class="mws-panel grid_8">
     <div class="mws-panel-header">
         <span><i class="icon-table"></i> Registered Servers</span>
@@ -68,6 +68,7 @@
                 <input id="post-action" type="hidden" name="action" value="add">
                 <input id="server-id" type="hidden" name="serverId" value="0">
                 <div id="mws-validate-error" class="mws-form-message error" style="display:none;"></div>
+                <div id="jui-message" class="alert" style="display: none;"></div>
                 <div class="mws-form-inline">
                     <div class="mws-form-row">
                         <label class="mws-form-label">Server Name</label>

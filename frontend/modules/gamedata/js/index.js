@@ -10,6 +10,13 @@
         // Ajax and form Validation
         //noinspection JSJQueryEfficiency
         var validator = $("#mws-validate").validate({
+            rules: {
+                itemName: {
+                    required: true,
+                    minlength: 3,
+                    maxlength: 32
+                }
+            },
             invalidHandler: function (form, validator) {
                 var errors = validator.numberOfInvalids();
                 if (errors) {

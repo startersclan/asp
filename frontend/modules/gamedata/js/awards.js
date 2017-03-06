@@ -2,27 +2,43 @@
 
     $(document).ready(function() {
 
+        /**
+         * codeRegex : specifies the characters allowed in an award snapshot code
+         */
+        $.validator.addMethod("codeRegex", function(value, element) {
+            return this.optional(element) || /^[a-z0-9]+$/i.test(value);
+        }, "Snapshot code must contain only letters or numbers.");
+
         // Data Table
         var Table = $(".mws-datatable-fn").DataTable({
             pagingType: "full_numbers"
+        }).on( 'draw.dt', function () {
+            // Add tooltips to dynamically added rows
+            // noinspection JSUnresolvedVariable
+            $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
         });
 
         // Selected row node, when we click an action button
         var selectedRowNode;
 
         // Ajax and form Validation
-        //noinspection JSJQueryEfficiency
+        // noinspection JSJQueryEfficiency
         var validator = $("#mws-validate").validate({
             rules: {
                 awardCode: {
                     required: true,
                     minlength: 1,
-                    maxlength: 6
+                    maxlength: 6,
+                    codeRegex: true
                 },
                 awardId: {
                     required: true,
                     min: 1000000,
                     max: 3400000
+                },
+                awardName: {
+                    required: true,
+                    maxlength: 64
                 }
             },
             invalidHandler: function (form, validator) {
@@ -30,8 +46,10 @@
                 if (errors) {
                     var message = errors == 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
                     $("#mws-validate-error").html(message).show();
+                    $('#jui-message').hide();
                 } else {
                     $("#mws-validate-error").hide();
+
                 }
             }
         });
@@ -60,7 +78,7 @@
         });
 
         // Modal forms
-        //noinspection JSUnresolvedVariable
+        // noinspection JSUnresolvedVariable
         if( $.fn.dialog ) {
             $("#editor-form").dialog({
                 autoOpen: false,
@@ -91,6 +109,7 @@
                 e.preventDefault();
 
                 // Hide previous errors
+                $('#jui-message').hide();
                 $("#mws-validate-error").hide();
                 validator.resetForm();
 
@@ -118,11 +137,13 @@
             });
         }
 
-        //noinspection JSJQueryEfficiency
+        // Ajax Form
+        // noinspection JSJQueryEfficiency
         $("#mws-validate").ajaxForm({
             beforeSubmit: function (arr, data, options)
             {
-                $("#mws-validate-error").hide();
+                $('#mws-validate-error').hide();
+                $('#jui-message').attr('class', 'alert loading').html("Submitting form data...").slideDown(200);
                 return true;
             },
             success: function (response, statusText, xhr, $form) {
@@ -162,26 +183,23 @@
                     $("#editor-form").dialog("close");
                 }
                 else {
-                    $('#jui-message').attr('class', 'alert error').html(result.message).slideDown(500);
+                    $('#jui-message').attr('class', 'alert error').html(result.message);
                 }
             },
             error: function(request, status, error) {
-                $('#jui-message').attr('class', 'alert error').html('AJAX Error! Please check the console log.').slideDown(500);
+                $('#jui-message').attr('class', 'alert error').html('AJAX Error! Please check the console log.');
                 console.log(error);
             },
             timeout: 5000
         });
 
-        // Tooltips
-        // Bind tooltips to new rows added from Ajax
-        $('.mws-datatable-fn').on( 'draw.dt', function () {
-            //noinspection JSUnresolvedVariable
-            $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
-        });
-
         // Spinners
-        //noinspection JSUnresolvedVariable
+        // noinspection JSUnresolvedVariable
         $.fn.spinner && $('.mws-spinner').spinner();
+
+        // Tooltips
+        // noinspection JSUnresolvedVariable
+        $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
 
         // Refresh Click
         $("#refresh").click(function(e) {
@@ -216,6 +234,7 @@
             if (action == 'edit') {
 
                 // Hide previous errors
+                $('#jui-message').hide();
                 $("#mws-validate-error").hide();
                 validator.resetForm();
 
@@ -269,7 +288,12 @@
                                             // Parse response
                                             var result = jQuery.parseJSON(data);
                                             if (result.success == false) {
-                                                $('#jui-message').attr('class', 'alert error').html(result.message).slideDown(500);
+                                                $('#jui-global-message')
+                                                    .attr('class', 'alert error')
+                                                    .html(result.message)
+                                                    .slideDown(500)
+                                                    .delay(5000)
+                                                    .slideUp(500);
                                             }
                                             else {
                                                 // Update html and button displays
