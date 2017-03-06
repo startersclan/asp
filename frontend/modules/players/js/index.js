@@ -72,7 +72,7 @@
         });
 
         // Modal forms
-        //noinspection JSUnresolvedVariable
+        // noinspection JSUnresolvedVariable
         if( $.fn.dialog ) {
             $("#add-player-form").dialog({
                 autoOpen: false,
@@ -111,10 +111,13 @@
                 $('input[name="action"]').val('add');
 
                 // Set form default values
-                $('input[name="awardName"]').val("");
+                $('input[name="playerName"]').val("");
+                $('input[name="playerPassword"]').val("").rules('add', { required: true });
+                $('#passwordLabel').html('Password');
+                $("#rankSelect").val(0);
 
                 // Show dialog form
-                $("#editor-form").dialog("option", {
+                $("#add-player-form").dialog("option", {
                     modal: true,
                     title: "Create New Award"
                 }).dialog("open");
@@ -124,7 +127,8 @@
             });
         }
 
-        //noinspection JSJQueryEfficiency
+        // Ajax Form
+        // noinspection JSJQueryEfficiency
         $("#mws-validate").ajaxForm({
             beforeSubmit: function (arr, data, options)
             {
@@ -138,6 +142,7 @@
                 if (result.success == true) {
 
                     // Reload the table
+                    // noinspection JSUnresolvedFunction
                     Table.ajax.reload();
 
                     // Close dialog
@@ -154,14 +159,15 @@
         });
 
         // Spinners
-        //noinspection JSUnresolvedVariable
+        // noinspection JSUnresolvedVariable
         $.fn.spinner && $('.mws-spinner').spinner();
 
         // Tooltips
         //noinspection JSUnresolvedVariable
         $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
 
-        /* Chosen Select Box Plugin */
+        // Chosen Select Box Plugin
+        // noinspection JSUnresolvedVariable
         $.fn.select2 && $("select.mws-select2").select2();
 
         // Refresh Click
@@ -171,6 +177,7 @@
             e.preventDefault();
 
             // Reload page (temporary).
+            // noinspection JSUnresolvedFunction
             Table.ajax.reload();
 
             // Just to be sure, older IE's needs this
@@ -209,12 +216,12 @@
                 $('#passwordLabel').html('Update Password');
 
                 // Set player rank
-                var rankHtml = $(this).closest('tr').find('td:eq(1)').html();
+                var rankHtml = tr.find('td:eq(1)').html();
                 var rank =  rankHtml.filename().split('_')[1];
                 $("#rankSelect").val(rank);
 
                 // Select users country
-                var cntry = $(this).closest('tr').find('td:eq(4)').html();
+                var cntry = tr.find('td:eq(4)').html();
                 $("select.mws-select2").val(cntry).change();
 
                 // Show dialog form

@@ -212,7 +212,7 @@ class Gamedata extends Controller
             // Use a dictionary here to gain an exception on missing array item
             $items = new Dictionary(false, $_POST);
 
-            // Define server id
+            // Get item id
             $itemId = (int)$items['itemId'];
             $type = preg_replace("/[^A-Za-z]/", '', $items['itemType']);
 
@@ -321,7 +321,7 @@ class Gamedata extends Controller
             // Use a dictionary here to gain an exception on missing array item
             $items = new Dictionary(false, $_POST);
 
-            // Define server id
+            // Get award id
             $awardId = (int)$items['awardId'];
 
             // Prepare statement
@@ -431,7 +431,7 @@ class Gamedata extends Controller
             // Use a dictionary here to gain an exception on missing array item
             $items = new Dictionary(false, $_POST);
 
-            // Define server id
+            // Get unlock id
             $uId = (int)$items['unlockId'];
 
             // Prepare statement

@@ -1,9 +1,4 @@
 <?php
-use System\Collections\Dictionary;
-use System\Database;
-use System\Response;
-use System\View;
-
 /**
  * BF2Statistics ASP Management Asp
  *
@@ -12,7 +7,13 @@ use System\View;
  * License:      GNU GPL v3
  *
  */
-class Servers
+use System\Collections\Dictionary;
+use System\Controller;
+use System\Database;
+use System\Response;
+use System\View;
+
+class Servers extends Controller
 {
     /**
      * @protocol    ANY
@@ -22,11 +23,7 @@ class Servers
     public function index()
     {
         // Require database connection
-        if (DB_VER == '0.0.0')
-        {
-            Response::Redirect('install');
-            die;
-        }
+        $this->requireDatabase();
 
         // Fetch server list!
         $pdo = Database::GetConnection('stats');

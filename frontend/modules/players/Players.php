@@ -8,13 +8,14 @@
  *
  */
 use System\Collections\Dictionary;
+use System\Controller;
 use System\Database;
 use System\DataTables;
 use System\Player;
 use System\Response;
 use System\View;
 
-class Players
+class Players extends Controller
 {
     /**
      * @protocol    ANY
@@ -24,11 +25,7 @@ class Players
     public function index()
     {
         // Require database connection
-        if (DB_VER == '0.0.0')
-        {
-            Response::Redirect('install');
-            die;
-        }
+        $this->requireDatabase();
 
         // Load view
         $view = new View('index', 'players');
@@ -57,11 +54,7 @@ class Players
     public function view($id)
     {
         // Require database connection
-        if (DB_VER == '0.0.0')
-        {
-            Response::Redirect('install');
-            die;
-        }
+        $this->requireDatabase();
 
         // make sure we have an ID
         if (empty($id))
