@@ -1,10 +1,11 @@
 <?php
 /**
- * Plexis Content Management System
+ * BF2Statistics ASP Framework
  *
- * @file        system/framework/IO/File.php
- * @copyright   2013, Plexis Dev Team
- * @license     GNU GPL v3
+ * Author:       Steven Wilson
+ * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
+ * License:      GNU GPL v3
+ *
  */
 namespace System\IO;
 
@@ -39,6 +40,7 @@ class File
             return $Stream;
 
         $Stream->close();
+
         return null;
     }
 
@@ -156,6 +158,7 @@ class File
         // Write file contents
         $wrote = $file->write($stringData);
         $file->close();
+
         return $wrote !== false;
     }
 
@@ -237,6 +240,7 @@ class File
         $file->truncate();
         $wrote = $file->write($stringData);
         $file->close();
+
         return $wrote !== false;
     }
 
@@ -284,6 +288,7 @@ class File
         try
         {
             $file = new FileStream($path, 'r+');
+
             return $file->canWrite();
         }
         catch (\Exception $e)

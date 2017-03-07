@@ -1,11 +1,14 @@
 <?php
 /**
- * BF2Statistics ASP Management Asp
+ * BF2Statistics ASP Framework
  *
- * @copyright   2013, BF2Statistics.com
- * @license     GNU GPL v3
+ * Author:       Steven Wilson
+ * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
+ * License:      GNU GPL v3
+ *
  */
 namespace System;
+
 use System\Database\DbConnection;
 
 /**
@@ -43,7 +46,7 @@ class Database
     public static function Connect($name, $i, $new = false)
     {
         // If the connection already exists, and $new is false, return existing
-        if(isset(self::$connections[$name]) && !$new)
+        if (isset(self::$connections[$name]) && !$new)
             return self::$connections[$name];
 
         // Connect using the PDO Constructor
@@ -54,21 +57,23 @@ class Database
             $i['username'],
             $i['password']
         );
-        
+
         return self::$connections[$name];
     }
-    
+
     /**
      * Returns the connection object for the given Name or ID
      *
      * @param string $name Name or ID of the connection
+     *
      * @return bool|\System\Database\DbConnection Returns a Database Driver Object,
      *    or false of the connection $name doesn't exist
      */
     public static function GetConnection($name = 'bf2stats')
     {
-        if(isset(self::$connections[$name]))
+        if (isset(self::$connections[$name]))
             return self::$connections[$name];
+
         return false;
     }
 }

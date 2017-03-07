@@ -1,9 +1,11 @@
 <?php
 /**
- * BF2Statistics ASP Management Asp
+ * BF2Statistics ASP Framework
  *
- * @copyright   2013, BF2Statistics.com
- * @license     GNU GPL v3
+ * Author:       Steven Wilson
+ * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
+ * License:      GNU GPL v3
+ *
  */
 namespace System\Database;
 
@@ -37,7 +39,7 @@ class DbConnection extends PDO
         // Connect using the PDO Constructor
         $dsn = "mysql:host={$server};port={$port};dbname={$dbname};charset=UTF8";
         $opt = [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
         ];
         parent::__construct($dsn, $username, $password, $opt);
@@ -66,6 +68,7 @@ class DbConnection extends PDO
 
         // Return TRUE or FALSE
         $this->lastQuery = 'DELETE FROM ' . $table . ($where != '' ? ' WHERE ' . $where : '');
+
         return $this->exec($this->lastQuery) > 0;
     }
 
@@ -88,10 +91,11 @@ class DbConnection extends PDO
 
         // enclose the column names in grave accents
         $columns = implode('`, `', array_keys($data));
-        $values =  implode(', ', array_values($data));
+        $values = implode(', ', array_values($data));
 
         // Run the query
         $this->lastQuery = "INSERT INTO `{$table}`(`{$columns}`) VALUES ({$values})";
+
         return $this->exec($this->lastQuery);
     }
 
@@ -144,6 +148,7 @@ class DbConnection extends PDO
 
         // Build our query
         $this->lastQuery = $query;
+
         return $this->exec($this->lastQuery);
     }
 }

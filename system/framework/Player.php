@@ -1,6 +1,6 @@
 <?php
 /**
- * BF2Statistics ASP Management Asp
+ * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
  * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
@@ -207,6 +207,11 @@ class Player
         $this->isAi = ((int)$playerData['ai']) == 1;
         $this->ipAddress = preg_replace("/[^A-Za-z0-9.:]/", '', $playerData['ip']);
 
+        // Sometimes Squad times are negative.. idk why, but we need to fix that here
+        if ($this->sqlTime < 0) $this->sqlTime = 0;
+        if ($this->sqmTime < 0) $this->sqmTime = 0;
+        if ($this->lwTime < 0) $this->lwTime = 0;
+
         $this->kills = (int)$playerData["kills"];
         $this->deaths = (int)$playerData["deaths"];
         $this->suicides = (int)$playerData["su"];
@@ -230,11 +235,11 @@ class Player
         $this->timeParachute = (int)$playerData["tvp"];
 
         // Extract Army Data
-        for ($i = 0; $i < NUM_ARMIES; $i++)
+        for ($i = 0; $i < StatsData::$NumArmies; $i++)
             $this->timeAsArmy[$i] = (int)$playerData['ta' . $i];
 
         // Extract Kit Data
-        for ($i = 0; $i < NUM_KITS; $i++)
+        for ($i = 0; $i < StatsData::$NumKits; $i++)
         {
             $object = new ObjectStat();
             $object->time = (int)$playerData["tk{$i}"];
@@ -244,7 +249,7 @@ class Player
         }
 
         // Extract Vehicle Data
-        for ($i = 0; $i < NUM_VEHICLES; $i++)
+        for ($i = 0; $i < StatsData::$NumVehicles; $i++)
         {
             $object = new ObjectStat();
             $object->time = (int)$playerData["tv{$i}"];
@@ -254,8 +259,8 @@ class Player
             $this->vehicleData[$i] = $object;
         }
 
-        // Extract Weapon Data 1
-        for ($i = 0; $i < 9; $i++)
+        // Extract Weapon Data
+        for ($i = 0; $i < StatsData::$NumWeapons; $i++)
         {
             $object = new ObjectStat();
             $object->time = (int)$playerData["tw{$i}"];
@@ -263,45 +268,9 @@ class Player
             $object->deaths = (int)$playerData["bw{$i}"];
             $object->fired = (int)$playerData["sw{$i}"];
             $object->hits = (int)$playerData["hw{$i}"];
+            $object->deployed = (int)$playerData["dw{$i}"];
             $this->weaponData[$i] = $object;
         }
-
-        // Extract more weapon data (Keys change)
-        $j = 9;
-        for ($i = 0; $i < 9; $i++)
-        {
-            if ($i < 6)
-            {
-                $object = new ObjectStat();
-                $object->time = (int)$playerData["te{$i}"];
-                $object->kills = (int)$playerData["ke{$i}"];
-                $object->deaths = (int)$playerData["be{$i}"];
-                $object->fired = (int)$playerData["se{$i}"];
-                $object->hits = (int)$playerData["he{$i}"];
-                $this->weaponData[$j++] = $object;
-            }
-            else if ($i == 6)
-            {
-                $object = new ObjectStat();
-                $object->time = (int)$playerData["te6"];
-                $object->deployed = (int)$playerData["de6"];
-                $this->weaponData[$j++] = $object;
-            }
-            else // Grappling hook && Zipline
-            {
-                $be = ($i == 7) ? 9 : 8; // Coding error in the python!
-                $object = new ObjectStat();
-                $object->time = (int)$playerData["te{$i}"];
-                $object->deaths = (int)$playerData["be{$be}"];
-                $object->deployed = (int)$playerData["de{$i}"];
-                $this->weaponData[$j++] = $object;
-            }
-        }
-
-        // Sometimes Squad times are negative.. idk why, but we need to fix that here
-        if ($this->sqlTime < 0) $this->sqlTime = 0;
-        if ($this->sqmTime < 0) $this->sqmTime = 0;
-        if ($this->lwTime < 0) $this->lwTime = 0;
 
         // Extract player awards
         foreach (AwardData::$PythonAwards as $name => $id)
@@ -329,5 +298,6 @@ class ObjectStat
     public $deployed = 0;
 }
 
-// Grab game constants
-defined("NUM_ARMIES") or include SYSTEM_PATH . DIRECTORY_SEPARATOR . "GameConstants.php";
+// Load award and stats data
+AwardData::Load();
+StatsData::Load();

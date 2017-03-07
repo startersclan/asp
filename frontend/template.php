@@ -25,14 +25,14 @@ function build_navigation()
                 </li>
                 <li'; if($Sys == true) $html .= ' class="active"'; $html .= '>
                 <a href="#"><i class="icon-tools"></i> System</a>';
-                if(DB_VER == '0.0.0') 
+                if (DB_VER == '0.0.0')
                 { 
                     $html .= '<ul>
                         <li><a href="/ASP/config">Edit Configuration</a></li>
                         <li><a href="/ASP/install">System Installation</a></li>
                     </ul>';
                 }
-                elseif(DB_VER !== CODE_VER)
+                elseif (DB_VER !== CODE_VER)
                 {
                     $html .= '<ul>
                         <li><a href="/ASP/config">Edit Configuration</a></li>
@@ -75,7 +75,7 @@ function build_navigation()
                     <li'; if($Data == true) $html .= ' class="active"'; $html .= '>
                         <a href="#"><i class="icon-link"></i> Game Data</a>
                         <ul'; if($Data == false) $html .= ' class="closed"'; $html .= '>
-                            <li><a href="/ASP/gamedata">Armies and Object Types</a></li>
+                            <li><a href="/ASP/gamedata">Manage Stat Keys</a></li>
                             <li><a href="/ASP/gamedata/awards">Manage Awards</a></li>
                             <li><a href="/ASP/gamedata/unlocks">Manage Unlocks</a></li>
                         </ul>

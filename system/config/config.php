@@ -30,3 +30,4 @@ $game_unlocks = 0;
 $game_unlocks_bonus = 2;
 $game_unlocks_bonus_min = 1;
 $game_awds_ignore_time = 0;
+?>

@@ -1,12 +1,11 @@
 <?php
 /**
- * Plexis Content Management Asp
+ * BF2Statistics ASP Framework
  *
- * @file        Asp/Core/Response.php
- * @copyright   2011-2012, Plexis Dev Team
- * @license     GNU GPL v3
- * @contains    Response
- * @contains    OutputSentException
+ * Author:       Steven Wilson
+ * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
+ * License:      GNU GPL v3
+ *
  */
 namespace System;
 

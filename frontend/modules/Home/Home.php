@@ -1,11 +1,19 @@
 <?php
+/**
+ * BF2Statistics ASP Framework
+ *
+ * Author:       Steven Wilson
+ * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
+ * License:      GNU GPL v3
+ *
+ */
+use System\Controller;
 use System\Database;
 use System\IO\Directory;
 use System\IO\Path;
-use System\Response;
 use System\View;
 
-class Home
+class Home extends Controller
 {
     /**
      * @protocol    ANY
@@ -15,19 +23,15 @@ class Home
 	public function index()
 	{
 	    // Require database connection
+        $this->requireDatabase();
         $pdo = Database::GetConnection('stats');
-        if ($pdo === false || DB_VER == '0.0.0')
-        {
-            Response::Redirect('install');
-            die;
-        }
 
 	    // Create view
-        $View = new View('index', 'home');
-        $View->set('php_version', PHP_VERSION);
-        $View->set('server_name', php_uname('s'));
-        $View->set('server_version', apache_get_version() );
-        $View->set('db_version', $pdo->query('SELECT version()')->fetchColumn(0));
+        $view = new View('index', 'home');
+        $view->set('php_version', PHP_VERSION);
+        $view->set('server_name', php_uname('s'));
+        $view->set('server_version', apache_get_version() );
+        $view->set('db_version', $pdo->query('SELECT version()')->fetchColumn(0));
 
 	    // Get database size
         $size = 0;
@@ -36,20 +40,20 @@ class Home
         {
             $size += $row["Data_length"] + $row["Index_length"];
         }
-        $View->set('db_size', number_format($size / (1024*1024), 2));
+        $view->set('db_size', number_format($size / (1024*1024), 2));
 
         // Games Processed
         $rounds = $pdo->query('SELECT COUNT(id) FROM round_history')->fetchColumn();
-        $View->set('num_rounds', number_format($rounds));
+        $view->set('num_rounds', number_format($rounds));
 
         // Failed count
         $path = Path::Combine(SYSTEM_PATH, 'snapshots', 'failed');
         $count = count(Directory::GetFiles($path, '^(.*)\.txt$'));
-        $View->set('failed_snapshots', number_format($count));
+        $view->set('failed_snapshots', number_format($count));
 
         // Number of players
         $result = $pdo->query("SELECT COUNT(id) FROM player");
-        $View->set('num_players', number_format($result->fetchColumn(0)));
+        $view->set('num_players', number_format($result->fetchColumn(0)));
 
         $oneWeekAgo = time() - (86400 * 7);
         $twoWeekAgo = time() - (86400 * 14);
@@ -57,33 +61,33 @@ class Home
         // Number of Active players
         $result = $pdo->query("SELECT COUNT(id) FROM player WHERE lastonline > ". $oneWeekAgo);
         $active = (int)$result->fetchColumn(0);
-        $View->set('num_active_players', number_format($active));
+        $view->set('num_active_players', number_format($active));
 
         // Set arrow direction (with leading space) for active player count
         $result = $pdo->query("SELECT COUNT(id) FROM player WHERE lastonline BETWEEN $twoWeekAgo AND $oneWeekAgo");
         $inactive = (int)$result->fetchColumn(0);
-        $View->set('active_player_raise', ($inactive == $active) ? '' : (($inactive > $active) ? ' down' : ' up'));
+        $view->set('active_player_raise', ($inactive == $active) ? '' : (($inactive > $active) ? ' down' : ' up'));
 
         // Number of Active servers
         $result = $pdo->query("SELECT COUNT(id) FROM server WHERE lastupdate > ". $oneWeekAgo);
         $active = (int)$result->fetchColumn(0);
-        $View->set('num_active_servers', number_format($active));
+        $view->set('num_active_servers', number_format($active));
 
         // Number of Active players
         $result = $pdo->query("SELECT COUNT(id) FROM server WHERE lastupdate BETWEEN $twoWeekAgo AND $oneWeekAgo");
         $inactive = (int)$result->fetchColumn(0);
-        $View->set('active_server_raise', ($inactive == $active) ? '' : (($inactive > $active) ? ' down' : ' up'));
+        $view->set('active_server_raise', ($inactive == $active) ? '' : (($inactive > $active) ? ' down' : ' up'));
 
         // Attach chart plotting scripts
-        $View->attachScript("./frontend/js/flot/jquery.flot.min.js");
-        $View->attachScript("./frontend/js/flot/plugins/jquery.flot.tooltip.js");
-        $View->attachScript("./frontend/modules/home/js/chart.js");
+        $view->attachScript("./frontend/js/flot/jquery.flot.min.js");
+        $view->attachScript("./frontend/js/flot/plugins/jquery.flot.tooltip.js");
+        $view->attachScript("./frontend/modules/home/js/chart.js");
 
         // Attach stylesheets
-        $View->attachStylesheet("/ASP/frontend/css/icons/icol32.css");
+        $view->attachStylesheet("/ASP/frontend/css/icons/icol32.css");
 
         // Draw View
-		$View->render();
+		$view->render();
 	}
 
     /**

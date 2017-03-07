@@ -1,6 +1,6 @@
 <?php
 /**
- * BF2Statistics ASP Management Asp
+ * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
  * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
@@ -65,8 +65,9 @@ class Snapshot extends GameResult
         if ($length < 36 || $length % 2 != 0)
             throw new Exception("Snapshot does not contain at least 36 elements, or contains an odd number of elements");
 
-        // Load award data
+        // Load award and stats data
         AwardData::Load();
+        StatsData::Load();
 
         // local vars
         $standardData = new Dictionary();
@@ -131,12 +132,16 @@ class Snapshot extends GameResult
         }
         catch (Exception $e)
         {
-            throw new Exception("Error assigning Key => value pairs: ". $e->getMessage(), 1, $e);
+            throw new Exception("Snapshot Integrity Error, failed assigning Key => value pairs: ". $e->getMessage(), 1, $e);
         }
 
         // Make sure we have a completed snapshot
         if (!isset($standardData["EOF"]))
             throw new Exception("No End of File element was found, Snapshot assumed to be incomplete.");
+
+        // Check snapshot version!
+        if (!$standardData->tryGetValue('v', $version) || Version::LessThan($version, "3.0"))
+            throw new Exception("Incompatible snapshot version: ". $version);
 
         // Server data
         $this->serverPrefix = preg_replace("/[^A-Za-z0-9_]/", '', $data[0]);
@@ -153,12 +158,12 @@ class Snapshot extends GameResult
 
         // Misc Data
         $this->gameMode = (int)$standardData["gm"];
-        $this->mod = $standardData["v"]; // bf2 mod replaced the version key, since we dont care the version anyways
+        $this->mod = $standardData["m"]; // bf2 mod replaced the version key, since we dont care the version anyways
         $this->playersConnected = (int)$standardData["pc"];
 
         // Army Data... There is no RWA key if there was no winner...
         $this->winningTeam = (int)$standardData["win"]; // Temp
-        $this->winningArmyId = ($standardData->containsKey("rwa")) ? (int)$standardData["rwa"] : -1;
+        $this->winningArmyId = (int)$standardData->getValueOrDefault("rwa", -1);
         $this->team1ArmyId = (int)$standardData["ra1"];
         $this->team1Tickets = (int)$standardData["rs1"];
         $this->team2ArmyId = (int)$standardData["ra2"];

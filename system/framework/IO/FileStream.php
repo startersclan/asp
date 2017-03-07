@@ -1,10 +1,11 @@
 <?php
 /**
- * Plexis Framework
+ * BF2Statistics ASP Framework
  *
- * @file        system/framework/IO/FileStream.php
- * @copyright   2013 - 2017 Plexis Dev Team
- * @license     GNU GPL v3
+ * Author:       Steven Wilson
+ * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
+ * License:      GNU GPL v3
+ *
  */
 namespace System\IO;
 
@@ -198,6 +199,7 @@ class FileStream
             // Read next character
             $result .= fread($this->stream, 4096);
         }
+
         return $result;
     }
 
@@ -255,6 +257,7 @@ class FileStream
 
         // Reset position in stream
         $this->seek(-$position, SEEK_SET);
+
         return $result;
     }
 
@@ -275,6 +278,7 @@ class FileStream
 
         // Ensure we can write to this stream
         $this->ensureCanWrite();
+
         return fwrite($this->stream, $stringData);
     }
 
@@ -295,6 +299,7 @@ class FileStream
 
         // Ensure we can write to this stream
         $this->ensureCanWrite();
+
         return fwrite($this->stream, $stringData . PHP_EOL);
     }
 
@@ -316,6 +321,7 @@ class FileStream
 
         // Ensure we can write to this stream
         $this->ensureCanWrite();
+
         return ftruncate($this->stream, $size);
     }
 
@@ -337,6 +343,7 @@ class FileStream
 
         // Ensure we can write to this stream
         $this->ensureCanWrite();
+
         return ftruncate($this->stream, $size);
     }
 
@@ -354,6 +361,7 @@ class FileStream
 
         // Fetch stream stats using fstat()
         $stat = fstat($this->stream);
+
         return isset($stat['size']) ? $stat['size'] : 0;
     }
 
@@ -367,6 +375,7 @@ class FileStream
     public function getPosition()
     {
         $this->checkDisposed();
+
         return (int)ftell($this->stream);
     }
 
@@ -386,6 +395,7 @@ class FileStream
     {
         // Ensure the stream is open
         $this->checkDisposed();
+
         return (fseek($this->stream, $position, $whence) == 0);
     }
 
@@ -402,6 +412,7 @@ class FileStream
     {
         // Ensure the stream is open
         $this->checkDisposed();
+
         return flock($this->stream, ($exclusive) ? LOCK_EX : LOCK_SH);
     }
 
@@ -416,6 +427,7 @@ class FileStream
     {
         // Ensure the stream is open
         $this->checkDisposed();
+
         return flock($this->stream, LOCK_UN);
     }
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * BF2Statistics ASP Management Asp
+ * BF2Statistics ASP Framework
  *
  * @copyright   2013, BF2Statistics.com
  * @license     GNU GPL v3

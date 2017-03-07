@@ -1,6 +1,6 @@
 <?php
 /**
- * BF2Statistics ASP Management Asp
+ * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
  * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
@@ -66,6 +66,7 @@ class Gamedata extends Controller
         $pdo = Database::GetConnection('stats');
         $awards = $pdo->query("SELECT * FROM `award` ORDER BY `type`, `backend`")->fetchAll();
 
+        // Apply formatting
         for ($i = 0; $i < count($awards); $i++)
         {
             $awards[$i]['backend'] = ($awards[$i]['backend'] == 1) ? "Yes" : "No";

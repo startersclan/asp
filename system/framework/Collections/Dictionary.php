@@ -1,6 +1,6 @@
 <?php
 /**
- * BF2Statistics ASP Management Asp
+ * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
  * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
@@ -177,6 +177,20 @@ class Dictionary implements \IteratorAggregate, \ArrayAccess, \Countable, \Seria
 
         $value = $this->data[$key];
         return true;
+    }
+
+    /**
+     * Gets the value associated with the specified key, or returns the specified
+     * default value if the Dictionary does not contain the specified key.
+     *
+     * @param mixed $key The key of the value to get.
+     * @param mixed $default The default value to return in the specified key does not exist.
+     *
+     * @return mixed
+     */
+    public function getValueOrDefault($key, $default)
+    {
+        return (!$this->containsKey($key)) ? $default : $this->data[$key];
     }
 
     /**

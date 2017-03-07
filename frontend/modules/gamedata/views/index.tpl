@@ -21,16 +21,16 @@
             </thead>
             <tody>
                 {armies}
-                    <tr id="tr-army-{id}">
-                        <td>{id}</td>
-                        <td>{name}</td>
-                        <td>
-                            <span class="btn-group">
-                                <a id="edit-army-{id}" href="#"  rel="tooltip" title="Edit Name" class="btn btn-small"><i class="icon-pencil"></i></a>
-                                <a id="delete-army-{id}" href="#" class="btn btn-small" rel="tooltip" title="Delete Army" ><i class="icon-trash"></i></a>
-                            </span>
-                        </td>
-                    </tr>
+                <tr id="tr-army-{id}">
+                    <td>{id}</td>
+                    <td>{name}</td>
+                    <td>
+                        <span class="btn-group">
+                            <a id="edit-army-{id}" href="#"  rel="tooltip" title="Edit Name" class="btn btn-small"><i class="icon-pencil"></i></a>
+                            <a id="delete-army-{id}" href="#" class="btn btn-small" rel="tooltip" title="Delete Army" ><i class="icon-trash"></i></a>
+                        </span>
+                    </td>
+                </tr>
                 {/armies}
             </tody>
         </table>
@@ -58,16 +58,16 @@
             </thead>
             <tody>
                 {kits}
-                    <tr id="tr-kit-{id}">
-                        <td>{id}</td>
-                        <td>{name}</td>
-                        <td>
-                            <span class="btn-group">
-                                <a id="edit-kit-{id}" href="#"  rel="tooltip" title="Edit Name" class="btn btn-small"><i class="icon-pencil"></i></a>
-                                <a id="delete-kit-{id}" href="#" class="btn btn-small" rel="tooltip" title="Delete Kit" ><i class="icon-trash"></i></a>
-                            </span>
-                        </td>
-                    </tr>
+                <tr id="tr-kit-{id}">
+                    <td>{id}</td>
+                    <td>{name}</td>
+                    <td>
+                        <span class="btn-group">
+                            <a id="edit-kit-{id}" href="#"  rel="tooltip" title="Edit Name" class="btn btn-small"><i class="icon-pencil"></i></a>
+                            <a id="delete-kit-{id}" href="#" class="btn btn-small" rel="tooltip" title="Delete Kit" ><i class="icon-trash"></i></a>
+                        </span>
+                    </td>
+                </tr>
                 {/kits}
             </tody>
         </table>
@@ -95,16 +95,16 @@
             </thead>
             <tody>
                 {vehicles}
-                    <tr id="tr-vehicle-{id}">
-                        <td>{id}</td>
-                        <td>{name}</td>
-                        <td>
-                            <span class="btn-group">
-                                <a id="edit-vehicle-{id}" href="#"  rel="tooltip" title="Edit Name" class="btn btn-small"><i class="icon-pencil"></i></a>
-                                <a id="delete-vehicle-{id}" href="#" class="btn btn-small" rel="tooltip" title="Delete Vehicle" ><i class="icon-trash"></i></a>
-                            </span>
-                        </td>
-                    </tr>
+                <tr id="tr-vehicle-{id}">
+                    <td>{id}</td>
+                    <td>{name}</td>
+                    <td>
+                        <span class="btn-group">
+                            <a id="edit-vehicle-{id}" href="#"  rel="tooltip" title="Edit Name" class="btn btn-small"><i class="icon-pencil"></i></a>
+                            <a id="delete-vehicle-{id}" href="#" class="btn btn-small" rel="tooltip" title="Delete Vehicle" ><i class="icon-trash"></i></a>
+                        </span>
+                    </td>
+                </tr>
                 {/vehicles}
             </tody>
         </table>
@@ -132,16 +132,16 @@
             </thead>
             <tody>
                 {weapons}
-                    <tr id="tr-weapon-{id}">
-                        <td>{id}</td>
-                        <td>{name}</td>
-                        <td>
-                            <span class="btn-group">
-                                <a id="edit-weapon-{id}" href="#"  rel="tooltip" title="Edit Name" class="btn btn-small"><i class="icon-pencil"></i></a>
-                                <a id="delete-weapon-{id}" href="#" class="btn btn-small" rel="tooltip" title="Delete Vehicle" ><i class="icon-trash"></i></a>
-                            </span>
-                        </td>
-                    </tr>
+                <tr id="tr-weapon-{id}">
+                    <td>{id}</td>
+                    <td>{name}</td>
+                    <td>
+                        <span class="btn-group">
+                            <a id="edit-weapon-{id}" href="#"  rel="tooltip" title="Edit Name" class="btn btn-small"><i class="icon-pencil"></i></a>
+                            <a id="delete-weapon-{id}" href="#" class="btn btn-small" rel="tooltip" title="Delete Vehicle" ><i class="icon-trash"></i></a>
+                        </span>
+                    </td>
+                </tr>
                 {/weapons}
             </tody>
         </table>
@@ -169,7 +169,7 @@
 <!-- Delete Server Confirmation Model -->
 <div id="mws-jui-dialog">
     <div class="mws-dialog-inner">
-        Are you sure you want to delete this item? Deleting Object Types from the database can erase huge portions
+        Are you sure you want to delete this item? Deleting stats keys from the database can erase huge portions
         of player history and data. <b>This action cannot be undone. Are you absolutely sure?</b>
     </div>
 </div>

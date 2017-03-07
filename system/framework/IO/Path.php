@@ -1,13 +1,11 @@
 <?php
 /**
- * Plexis Content Management Asp
+ * BF2Statistics ASP Framework
  *
- * @file        system/framework/IO/Path.php
- * @copyright   2013, Plexis Dev Team
- * @license     GNU GPL v3
- * @author      Plexis Dev Team
- * @package     Asp
- * @subpackage  IO
+ * Author:       Steven Wilson
+ * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
+ * License:      GNU GPL v3
+ *
  */
 namespace System\IO;
 

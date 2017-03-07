@@ -1,10 +1,11 @@
 <?php
 /**
- * Plexis Content Management System
+ * BF2Statistics ASP Framework
  *
- * @file        system/framework/IO/DirectoryInfo.php
- * @copyright   2013 Plexis Dev Team
- * @license     GNU GPL v3
+ * Author:       Steven Wilson
+ * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
+ * License:      GNU GPL v3
+ *
  */
 namespace System\IO;
 
@@ -209,25 +210,25 @@ class DirectoryInfo
      *      this method.
      *
      * @remarks
-     *		Permissions:
-     *			0 - no permissions,
-     *			1 – can execute,
-     *			2 – can write,
-     *			4 – can read
+     *        Permissions:
+     *            0 - no permissions,
+     *            1 – can execute,
+     *            2 – can write,
+     *            4 – can read
      *
-     *		The octal number is the sum of those three permissions.
+     *        The octal number is the sum of those three permissions.
      *
-     *		Position of the digit in value:
-     *			1 - Always zero, to signify an octal value!!
-     *			2 - what the owner can do,
-     *			3 - users in the file group,
-     *			4 - users not in the file group
+     *        Position of the digit in value:
+     *            1 - Always zero, to signify an octal value!!
+     *            2 - what the owner can do,
+     *            3 - users in the file group,
+     *            4 - users not in the file group
      *
      * @example
-     *		0600 – owner can read and write
-     *		0700 – owner can read, write and execute
-     *		0666 – all can read and write
-     *		0777 – all can read, write and execute
+     *        0600 – owner can read and write
+     *        0700 – owner can read, write and execute
+     *        0666 – all can read and write
+     *        0777 – all can read, write and execute
      *
      * @return bool returns the success value of setting the permissions.
      */
@@ -440,6 +441,7 @@ class DirectoryInfo
         // Close the folder and remove the temp file
         fclose($handle);
         unlink($file);
+
         return true;
     }
 
@@ -496,6 +498,7 @@ class DirectoryInfo
     {
         $units = array(' B', ' KB', ' MB', ' GB', ' TB');
         for ($i = 0; $size >= 1024 && $i < 4; $i++) $size /= 1024;
+
         return round($size, 2) . $units[$i];
     }
 

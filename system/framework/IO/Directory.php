@@ -1,10 +1,11 @@
 <?php
 /**
- * Plexis Framework
+ * BF2Statistics ASP Framework
  *
- * @file        system/framework/IO/Directory.php
- * @copyright   2013 - 2017 Plexis Dev Team
- * @license     GNU GPL v3
+ * Author:       Steven Wilson
+ * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
+ * License:      GNU GPL v3
+ *
  */
 namespace System\IO;
 
