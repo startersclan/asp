@@ -24,8 +24,6 @@
 // Namespace
 namespace System;
 
-use PDOStatement;
-
 // No direct access
 defined("BF2_ADMIN") or die("No Direct Access");
 
@@ -170,8 +168,15 @@ else
     elseif (stringStartsWith($info, "rank") && stringEndsWith($info, "vac-"))
     {
         // NOTE: xpack and bf2 have same return
+        $query = <<<SQL
+SELECT id, name, score, rank, defends, repairs, heals, ammos, driverspecials, cmdscore, cmdtime, sqltime, 
+  sqmtime, wins, losses, teamscore, killstreak, deathstreak, time, kills
+FROM `player` 
+WHERE `id` = {$pid}
+SQL;
+
         // Make sure the Player exists
-        $result = $connection->query("SELECT * FROM `player` WHERE `id` = {$pid}");
+        $result = $connection->query($query);
         if (!($row = $result->fetch()))
         {
             $Response->responseError(true);
@@ -179,6 +184,9 @@ else
             $Response->writeDataLine(time(), "Player Not Found!");
             $Response->send();
         }
+
+        // Load stats data
+        StatsData::Load();
 
         // Build initial player data
         $Output = array(
@@ -207,10 +215,15 @@ else
         // Weapons
         $includeTacticals = strpos($info, 'de-') !== false;
 
-        // Add wkl-13 for Zipline... which is required, but not used.
-        // Explosives are combined for (-2), plus Zipline (+1)
-        for ($i = 0; $i < NUM_WEAPONS - 1; $i++)
+        // Add default data
+        for ($i = 0; $i < StatsData::$NumWeapons; $i++)
+        {
+            // Skip tactical equipment and explosives (Leave 11 index for combined explosives)
+            if ($i > 12 && $i < 18)
+                continue;
+
             $Output["wkl-{$i}"] = 0;
+        }
 
         // Grappling hook, Tactical, and Zipline
         if ($includeTacticals)
@@ -226,21 +239,19 @@ else
             $i = (int)$roww['id'];
 
             // Tactical weapons
-            if ($i > 14 && $includeTacticals)
+            if ($i > 14 && $i < 18 && $includeTacticals)
             {
                 switch ($i)
                 {
-                    case 18:
+                    case 17:
                         $Output['de-6'] = $roww['fired'];
                         break;
-                    case 17:
+                    case 16:
                         $Output['de-8'] = $roww['fired'];
                         break;
-                    case 16:
+                    case 15:
                         $Output['de-7'] = $roww['fired'];
                         break;
-                    default:
-                        continue;
                 }
             }
 
@@ -256,7 +267,7 @@ else
         }
 
         // Kits
-        for ($i = 0; $i < NUM_KITS; $i++)
+        for ($i = 0; $i < StatsData::$NumKits; $i++)
         {
             $Output["ktm-$i"] = 0; // Time
             $Output["kkl-$i"] = 0; // Kills
@@ -271,10 +282,11 @@ else
         }
 
         // Vehicles
-        for ($i = 0; $i < NUM_VEHICLES; $i++)
+        for ($i = 0; $i < StatsData::$NumVehicles; $i++)
         {
             $Output["vtm-$i"] = 0; // Time
             $Output["vkl-$i"] = 0; // Kills
+            $Output["vac-{$i}"] = 0; // Vehicle accuracy? Always zero
         }
 
         $result = $connection->query("SELECT * FROM `player_vehicle` WHERE `pid` = {$pid}");
@@ -286,11 +298,11 @@ else
         }
 
         // Army
-        for ($i = 0; $i < NUM_ARMIES; $i++)
+        for ($i = 0; $i < StatsData::$NumArmies; $i++)
         {
-            $Output["atm-{$i}"] = '0';
-            $Output["abr-{$i}"] = '0';
-            $Output["awn-{$i}"] = '0';
+            $Output["atm-{$i}"] = 0;
+            $Output["abr-{$i}"] = 0;
+            $Output["awn-{$i}"] = 0;
         }
 
         $result = $connection->query("SELECT * FROM `player_army` WHERE pid = {$pid}");
@@ -301,10 +313,6 @@ else
             $Output["abr-{$i}"] = $rowa["best"];
             $Output["awn-{$i}"] = $rowa["wins"];
         }
-
-        #vac-
-        for ($i = 0; $i < NUM_VEHICLES; $i++)
-            $Output["vac-{$i}"] = 0;
 
         $Response->writeHeaderDataArray($Output);
         $Response->send($transpose);
@@ -438,7 +446,7 @@ else
         // Prepare where statement
         $where = (strpos($info, "cmap-") !== false)
             ? "`pid` = {$pid}"
-            : "`pid` = {$pid} AND `mapid` < " . Config::Get("game_custom_mapid");
+            : "`pid` = {$pid} AND `mapid` < 700";
 
         // Fetch map data from DB
         $query = "SELECT * FROM `player_map` WHERE {$where}";
@@ -459,11 +467,9 @@ else
             } while ($row = $result->fetch());
         }
 
-        /*
-         * *********************
+        /**
          * If the headers aren't all grouped together, the map info wont parse in the bf2 client,
          * Therefor was must do this in a non-efficient way
-         * *********************
          */
         foreach ($mtm as $i => $value)
             $Output["mtm-{$i}"] = $value;
@@ -528,6 +534,7 @@ function addWeaponData(&$Output, $pid)
 {
     // Fetch DB connection
     $connection = Database::GetConnection("stats");
+    $limit = NUM_WEAPONS - 1;
 
     // Assign some vars
     $favTime = 0;
@@ -543,23 +550,23 @@ function addWeaponData(&$Output, $pid)
      */
 
     // Time
-    for ($i = 0; $i < NUM_WEAPONS - 1; $i++)
+    for ($i = 0; $i < $limit; $i++)
         $Output["wtm-$i"] = 0;
 
     // Kills
-    for ($i = 0; $i < NUM_WEAPONS - 1; $i++)
+    for ($i = 0; $i < $limit; $i++)
         $Output["wkl-$i"] = 0;
 
     // Deaths
-    for ($i = 0; $i < NUM_WEAPONS - 1; $i++)
+    for ($i = 0; $i < $limit; $i++)
         $Output["wdt-$i"] = 0;
 
     // Accuracy
-    for ($i = 0; $i < NUM_WEAPONS - 1; $i++)
+    for ($i = 0; $i < $limit; $i++)
         $Output["wac-$i"] = 0;
 
     //  K/D Ratio
-    for ($i = 0; $i < NUM_WEAPONS - 1; $i++)
+    for ($i = 0; $i < $limit; $i++)
         $Output["wkd-$i"] = '0:0';
 
     // Weapons
@@ -616,16 +623,16 @@ function addWeaponData(&$Output, $pid)
                     $Output["wkd-$i"] = $kills . ':0';
             }
         }
-
-        // K/D Ratio
-        if ($eDeaths != 0)
-        {
-            $den = denominator($eKills, $eDeaths);
-            $Output["wkd-11"] = ($eKills / $den) . ':' . ($eDeaths / $den);
-        }
-        else
-            $Output["wkd-11"] = $eKills . ':0';
     }
+
+    // K/D Ratio for explosives
+    if ($eDeaths != 0)
+    {
+        $den = denominator($eKills, $eDeaths);
+        $Output["wkd-11"] = ($eKills / $den) . ':' . ($eDeaths / $den);
+    }
+    else
+        $Output["wkd-11"] = $eKills . ':0';
 
     // Set favorite data's
     $acc = ($tempAcc != 0) ? round($tempAcc / 12, 2) * 100 : 0;
@@ -674,7 +681,7 @@ function addVehicleData(&$Output, $pid)
         $Output["vkr-$i"] = 0;
 
     // Vehicles
-    $result = $connection->query("SELECT * FROM player_vehicle WHERE pid = {$pid} ORDER BY id");
+    $result = $connection->query("SELECT * FROM player_vehicle WHERE pid = {$pid} AND id < ". NUM_VEHICLES ." ORDER BY id");
     while ($row = $result->fetch())
     {
         $i = (int)$row['id'];
@@ -792,7 +799,7 @@ function addKitData(&$Output, $pid)
         $Output["kkd-$i"] = '0:0'; // K/D Ratio
 
     // Weapons
-    $result = $connection->query("SELECT * FROM player_kit WHERE pid = {$pid} ORDER BY id");
+    $result = $connection->query("SELECT * FROM player_kit WHERE pid = {$pid} AND id < ". NUM_KITS ." ORDER BY id");
     while ($row = $result->fetch())
     {
         $i = (int)$row['id'];

@@ -20,17 +20,29 @@
 // Namespace
 namespace System;
 
-use PDOStatement;
-
 // No direct access
 defined("BF2_ADMIN") or die("No Direct Access");
 
 // Prepare output
 $Response = new AspResponse();
 
-// Make sure we have a type, and its valid
+// Cast URL parameters
 $type = (isset($_GET['type'])) ? $_GET['type'] : '';
+$id = (isset($_GET['id'])) ? (int)$_GET['id'] : 0;
+$pid = (isset($_GET['pid'])) ? (int)$_GET['pid'] : 0;
 
+// Optional parameters
+$after = (isset($_GET['after'])) ? (int)$_GET['after'] : 0;
+$before = (isset($_GET['before'])) ? (int)$_GET['before'] : 0;
+$pos = (isset($_GET['pos'])) ? (int)$_GET['pos'] : 1;
+$min = ($pos - 1) - $before;
+$max = $after + 1;
+
+// Correction
+if ($min < 0) $min = 0;
+if ($max < 0) $max = 0;
+
+// Make sure we have a type, and its valid
 if (empty($type))
 {
     $Response->responseError(true);
@@ -45,20 +57,6 @@ else
 
     // Prepare our output header
     $Response->writeHeaderLine("size", "asof");
-
-    $id = (isset($_GET['id'])) ? (int)$_GET['id'] : 0;
-    $pid = (isset($_GET['pid'])) ? (int)$_GET['pid'] : 0;
-
-    // Optional parameters
-    $after = (isset($_GET['after'])) ? (int)$_GET['after'] : 0;
-    $before = (isset($_GET['before'])) ? (int)$_GET['before'] : 0;
-    $pos = (isset($_GET['pos'])) ? (int)$_GET['pos'] : 1;
-    $min = ($pos - 1) - $before;
-    $max = $after + 1;
-
-    // Correction
-    if ($min < 0) $min = 0;
-    if ($max < 0) $max = 0;
 
     if ($type == 'score')
     {
@@ -93,7 +91,7 @@ else
                 if ($row = $result->fetch())
                 {
                     $query = "SELECT COUNT(id) FROM player WHERE score > %d";
-                    $stmt = $connection->query( vsprintf($query, [$row['score']]) );
+                    $stmt = $connection->query(vsprintf($query, [$row['score']]));
                     $Response->writeDataLine(
                         ((int)$stmt->fetchColumn(0)) + 1,
                         $row['id'],
@@ -137,7 +135,7 @@ else
                 if ($row = $result->fetch())
                 {
                     $query = "SELECT COUNT(id) FROM player WHERE cmdscore > %d";
-                    $stmt = $connection->query( vsprintf($query, [$row['cmdcore']]) );
+                    $stmt = $connection->query(vsprintf($query, [$row['cmdcore']]));
                     $Response->writeDataLine(
                         ((int)$stmt->fetchColumn(0)) + 1,
                         $row['id'],
@@ -181,7 +179,7 @@ else
                 if ($row = $result->fetch())
                 {
                     $query = "SELECT COUNT(id) FROM player WHERE teamscore > %d";
-                    $stmt = $connection->query( vsprintf($query, [$row['teamscore']]) );
+                    $stmt = $connection->query(vsprintf($query, [$row['teamscore']]));
                     $Response->writeDataLine(
                         ((int)$stmt->fetchColumn(0)) + 1,
                         $row['id'],
@@ -226,7 +224,7 @@ else
                 if ($row = $result->fetch())
                 {
                     $query = "SELECT COUNT(id) FROM player WHERE skillscore > %d";
-                    $stmt = $connection->query( vsprintf($query, [$row['skillscore']]) );
+                    $stmt = $connection->query(vsprintf($query, [$row['skillscore']]));
                     $Response->writeDataLine(
                         ((int)$stmt->fetchColumn(0)) + 1,
                         $row['id'],
@@ -244,8 +242,8 @@ else
     # Need weekly score calculations!
     elseif ($type == 'risingstar')
     {
-        $timestamp = time() - (60*60*24*7);
-        $query = "SELECT COUNT(DISTINCT(pid)) FROM player_history WHERE score > 0 AND timestamp >= ". $timestamp;
+        $timestamp = time() - (60 * 60 * 24 * 7);
+        $query = "SELECT COUNT(DISTINCT(pid)) FROM player_history WHERE score > 0 AND timestamp >= " . $timestamp;
         $result = $connection->query($query);
         $Response->writeDataLine($result->fetchColumn(), time());
         $Response->writeHeaderLine("n", "pid", "nick", "weeklyscore", "totaltime", "date", "playerrank", "countrycode");
@@ -511,7 +509,7 @@ SQL;
 
             // Fetch players kit if he has one...
             $query = "SELECT `kills`, `deaths`, `time`, `accuracy` FROM player_weapon_view WHERE pid=%d AND id=%d LIMIT 1";
-            $result = $connection->query( sprintf($query, $pid, $id) );
+            $result = $connection->query(sprintf($query, $pid, $id));
             if ($row = $result->fetch())
             {
                 $player += $row;
@@ -526,7 +524,7 @@ SQL;
 
             // Get player position relative to everyone else
             $query = "SELECT COUNT(id) FROM player_weapon_view WHERE id=%d AND kills > %d AND accuracy > %f";
-            $result = $connection->query( sprintf($query, $id, $player['kills'], $player['accuracy']) );
+            $result = $connection->query(sprintf($query, $id, $player['kills'], $player['accuracy']));
             $pos = ((int)$result->fetchColumn()) + 1;
 
             // Send response

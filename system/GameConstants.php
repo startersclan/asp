@@ -9,35 +9,33 @@
  */
 
 /**
- * Declare some constants
+ * ----------------------------------------------------------------------------------
+ * Declare GetPlayerInfo.aspx constants for BFHQ
  *
- * These NUM_* constants should match the "NUM_*_TYPES" in the constants.py, with
- * a few exceptions as listed below.
+ * These constants define the number of army, weapon, kit, and vehicle data lines
+ * to output in the "/ASP/getplayerinfo.aspx" call. BFHQ is pretty picky about
+ * the data it receives from Gamespy, so these values are expected NEVER to change.
+ * ----------------------------------------------------------------------------------
  */
 if (defined("NUM_ARMIES")) return;
 
 /**
- * Defines the number of armies
+ * Defines the number of armies (Vanilla is 14)
  */
 const NUM_ARMIES = 14;
 
 /**
- * Defines the number of kits
+ * Defines the number of kits (Vanilla is 7)
  */
 const NUM_KITS = 7;
 
 /**
- * Defines the number of vehicle types
- *
- * Only include a count up to the number sent in the snapshot.
- * By default, this number is only the first 7 vehicle types. VEHICLE_TYPE_SOLDIER,
- * VEHICLE_TYPE_NIGHTVISION, and VEHICLE_TYPE_GASMASK are not sent in snapshot. Do not
- * include VEHICLE_TYPE_PARACHUTE in the count either, as this is processed separately.
+ * Defines the number of vehicle types to output (Vanilla is 7)
  */
 const NUM_VEHICLES = 7;
 
 /**
- * Defines the number of weapon types
+ * Defines the number of weapon types (Vanilla is 15)
  *
  * For NUM_WEAPONS, don't forget that NUM 9 is skipped in the constants.py!
  * Do not include the following weapon types in the count:

@@ -13,8 +13,15 @@ namespace System\Collections;
 use Exception;
 
 /**
- * The Dictionary object implements a collection, that takes key-value pairs,
- * just like an array.
+ * Represents a collection of keys and values.
+ *
+ * What sets the Dictionary apart over an array is that the Dictionary will throw
+ * exceptions instead of outputting PHP errors, allowing the developer more control
+ * over erroneous operations.
+ *
+ * The Dictionary class also supports case-insensitive key lookups and read-only
+ * enforcement. Read-Only enforcement can only enforce that no items are added or removed
+ * from this collection, not the changing of values!
  *
  * You can access and add items to the collection using the "add", "itemAt", and "remove"
  * methods, or you can use this object like an array:
@@ -29,37 +36,49 @@ use Exception;
 class Dictionary implements \IteratorAggregate, \ArrayAccess, \Countable, \Serializable
 {
     /**
-     * Data Container.
-     * @var mixed[]
+     * @var mixed[] Data Container.
      */
     private $data = array();
 
     /**
-     * The index count of the data container
-     * @var int
+     * @var int The index count of the data container
      */
     protected $size = 0;
 
     /**
-     * Represents whether this dictionary is read-only.
-     * @var bool
+     * @var bool Indicates whether this dictionary is read-only.
      */
     protected $isReadOnly = false;
 
     /**
+     * @var bool Indicates whether the comparison of keys is case sensitive.
+     */
+    protected $caseSensitive = true;
+
+    /**
      * Constructor
      *
-     * @param bool $readOnly
-     * @param array $items
+     * @param bool $readOnly Indicates whether this Dictionary collection will be readonly.
+     * @param array $items Default items to add to this Dictionary
+     * @param bool $caseSensitive Indicates whether the comparison of keys is case sensitive.
      */
-    public function __construct($readOnly = false, array $items = [])
+    public function __construct($readOnly = false, array $items = [], $caseSensitive = true)
     {
-        $this->isReadOnly = $readOnly;
-        if ($items !== null)
+        // Set case sensitivity
+        $this->caseSensitive = $caseSensitive;
+
+        // Add initialization data is set
+        if (!empty($items))
         {
-            $this->data = $items;
+            // Set internal data container
+            $this->data = ($caseSensitive) ? $items : array_change_key_case($items, CASE_LOWER);
+
+            // Set internal size counter
             $this->size = count($items);
         }
+
+        // Set readonly last, after items are added to the collection
+        $this->isReadOnly = $readOnly;
     }
 
     /**
@@ -68,16 +87,23 @@ class Dictionary implements \IteratorAggregate, \ArrayAccess, \Countable, \Seria
      * @param string $key The item key
      * @param mixed $value The value of the item key
      *
-     * @throws Exception
+     * @throws Exception if the collection is read-only
      * @return void
      */
     public function add($key, $value)
     {
         if ($this->isReadOnly)
-            throw new Exception();
+            throw new Exception("Unable to add item to Dictionary. The current Dictionary object is set to read-only.");
 
+        // Add item
         if (!empty($key) || $key === 0)
+        {
+            // Lowercase key if we are in case-insensitive mode
+            if (!$this->caseSensitive && !is_numeric($key))
+                $key = strtolower($key);
+
             $this->data[$key] = $value;
+        }
         else
             $this->data[] = $value;
 
@@ -92,6 +118,24 @@ class Dictionary implements \IteratorAggregate, \ArrayAccess, \Countable, \Seria
      * @return bool
      */
     public function containsKey($key)
+    {
+        // Lowercase key if we are in case-insensitive mode
+        if (!$this->caseSensitive && !is_numeric($key))
+            $key = strtolower($key);
+
+        return array_key_exists($key, $this->data);
+    }
+
+    /**
+     * Determines whether the dictionary contains the specified key.
+     *
+     * DOES NOT DO CASE IN-SENSITIVE CHECKS!
+     *
+     * @param mixed $key The item key
+     *
+     * @return bool
+     */
+    private function _containsKey($key)
     {
         return array_key_exists($key, $this->data);
     }
@@ -137,7 +181,7 @@ class Dictionary implements \IteratorAggregate, \ArrayAccess, \Countable, \Seria
     public function clear()
     {
         if ($this->isReadOnly)
-            throw new Exception();
+            throw new Exception("Unable to clear Dictionary items. The current Dictionary object is set to read-only.");
 
         $this->data = array();
         $this->size = 0;
@@ -153,7 +197,12 @@ class Dictionary implements \IteratorAggregate, \ArrayAccess, \Countable, \Seria
      */
     public function itemAt($key)
     {
-        if (!$this->containsKey($key))
+        // Lowercase key if we are in case-insensitive mode
+        if (!$this->caseSensitive && !is_numeric($key))
+            $key = strtolower($key);
+
+        // Check if key exists in the collection
+        if (!$this->_containsKey($key))
             throw new Exception("The given key was not present in the dictionary: {$key}");
 
         return $this->data[$key];
@@ -169,7 +218,12 @@ class Dictionary implements \IteratorAggregate, \ArrayAccess, \Countable, \Seria
      */
     public function tryGetValue($key, &$value)
     {
-        if (!$this->containsKey($key))
+        // Lowercase key if we are in case-insensitive mode
+        if (!$this->caseSensitive && !is_numeric($key))
+            $key = strtolower($key);
+
+        // Check if key exists in the collection
+        if (!$this->_containsKey($key))
         {
             $value = null;
             return false;
@@ -190,7 +244,12 @@ class Dictionary implements \IteratorAggregate, \ArrayAccess, \Countable, \Seria
      */
     public function getValueOrDefault($key, $default)
     {
-        return (!$this->containsKey($key)) ? $default : $this->data[$key];
+        // Lowercase key if we are in case-insensitive mode
+        if (!$this->caseSensitive && !is_numeric($key))
+            $key = strtolower($key);
+
+        // Check if key exists in the collection
+        return (!$this->_containsKey($key)) ? $default : $this->data[$key];
     }
 
     /**
@@ -200,20 +259,24 @@ class Dictionary implements \IteratorAggregate, \ArrayAccess, \Countable, \Seria
      *
      * @throws Exception
      * @internal param mixed $item The item value to search for
-     * @return int|bool The zero based index of the item was removed from, or false
+     * @return bool true if the item was removed, otherwise false
      */
     public function remove($key)
     {
         if ($this->isReadOnly)
-            throw new Exception();
+            throw new Exception("Unable to remove item to Dictionary. The current Dictionary object is set to read-only.");
 
-        // Check that the item exists
-        if ($this->containsKey($key))
+        // Lowercase key if we are in case-insensitive mode
+        if (!$this->caseSensitive && !is_numeric($key))
+            $key = strtolower($key);
+
+        // Check if key exists in the collection
+        if ($this->_containsKey($key))
         {
             $value = $this->data[$key];
             unset($this->data[$key]);
             --$this->size;
-            return $value;
+            return true;
         }
 
         return false;
@@ -251,7 +314,12 @@ class Dictionary implements \IteratorAggregate, \ArrayAccess, \Countable, \Seria
      */
     public function offsetExists($key)
     {
-        return $this->containsKey($key);
+        // Lowercase key if we are in case-insensitive mode
+        if (!$this->caseSensitive && !is_numeric($key))
+            $key = strtolower($key);
+
+        // Check if key exists in the collection
+        return $this->_containsKey($key);
     }
 
     /**

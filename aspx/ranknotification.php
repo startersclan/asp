@@ -16,7 +16,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
-	
+
 // Namespace
 namespace System;
 
@@ -42,14 +42,14 @@ else
     // Connect to the database
     $connection = Database::GetConnection("stats");
 
-	$result = $connection->query("SELECT `rank` FROM `player` WHERE `id` = {$pid}");
-	if(!($row = $result->fetch()))
-	{
+    $result = $connection->query("SELECT `rank` FROM `player` WHERE `id` = {$pid}");
+    if (!($row = $result->fetch()))
+    {
         $Response->responseError(true);
         $Response->writeLine("Player Not Found");
-	}
-	else
-	{
+    }
+    else
+    {
         if ($row['chng'] != '0' || $row['decr'] != '0')
         {
             $query = "UPDATE `player` SET `chng` = 0, `decr` = 0 WHERE `id` = {$pid}";
@@ -67,7 +67,7 @@ else
             // We should not be here...
             $Response->writeDataLine("Stop trying to do us harm!");
         }
-	}
+    }
 
     $Response->send();
 }

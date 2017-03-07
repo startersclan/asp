@@ -45,7 +45,7 @@ else
     $nick = (isset($_GET['nick'])) ? $_GET['nick'] : '';
 }
 
-$isAi= (isset($_GET['ai'])) ? (int)$_GET['ai'] : 0;
+$isAi = (isset($_GET['ai'])) ? (int)$_GET['ai'] : 0;
 $isAi = ($isAi > 0);
 
 // Search by name?
