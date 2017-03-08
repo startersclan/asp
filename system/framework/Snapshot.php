@@ -473,15 +473,12 @@ class Snapshot extends GameResult
                 $this->logWriter->logDebug("Processing Kit Data (%d)", $player->pid);
                 $query = new UpdateOrInsertQuery($connection, 'player_kit');
                 $query->where('pid', '=', $player->pid);
-                foreach ($player->kitData as $id => $object)
+                foreach ($player->kitData as $object)
                 {
-                    // Ignore objects that the player did not use in round
-                    if ($object->time == 0) continue;
-
                     $query->set('time', '+', $object->time);
                     $query->set('kills', '+', $object->kills);
                     $query->set('deaths', '+', $object->deaths);
-                    $query->where('id', '=', $id);
+                    $query->where('id', '=', $object->id);
                     $query->execute();
                 }
 
@@ -505,16 +502,13 @@ class Snapshot extends GameResult
                 $this->logWriter->logDebug("Processing Vehicle Data (%d)", $player->pid);
                 $query = new UpdateOrInsertQuery($connection, 'player_vehicle');
                 $query->where('pid', '=', $player->pid);
-                foreach ($player->vehicleData as $id => $object)
+                foreach ($player->vehicleData as $object)
                 {
-                    // Ignore objects that the player did not use in round
-                    if ($object->time == 0) continue;
-
                     $query->set('time', '+', $object->time);
                     $query->set('kills', '+', $object->kills);
                     $query->set('deaths', '+', $object->deaths);
                     $query->set('roadkills', '+', $object->roadKills);
-                    $query->where('id', '=', $id);
+                    $query->where('id', '=', $object->id);
                     $query->execute();
                 }
 
@@ -524,17 +518,14 @@ class Snapshot extends GameResult
                 $this->logWriter->logDebug("Processing Weapon Data (%d)", $player->pid);
                 $query = new UpdateOrInsertQuery($connection, 'player_weapon');
                 $query->where('pid', '=', $player->pid);
-                foreach ($player->weaponData as $id => $object)
+                foreach ($player->weaponData as $object)
                 {
-                    // Ignore objects that the player did not use in round
-                    if ($object->time == 0) continue;
-
                     $query->set('time', '+', $object->time);
                     $query->set('kills', '+', $object->kills);
                     $query->set('deaths', '+', $object->deaths);
                     $query->set('fired', '+', $object->fired);
                     $query->set('hits', '+', $object->hits);
-                    $query->where('id', '=', $id);
+                    $query->where('id', '=', $object->id);
                     $query->execute();
                 }
 

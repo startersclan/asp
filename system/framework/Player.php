@@ -241,35 +241,59 @@ class Player
         // Extract Kit Data
         for ($i = 0; $i < StatsData::$NumKits; $i++)
         {
+            // Skip objects with no time played
+            $time = (int)$playerData->getValueOrDefault("tk{$i}", 0);
+            if ($time == 0) continue;
+
+            // Create new object stat
             $object = new ObjectStat();
-            $object->time = (int)$playerData->getValueOrDefault("tk{$i}", 0);
+            $object->id = $i;
+            $object->time = $time;
             $object->kills = (int)$playerData->getValueOrDefault("kk{$i}", 0);
             $object->deaths = (int)$playerData->getValueOrDefault("dk{$i}", 0);
-            $this->kitData[$i] = $object;
+
+            // Add object to list
+            $this->kitData[] = $object;
         }
 
         // Extract Vehicle Data
         for ($i = 0; $i < StatsData::$NumVehicles; $i++)
         {
+            // Skip objects with no time played
+            $time = (int)$playerData->getValueOrDefault("tv{$i}", 0);
+            if ($time == 0) continue;
+
+            // Create new object stat
             $object = new ObjectStat();
-            $object->time = (int)$playerData->getValueOrDefault("tv{$i}", 0);
+            $object->id = $i;
+            $object->time = $time;
             $object->kills = (int)$playerData->getValueOrDefault("kv{$i}", 0);
             $object->deaths = (int)$playerData->getValueOrDefault("bv{$i}", 0);
             $object->roadKills = (int)$playerData->getValueOrDefault("kvr{$i}", 0);
-            $this->vehicleData[$i] = $object;
+
+            // Add object to list
+            $this->vehicleData[] = $object;
         }
 
         // Extract Weapon Data
         for ($i = 0; $i < StatsData::$NumWeapons; $i++)
         {
+            // Skip objects with no time played
+            $time = (int)$playerData->getValueOrDefault("tw{$i}", 0);
+            if ($time == 0) continue;
+
+            // Create new object stat
             $object = new ObjectStat();
-            $object->time = (int)$playerData->getValueOrDefault("tw{$i}", 0);
+            $object->id = $i;
+            $object->time = $time;
             $object->kills = (int)$playerData->getValueOrDefault("kw{$i}", 0);
             $object->deaths = (int)$playerData->getValueOrDefault("bw{$i}", 0);
             $object->fired = (int)$playerData->getValueOrDefault("sw{$i}", 0);
             $object->hits = (int)$playerData->getValueOrDefault("hw{$i}", 0);
             $object->deployed = (int)$playerData->getValueOrDefault("dw{$i}", 0);
-            $this->weaponData[$i] = $object;
+
+            // Add object to list
+            $this->weaponData[] = $object;
         }
 
         // Extract player awards
@@ -289,6 +313,7 @@ class Player
 
 class ObjectStat
 {
+    public $id = 0;
     public $time = 0;
     public $kills = 0;
     public $deaths = 0;

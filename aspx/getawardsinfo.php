@@ -55,7 +55,7 @@ else
         // Ribbons will get a 'first' value of 0
         $id = (int)$award['id'];
         $first = (($id > 2000000) && ($id < 3000000)) ? $award['first'] : 0;
-        $Response->writeDataLine($id, $award['level'], $award['last'], $first);
+        $Response->writeDataLine($id, $award['level'], $award['earned'], $first);
     }
 
     $Response->send($transpose);
