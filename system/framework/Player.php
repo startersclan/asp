@@ -236,15 +236,15 @@ class Player
 
         // Extract Army Data
         for ($i = 0; $i < StatsData::$NumArmies; $i++)
-            $this->timeAsArmy[$i] = (int)$playerData['ta' . $i];
+            $this->timeAsArmy[$i] = (int)$playerData->getValueOrDefault('ta' . $i, 0);
 
         // Extract Kit Data
         for ($i = 0; $i < StatsData::$NumKits; $i++)
         {
             $object = new ObjectStat();
-            $object->time = (int)$playerData["tk{$i}"];
-            $object->kills = (int)$playerData["kk{$i}"];
-            $object->deaths = (int)$playerData["dk{$i}"];
+            $object->time = (int)$playerData->getValueOrDefault("tk{$i}", 0);
+            $object->kills = (int)$playerData->getValueOrDefault("kk{$i}", 0);
+            $object->deaths = (int)$playerData->getValueOrDefault("dk{$i}", 0);
             $this->kitData[$i] = $object;
         }
 
@@ -252,10 +252,10 @@ class Player
         for ($i = 0; $i < StatsData::$NumVehicles; $i++)
         {
             $object = new ObjectStat();
-            $object->time = (int)$playerData["tv{$i}"];
-            $object->kills = (int)$playerData["kv{$i}"];
-            $object->deaths = (int)$playerData["bv{$i}"];
-            $object->roadKills = (int)$playerData["kvr{$i}"];
+            $object->time = (int)$playerData->getValueOrDefault("tv{$i}", 0);
+            $object->kills = (int)$playerData->getValueOrDefault("kv{$i}", 0);
+            $object->deaths = (int)$playerData->getValueOrDefault("bv{$i}", 0);
+            $object->roadKills = (int)$playerData->getValueOrDefault("kvr{$i}", 0);
             $this->vehicleData[$i] = $object;
         }
 
@@ -263,12 +263,12 @@ class Player
         for ($i = 0; $i < StatsData::$NumWeapons; $i++)
         {
             $object = new ObjectStat();
-            $object->time = (int)$playerData["tw{$i}"];
-            $object->kills = (int)$playerData["kw{$i}"];
-            $object->deaths = (int)$playerData["bw{$i}"];
-            $object->fired = (int)$playerData["sw{$i}"];
-            $object->hits = (int)$playerData["hw{$i}"];
-            $object->deployed = (int)$playerData["dw{$i}"];
+            $object->time = (int)$playerData->getValueOrDefault("tw{$i}", 0);
+            $object->kills = (int)$playerData->getValueOrDefault("kw{$i}", 0);
+            $object->deaths = (int)$playerData->getValueOrDefault("bw{$i}", 0);
+            $object->fired = (int)$playerData->getValueOrDefault("sw{$i}", 0);
+            $object->hits = (int)$playerData->getValueOrDefault("hw{$i}", 0);
+            $object->deployed = (int)$playerData->getValueOrDefault("dw{$i}", 0);
             $this->weaponData[$i] = $object;
         }
 

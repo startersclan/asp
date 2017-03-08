@@ -454,10 +454,10 @@ CREATE OR REPLACE VIEW `player_weapon_view` AS
   FROM `player_weapon`;
 
 CREATE OR REPLACE VIEW `player_awards_view` AS
-  SELECT a.id AS `id`, MAX(r.round_end) AS `earned`, MIN(r.round_end) AS `first`, COUNT(`level`) AS `level`
+  SELECT a.id AS `id`, a.pid AS `pid`, MAX(r.round_end) AS `earned`, MIN(r.round_end) AS `first`, COUNT(`level`) AS `level`
   FROM player_award AS a
     JOIN round_history AS r ON a.roundid = r.id
-  GROUP BY a.id;
+  GROUP BY a.pid, a.id;
 
 -- --------------------------------------------------------
 -- Create Procedures

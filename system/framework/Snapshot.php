@@ -431,23 +431,19 @@ class Snapshot extends GameResult
                 // Process Player Army Data
                 // ********************************
                 $this->logWriter->logDebug("Processing Army Data (%d)", $player->pid);
-                $i = 0;
-                foreach ($player->timeAsArmy as $time)
+                foreach ($player->timeAsArmy as $id => $time)
                 {
                     // Skip un-played armies
                     if ($time == 0)
-                    {
-                        $i++;
                         continue;
-                    }
 
                     $query = new UpdateOrInsertQuery($connection, 'player_army');
-                    $query->where('id', '=', $i);
+                    $query->where('id', '=', $id);
                     $query->where('pid', '=', $player->pid);
                     $query->set('time', '+', $time);
 
                     // If the player ended the game as this army, update with round info
-                    if ($player->armyId == $i)
+                    if ($player->armyId == $id)
                     {
                         $query->set('wins', '+', $onWinningTeam ? 1 : 0);
                         $query->set('losses', '+', $onWinningTeam ? 0 : 1);
@@ -456,7 +452,6 @@ class Snapshot extends GameResult
                     }
 
                     $query->execute();
-                    $i++;
                 }
 
                 // ********************************

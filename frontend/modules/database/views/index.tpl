@@ -8,7 +8,7 @@
             <thead>
             <tr>
                 <th>Table Name</th>
-                <th>Size</th>
+                <th>Table Size</th>
                 <th>Row Count</th>
                 <th>Avg Row Size</th>
                 <th>Engine</th>
