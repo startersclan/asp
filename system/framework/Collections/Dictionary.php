@@ -273,7 +273,6 @@ class Dictionary implements \IteratorAggregate, \ArrayAccess, \Countable, \Seria
         // Check if key exists in the collection
         if ($this->_containsKey($key))
         {
-            $value = $this->data[$key];
             unset($this->data[$key]);
             --$this->size;
             return true;

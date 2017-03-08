@@ -217,9 +217,9 @@ class Asp
             // Build file path to the controller, check if it exists
             if (!file_exists($file))
             {
-                // 404
+                // Show 404
                 $view = new View('404');
-                $view->set('module_name', $modNMame);
+                $view->set('message', "Module \"{$modNMame}\" Does not Exist!");
                 $view->render();
                 return;
             }
@@ -240,11 +240,18 @@ class Asp
         $controller = new $className();
 
         // Check request method prefix'd action
-        $m = Request::Method() . ucfirst($action);
+        $m = strtolower( Request::Method() ) . ucfirst($action);
         if ($rController->hasMethod($m))
+        {
             $action = $m;
+        }
         elseif (!$rController->hasMethod($action))
-            die("Controller \"{$className}\" does not contain the method \"{$action}\" or \"{$m}\"");
+        {
+            $view = new View('404');
+            $view->set('message', "Module \"{$className}\" does not contain the method \"{$action}\" or \"{$m}\"!");
+            $view->render();
+            return;
+        }
 
         // Create a reflection of the controller method
         $method = new \ReflectionMethod($controller, $action);

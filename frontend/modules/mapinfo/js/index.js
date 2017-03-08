@@ -3,8 +3,8 @@
     $(document).ready(function() {
 
         // Data Tables
-        $(".mws-datatable-fn").dataTable({
-            sPaginationType: "full_numbers"
+        $(".mws-datatable-fn").DataTable({
+            pagingType: "full_numbers"
         });
 
     });

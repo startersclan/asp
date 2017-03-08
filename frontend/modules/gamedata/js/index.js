@@ -196,7 +196,7 @@
                                 <a id="edit-' + currentType + '-' + result.itemId + '" href="#"  rel="tooltip" title="Edit Name" class="btn btn-small"> \
                                     <i class="icon-pencil"></i>\
                                 </a> \
-                                <a id="delete-' + currentType + '-' + result.itemId + '" href="#" class="btn btn-small" rel="tooltip" title="Delete" >\
+                                <a id="delete-' + currentType + '-' + result.itemId + '" href="#" rel="tooltip" title="Delete" class="btn btn-small">\
                                     <i class="icon-trash"></i>\
                                 </a> \
                             </span> \

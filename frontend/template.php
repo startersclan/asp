@@ -48,9 +48,10 @@ function build_navigation()
                             <li><a href="/ASP/config">System Configuration</a></li>
                             <li><a href="/ASP/install">System Installation</a></li>
                             <li><a href="/ASP/config/test">System Tests</a></li>
+                            <li><a href="/ASP/database">Database Table Status</a></li>
                             <li><a href="/ASP/database/upgrade">Upgrade Database</a></li>
                             <li><a href="/ASP/database/clear">Clear Database</a></li>
-                            <li><a href="/ASP/database">Backup Database</a></li>
+                            <li><a href="/ASP/database/backup">Backup Database</a></li>
                             <li><a href="/ASP/database/restore">Restore Database</a></li>
                         </ul>
                     </li>

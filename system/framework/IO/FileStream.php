@@ -228,7 +228,7 @@ class FileStream
      *
      * @param int $count The number of characters to peek from the current stream position
      *
-     * @return string The next $count of characters, or an empty string if there are no characters to be read
+     * @return string The next $count of characters, or null if there are no characters to be read
      *
      * @throws ArgumentOutOfRangeException if $count is negative.
      * @throws ObjectDisposedException The stream is closed.
@@ -246,6 +246,10 @@ class FileStream
 
         // Ensure we can read from this stream
         $this->ensureCanRead();
+
+        // Check if we are at the end of the stream
+        if (feof($this->stream))
+            return null;
 
         // Read next character
         $result = fread($this->stream, $count);

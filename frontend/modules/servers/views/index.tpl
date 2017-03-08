@@ -53,7 +53,7 @@
                         <?php echo ({authorized} == 0) ? '' : ' style="display: none"'; ?>><i class="icon-ok"></i></a>
                         <a id="unauth-btn-{id}" href="#" rel="tooltip" title="Un-Authorize Server" class="btn btn-small"
                         <?php echo ({authorized} == 1) ? '' : ' style="display: none"'; ?>><i class="icon-unlink"></i></a>
-                        <a id="delete-btn-{id}" href="#" class="btn btn-small" rel="tooltip" title="Delete Server"
+                        <a id="delete-btn-{id}" href="#" rel="tooltip" title="Delete Server" class="btn btn-small"
                         <?php echo ({snapshots} == 0) ? '' : ' disabled="disabled"'; ?>><i class="icon-trash"></i></a>
                     </span>
                 </td>

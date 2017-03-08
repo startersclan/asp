@@ -2,5 +2,5 @@
 	<div id="mws-error-code">
 		<h1>Error <span>404</span></h1>
 	</div>
-	<p id="mws-error-message">Module "{module_name}" Does not Exist!</p>
+	<p id="mws-error-message">{message}</p>
 </div>

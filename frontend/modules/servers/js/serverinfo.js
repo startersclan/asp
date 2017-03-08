@@ -148,11 +148,11 @@
                             result.serverQueryPort,
                             0,
                             'Yes',
-                            ' <span class="btn-group"> \
+                            '<span class="btn-group"> \
                                 <a id="edit-btn-' + id + '" href="#"  rel="tooltip" title="Edit Server" class="btn btn-small"><i class="icon-pencil"></i></a> \
                                 <a id="auth-btn-' + id + '" href="#" rel="tooltip" title="Authorize Server" class="btn btn-small" style="display: none"><i class="icon-ok"></i></a> \
-                                <a id="unauth-btn-' + id + '" href="#" rel="tooltip" title="Un-Authorize Server" class="btn btn-small" ><i class="icon-unlink"></i></a> \
-                                <a id="delete-btn-' + id + '" href="#" class="btn btn-small" rel="tooltip" title="Delete Server" ><i class="icon-trash"></i></a> \
+                                <a id="unauth-btn-' + id + '" href="#" rel="tooltip" title="Un-Authorize Server" class="btn btn-small"><i class="icon-unlink"></i></a> \
+                                <a id="delete-btn-' + id + '" href="#" rel="tooltip" title="Delete Server" class="btn btn-small"><i class="icon-trash"></i></a> \
                             </span>'
                         ]).draw().node();
 

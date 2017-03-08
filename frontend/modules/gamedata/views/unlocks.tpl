@@ -32,7 +32,7 @@
                     <td>
                     <span class="btn-group">
                         <a id="edit-{id}" href="#"  rel="tooltip" title="Edit Award" class="btn btn-small"><i class="icon-pencil"></i></a>
-                        <a id="delete-{id}" href="#" class="btn btn-small" rel="tooltip" title="Delete Award" ><i class="icon-trash"></i></a>
+                        <a id="delete-{id}" href="#" rel="tooltip" title="Delete Award" class="btn btn-small"><i class="icon-trash"></i></a>
                     </span>
                     </td>
                 </tr>

@@ -144,7 +144,7 @@
                             result.kit,
                             '<span class="btn-group"> \
                                 <a id="edit-' + id + '" href="#"  rel="tooltip" title="Edit Unlock" class="btn btn-small"><i class="icon-pencil"></i></a> \
-                                <a id="delete-' + id + '" href="#" class="btn btn-small" rel="tooltip" title="Delete Unlock" ><i class="icon-trash"></i></a> \
+                                <a id="delete-' + id + '" href="#" rel="tooltip" title="Delete Unlock" class="btn btn-small"><i class="icon-trash"></i></a> \
                             </span>'
                         ]).draw().node();
 
