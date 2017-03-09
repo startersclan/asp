@@ -119,7 +119,7 @@
 			<li>
 				<span class="key"><i class="icon-key"></i> Last Sign In</span>
 				<span class="val">
-					<span class="text-nowrap">February 11, 2017</span>
+					<span class="text-nowrap">{last_login}</span>
 				</span>
 			</li>
 		</ul>

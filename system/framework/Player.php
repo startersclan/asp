@@ -178,9 +178,8 @@ class Player
      * Award data is expected to be loaded already before constructing!
      *
      * @param Dictionary $playerData
-     * @param array $killData
      */
-    public function __construct(Dictionary $playerData, array $killData)
+    public function __construct(Dictionary $playerData)
     {
         /**
          * We use a dictionary here, so that we get a detailed exception
@@ -234,79 +233,84 @@ class Player
         // Add parachute
         $this->timeParachute = (int)$playerData["tvp"];
 
-        // Extract Army Data
-        for ($i = 0; $i < StatsData::$NumArmies; $i++)
-            $this->timeAsArmy[$i] = (int)$playerData->getValueOrDefault('ta' . $i, 0);
+        // Extract Award Data
+        foreach ($playerData['armyData'] as $obj)
+        {
+            if ($obj['id'] < StatsData::$NumArmies)
+            {
+                $this->timeAsArmy[$obj['id']] = $obj['time'];
+            }
+        }
 
         // Extract Kit Data
-        for ($i = 0; $i < StatsData::$NumKits; $i++)
+        foreach ($playerData['kitData'] as $obj)
         {
-            // Skip objects with no time played
-            $time = (int)$playerData->getValueOrDefault("tk{$i}", 0);
-            if ($time == 0) continue;
+            if ($obj['id'] < StatsData::$NumKits)
+            {
+                // Create new object stat
+                $object = new ObjectStat();
+                $object->id = $obj['id'];
+                $object->time = $obj['time'];
+                $object->kills = $obj['kills'];
+                $object->deaths = $obj['deaths'];
 
-            // Create new object stat
-            $object = new ObjectStat();
-            $object->id = $i;
-            $object->time = $time;
-            $object->kills = (int)$playerData->getValueOrDefault("kk{$i}", 0);
-            $object->deaths = (int)$playerData->getValueOrDefault("dk{$i}", 0);
-
-            // Add object to list
-            $this->kitData[] = $object;
+                // Add object to list
+                $this->kitData[] = $object;
+            }
         }
 
         // Extract Vehicle Data
-        for ($i = 0; $i < StatsData::$NumVehicles; $i++)
+        foreach ($playerData['vehicleData'] as $obj)
         {
-            // Skip objects with no time played
-            $time = (int)$playerData->getValueOrDefault("tv{$i}", 0);
-            if ($time == 0) continue;
+            if ($obj['id'] < StatsData::$NumVehicles)
+            {
+                // Create new object stat
+                $object = new ObjectStat();
+                $object->id = $obj['id'];
+                $object->time = $obj['time'];
+                $object->kills = $obj['kills'];
+                $object->deaths = $obj['deaths'];
+                $object->roadKills = $obj['roadkills'];
 
-            // Create new object stat
-            $object = new ObjectStat();
-            $object->id = $i;
-            $object->time = $time;
-            $object->kills = (int)$playerData->getValueOrDefault("kv{$i}", 0);
-            $object->deaths = (int)$playerData->getValueOrDefault("bv{$i}", 0);
-            $object->roadKills = (int)$playerData->getValueOrDefault("kvr{$i}", 0);
-
-            // Add object to list
-            $this->vehicleData[] = $object;
+                // Add object to list
+                $this->vehicleData[] = $object;
+            }
         }
 
-        // Extract Weapon Data
-        for ($i = 0; $i < StatsData::$NumWeapons; $i++)
+        // Extract Vehicle Data
+        foreach ($playerData['weaponData'] as $obj)
         {
-            // Skip objects with no time played
-            $time = (int)$playerData->getValueOrDefault("tw{$i}", 0);
-            if ($time == 0) continue;
+            if ($obj['id'] < StatsData::$NumWeapons)
+            {
+                // Create new object stat
+                $object = new ObjectStat();
+                $object->id = $obj['id'];
+                $object->time = $obj['time'];
+                $object->kills = $obj['kills'];
+                $object->deaths = $obj['deaths'];
+                $object->fired = $obj['fired'];
+                $object->hits = $obj['hits'];
+                $object->deployed = $obj['deployed'];
 
-            // Create new object stat
-            $object = new ObjectStat();
-            $object->id = $i;
-            $object->time = $time;
-            $object->kills = (int)$playerData->getValueOrDefault("kw{$i}", 0);
-            $object->deaths = (int)$playerData->getValueOrDefault("bw{$i}", 0);
-            $object->fired = (int)$playerData->getValueOrDefault("sw{$i}", 0);
-            $object->hits = (int)$playerData->getValueOrDefault("hw{$i}", 0);
-            $object->deployed = (int)$playerData->getValueOrDefault("dw{$i}", 0);
-
-            // Add object to list
-            $this->weaponData[] = $object;
+                // Add object to list
+                $this->weaponData[] = $object;
+            }
         }
 
         // Extract player awards
-        foreach (AwardData::$PythonAwards as $name => $id)
+        foreach ($playerData['awards'] as $obj)
         {
-            if (isset($playerData[$name]))
-                $this->earnedAwards[ $id ] = (int)$playerData[$name];
+            if (isset(AwardData::$PythonAwards[$obj['id']]))
+            {
+                $id = AwardData::$PythonAwards[$obj['id']];
+                $this->earnedAwards[ $id ] = (int)$obj['level'];
+            }
         }
 
         // Extract player kill data
-        foreach ($killData as $pid => $count)
+        foreach ($playerData['victims'] as $player)
         {
-            $this->victims[$pid] = $count;
+            $this->victims[$player['id']] = $player['count'];
         }
     }
 }

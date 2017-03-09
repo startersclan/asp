@@ -21,6 +21,7 @@ namespace System
 {
     use Exception;
     use SecurityException;
+    use System\Collections\Dictionary;
     use System\IO\Directory;
     use System\IO\File;
     use System\IO\FileStream;
@@ -125,10 +126,23 @@ namespace System
         die(_ERR_RESPONSE . $errmsg);
     }
 
+    // Convert data string to an array
+    $data = json_decode($rawdata, true);
+    if ($data == null)
+    {
+        $LogWriter->logError("SNAPSHOT data invalid. JSON error code: ". json_last_error());
+        die(_ERR_RESPONSE . "SNAPSHOT Data Incomplete");
+    }
+
     // Parse Snapshot
     try
     {
-        $snapshot = new Snapshot($rawdata, Request::ClientIp());
+        // Add ipaddress of connecting client
+        $data = new Dictionary(false, $data);
+        $data['serverIp'] = Request::ClientIp();
+
+        // Create snapshot object
+        $snapshot = new Snapshot($data);
 
         // SNAPSHOT Data OK
         $LogWriter->logNotice("SNAPSHOT Data Complete (%s)", $snapshot->mapName);
@@ -150,7 +164,7 @@ namespace System
     {
         // Create and write the snapshot data into a backup file
         $file = new FileStream(SNAPSHOT_TEMP_PATH . DS . $fileName, FileStream::WRITE);
-        $file->write($rawdata);
+        $file->write(json_encode($data->toArray(), JSON_NUMERIC_CHECK));
         $file->close();
 
         // Log

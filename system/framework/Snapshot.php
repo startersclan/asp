@@ -29,145 +29,67 @@ class Snapshot extends GameResult
     protected $isProcessed = false;
 
     /**
-     * @var string
-     */
-    public $dataString;
-
-    /**
      * Returns the server IP that posted this snapshot. If no Server
      * IP is provided (Ex: loading snapshot from a file), then the local
      * loopback address will be returned instead
      *
      * @var string
      */
-    public $serverIp = '127.0.0.1';
+    public $serverIp = '';
 
 
     /**
      * Snapshot constructor.
      *
-     * @param string $snapshotData
-     * @param string $serverIp
+     * @param Dictionary $snapshotData snapshot as a JSON string
      *
      * @throws Exception
      */
-    public function __construct($snapshotData, $serverIp = '127.0.0.1')
+    public function __construct(Dictionary $snapshotData)
     {
-        $this->dataString = $snapshotData;
-        $this->serverIp = $serverIp;
-
-        // Convert data string to an array
-        $data = explode('\\', $snapshotData);
-        $length = count($data);
-
-        // Check for invalid snapshot string. All snapshots have at least 36 data pairs,
-        // and has an Even number of data sectors.
-        if ($length < 36 || $length % 2 != 0)
-            throw new Exception("Snapshot does not contain at least 36 elements, or contains an odd number of elements");
+        // Store ip address as we will need this later
+        $this->serverIp = $snapshotData['serverIp'];
 
         // Load award and stats data
         AwardData::Load();
         StatsData::Load();
 
-        // local vars
-        $standardData = new Dictionary();
-
-        try
-        {
-            // Define some variables we will use here
-            $playerData = new Dictionary();
-            $killData = [];
-            $newPlayer = true;
-
-            // Convert our standard data into key => value pairs
-            for ($i = 2; $i < $length; $i += 2)
-            {
-                // Format: "DataKey_PlayerIndex". PlayerIndex is NOT the Player Id
-                $parts = explode('_', $data[$i]);
-
-                // If no underscore is detected in the key, this is NOT player data
-                if (count($parts) == 1)
-                {
-                    $standardData[$data[$i]] = $data[$i + 1];
-
-                    if ($parts[0] == 'EOF')
-                    {
-                        if (!$newPlayer)
-                        {
-                            // Save that last players stats!!
-                            $this->addPlayer(new Player($playerData, $killData));
-
-                            // Reset data for next player
-                            $playerData->clear();
-                            /** @noinspection PhpUnusedLocalVariableInspection */
-                            $killData = array();
-                        }
-                        break;
-                    }
-                }
-                // If the item key is "pID", then we have a new player record
-                else if ($parts[0] == "pID")
-                {
-                    // If we have data, complete this player and start a new
-                    if (!$newPlayer)
-                    {
-                        // Save that last players stats!!
-                        $this->addPlayer(new Player($playerData, $killData));
-
-                        // Reset data for next player
-                        $playerData->clear();
-                        $killData = array();
-                    }
-
-                    $newPlayer = false;
-                    $playerData[$parts[0]] = $data[$i + 1];
-                }
-                else if ($parts[0] == "mvks") // Skip mvks... kill data only needs processed once (mvns)
-                    continue;
-                else if ($parts[0] == "mvns") // Player kill data
-                    $killData[$data[$i + 1]] = $data[$i + 3];
-                else
-                    $playerData[$parts[0]] = $data[$i + 1];
-            }
-        }
-        catch (Exception $e)
-        {
-            throw new Exception("Snapshot Integrity Error, failed assigning Key => value pairs: ". $e->getMessage(), 1, $e);
-        }
-
-        // Make sure we have a completed snapshot
-        if (!isset($standardData["EOF"]))
-            throw new Exception("No End of File element was found, Snapshot assumed to be incomplete.");
-
         // Check snapshot version!
-        if (!$standardData->tryGetValue('v', $version) || Version::LessThan($version, "3.0"))
-            throw new Exception("Incompatible snapshot version: ". $version);
+        if (Version::LessThan($snapshotData['version'], "3.0"))
+            throw new Exception("Incompatible snapshot version: ". $snapshotData['version']);
 
         // Server data
-        $this->serverPrefix = preg_replace("/[^A-Za-z0-9_]/", '', $data[0]);
-        $this->serverName = preg_replace("/[^". Player::NAME_REGEX ."]/", '',$data[1]);
-        $this->serverPort = (int)$standardData["gameport"];
-        $this->queryPort = (int)$standardData["queryport"];
+        $this->serverPrefix = preg_replace("/[^A-Za-z0-9_]/", '', $snapshotData['prefix']);
+        $this->serverName = preg_replace("/[^". Player::NAME_REGEX ."]/", '', $snapshotData['serverName']);
+        $this->serverPort = (int)$snapshotData["gamePort"];
+        $this->queryPort = (int)$snapshotData["queryPort"];
 
         // Map Data
-        $this->mapName = preg_replace("/[^A-Za-z0-9_]/", '', $standardData["mapname"]);
-        $this->mapId = (int)$standardData["mapid"];
-        $this->roundStartTime = (int)$standardData["mapstart"];
-        $this->roundEndTime = (int)$standardData["mapend"];
+        $this->mapName = preg_replace("/[^A-Za-z0-9_]/", '', $snapshotData["mapName"]);
+        $this->mapId = (int)$snapshotData["mapId"];
+        $this->roundStartTime = (int)$snapshotData["mapStart"];
+        $this->roundEndTime = (int)$snapshotData["mapEnd"];
         $this->roundTime = $this->roundEndTime - $this->roundStartTime;
 
         // Misc Data
-        $this->gameMode = (int)$standardData["gm"];
-        $this->mod = $standardData["m"]; // bf2 mod replaced the version key, since we dont care the version anyways
-        $this->playersConnected = (int)$standardData["pc"];
+        $this->gameMode = (int)$snapshotData["gameMode"];
+        $this->mod = $snapshotData["mod"];
+        $this->playersConnected = (int)$snapshotData["pc"];
 
         // Army Data... There is no RWA key if there was no winner...
-        $this->winningTeam = (int)$standardData["win"]; // Temp
-        $this->winningArmyId = (int)$standardData->getValueOrDefault("rwa", -1);
-        $this->team1ArmyId = (int)$standardData["ra1"];
-        $this->team1Tickets = (int)$standardData["rs1"];
-        $this->team2ArmyId = (int)$standardData["ra2"];
-        $this->team2Tickets = (int)$standardData["rs2"];
+        $this->winningTeam = (int)$snapshotData["winner"]; // Temp
+        $this->winningArmyId = (int)$snapshotData->getValueOrDefault("rwa", -1);
+        $this->team1ArmyId = (int)$snapshotData["ra1"];
+        $this->team1Tickets = (int)$snapshotData["rs1"];
+        $this->team2ArmyId = (int)$snapshotData["ra2"];
+        $this->team2Tickets = (int)$snapshotData["rs2"];
+
+        // Add players
+        foreach ($snapshotData['players'] as $player)
+        {
+            $player = new Dictionary(false, $player);
+            $this->addPlayer(new Player($player));
+        }
 
         // Grab database connection
         $connection = Database::GetConnection("stats");
@@ -249,7 +171,7 @@ class Snapshot extends GameResult
         $message = ($this->isCustomMap) ? "Custom Map (%d)..." : "Standard Map (%d)...";
         $this->logWriter->logNotice("Begin Processing (%s) From Server ID (%d)...", [$this->mapName, $serverId]);
         $this->logWriter->logNotice($message, $this->mapId);
-        $this->logWriter->logNotice("Found (". $playerCount .") Player(s)...");
+        $this->logWriter->logNotice("Found (%d) Player(s)...", $playerCount);
 
         // Ensure the player count is within range of the config
         if ($playerCount < (int)Config::Get("stats_players_min"))
