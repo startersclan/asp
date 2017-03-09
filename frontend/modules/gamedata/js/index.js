@@ -232,9 +232,10 @@
     function disable_btns_for(item) {
         var selector = $('table#' + item + ' > tbody > tr');
         selector.each(function(key, value) {
-            $(value).find('td:last span a:last').attr('disabled', true);
+            $(value).find('td:last span a[id^=delete]').attr('disabled', true);
+            $(value).find('td:last span a[id^=disable]').attr('disabled', true);
         });
-        selector.last().find('td:last span a:last').attr('disabled', false);
+        selector.last().find('td:last span a[id^=delete]').attr('disabled', false);
     }
 
 }) (jQuery, window, document);

@@ -264,6 +264,11 @@ class Asp
         $method->invokeArgs($controller, $params);
     }
 
+    /**
+     * Logs a detailed and recursive exception to the asp_debug.log file
+     *
+     * @param Exception $e
+     */
     public static function LogException(Exception $e)
     {
         $log = LogWriter::Instance('Asp');
@@ -275,7 +280,12 @@ class Asp
         $log->writeLine("\tStack Trace: ");
         foreach ($e->getTrace() as $message)
         {
-            $log->writeLine("\t\t- ". $message);
+            $output = implode(', ', array_map(
+                function ($v, $k) { return sprintf("%s='%s'", $k, $v); },
+                $message,
+                array_keys($message)
+            ));
+            $log->writeLine("\t\t- ". $output);
         }
 
         if ($ex = $e->getPrevious())

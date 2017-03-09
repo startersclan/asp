@@ -322,7 +322,3 @@ class ObjectStat
     public $roadKills = 0;
     public $deployed = 0;
 }
-
-// Load award and stats data
-AwardData::Load();
-StatsData::Load();

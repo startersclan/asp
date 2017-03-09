@@ -27,7 +27,7 @@
                     <td>
                         <span class="btn-group">
                             <a id="edit-army-{id}" href="#"  rel="tooltip" title="Edit Name" class="btn btn-small"><i class="icon-pencil"></i></a>
-                            <a id="delete-army-{id}" href="#" rel="tooltip" title="Delete Army" class="btn btn-small"><i class="icon-trash"></i></a>
+                            <a id="{bid}-army-{id}" href="#" rel="tooltip" title="{title}" class="btn btn-small"><i class="icon-trash"></i></a>
                         </span>
                     </td>
                 </tr>
@@ -64,7 +64,7 @@
                     <td>
                         <span class="btn-group">
                             <a id="edit-kit-{id}" href="#"  rel="tooltip" title="Edit Name" class="btn btn-small"><i class="icon-pencil"></i></a>
-                            <a id="delete-kit-{id}" href="#" rel="tooltip" title="Delete Kit" class="btn btn-small"><i class="icon-trash"></i></a>
+                            <a id="{bid}-kit-{id}" href="#" rel="tooltip" title="{title}" class="btn btn-small"><i class="icon-trash"></i></a>
                         </span>
                     </td>
                 </tr>
@@ -101,7 +101,7 @@
                     <td>
                         <span class="btn-group">
                             <a id="edit-vehicle-{id}" href="#"  rel="tooltip" title="Edit Name" class="btn btn-small"><i class="icon-pencil"></i></a>
-                            <a id="delete-vehicle-{id}" href="#" rel="tooltip" title="Delete Vehicle" class="btn btn-small"><i class="icon-trash"></i></a>
+                            <a id="{bid}-vehicle-{id}" href="#" rel="tooltip" title="{title}" class="btn btn-small"><i class="icon-trash"></i></a>
                         </span>
                     </td>
                 </tr>
@@ -138,7 +138,7 @@
                     <td>
                         <span class="btn-group">
                             <a id="edit-weapon-{id}" href="#"  rel="tooltip" title="Edit Name" class="btn btn-small"><i class="icon-pencil"></i></a>
-                            <a id="delete-weapon-{id}" href="#" rel="tooltip" title="Delete Vehicle" class="btn btn-small"><i class="icon-trash"></i></a>
+                            <a id="{bid}-weapon-{id}" href="#" rel="tooltip" title="{title}" class="btn btn-small"><i class="icon-trash"></i></a>
                         </span>
                     </td>
                 </tr>

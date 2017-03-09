@@ -60,7 +60,6 @@ function build_navigation()
                         <ul'; if($Plyrs == false) $html .= ' class="closed"'; $html .= '>
                             <li><a href="/ASP/players">Manage Players</a></li>
                             <li><a href="/ASP/players/merge">Merge Players</a></li>
-                            <li><a href="/ASP/players/import">Import Player From EA</a></li>
                             <li><a href="/ASP/players/validateRanks">Validate Ranks</a></li>
                             <li><a href="/ASP/players/checkAwards">Check Awards</a></li>
                         </ul>

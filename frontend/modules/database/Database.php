@@ -9,6 +9,9 @@
  */
 use System\Controller;
 use System\Database as DB;
+use System\IO\Directory;
+use System\IO\File;
+use System\IO\Path;
 use System\View;
 
 class Database extends Controller
@@ -58,6 +61,128 @@ class Database extends Controller
     }
 
     /**
+     * @protocol    GET
+     * @request     /ASP/database/backup
+     * @output      html
+     */
+    public function getBackup()
+    {
+        // Create view
+        $view = new View('backup', 'database');
+        $view->attachScript("/ASP/frontend/modules/database/js/backup.js");
+        $view->render();
+    }
+
+    /**
+     * @protocol    POST
+     * @request     /ASP/database/backup
+     * @output      html
+     */
+    public function postBackup()
+    {
+        if (!isset($_POST['action']) || $_POST['action'] != 'backup')
+        {
+            if (isset($_POST['ajax']))
+                json_encode(['success' => false, 'message' => 'Invalid Action!']);
+            else
+                $this->getBackup();
+
+            return;
+        }
+
+        // Check that the backup directory is writable
+        $path = SYSTEM_PATH . DS . 'backups';
+        if (!Directory::IsWritable($path))
+        {
+            json_encode(['success' => false, 'message' => 'Database backup path (' . $path . ') is not writable!']);
+            die;
+        }
+
+        // We require a database!
+        $this->requireDatabase();
+        $pdo = DB::GetConnection('stats');
+
+        try
+        {
+            // Define backup folder path
+            $path = Path::Combine($path, date('Y-m-d_Hi'));
+
+            // Delete directory for sub path if it does exist already
+            if (Directory::Exists($path))
+                Directory::Delete($path, true);
+
+            // Create directory
+            Directory::CreateDirectory($path, 0775);
+
+            // A list of tables we care about
+            $tables = [
+                'army', 'kit', 'vehicle', 'weapon', 'unlock',
+                'mapinfo', 'server', 'round_history', 'player', 'player_army', 'player_award', 'player_weapon',
+                'player_kit', 'player_kill', 'player_map', 'player_history', 'player_vehicle', 'player_unlock'
+            ];
+
+            // Perform backups
+            // Process each upgrade only if the version is newer
+            foreach ($tables as $table)
+            {
+                // Check Table Exists
+                $result = $pdo->query("SHOW TABLES LIKE '" . $table . "'");
+                if (!empty($result->fetchAll()))
+                {
+                    // Table Exists, lets back it up
+                    $backupFile = $pdo->quote($path . DS . $table . ".csv");
+                    $query = "SELECT * INTO OUTFILE {$backupFile} FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\n' FROM `{$table}`;";
+
+                    // Try to execute
+                    try
+                    {
+                        $pdo->exec($query);
+                    }
+                    catch (PDOException $e)
+                    {
+                        $errors[] = "Table (" . $table . ") *NOT* Backed Up: {$e->getMessage()}}";
+                    }
+                }
+            }
+
+            // Prepare for Output
+            $html = '';
+            if (!empty($errors))
+            {
+                // Delete backup!
+                Directory::Delete($path, true);
+
+                // Generate error message
+                $html .= 'Failed to backup all database tables... <br /><br />List of Errors:<br /><ul>';
+                foreach ($errors as $e)
+                    $html .= '<li>' . $e . '</li>';
+
+                $html .= '</ul>';
+
+                echo json_encode(['success' => false, 'message' => $html]);
+            }
+            else
+            {
+                $data = ['dbver' => DB_VER, 'timestamp' => time()];
+
+                // Create manifest
+                $file = File::OpenWrite($path . DS . "backup.json");
+                $file->write(json_encode($data, JSON_PRETTY_PRINT));
+                $file->close();
+
+                // Tell the client that we were successful
+                echo json_encode(['success' => true, 'message' => 'System Data Backup Successful!']);
+            }
+        }
+        catch (Exception $e)
+        {
+            Asp::LogException($e);
+            json_encode(['success' => false, 'message' => $e->getMessage()]);
+
+        }
+    }
+
+    /**
      * Converts a size in bytes to a compact human readable string
      *
      * @param int $bytes The size in bytes
@@ -67,8 +192,9 @@ class Database extends Controller
      */
     private function toFilesize($bytes, $decimals = 2)
     {
-        $size = array('B','kB','MB','GB','TB','PB','EB','ZB','YB');
+        $size = array('B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
         $factor = (int)floor((strlen($bytes) - 1) / 3);
-        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . ' '. $size[$factor];
+
+        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . ' ' . $size[$factor];
     }
 }

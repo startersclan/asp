@@ -177,7 +177,7 @@ class Snapshot extends GameResult
         {
             $stmt = $connection->prepare("SELECT id FROM mapinfo WHERE name = :name");
             $stmt->bindValue(':name', $this->mapName, \PDO::PARAM_STR);
-            if ($stmt->execute() && ($id = $stmt->fetchColumn()) !== false)
+            if ($stmt->execute() && ($id = $stmt->fetchColumn(0)) !== false)
             {
                 $this->mapId = (int)$id;
             }
@@ -187,7 +187,7 @@ class Snapshot extends GameResult
         else
         {
             $result = $connection->query("SELECT COUNT(id) FROM mapinfo WHERE id = ". $this->mapId);
-            if (($id = (int)$result->fetchColumn()) == 0)
+            if (($id = (int)$result->fetchColumn(0)) == 0)
             {
                 $connection->insert('mapinfo', ['id' => $this->mapId, 'name' => $this->mapName]);
             }
@@ -196,7 +196,7 @@ class Snapshot extends GameResult
         // Check for processed snapshot
         $query = "SELECT COUNT(id) FROM round_history WHERE mapid=%d AND round_end=%d AND round_start=%d";
         $result = $connection->query(sprintf($query, $this->mapId, $this->roundEndTime, $this->roundStartTime));
-        $this->isProcessed = ((int)$result->fetchColumn()) > 0;
+        $this->isProcessed = ((int)$result->fetchColumn(0)) > 0;
     }
 
     /**
@@ -224,14 +224,11 @@ class Snapshot extends GameResult
         $connection = Database::GetConnection("stats");
 
         // Get a log file
-        if ($this->logWriter == null)
+        $this->logWriter = LogWriter::Instance("stats_debug");
+        if ($this->logWriter === false)
         {
-            $this->logWriter = LogWriter::Instance("stats_debug");
-            if ($this->logWriter === false)
-            {
-                $this->logWriter = new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "stats_debug.log"), "stats_debug");
-                $this->logWriter->setLogLevel(Config::Get('debug_lvl'));
-            }
+            $this->logWriter = new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "stats_debug.log"), "stats_debug");
+            $this->logWriter->setLogLevel(Config::Get('debug_lvl'));
         }
 
         // Ensure this is an authorized server
@@ -248,14 +245,10 @@ class Snapshot extends GameResult
         }
 
         // Start logging information about this snapshot
-        $this->logWriter->logNotice("Begin Processing (%s) From Server ID (%d)...", [$this->mapName, $serverId]);
-        if ($this->isCustomMap)
-            $this->logWriter->logNotice("Custom Map (%d)...", $this->mapId);
-        else
-            $this->logWriter->logNotice("Standard Map (%d)...", $this->mapId);
-
-        // Log player count
         $playerCount = count($this->players);
+        $message = ($this->isCustomMap) ? "Custom Map (%d)..." : "Standard Map (%d)...";
+        $this->logWriter->logNotice("Begin Processing (%s) From Server ID (%d)...", [$this->mapName, $serverId]);
+        $this->logWriter->logNotice($message, $this->mapId);
         $this->logWriter->logNotice("Found (". $playerCount .") Player(s)...");
 
         // Ensure the player count is within range of the config

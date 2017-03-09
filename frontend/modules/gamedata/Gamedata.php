@@ -31,6 +31,35 @@ class Gamedata extends Controller
         $vehicles = $pdo->query("SELECT * FROM vehicle ORDER BY id")->fetchAll();
         $weapons = $pdo->query("SELECT * FROM weapon ORDER BY id")->fetchAll();
 
+        // Add button type for armies
+        for ($i = 0; $i < count($armies); $i++)
+        {
+            $armies[$i]['bid'] = ($armies[$i]['id'] > 10) ? 'delete' : 'disable';
+            $armies[$i]['title'] = ($armies[$i]['id'] > 10) ? 'Delete Army' : 'Cannot delete vanilla armies';
+        }
+
+        // Add button type for kits
+        for ($i = 0; $i < count($kits); $i++)
+        {
+            $kits[$i]['bid'] = ($kits[$i]['id'] > 6) ? 'delete' : 'disable';
+            $kits[$i]['title'] = ($kits[$i]['id'] > 6) ? 'Delete Kit' : 'Cannot delete vanilla kits';
+        }
+
+        // Add button type for vehicles
+        for ($i = 0; $i < count($vehicles); $i++)
+        {
+            $vehicles[$i]['bid'] = ($vehicles[$i]['id'] > 6) ? 'delete' : 'disable';
+            $vehicles[$i]['title'] = ($vehicles[$i]['id'] > 6) ? 'Delete Vehicle' : 'Cannot delete vanilla vehicles';
+        }
+
+        // Add button type for weapons
+        for ($i = 0; $i < count($weapons); $i++)
+        {
+            $weapons[$i]['bid'] = ($weapons[$i]['id'] > 17) ? 'delete' : 'disable';
+            $weapons[$i]['title'] = ($weapons[$i]['id'] > 17) ? 'Delete Weapon' : 'Cannot delete vanilla weapons';
+        }
+
+
         // Load view
         $view = new View('index', 'gamedata');
         $view->set('armies', $armies);

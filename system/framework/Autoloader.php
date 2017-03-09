@@ -38,12 +38,6 @@ class Autoloader
     protected static $namespaces = array();
 
     /**
-     * An array of registered prefix => path
-     * @var string[string[]]
-     */
-    protected static $prefixes = array();
-
-    /**
      * Registers the AutoLoader class with spl_autoload. Multiple
      * calls to this method will not yield any additional results.
      *
@@ -107,7 +101,7 @@ class Autoloader
     {
         // Make sure path is array
         if (!is_array($path))
-            $path = (array)$path;
+            $path = array($path);
 
         // Fix path, providing correct directory separator
         $path = str_replace(array('\\', '/'), DIRECTORY_SEPARATOR, $path);
@@ -120,53 +114,14 @@ class Autoloader
     }
 
     /**
-     * Registers a path for the autoload to search for when searching
-     * for a prefixed class. When calling this method more than once
-     * with the same prefix, the path(s) will just be added to the current
-     * running list of paths for that prefix
-     *
-     * @param string $prefix The class prefix we are registering
-     * @param string|array $path Full path, or an array of paths
-     *   to search for the prefixed class'
-     *
-     * @return void
-     */
-    public static function RegisterPrefix($prefix, $path)
-    {
-        // Make sure path is array
-        if (!is_array($path))
-            $path = (array)$path;
-
-        // Fix path, providing correct directory separator
-        $path = str_replace(array('\\', '/'), DIRECTORY_SEPARATOR, $path);
-
-        // Set prefix paths
-        if (isset(self::$prefixes[$prefix]))
-            self::$prefixes[$prefix] = array_merge(self::$prefixes[$prefix], (array)$path);
-        else
-            self::$prefixes[$prefix] = (array)$path;
-    }
-
-    /**
      * Returns an array of all registered namespaces as keys, and an array
      * of registered paths for that namespace as values
      *
-     * @return string[]
+     * @return string[string[]]
      */
     public static function GetNamespaces()
     {
         return self::$namespaces;
-    }
-
-    /**
-     * Returns an array of all registered prefixes as keys, and an array
-     * of registered paths for that prefix as values
-     *
-     * @return string[]
-     */
-    public static function GetPrefixes()
-    {
-        return self::$prefixes;
     }
 
     /**
@@ -180,26 +135,34 @@ class Autoloader
      */
     public static function LoadClass($class)
     {
+        // Check for namespaced class
+        $nameparts = explode('\\', $class);
+        $length = count($nameparts);
+
         // If the class name is namespaced, we will use the namespace to determine
         // the path to the class file.
-        if (($pos = strripos($class, '\\')) !== false)
+        if ($length > 1)
         {
-            $namespace = substr($class, 0, $pos);
-            $class = substr($class, $pos + 1);
-            $nameparts = explode('\\', $namespace);
+            // Remove class name from nameparts, and store it here
+            $class = array_pop($nameparts);
+            $namespace = implode('\\', $nameparts);
 
             /**
              * we will keep checking all namespaces, working up 1 level
              * each time until we reach a defined namespace path, and from there,
              * each sub namespace we removed becomes a sub dir to the class file path.
              */
-            for ($i = count($nameparts); $i >= 0; $i--)
+            for ($i = $length; $i >= 0; $i--)
             {
+                // Check if namespace is set
                 if (isset(self::$namespaces[$namespace]))
                 {
                     foreach (self::$namespaces[$namespace] as $dir)
                     {
-                        $file = $dir . DIRECTORY_SEPARATOR . str_replace(array('_', '\\'), DIRECTORY_SEPARATOR, $class) . '.php';
+                        // Build full directory path
+                        $file = $dir . DIRECTORY_SEPARATOR . $class . '.php';
+
+                        // Check if class file exists
                         if (file_exists($file))
                         {
                             /** @noinspection PhpIncludeInspection */
@@ -211,55 +174,18 @@ class Autoloader
                 }
                 else
                 {
-                    // Append class name path, and remove the last namespace
-                    $class = array_pop($nameparts) . '\\' . $class;
+                    // Prepend the last namespace part to the class name, and try the parent namespace
+                    $class = array_pop($nameparts) . DIRECTORY_SEPARATOR . $class;
                     $namespace = implode('\\', $nameparts);
                 }
             }
         }
 
-        // If no namespace if found, but we have a possible prefixed class (with _ ), search prefixes
-        elseif (($pos = strripos($class, '_')) !== false)
-        {
-            $prefix = substr($class, 0, $pos);
-            $class = substr($class, $pos + 1);
-            $nameparts = explode('_', $prefix);
-
-            /**
-             * As described above, check all prefixes, working up 1 level
-             * each time until we reach a defined prefix path, and from there,
-             * each underscore becomes a sub dir to the class file path.
-             */
-            for ($i = count($nameparts); $i >= 0; $i--)
-            {
-                if (isset(self::$prefixes[$prefix]))
-                {
-                    foreach (self::$prefixes[$prefix] as $dir)
-                    {
-                        $file = $dir . DIRECTORY_SEPARATOR . str_replace(array('_', '\\'), DIRECTORY_SEPARATOR, $class) . '.php';
-                        if (file_exists($file))
-                        {
-                            /** @noinspection PhpIncludeInspection */
-                            require $file;
-                            return true;
-                        }
-                    }
-                    break;
-                }
-                else
-                {
-                    // Append class name path, and remove the last namespace
-                    $class = array_pop($nameparts) . '_' . $class;
-                    $prefix = implode('_', $nameparts);
-                }
-            }
-        }
-
-        // If all else fails, or no prefix/namespace was found,
-        // check default registered paths
+        // If all else fails (no namespace was found), check default registered paths
         foreach (self::$paths as $dir)
         {
-            $file = $dir . DIRECTORY_SEPARATOR . str_replace(array('_', '\\', '/'), DIRECTORY_SEPARATOR, $class) . '.php';
+            $class = str_replace(array('_', '\\', '/'), DIRECTORY_SEPARATOR, $class);
+            $file = $dir . DIRECTORY_SEPARATOR . $class . '.php';
             if (file_exists($file))
             {
                 /** @noinspection PhpIncludeInspection */
