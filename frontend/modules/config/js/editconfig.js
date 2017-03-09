@@ -70,10 +70,13 @@ $(document).ready(function() {
     // Enable popovers
     $("[rel=popover]").popover();
 
-    //noinspection JSUnresolvedVariable
-    if( $.fn.spinner ) {
-        $('.mws-spinner').spinner();
-    }
+    // Spinners
+    // noinspection JSUnresolvedVariable
+    $.fn.spinner && $('.mws-spinner').spinner();
+
+    // Chosen Select Box Plugin
+    // noinspection JSUnresolvedVariable
+    $.fn.select2 && $("select.mws-select2").select2();
 
     // ===============================================
     // bind the Config form using 'ajaxForm'

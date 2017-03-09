@@ -63,6 +63,13 @@ class Security
             $_SESSION['adminAuth'] = sha1(Config::Get('admin_user') . ':' . Config::Get('admin_pass'));
             $_SESSION['adminTime'] = time();
             $_SESSION['loginAttempts'] = 0;
+
+            // Update last login time
+            $last = Config::Get('admin_current_login');
+            Config::Set('admin_last_login', $last);
+            Config::Set('admin_current_login', $_SESSION['adminTime']);
+            Config::Save();
+
             return true;
         }
     }

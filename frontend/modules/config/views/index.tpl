@@ -256,6 +256,32 @@
                                rel="popover"
                                data-trigger="hover"
                                data-placement="right"
+                               data-original-title="Admin Timezone"
+                               data-content="Sets the timezone to use for date methods.">
+                            Admin Timezone:
+                        </label>
+                        <div class="mws-form-item">
+                            <select class="mws-select2 small" name="cfg__admin_timezone" title="">
+                                <?php
+                                    foreach($timezones as $region => $list)
+                                    {
+                                        print '<optgroup label="' . $region . '">' . "\n";
+                                        foreach ($list as $timezone => $name)
+                                        {
+                                            $selected = ($timezone == $config['admin_timezone']) ? " selected='selected'" : "";
+                                            print '<option value="'. $timezone .'"'. $selected .'>'. $name .'</option>' . "\n";
+                                        }
+                                        print '</optgroup>' . "\n";
+                                    }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mws-form-row">
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
                                data-original-title="Stats Logging Level"
                                data-content="Stats Debug Logging Level (Includes all message above selected option).">
                             Stats Logging:
