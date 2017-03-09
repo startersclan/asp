@@ -164,7 +164,7 @@ namespace System
     {
         // Create and write the snapshot data into a backup file
         $file = new FileStream(SNAPSHOT_TEMP_PATH . DS . $fileName, FileStream::WRITE);
-        $file->write(json_encode($data->toArray(), JSON_NUMERIC_CHECK));
+        $file->write(json_encode($data->toArray(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK));
         $file->close();
 
         // Log

@@ -327,14 +327,20 @@ class Players extends Controller
         $dif = $now->diff($last);
         $parts = [];
 
+        // Less than a minute ago
+        if ($secondsDif < 60)
+        {
+            if ($dif->s > 0)
+                $parts[] = $dif->s . (($dif->s > 1) ? ' seconds' : ' second');
+        }
         // Less than a day ago
-        if ($secondsDif < 86400)
+        else if ($secondsDif < 86400)
         {
             if ($dif->h > 0)
                 $parts[] = $dif->h . (($dif->h > 1) ? ' hours' : ' hour');
 
-            if ($dif->m > 0)
-                $parts[] = $dif->m . (($dif->m > 1) ? ' minutes' : ' minute');
+            if ($dif->i > 0)
+                $parts[] = $dif->i . (($dif->i > 1) ? ' minutes' : ' minute');
         }
         // Less than a month
         else if ($secondsDif < (60 * 60 * 24 * 30))
