@@ -126,6 +126,9 @@ class Asp
         // Create ASP log file instance
         $LogWriter = new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "asp_debug.log"), "Asp");
 
+        // Set timezone
+        date_default_timezone_set(Config::Get('admin_timezone'));
+
         // Connect to the stats database
         try
         {

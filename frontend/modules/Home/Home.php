@@ -33,9 +33,6 @@ class Home extends Controller
         $view->set('server_name', php_uname('s'));
         $view->set('server_version', apache_get_version() );
         $view->set('db_version', $pdo->query('SELECT version()')->fetchColumn(0));
-
-        // Set last login date
-        date_default_timezone_set(Config::Get('admin_timezone'));
         $view->set('last_login', date('F jS, Y g:i A T', Config::Get('admin_last_login')));
 
 	    // Get database size
@@ -102,9 +99,6 @@ class Home extends Controller
      */
     public function getChartData()
     {
-        // Set timezone
-        date_default_timezone_set(Config::Get('admin_timezone'));
-
         // Require database connection
         $pdo = Database::GetConnection('stats');
 

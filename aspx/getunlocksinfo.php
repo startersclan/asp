@@ -86,7 +86,7 @@ else
                 $query = "SELECT unlockid FROM `player_unlock` WHERE `pid`={$pid} ORDER BY `unlockid` ASC";
                 $result = $connection->query($query);
                 while ($row = $result->fetch())
-					$Response->writeDataLine($row['unlockid'], 's');
+                    $Response->writeDataLine($row['unlockid'], 's');
 
                 // Send response
                 $Response->send();
@@ -102,7 +102,7 @@ else
             // Get all current unlocks
             $result = $connection->query("SELECT `id` FROM `unlock` ORDER BY `id` ASC");
             while ($row = $result->fetch())
-				$Response->writeDataLine($row['id'], 's');
+                $Response->writeDataLine($row['id'], 's');
 
             $Response->send();
             break;
@@ -117,7 +117,7 @@ else
             $query = "SELECT `id` FROM `unlock` ORDER BY `id` ASC";
             $result = $connection->query($query);
             while ($row = $result->fetch())
-				$Response->writeDataLine($row['id'], 'n');
+                $Response->writeDataLine($row['id'], 'n');
 
             $Response->send();
             break;
@@ -233,5 +233,6 @@ WHERE `pid` = $pid
 SQL;
 
     $result = $connection->query($query);
+
     return (int)$result->fetchColumn(0);
 }

@@ -125,17 +125,6 @@ class Security
         $hosts = Config::Get('admin_hosts');
         return in_array($ip, $hosts);
     }
-
-    /**
-     * @param $ip
-     *
-     * @return bool
-     */
-    public static function IsAuthorizedGameServer($ip)
-    {
-        $hosts = Config::Get('game_hosts');
-        return in_array($ip, $hosts);
-    }
 }
 
 // This sends a persistent cookie that lasts an hour.

@@ -32,7 +32,7 @@ $where = (isset($_GET['where'])) ? $_GET['where'] : 'a';
 $sort = (isset($_GET['sort'])) ? $_GET['sort'] : 'a';
 if (isset($_GET['nick']))
 {
-	// Sanitize nick
+    // Sanitize nick
     $pattern = Player::NAME_REGEX;
     $nick = preg_replace("/[^{$pattern}]/", '', $nick);
 }

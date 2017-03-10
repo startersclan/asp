@@ -12,6 +12,7 @@ use System\Database as DB;
 use System\IO\Directory;
 use System\IO\File;
 use System\IO\Path;
+use System\Version;
 use System\View;
 
 class Database extends Controller
@@ -83,18 +84,21 @@ class Database extends Controller
         if (!isset($_POST['action']) || $_POST['action'] != 'backup')
         {
             if (isset($_POST['ajax']))
-                json_encode(['success' => false, 'message' => 'Invalid Action!']);
+                echo json_encode(['success' => false, 'message' => 'Invalid Action!']);
             else
                 $this->getBackup();
 
             return;
         }
 
+        // Set timezone for backup
+
+
         // Check that the backup directory is writable
         $path = SYSTEM_PATH . DS . 'backups';
         if (!Directory::IsWritable($path))
         {
-            json_encode(['success' => false, 'message' => 'Database backup path (' . $path . ') is not writable!']);
+            echo json_encode(['success' => false, 'message' => 'Database backup path (' . $path . ') is not writable!']);
             die;
         }
 
@@ -177,8 +181,233 @@ class Database extends Controller
         catch (Exception $e)
         {
             Asp::LogException($e);
-            json_encode(['success' => false, 'message' => $e->getMessage()]);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
 
+    /**
+     * @protocol    GET
+     * @request     /ASP/database/restore
+     * @output      html
+     */
+    public function getRestore()
+    {
+        // Create view
+        $view = new View('restore', 'database');
+        $view->attachScript("/ASP/frontend/js/jquery.form.js");
+        $view->attachScript("/ASP/frontend/modules/database/js/restore.js");
+
+        // Set vars
+        $dirs = Directory::GetDirectories(Path::Combine(SYSTEM_PATH, "backups"));
+        for ($i = 0; $i < count($dirs); $i++)
+            $dirs[$i] = Path::GetFileName($dirs[$i]);
+
+        $view->set('backups', array_reverse($dirs));
+
+        // Send the output
+        $view->render();
+    }
+
+    /**
+     * @protocol    POST
+     * @request     /ASP/database/restore
+     * @output      html
+     */
+    public function postRestore()
+    {
+        // Ensure a valid action
+        if (!isset($_POST['action']) || $_POST['action'] != 'restore')
+        {
+            if (isset($_POST['ajax']))
+                echo json_encode(['success' => false, 'message' => 'Invalid Action!']);
+            else
+                $this->getRestore();
+
+            return;
+        }
+
+        // Ensure we have a backup selected
+        if (!isset($_POST['backup']))
+        {
+            echo json_encode(['success' => false, 'message' => 'No backup specified!']);
+
+            return;
+        }
+
+        // Define backup folder path
+        $path = Path::Combine(SYSTEM_PATH, 'backups', $_POST['backup']);
+
+        // Ensure the backup directory is real!
+        if (!Directory::Exists($path))
+        {
+            echo json_encode(['success' => false, 'message' => 'Invalid Backup: Does not exist!']);
+
+            return;
+        }
+
+        // We require a database!
+        $this->requireDatabase();
+        $pdo = DB::GetConnection('stats');
+
+        try
+        {
+            // Check for the manifest
+            $file = File::OpenRead($path . DS . "backup.json");
+            $data = json_decode($file->readToEnd(), true);
+
+            // Check that the DB version matches the backup table version
+            if (!isset($data['dbver']) || !Version::Equals($data['dbver'], DB_VER))
+            {
+                echo json_encode(['success' => false, 'message' => 'The backup database version does not match the table version!']);
+
+                return;
+            }
+
+            // Start transaction as we are moving ALOT of data around.
+            $pdo->beginTransaction();
+
+            // A list of tables we care about
+            $tables = [
+                'army', 'kit', 'vehicle', 'weapon', 'unlock',
+                'mapinfo', 'server', 'round_history', 'player', 'player_army', 'player_award', 'player_weapon',
+                'player_kit', 'player_kill', 'player_map', 'player_history', 'player_vehicle', 'player_unlock'
+            ];
+
+            // Clear old stuff
+            foreach (array_reverse($tables) as $table)
+            {
+                $pdo->exec("DELETE FROM `{$table}`;");
+            }
+
+            // Reset auto increments
+            $pdo->exec("ALTER TABLE `player` AUTO_INCREMENT = 1;");
+            $pdo->exec("ALTER TABLE `server` AUTO_INCREMENT = 1;");
+            $pdo->exec("ALTER TABLE `round_history` AUTO_INCREMENT = 1;");
+
+            // Process each upgrade only if the version is newer
+            foreach ($tables as $table)
+            {
+                // Check Table Exists
+                $result = $pdo->query("SHOW TABLES LIKE '" . $table . "'");
+                if (!empty($result->fetchAll()))
+                {
+                    // Table Exists, lets back it up
+                    $backupFile = $pdo->quote($path . DS . $table . ".csv");
+                    $query = "LOAD DATA INFILE {$backupFile} INTO TABLE `{$table}` FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\n';";
+
+                    // Try to execute
+                    try
+                    {
+                        $pdo->exec($query);
+                    }
+                    catch (PDOException $e)
+                    {
+                        $errors[] = "Table (" . $table . ") *NOT* Restored: {$e->getMessage()}}";
+                    }
+                }
+            }
+
+            // Commit changes
+            $pdo->commit();
+
+            // Prepare for Output
+            $html = '';
+            if (!empty($errors))
+            {
+                // Generate error message
+                $html .= 'Failed to restore all database tables... <br /><br />List of Errors:<br /><ul>';
+                foreach ($errors as $e)
+                    $html .= '<li>' . $e . '</li>';
+
+                $html .= '</ul>';
+
+                echo json_encode(['success' => false, 'message' => $html]);
+            }
+            else
+            {
+                // Tell the client that we were successful
+                echo json_encode(['success' => true, 'message' => 'System Data Backup Successful!']);
+            }
+        }
+        catch (Exception $e)
+        {
+            $pdo->rollBack();
+
+            Asp::LogException($e);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+
+        }
+    }
+
+    /**
+     * @protocol    GET
+     * @request     /ASP/database/clear
+     * @output      html
+     */
+    public function getClear()
+    {
+        // Create view
+        $view = new View('clear', 'database');
+        $view->attachScript("/ASP/frontend/modules/database/js/clear.js");
+        $view->render();
+    }
+
+    /**
+     * @protocol    POST
+     * @request     /ASP/database/clear
+     * @output      json
+     */
+    public function postClear()
+    {
+        // Ensure a valid action
+        if (!isset($_POST['action']) || $_POST['action'] != 'clear')
+        {
+            if (isset($_POST['ajax']))
+                echo json_encode(['success' => false, 'message' => 'Invalid Action!']);
+            else
+                $this->getClear();
+
+            return;
+        }
+
+        // We require a database!
+        $this->requireDatabase();
+        $pdo = DB::GetConnection('stats');
+
+        try
+        {
+            // Start transaction as we are moving ALOT of data around.
+            $pdo->beginTransaction();
+
+            // A list of tables we care about
+            $tables = [
+                'mapinfo', 'server', 'round_history', 'player', 'player_army', 'player_award', 'player_weapon',
+                'player_kit', 'player_kill', 'player_map', 'player_history', 'player_vehicle', 'player_unlock'
+            ];
+
+            // Clear old stuff
+            foreach (array_reverse($tables) as $table)
+            {
+                $pdo->exec("DELETE FROM `{$table}`;");
+            }
+
+            // Reset auto increments
+            $pdo->exec("ALTER TABLE `player` AUTO_INCREMENT = 1;");
+            $pdo->exec("ALTER TABLE `server` AUTO_INCREMENT = 1;");
+            $pdo->exec("ALTER TABLE `round_history` AUTO_INCREMENT = 1;");
+
+            // Commit changes
+            $pdo->commit();
+
+            // Tell the client that we were successful
+            echo json_encode(['success' => true, 'message' => 'Stats Data Cleared Successfully!']);
+        }
+        catch (Exception $e)
+        {
+            $pdo->rollBack();
+
+            Asp::LogException($e);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 
