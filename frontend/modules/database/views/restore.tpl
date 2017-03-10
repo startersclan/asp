@@ -1,7 +1,7 @@
 <div id="jui-global-message" class="alert" style="display: none;"></div>
 <div class="mws-panel grid_8">
     <div class="mws-panel-header">
-        <span>Backup Database</span>
+        <span><i class="icon-install"></i> Restore Database</span>
     </div>
     <div class="mws-panel-body">
         <p>

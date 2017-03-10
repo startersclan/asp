@@ -19,7 +19,8 @@
                     <th>Name</th>
                     <th>Snapshot Code</th>
                     <th>Type</th>
-                    <th>Backend Award</th>
+                    <th>Times Awarded</th>
+                    <th>Backend Awarded</th>
                     <th style="width: 7%;">Actions</th>
                 </tr>
             </thead>
@@ -30,6 +31,7 @@
                     <td>{name}</td>
                     <td>{code}</td>
                     <td>{type}</td>
+                    <td>{count}</td>
                     <td>{backend}</td>
                     <td>
                         <span class="btn-group">

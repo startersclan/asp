@@ -162,6 +162,7 @@
                             result.name,
                             result.code,
                             typeToString(result.type),
+                            "0",
                             backend,
                             '<span class="btn-group"> \
                                 <a id="edit-' + id + '" href="#"  rel="tooltip" title="Edit Award" class="btn btn-small"><i class="icon-pencil"></i></a> \
@@ -176,7 +177,7 @@
                         selectedRowNode.find('td:eq(1)').html(result.name);
                         selectedRowNode.find('td:eq(2)').html(result.code);
                         selectedRowNode.find('td:eq(3)').html(typeToString(result.type));
-                        selectedRowNode.find('td:eq(4)').html(backend);
+                        selectedRowNode.find('td:eq(5)').html(backend);
                     }
 
                     // Close dialog
@@ -229,7 +230,7 @@
             var id = selectedRowNode.find('td:eq(0)').html();
             var name = selectedRowNode.find('td:eq(1)').html();
             var code = selectedRowNode.find('td:eq(2)').html();
-            var backend = selectedRowNode.find('td:eq(4)').html();
+            var backend = selectedRowNode.find('td:eq(5)').html();
 
             if (action == 'edit') {
 

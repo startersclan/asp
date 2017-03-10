@@ -197,15 +197,15 @@ class FileInfo
      */
     public function moveTo($newPath)
     {
-        $result = @copy($this->filePath, $newPath);
-        if (!$result)
-        {
-            $error = error_get_last();
-            if ($error === null)
-                throw new IOException("Cannot copy file \"{$this->filePath}\" to \"{$newPath}\".");
-            else
-                throw new IOException($error["message"]);
-        }
+        // Grab the contents from this file
+        $stream = $this->openRead();
+        $contents = $stream->readToEnd();
+        $stream->close();
+
+        // Create the new file, or truncate it to zero if it already exists
+        $file = new FileStream($newPath, 'w');
+        $file->write($contents);
+        $file->close();
 
         // Delete old file
         @unlink($this->filePath);

@@ -245,12 +245,13 @@ class File
     }
 
     /**
-     * Moves a source file to a destination file
+     * Moves a source file to a destination file. If the destination file already exists,
+     * it will be overwritten.
      *
      * @param string $source The full file path, including filename, of the
      *        file we are moving
      * @param string $destination The full file path, including filename, of the
-     *        file that will be created
+     *        file that will be created or overwritten.
      *
      * @throws InvalidArgumentException Thrown if any parameters are left null
      * @throws IOException Thrown if there was an error moving the file, or

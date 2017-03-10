@@ -1,7 +1,7 @@
 <div id="jui-global-message" class="alert" style="display: none;"></div>
 <div class="mws-panel grid_8">
     <div class="mws-panel-header">
-        <span>Clear Database</span>
+        <span><i class="icon-trash"></i> Clear Database</span>
     </div>
     <div class="mws-panel-body">
         This option allows you clear your "Gamespy" Database of ALL collected statistics data. Please ensure you have a full backup of your database BEFORE proceeding!!<br /><br />

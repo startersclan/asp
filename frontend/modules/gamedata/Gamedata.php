@@ -93,11 +93,20 @@ class Gamedata extends Controller
 
         // Load data
         $pdo = Database::GetConnection('stats');
+
+        // Fetch awards, then get thier awarding counts
         $awards = $pdo->query("SELECT * FROM `award` ORDER BY `type`, `backend`")->fetchAll();
+        $counts = $pdo->query("SELECT id, COUNT(*) AS `count`FROM player_award GROUP BY id")->fetchAll();
+
+        $awardCount = [];
+        foreach ($counts as $award)
+            $awardCount[$award['id']] = $award['count'];
 
         // Apply formatting
         for ($i = 0; $i < count($awards); $i++)
         {
+            $id = $awards[$i]['id'];
+            $awards[$i]['count'] = number_format((isset($awardCount[$id])) ? $awardCount[$id]  : 0);
             $awards[$i]['backend'] = ($awards[$i]['backend'] == 1) ? "Yes" : "No";
             switch ((int)$awards[$i]['type'])
             {
