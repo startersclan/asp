@@ -533,7 +533,7 @@ class Snapshot extends GameResult
             // Process ServerInfo
             // ********************************
             $query = new UpdateOrInsertQuery($connection, 'server');
-            $query->set('name', '=', $this->serverName);
+            $query->set('name', '=', substr($this->serverName, 0, 100));
             $query->set('queryport', '=', $this->queryPort);
             $query->set('lastupdate', '=', time());
             $query->where('id', '=', $serverId);
@@ -585,7 +585,7 @@ class Snapshot extends GameResult
         if (!empty($this->serverPrefix))
             $prefix = $this->serverPrefix . '-';
 
-        return $prefix . $this->mapName . '_' . $mapdate . '.txt';
+        return $prefix . $this->mapName . '_' . $mapdate . '.json';
     }
 
     /**

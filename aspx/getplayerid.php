@@ -55,6 +55,15 @@ if (!empty($nick))
     $pattern = Player::NAME_REGEX;
     $nick = preg_replace("/[^{$pattern}]/", '', $nick);
 
+    // Ensure nick is not too long!
+    if (strlen($nick) > 32)
+    {
+        $Response->responseError(true);
+        $Response->writeHeaderLine("err");
+        $Response->writeDataLine("Nick Specified is larger than 32 characters!");
+        $Response->send();
+    }
+
     // Try to fetch players id
     $result = $connection->prepare("SELECT id FROM player WHERE name = :nick LIMIT 1");
     $result->bindValue(":nick", $nick, PDO::PARAM_STR);
