@@ -176,6 +176,25 @@ class FileStream
     }
 
     /**
+     * Reads a CSV formatted line of characters from the current stream and returns the data as an array.
+     *
+     * @return string[] The next line from the input stream, or null if the end of the input stream is reached.
+     *
+     * @throws ObjectDisposedException The stream is closed.
+     * @throws IOException The stream does not support reading.
+     */
+    public function readCSVLine()
+    {
+        // Ensure the stream is open
+        $this->checkDisposed();
+
+        // Ensure we can read from this stream
+        $this->ensureCanRead();
+
+        return fgetcsv($this->stream);
+    }
+
+    /**
      * Reads all characters from the current position to the end of the stream.
      *
      * @return string The rest of the stream as a string, from the current position to the end.
@@ -305,6 +324,24 @@ class FileStream
         $this->ensureCanWrite();
 
         return fwrite($this->stream, $stringData . PHP_EOL);
+    }
+
+    /**
+     * Writes an array to the current file stream, formatted in CSV format.
+     *
+     * @param array $dataArray
+     *
+     * @return int Returns the number of bytes that were written
+     */
+    public function writeCSVLine(array $dataArray)
+    {
+        // Ensure the stream is open
+        $this->checkDisposed();
+
+        // Ensure we can write to this stream
+        $this->ensureCanWrite();
+
+        return fputcsv($this->stream, $dataArray);
     }
 
     /**

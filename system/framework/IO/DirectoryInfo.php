@@ -431,7 +431,7 @@ class DirectoryInfo
     public function isWritable()
     {
         // Fix path, and Create a tmp file
-        $file = $this->rootPath . uniqid(mt_rand()) . '.tmp';
+        $file = $this->rootPath . DS . uniqid(mt_rand()) . '.tmp';
 
         // check tmp file for read/write capabilities
         $handle = @fopen($file, 'a');

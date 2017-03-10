@@ -286,7 +286,8 @@ class Config
 
         // Check Admin Backup Write Access
         $out .= " > Checking Database Backup Storage Path...<br />";
-        $path = Path::Combine(SYSTEM_PATH, "backups");
+        $result = $DB->query("SHOW VARIABLES LIKE 'secure_file_priv';")->fetchColumn(1);
+        $path = (empty($result)) ? Path::Combine(SYSTEM_PATH, 'backups') : $result;
         $out .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Backup Path Writable ({$path}): ";
         if (!Directory::IsWritable( $path ))
         {

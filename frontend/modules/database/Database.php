@@ -109,7 +109,7 @@ class Database extends Controller
         try
         {
             // Define backup folder path
-            $path = Path::Combine($path, date('Y-m-d_Hi'));
+            $path = Path::Combine(SYSTEM_PATH, 'backups', date('Y-m-d_Hi'));
 
             // Delete directory for sub path if it does exist already
             if (Directory::Exists($path))
@@ -129,24 +129,31 @@ class Database extends Controller
             // Process each upgrade only if the version is newer
             foreach ($tables as $table)
             {
+                $backupFile = $path . DS . $table . ".csv";
+                $file = File::OpenWrite($backupFile);
+
                 // Check Table Exists
                 $result = $pdo->query("SHOW TABLES LIKE '" . $table . "'");
                 if (!empty($result->fetchAll()))
                 {
-                    // Table Exists, lets back it up
-                    $backupFile = $pdo->quote($path . DS . $table . ".csv");
-                    $query = "SELECT * INTO OUTFILE {$backupFile} FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\n' FROM `{$table}`;";
+                    $count = (int)$pdo->query("SELECT COUNT(*) FROM `{$table}`")->fetchColumn(0);
+                    $i = 0;
+                    while ($count > 0)
+                    {
+                        // Table Exists, lets back it up
+                        $query = "SELECT *  FROM `{$table}` LIMIT 5000 OFFSET $i;";
+                        $result = $pdo->query($query);
+                        while ($row = $result->fetch())
+                        {
+                            $file->writeCSVLine($row);
+                        }
 
-                    // Try to execute
-                    try
-                    {
-                        $pdo->exec($query);
-                    }
-                    catch (PDOException $e)
-                    {
-                        $errors[] = "Table (" . $table . ") *NOT* Backed Up: {$e->getMessage()}}";
+                        $i += 5000;
+                        $count -= 5000;
                     }
                 }
+
+                $file->close();
             }
 
             // Prepare for Output
@@ -198,7 +205,8 @@ class Database extends Controller
         $view->attachScript("/ASP/frontend/modules/database/js/restore.js");
 
         // Set vars
-        $dirs = Directory::GetDirectories(Path::Combine(SYSTEM_PATH, "backups"));
+        $pdo = DB::GetConnection('stats');
+        $dirs = Directory::GetDirectories(Path::Combine(SYSTEM_PATH, 'backups'));
         for ($i = 0; $i < count($dirs); $i++)
             $dirs[$i] = Path::GetFileName($dirs[$i]);
 
@@ -234,6 +242,10 @@ class Database extends Controller
             return;
         }
 
+        // We require a database!
+        $this->requireDatabase();
+        $pdo = DB::GetConnection('stats');
+
         // Define backup folder path
         $path = Path::Combine(SYSTEM_PATH, 'backups', $_POST['backup']);
 
@@ -244,10 +256,6 @@ class Database extends Controller
 
             return;
         }
-
-        // We require a database!
-        $this->requireDatabase();
-        $pdo = DB::GetConnection('stats');
 
         try
         {
@@ -293,7 +301,7 @@ class Database extends Controller
                 {
                     // Table Exists, lets back it up
                     $backupFile = $pdo->quote($path . DS . $table . ".csv");
-                    $query = "LOAD DATA INFILE {$backupFile} INTO TABLE `{$table}` FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\n';";
+                    $query = "LOAD DATA LOCAL INFILE {$backupFile} INTO TABLE `{$table}` FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\n';";
 
                     // Try to execute
                     try

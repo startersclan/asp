@@ -40,7 +40,8 @@ class DbConnection extends PDO
         $dsn = "mysql:host={$server};port={$port};dbname={$dbname};charset=UTF8";
         $opt = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::MYSQL_ATTR_LOCAL_INFILE => true
         ];
         parent::__construct($dsn, $username, $password, $opt);
     }
