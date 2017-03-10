@@ -57,7 +57,6 @@ function build_navigation()
     {
         // Append the rest of system links
         $group->append('/ASP/config/test', 'System Tests');
-        $group->append('/ASP/config/test', 'System Tests');
         $group->append('/ASP/database', 'Database Table Status');
         $group->append('/ASP/database/upgrade', 'Update Database Schema');
         $group->append('/ASP/database/clear', 'Clear Stats Database');

@@ -32,9 +32,6 @@ $Response = new AspResponse();
 // Get database connection
 $connection = Database::GetConnection("stats");
 
-// Make sure we have a PID list
-$pidlist = (isset($_GET['playerlist'])) ? (int)$_GET['playerlist'] : 0;
-
 // Get our Player Nick
 if (isset($_POST['nick']))
 {
@@ -45,8 +42,8 @@ else
     $nick = (isset($_GET['nick'])) ? $_GET['nick'] : '';
 }
 
-$isAi = (isset($_GET['ai'])) ? (int)$_GET['ai'] : 0;
-$isAi = ($isAi > 0);
+// Indicate whether this player is an AI bot
+$isAi = ((isset($_GET['ai'])) ? (int)$_GET['ai'] : 0) > 0;
 
 // Search by name?
 if (!empty($nick))
@@ -99,19 +96,6 @@ if (!empty($nick))
     $Response->writeHeaderLine("pid");
     $Response->writeDataLine($pid);
     $Response->send();
-}
-elseif ($pidlist != 0)
-{
-    $Response->writeHeaderLine("pid");
-
-    // Get a list of all PIDS from the database where the IP is non local
-    $query = "SELECT id FROM player WHERE lastip <> '127.0.0.1'";
-    $result = $connection->query($query);
-    while ($row = $result->fetch())
-        $Response->writeDataLine($row['id']);
-
-    $Response->send();
-
 }
 else
 {

@@ -28,7 +28,7 @@ $Response = new AspResponse();
 
 // Cast URL parameters
 $type = (isset($_GET['type'])) ? $_GET['type'] : '';
-$id = (isset($_GET['id'])) ? (int)$_GET['id'] : 0;
+$id = (isset($_GET['id'])) ? $_GET['id'] : '';
 $pid = (isset($_GET['pid'])) ? (int)$_GET['pid'] : 0;
 
 // Optional parameters
@@ -490,7 +490,7 @@ SQL;
                     $row['kills'],
                     $row['deaths'],
                     $row['time'],
-                    @number_format(($row['hit'] / $row['fired']) * 100),
+                    @number_format(($row['hits'] / $row['fired']) * 100),
                     $row['rank'],
                     strtoupper($row['country'])
                 );

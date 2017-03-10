@@ -87,7 +87,7 @@ else
                 'mode2' => $row['mode2'],
                 'time' => $row['time'],
                 'smoc' => (($row['rank']) == 11 ? 1 : 0),
-                'smsc' => $row['skillscore'],
+                'cmsc' => $row['skillscore'],
                 'osaa' => '0.00', // Overall small arms accuracy
                 'kill' => $row['kills'],
                 'kila' => $row['damageassists'],
@@ -538,7 +538,8 @@ function addWeaponData(&$Output, $pid)
 
     // Assign some vars
     $favTime = 0;
-    $tempAcc = 0;
+    $totalHits = 0;
+    $totalFired = 0;
 
     // Explosives sum variables
     $eKills = $eDeaths = 0;
@@ -590,7 +591,10 @@ function addWeaponData(&$Output, $pid)
             $hits = (int)$row["hits"];
             $fired = (int)$row["fired"];
             $acc = ($fired != 0 && $hits != 0) ? round(($hits / $fired) * 100, 0) : 0;
-            $tempAcc += $acc;
+
+            // Update totals for later
+            $totalFired += $fired;
+            $totalHits += $hits;
 
             // Define favorite based on Time Played
             if ($time > $favTime)
@@ -635,7 +639,7 @@ function addWeaponData(&$Output, $pid)
         $Output["wkd-11"] = $eKills . ':0';
 
     // Set favorite data's
-    $acc = ($tempAcc != 0) ? round($tempAcc / 12, 2) * 100 : 0;
+    $acc = ($totalHits != 0) ? round($totalHits / $totalFired, 2) * 100 : 0;
     $Output['osaa'] = number_format((float)$acc, 2, '.', '');
 }
 
