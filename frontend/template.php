@@ -13,12 +13,12 @@ function build_navigation()
     // Get  un-authorized snapshots count
     try
     {
-        $c = count( Directory::GetFiles(Path::Combine(SYSTEM_PATH, "snapshots", "unauthorized"), '.*\.json') );
+        $ss = count( Directory::GetFiles(Path::Combine(SYSTEM_PATH, "snapshots", "unauthorized"), '.*\.json') );
     }
     catch (Exception $e)
     {
         // Ignore
-        $c = 0;
+        $ss = 0;
     }
 
     // Define Section controllers for the opening of drop down menus
@@ -59,21 +59,21 @@ function build_navigation()
         $group->append('/ASP/config/test', 'System Tests');
         $group->append('/ASP/config/test', 'System Tests');
         $group->append('/ASP/database', 'Database Table Status');
-        $group->append('/ASP/database/upgrade', 'Upgrade Database Schema');
+        $group->append('/ASP/database/upgrade', 'Update Database Schema');
         $group->append('/ASP/database/clear', 'Clear Stats Database');
         $group->append('/ASP/database/backup', 'Backup Stats Database');
         $group->append('/ASP/database/restore', 'Restore Database');
         $navigation->append($group);
 
         // Add Player Links
-        $group = new NavigationItem("Players", "#", "icon-users", in_array($task, $players));
+        $group = new NavigationItem("Manage Players", "#", "icon-users", in_array($task, $players));
         $group->append('/ASP/players', 'Manage Players');
         $group->append('/ASP/players/merge', 'Merge Players');
         $navigation->append($group);
 
         // Add Server Admin Links
-        $addition = ($c > 0) ? '<span class="mws-nav-tooltip">'. $c .'</span>' : '';
-        $group = new NavigationItem("Server Admin". $addition, "#", "icon-business-card", in_array($task, $server));
+        $snapshots = ($ss > 0) ? '<span class="mws-nav-tooltip" title="Unauthorized Snapshots">'. $ss .'</span>' : '';
+        $group = new NavigationItem("Server Admin". $snapshots, "#", "icon-business-card", in_array($task, $server));
         $group->append('/ASP/servers', 'Manage Servers');
         $group->append('/ASP/snapshots', 'Manage Snapshots');
         $group->append('/ASP/mapinfo', 'Map Statistics');
@@ -82,8 +82,8 @@ function build_navigation()
         // Add Game Data Links
         $group = new NavigationItem("Game Data", "#", "icon-link", in_array($task, $game));
         $group->append('/ASP/gamedata', 'Manage Stat Keys');
-        $group->append('/ASP/snapshots', 'Manage Snapshots');
-        $group->append('/ASP/mapinfo', 'Map Statistics');
+        $group->append('/ASP/gamedata/awards', 'Manage Awards');
+        $group->append('/ASP/gamedata/unlocks', 'Manage unlocks');
         $navigation->append($group);
     }
 
