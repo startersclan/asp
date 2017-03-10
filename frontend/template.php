@@ -2,86 +2,94 @@
 // Prevent Direct Access
 defined('BF2_ADMIN') or die('No Direct Access!');
 
+use System\IO\Directory;
+use System\IO\Path;
+use System\Navigation;
+use System\NavigationItem;
+
 // Navigation menu builder
 function build_navigation()
 {
-    // Section links
+    // Get  un-authorized snapshots count
+    try
+    {
+        $c = count( Directory::GetFiles(Path::Combine(SYSTEM_PATH, "snapshots", "unauthorized"), '.*\.json') );
+    }
+    catch (Exception $e)
+    {
+        // Ignore
+        $c = 0;
+    }
+
+    // Define Section controllers for the opening of drop down menus
     $task = $GLOBALS['controller'];
     $system = array('config', 'install', 'database');
     $players = array('players');
     $server = array('servers','mapinfo', 'snapshots');
     $game = array('gamedata');
-    
-    // Prepare for open/closed sections
-    $Sys = in_array($task, $system);
-    $Plyrs = in_array($task, $players);
-    $Svr = in_array($task, $server);
-    $Data = in_array($task, $game);
-    if (!$Sys && !$Plyrs && !$Svr && !$Data) $task = 'home';
-    
-    $html = '
-                <li'; if($task == 'home') $html .= ' class="active"'; $html .= '>
-                    <a href="/ASP"><i class="icon-home"></i>Dashboard</a>
-                </li>
-                <li'; if($Sys == true) $html .= ' class="active"'; $html .= '>
-                <a href="#"><i class="icon-tools"></i> System</a>';
-                if (DB_VER == '0.0.0')
-                { 
-                    $html .= '<ul>
-                        <li><a href="/ASP/config">Edit Configuration</a></li>
-                        <li><a href="/ASP/install">System Installation</a></li>
-                    </ul>';
-                }
-                elseif (DB_VER !== CODE_VER)
-                {
-                    $html .= '<ul>
-                        <li><a href="/ASP/config">Edit Configuration</a></li>
-                        <li><a href="/ASP/install">System Installation</a></li>
-                        <li><a href="/ASP/database/upgrade">Upgrade Database</a></li>
-                        <li><a href="/ASP/database">Backup Database</a></li>
-                    </ul>';
-                }
-                else
-                {
-                    $html .= '
-                        <ul'; if($Sys == false) $html .= ' class="closed"'; $html .= '>
-                            <li><a href="/ASP/config">System Configuration</a></li>
-                            <li><a href="/ASP/install">System Installation</a></li>
-                            <li><a href="/ASP/config/test">System Tests</a></li>
-                            <li><a href="/ASP/database">Database Table Status</a></li>
-                            <li><a href="/ASP/database/upgrade">Upgrade Database</a></li>
-                            <li><a href="/ASP/database/clear">Clear Database</a></li>
-                            <li><a href="/ASP/database/backup">Backup Database</a></li>
-                            <li><a href="/ASP/database/restore">Restore Database</a></li>
-                        </ul>
-                    </li>
-                    <li'; if($Plyrs == true) $html .= ' class="active"'; $html .= '>
-                        <a href="#"><i class="icon-users"></i> Manage Players</a>
-                        <ul'; if($Plyrs == false) $html .= ' class="closed"'; $html .= '>
-                            <li><a href="/ASP/players">Manage Players</a></li>
-                            <li><a href="/ASP/players/merge">Merge Players</a></li>
-                            <li><a href="/ASP/players/validateRanks">Validate Ranks</a></li>
-                            <li><a href="/ASP/players/checkAwards">Check Awards</a></li>
-                        </ul>
-                    </li>
-                    <li'; if($Svr == true) $html .= ' class="active"'; $html .= '>
-                        <a href="#"><i class="icon-business-card"></i> Server Admin</a>
-                        <ul'; if($Svr == false) $html .= ' class="closed"'; $html .= '>
-                            <li><a href="/ASP/servers">Server Info</a></li>
-                            <li><a href="/ASP/mapinfo">Map Info</a></li>
-                            <li><a href="/ASP/snapshots">Manage Snapshots</a></li>
-                        </ul>
-                    </li>
-                    <li'; if($Data == true) $html .= ' class="active"'; $html .= '>
-                        <a href="#"><i class="icon-link"></i> Game Data</a>
-                        <ul'; if($Data == false) $html .= ' class="closed"'; $html .= '>
-                            <li><a href="/ASP/gamedata">Manage Stat Keys</a></li>
-                            <li><a href="/ASP/gamedata/awards">Manage Awards</a></li>
-                            <li><a href="/ASP/gamedata/unlocks">Manage Unlocks</a></li>
-                        </ul>
-                    </li>';
-                }
-    $html .= '
-                    <li><a href="/ASP/index.php?action=logout"><i class="icon-off"></i> Logout</a></li>'. PHP_EOL;
-    echo $html;
+
+    // Create navigation class
+    $navigation = new Navigation();
+
+    // Add Dashboard link
+    $group = new NavigationItem("Dashboard", "/ASP/", "icon-home", $task == 'home');
+    $navigation->append($group);
+
+    // Add System Links
+    $group = new NavigationItem("System", "#", "icon-tools", in_array($task, $system));
+    $group->append('/ASP/config', 'System Configuration');
+    $group->append('/ASP/install', 'System Installation');
+
+    // Adjust navigation items based on a few variables
+    if (DB_VER == '0.0.0')
+    {
+        // No database connection? Fine then... no navigation for you!
+        $navigation->append($group);
+    }
+    else if (DB_VER !== CODE_VER)
+    {
+        // If mis-matched database version, allow these 2 actions
+        $group->append('/ASP/database/upgrade', 'Upgrade Database Schema');
+        $group->append('/ASP/database/backup', 'Backup Stats Database');
+        $navigation->append($group);
+    }
+    else
+    {
+        // Append the rest of system links
+        $group->append('/ASP/config/test', 'System Tests');
+        $group->append('/ASP/config/test', 'System Tests');
+        $group->append('/ASP/database', 'Database Table Status');
+        $group->append('/ASP/database/upgrade', 'Upgrade Database Schema');
+        $group->append('/ASP/database/clear', 'Clear Stats Database');
+        $group->append('/ASP/database/backup', 'Backup Stats Database');
+        $group->append('/ASP/database/restore', 'Restore Database');
+        $navigation->append($group);
+
+        // Add Player Links
+        $group = new NavigationItem("Players", "#", "icon-users", in_array($task, $players));
+        $group->append('/ASP/players', 'Manage Players');
+        $group->append('/ASP/players/merge', 'Merge Players');
+        $navigation->append($group);
+
+        // Add Server Admin Links
+        $addition = ($c > 0) ? '<span class="mws-nav-tooltip">'. $c .'</span>' : '';
+        $group = new NavigationItem("Server Admin". $addition, "#", "icon-business-card", in_array($task, $server));
+        $group->append('/ASP/servers', 'Manage Servers');
+        $group->append('/ASP/snapshots', 'Manage Snapshots');
+        $group->append('/ASP/mapinfo', 'Map Statistics');
+        $navigation->append($group);
+
+        // Add Game Data Links
+        $group = new NavigationItem("Game Data", "#", "icon-link", in_array($task, $game));
+        $group->append('/ASP/gamedata', 'Manage Stat Keys');
+        $group->append('/ASP/snapshots', 'Manage Snapshots');
+        $group->append('/ASP/mapinfo', 'Map Statistics');
+        $navigation->append($group);
+    }
+
+    // Logout
+    $group = new NavigationItem("Logout", "/ASP/index.php?action=logout", "icon-off", false);
+    $navigation->append($group);
+
+    echo $navigation->toHtml();
 }

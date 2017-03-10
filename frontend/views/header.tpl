@@ -70,9 +70,7 @@
             
             <!-- Main Navigation -->
             <div id="mws-navigation">
-            	<ul>
-                	<?php build_navigation(); ?>
-                </ul>
+				<?php build_navigation(); ?>
             </div>            
         </div>
         

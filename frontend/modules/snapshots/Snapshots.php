@@ -177,7 +177,7 @@ class Snapshots extends Controller
         }
         catch (IOException $e)
         {
-            $message = "Failed to process snapshot (%s)!\n\n" . $e->getMessage();
+            $message = sprintf("Failed to process snapshot (%s)!\n\n%s", $file, $e->getMessage());
             echo json_encode(['success' => false, 'message' => $message]);
         }
         catch (Exception $e)
@@ -194,7 +194,7 @@ class Snapshots extends Controller
             }
 
             // Output message
-            $message = "Failed to process snapshot (%s)!\n\n" . $e->getMessage();
+            $message = sprintf("Failed to process snapshot (%s)!\n\n%s", $file, $e->getMessage());
             echo json_encode(['success' => false, 'message' => $message]);
         }
     }
