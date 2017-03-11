@@ -1,0 +1,22 @@
+.table-container{
+    display: flex;
+    align-items: center;
+}
+
+.left{
+    text-align: left;
+    display:table-cell;
+    width:33.33vw;
+}
+
+.center{
+    text-align: center;
+    display:table-cell;
+    width:33.33vw;
+}
+
+.right{
+    text-align: right;
+    display:table-cell;
+    width:33.33vw;
+}

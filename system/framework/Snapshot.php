@@ -330,8 +330,8 @@ class Snapshot extends GameResult
                 $query = new UpdateOrInsertQuery($connection, 'player_history');
                 $query->set('pid', '=', $player->pid);
                 $query->set('roundid', '=', $roundId);
-                $query->set('team', '=', $player->team);
-                $query->set('timestamp', '+', $this->roundEndTime);
+                $query->set('team', '=', $player->armyId);
+                $query->set('timestamp', '=', $this->roundEndTime);
                 $query->set('time', '=', $player->roundTime);
                 $query->set('score', '=', $player->roundScore);
                 $query->set('cmdscore', '=', $player->commandScore);

@@ -136,6 +136,9 @@
                             .attr('class', 'alert error')
                             .html(result.message)
                             .slideDown(500);
+
+                        // Close dialog
+                        $("#ajax-dialog").dialog("close");
                     }
                     else {
 

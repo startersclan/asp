@@ -25,7 +25,7 @@ function build_navigation()
     $task = $GLOBALS['controller'];
     $system = array('config', 'install', 'database');
     $players = array('players');
-    $server = array('servers','mapinfo', 'snapshots');
+    $server = array('servers','mapinfo', 'snapshots', 'roundinfo');
     $game = array('gamedata');
 
     // Create navigation class
@@ -75,6 +75,7 @@ function build_navigation()
         $group = new NavigationItem("Server Admin". $snapshots, "#", "icon-business-card", in_array($task, $server));
         $group->append('/ASP/servers', 'Manage Servers');
         $group->append('/ASP/snapshots', 'Manage Snapshots');
+        $group->append('/ASP/roundinfo', 'Round History');
         $group->append('/ASP/mapinfo', 'Map Statistics');
         $navigation->append($group);
 

@@ -134,18 +134,20 @@ CREATE TABLE `round_history` (
   `imported` INT UNSIGNED NOT NULL,
   `gamemode` TINYINT UNSIGNED NOT NULL,
   `mod` VARCHAR(20) NOT NULL,
-  `winner` TINYINT NOT NULL,
-  `team1` TINYINT UNSIGNED NOT NULL,
-  `team2` TINYINT UNSIGNED NOT NULL,
-  `tickets1` SMALLINT UNSIGNED NOT NULL,
-  `tickets2` SMALLINT UNSIGNED NOT NULL,
-  `pids1` SMALLINT UNSIGNED NOT NULL,
-  `pids1_end` SMALLINT UNSIGNED NOT NULL,
-  `pids2` SMALLINT UNSIGNED NOT NULL,
-  `pids2_end` SMALLINT UNSIGNED NOT NULL,
+  `winner` TINYINT NOT NULL,              -- Winning team (0 for none)
+  `team1` TINYINT UNSIGNED NOT NULL,      -- Team 1 Army ID
+  `team2` TINYINT UNSIGNED NOT NULL,      -- Team 2 Army ID
+  `tickets1` SMALLINT UNSIGNED NOT NULL,  -- Remaining tickets
+  `tickets2` SMALLINT UNSIGNED NOT NULL,  -- Remaining tickets
+  `pids1` SMALLINT UNSIGNED NOT NULL,     -- Players starting on team1
+  `pids1_end` SMALLINT UNSIGNED NOT NULL, -- Players ending on team1
+  `pids2` SMALLINT UNSIGNED NOT NULL,     -- Players starting on team2
+  `pids2_end` SMALLINT UNSIGNED NOT NULL, -- Players ending on team2
   PRIMARY KEY(`id`),
   FOREIGN KEY(`mapid`) REFERENCES mapinfo(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  FOREIGN KEY(`serverid`) REFERENCES server(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+  FOREIGN KEY(`serverid`) REFERENCES server(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY(`team1`) REFERENCES army(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY(`team2`) REFERENCES army(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -357,7 +359,7 @@ CREATE TABLE `player_kit` (
 CREATE TABLE `player_history` (
   `pid` INT UNSIGNED NOT NULL,
   `roundid` INT UNSIGNED NOT NULL,
-  `team` TINYINT(1) UNSIGNED NOT NULL,
+  `team` TINYINT UNSIGNED NOT NULL,
   `timestamp` INT UNSIGNED NOT NULL,
   `time` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `score` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
@@ -369,7 +371,8 @@ CREATE TABLE `player_history` (
   `rank` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`pid`,`roundid`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY(`roundid`) REFERENCES round_history(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+  FOREIGN KEY(`roundid`) REFERENCES round_history(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY(`team`) REFERENCES army(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -458,6 +461,13 @@ CREATE OR REPLACE VIEW `player_awards_view` AS
   FROM player_award AS a
     JOIN round_history AS r ON a.roundid = r.id
   GROUP BY a.pid, a.id;
+
+CREATE OR REPLACE VIEW `round_history_view` AS
+  SELECT h.id AS `id`, mi.name AS `map`, h.round_end AS `round_end`, h.team1 AS `team1`, h.team2 AS `team2`, h.winner AS `winner`,
+    h.pids1 + h.pids2 AS `players`, GREATEST(h.tickets1, h.tickets2) AS `tickets`, s.name AS `server`
+  FROM `round_history` AS h
+  JOIN `mapinfo` AS mi ON h.mapid = mi.id
+  JOIN `server` AS s ON h.serverid = s.id;
 
 -- --------------------------------------------------------
 -- Create Procedures
