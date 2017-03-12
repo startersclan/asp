@@ -13,6 +13,7 @@ use System\Database;
 use System\DataTables;
 use System\Player;
 use System\Response;
+use System\TimeHelper;
 use System\View;
 
 class Players extends Controller
@@ -271,7 +272,7 @@ class Players extends Controller
                 ['db' => 'lastonline', 'dt' => 'online',
                     'formatter' => function( $d, $row ) {
                         $i = (int)$d;
-                        return $this->formatTimeDifference($i, time());
+                        return TimeHelper::FormatDifference($i, time());
                     }
                 ],
                 ['db' => 'clantag', 'dt' => 'clan'],
@@ -306,64 +307,5 @@ class Players extends Controller
             Asp::LogException($e);
             echo json_encode(['error' => $e->getMessage()]);
         }
-    }
-
-    /**
-     * Formats a time difference (timestamp) into a human readable format
-     *
-     * @param int $i The previous time
-     * @param int $time The latest time
-     *
-     * @return string
-     */
-    private function formatTimeDifference($i, $time)
-    {
-        if ($i == 0)
-            return 'Never';
-
-        $secondsDif = $time - $i;
-        $now = new DateTime("@". $time);
-        $last = new DateTime("@". $i);
-        $dif = $now->diff($last);
-        $parts = [];
-
-        // Less than a minute ago
-        if ($secondsDif < 60)
-        {
-            if ($dif->s > 0)
-                $parts[] = $dif->s . (($dif->s > 1) ? ' seconds' : ' second');
-        }
-        // Less than a day ago
-        else if ($secondsDif < 86400)
-        {
-            if ($dif->h > 0)
-                $parts[] = $dif->h . (($dif->h > 1) ? ' hours' : ' hour');
-
-            if ($dif->i > 0)
-                $parts[] = $dif->i . (($dif->i > 1) ? ' minutes' : ' minute');
-        }
-        // Less than a month
-        else if ($secondsDif < (60 * 60 * 24 * 30))
-        {
-            if ($dif->d > 0)
-                $parts[] = $dif->d . (($dif->d > 1) ? ' days' : ' day');
-
-            if ($dif->h > 0)
-                $parts[] = $dif->h . (($dif->h > 1) ? ' hours' : ' hour');
-        }
-        // More than a month
-        else
-        {
-            if ($dif->y > 0)
-                $parts[] = $dif->y . (($dif->y > 1) ? ' years' : ' year');
-
-            if ($dif->m > 0)
-                $parts[] = $dif->m . (($dif->m > 1) ? ' months' : ' month');
-
-            if ($dif->d > 0)
-                $parts[] = $dif->d . (($dif->d > 1) ? ' days' : ' day');
-        }
-
-        return implode(', ', $parts) . " ago";
     }
 }

@@ -200,4 +200,180 @@ abstract class GameResult
      * @var Player[]
      */
     public $players = [];
+
+    /**
+     * Fetches a list of vehicles that were usedthis round, and their respective top player.
+     *
+     * @return array [ vehicleName => [ 'id', 'pid', 'name', 'rank', 'team', 'kills', 'deaths', 'time', 'roadKills' ] ]
+     */
+    public function getTopVehiclePlayers()
+    {
+        $return = [];
+
+        foreach ($this->players as $player)
+        {
+            foreach ($player->vehicleData as $data)
+            {
+                $name = StatsData::$VehicleNames[$data->id];
+                if (!isset($return[$name]) || $this->_isPlayerBetter($data, $return[$name]))
+                {
+                    $return[$name] = [
+                        'id' => $data->id,
+                        'pid' => $player->pid,
+                        'name' => $player->name,
+                        'rank' => $player->rank,
+                        'team' => $player->armyId,
+                        'kills' => $data->kills,
+                        'deaths' => $data->deaths,
+                        'time' => $data->time,
+                        'roadKills' => $data->roadKills
+                    ];
+                }
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * Fetches a list of kits that were played this round, and their respective top player.
+     *
+     * @return array [ kitName => [ 'id', 'pid', 'name', 'rank', 'team', 'kills', 'deaths', 'time' ] ]
+     */
+    public function getTopKitPlayers()
+    {
+        $return = [];
+
+        foreach ($this->players as $player)
+        {
+            foreach ($player->kitData as $data)
+            {
+                $name = StatsData::$KitNames[$data->id];
+                if (!isset($return[$name]) || $this->_isPlayerBetter($data, $return[$name]))
+                {
+                    $return[$name] = [
+                        'id' => $data->id,
+                        'pid' => $player->pid,
+                        'name' => $player->name,
+                        'rank' => $player->rank,
+                        'team' => $player->armyId,
+                        'kills' => $data->kills,
+                        'deaths' => $data->deaths,
+                        'time' => $data->time,
+                    ];
+                }
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * Fetches a list of specific score categories, and their respective top player.
+     *
+     * @return array [ categoryName => [ 'id', 'name', 'rank', 'team', 'value' ] ]
+     */
+    public function getTopSkillPlayers()
+    {
+        $categories = [
+            'roundScore' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1, 'value' => 0],
+            'skillScore' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'teamScore' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'commandScore' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'heals' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'revives' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'ammos' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'repairs' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'flagCaptures' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'flagDefends' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'killStreak' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'deathStreak' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'damageAssists' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'driverSpecials' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'teamKills' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'teamDamage' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0]
+        ];
+
+        foreach ($this->players as $player)
+        {
+            foreach ($categories as $key => $values)
+            {
+                $value = $player->{$key};
+                if ($value > $values['value'])
+                {
+                    $categories[$key] = [
+                        'id' => $player->pid,
+                        'name' => $player->name,
+                        'rank' => $player->rank,
+                        'team' => $player->armyId,
+                        'value' => $value
+                    ];
+                }
+            }
+        }
+
+        return $categories;
+    }
+
+    /**
+     * Returns a list of commanders for this game, sorted by command score
+     *
+     * @return array [ index => [ 'id', 'name', 'rank', 'time', 'score', 'team' ] ]
+     */
+    public function getCommanders()
+    {
+        $commanders = [];
+        foreach ($this->players as $player)
+        {
+            if ($player->cmdTime > 0)
+            {
+                $commanders[] = [
+                    'id' => $player->pid,
+                    'name' => $player->name,
+                    'rank' => $player->rank,
+                    'time' => $player->cmdTime,
+                    'score' => $player->commandScore,
+                    'team' => $player->armyId
+                ];
+            }
+        }
+
+        usort($commanders, function($a, $b) { return $a['score'] - $b['score']; });
+        return $commanders;
+    }
+
+    /**
+     * Determines if a player ObjectStat is greater than the second
+     * set of object data by comparing the kills, deaths and time played in
+     * the object.
+     *
+     * @param ObjectStat $data
+     * @param array $best
+     *
+     * @return bool
+     */
+    private function _isPlayerBetter(ObjectStat $data, $best)
+    {
+        if ($data->kills > $best['kills'])
+            return true;
+        else if ($data->kills < $best['kills'])
+            return false;
+
+        /** Kills Match, try deaths */
+
+        if ($data->deaths < $best['deaths'])
+            return true;
+        else if ($data->deaths > $best['deaths'])
+            return false;
+
+        /** Deaths and Kills Match, try time played */
+
+        if ($data->time > $best['time'])
+            return true;
+        else if ($data->time < $best['time'])
+            return false;
+
+        /** It's a draw. Just say no */
+        return false;
+    }
 }

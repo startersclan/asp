@@ -101,18 +101,6 @@ namespace System
 
 /*
 | ---------------------------------------------------------------
-| Security Check
-| ---------------------------------------------------------------
-
-    if (!Security::IsAuthorizedGameServer(Request::ClientIp()))
-    {
-        $LogWriter->logSecurity("Unauthorised Access Attempted! (IP: %s)", Request::ClientIp());
-        die(_ERR_RESPONSE . "Unauthorised Gameserver");
-    }
-*/
-
-/*
-| ---------------------------------------------------------------
 | Parse SNAPSHOT
 | ---------------------------------------------------------------
 */
@@ -164,7 +152,7 @@ namespace System
     {
         // Create and write the snapshot data into a backup file
         $file = new FileStream(SNAPSHOT_TEMP_PATH . DS . $fileName, FileStream::WRITE);
-        $file->write(json_encode($data->toArray(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK));
+        $file->write(json_encode($data->toArray(), JSON_NUMERIC_CHECK));
         $file->close();
 
         // Log

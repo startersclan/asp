@@ -479,11 +479,11 @@ class View
                 $block = str_replace('{value}', $value, $match);
 
             // Setup a few variables to tell what loop number we are on
-            if (strpos($block, "{loop.") !== false)
+            if (strpos($block, "{iteration.") !== false)
             {
                 $block = str_replace(
-                    array("{loop.key}", "{loop.num}", "{loop.count}"),
-                    array($key, $i, $i + 1),
+                    array("{iteration.key}", "{iteration.id}", "{iteration.count}", "{iteration.length}"),
+                    array($key, $i, $i + 1, count($val)),
                     $block
                 );
             }

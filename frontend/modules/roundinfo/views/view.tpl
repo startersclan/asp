@@ -2,8 +2,8 @@
     <div class="mws-panel-header">
         <span><i class="icon-map-marker"></i> {round.name}</span>
     </div>
-    <div class="mws-panel-body" style="text-align: center">
-        <img src="/ASP/frontend/images/maps/<?php echo strtolower('{round.name}'); ?>">
+    <div class="mws-panel-body no-padding" style="text-align: center">
+        <img src="/ASP/frontend/images/maps/<?php echo strtolower('{round.name}'); ?>.png">
     </div>
 </div>
 <div class="mws-panel grid_3">
@@ -39,13 +39,13 @@
             <li>
                 <span class="key"><i class="icon-history-2"></i> Round Start</span>
                 <span class="val">
-					<span class="text-nowrap">{round.round_start}</span>
+					<span class="text-nowrap">{round.round_start_date}</span>
 				</span>
             </li>
             <li>
                 <span class="key"><i class="icon-retweet"></i> Round End</span>
                 <span class="val">
-					<span class="text-nowrap">{round.round_end}</span>
+					<span class="text-nowrap">{round.round_end_date}</span>
 				</span>
             </li>
         </ul>
@@ -87,7 +87,11 @@
                     <img src="/ASP/frontend/images/icons/award_star_gold.png" style="height: 24px"/> 1st Place
                 </span>
                 <span class="val">
-					<span class="text-nowrap">{1st_place}</span>
+					<span class="text-nowrap">
+                        <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{first_place.rank}.gif"/>
+                        {first_place.name}
+                        <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{first_place.team}.png"/>
+                    </span>
 				</span>
             </li>
             <li>
@@ -95,7 +99,11 @@
                     <img src="/ASP/frontend/images/icons/award_star_silver.png" style="height: 24px"/> 2nd Place
                 </span>
                 <span class="val">
-					<span class="text-nowrap">{2nd_place}</span>
+					<span class="text-nowrap">
+                        <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{second_place.rank}.gif"/>
+                        {second_place.name}
+                        <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{second_place.team}.png"/>
+                    </span>
 				</span>
             </li>
             <li>
@@ -103,7 +111,11 @@
                     <img src="/ASP/frontend/images/icons/award_star_bronze.png" style="height: 24px"/> 3rd Place
                 </span>
                 <span class="val">
-					<span class="text-nowrap">{3rd_place}</span>
+					<span class="text-nowrap">
+                        <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{third_place.rank}.gif"/>
+                        {third_place.name}
+                        <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{third_place.team}.png"/>
+                    </span>
 				</span>
             </li>
         </ul>
@@ -183,5 +195,134 @@
             {/players2}
             </tbody>
         </table>
+    </div>
+</div>
+<?php if ($advanced): ?>
+<div class="mws-panel grid_4 mws-collapsible" style="min-width: 330px">
+    <div class="mws-panel-header">
+        <span><i class="icon-pacman"></i> Top Player Scores</span>
+    </div>
+    <div class="mws-panel-body no-padding">
+        <ul class="mws-summary clearfix">
+            {topSkillPlayers}
+            <li>
+                <span class="key">{category}</span>
+                <span class="val">
+					<span class="text-nowrap">
+                        <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{rank}.gif"/>
+                        {name}
+                        <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/armies/small/{team}.png"/>
+                        ({value})
+                    </span>
+				</span>
+            </li>
+            {/topSkillPlayers}
+        </ul>
+    </div>
+</div>
+<div class="mws-panel grid_4 mws-collapsible">
+    <div class="mws-panel-header">
+        <span><i class="icon-accessibility-2"></i> Top Kit Players</span>
+    </div>
+    <div class="mws-panel-body no-padding">
+        <ul class="mws-summary clearfix">
+            {topKitPlayers}
+            <li>
+                <span class="key">{iteration.key}</span>
+                <span class="val">
+                    <span class="text-nowrap">
+                        <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{rank}.gif"/>
+                        {name}
+                        <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/armies/small/{team}.png"/>
+                        - [<?php echo \System\TimeHelper::SecondsToHms({time}); ?>]
+                        {kills} kills,
+                        {deaths} deaths
+                    </span>
+                </span>
+            </li>
+            {/topKitPlayers}
+        </ul>
+    </div>
+</div>
+<div class="mws-panel grid_4 mws-collapsible">
+    <div class="mws-panel-header">
+        <span><i class="icon-steering-wheel"></i> Top Vehicle Players</span>
+    </div>
+    <div class="mws-panel-body no-padding">
+        <ul class="mws-summary clearfix">
+            {topVehiclePlayers}
+            <li>
+                <span class="key">{iteration.key}</span>
+                <span class="val">
+                    <span class="text-nowrap">
+                        <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{rank}.gif"/>
+                        {name}
+                        <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/armies/small/{team}.png"/>
+                        - [<?php echo \System\TimeHelper::SecondsToHms({time}); ?>]
+                        {kills} kills,
+                        {deaths} deaths
+                    </span>
+                </span>
+            </li>
+            {/topVehiclePlayers}
+        </ul>
+    </div>
+</div>
+<div class="mws-panel grid_4 mws-collapsible">
+    <div class="mws-panel-header">
+        <span><i class="icon-hand-down"></i> Game Commanders</span>
+    </div>
+    <div class="mws-panel-body no-padding">
+        <ul class="mws-summary clearfix">
+            {commanders}
+            <li>
+                <span class="key" style="width: 250px">
+                    <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{team}.png"/>
+                    <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{rank}.gif"/>
+                    {name}
+                </span>
+                <span class="val">
+                    <span class="text-nowrap">{score} points [<?php echo \System\TimeHelper::SecondsToHms({time}); ?>]</span>
+                </span>
+            </li>
+            {/commanders}
+        </ul>
+    </div>
+</div>
+<?php endif ?>
+<div class="mws-panel grid_4 mws-collapsible" style="min-width: 330px">
+    <div class="mws-panel-header">
+        <span><i class="icon-trophy"></i> Player Earned Awards</span>
+    </div>
+    <div class="mws-panel-body no-padding">
+        <ul class="mws-summary clearfix">
+            {awards}
+            <li>
+                <span class="key" style="width: 250px">
+                    <?php if ({type} == 0): ?>
+                    <img style="margin: -2px 0 0 0; max-height: 24px;" src="/ASP/frontend/images/icons/ribbon.png"/>
+                    <?php elseif ({type} == 1): ?>
+                    <img style="margin: -2px 0 0 0; max-height: 24px;" src="/ASP/frontend/images/icons/badge_{level}.png"/>
+                    <?php elseif ({type} == 2): ?>
+                    <img style="margin: -2px 0 0 0; max-height: 24px;" src="/ASP/frontend/images/icons/medal.png"/>
+                    <?php elseif ({type} == 3): ?>
+                    <img style="margin: -2px 0 0 0; max-height: 24px;" src="/ASP/frontend/images/icons/award_star_gold.png"/>
+                    <?php elseif ({type} == 4): ?>
+                    <img style="margin: -2px 0 0 0; max-height: 24px;" src="/ASP/frontend/images/icons/award_star_silver.png"/>
+                    <?php elseif ({type} == 5): ?>
+                    <img style="margin: -2px 0 0 0; max-height: 24px;" src="/ASP/frontend/images/icons/award_star_bronze.png"/>
+                    <?php endif ?>
+                    {name}
+                </span>
+                <span class="val">
+                    <span class="text-nowrap">
+                        <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{rank}.gif"/>
+                        {player_name}
+                        <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{team}.png"/>
+                    </span>
+                </span>
+            </li>
+            {/awards}
+        </ul>
     </div>
 </div>

@@ -95,7 +95,7 @@ class Snapshots extends Controller
         $file = Path::Combine(SYSTEM_PATH, "snapshots", "unauthorized", $_POST['snapshot'] . '.json');
         if (!File::Exists($file))
         {
-            echo json_encode(['success' => false, 'message' => 'No snapshots with that filename exists!' . $_POST['snapshot']]);
+            echo json_encode(['success' => false, 'message' => 'No snapshots with the filename exists: ' . $_POST['snapshot']]);
             return;
         }
 

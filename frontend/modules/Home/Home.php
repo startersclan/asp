@@ -50,7 +50,7 @@ class Home extends Controller
 
         // Failed count
         $path = Path::Combine(SYSTEM_PATH, 'snapshots', 'failed');
-        $count = count(Directory::GetFiles($path, '^(.*)\.txt$'));
+        $count = count(Directory::GetFiles($path, '^(.*)\.json$'));
         $view->set('failed_snapshots', number_format($count));
 
         // Number of players

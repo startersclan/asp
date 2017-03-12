@@ -580,12 +580,12 @@ class Snapshot extends GameResult
     public function getFilename()
     {
         // Generate SNAPSHOT Filename
-        $mapdate = date('Ymd_Hi', time());
+        $time = new \DateTime("@{$this->roundEndTime}", new \DateTimeZone("UTC"));
         $prefix  = '';
         if (!empty($this->serverPrefix))
             $prefix = $this->serverPrefix . '-';
 
-        return $prefix . $this->mapName . '_' . $mapdate . '.json';
+        return $prefix . $this->mapName . '_' . $time->format('Ymd_His') . '.json';
     }
 
     /**

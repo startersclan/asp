@@ -12,27 +12,80 @@ namespace System;
 
 class StatsData
 {
+    /**
+     * @var int The number or army types in the database
+     */
     public static $NumArmies = 0;
 
+    /**
+     * @var int The number or kit types in the database
+     */
     public static $NumKits = 0;
 
+    /**
+     * @var int The number or vehicle types in the database
+     */
     public static $NumVehicles = 0;
 
+    /**
+     * @var int The number or weapon types in the database
+     */
     public static $NumWeapons = 0;
 
+    /**
+     * @var string[] An array of ArmyId => Army String Name
+     */
+    public static $ArmyNames = [];
+
+    /**
+     * @var string[] An array of KitId => Kit String Name
+     */
+    public static $KitNames = [];
+
+    /**
+     * @var string[] An array of VehicleId => Vehicle String Name
+     */
+    public static $VehicleNames = [];
+
+    /**
+     * @var string[] An array of WeaponId => Weapon String Name
+     */
+    public static $WeaponNames = [];
+
+    /**
+     * Loads the stats data from the database if it has not been previously
+     * called
+     */
     public static function Load()
     {
+        // Only load data if it has not been loaded yet
         if (self::$NumArmies == 0)
         {
             $pdo = Database::GetConnection('stats');
 
-            self::$NumArmies = (int)$pdo->query("SELECT COUNT(id) FROM army")->fetchColumn(0);
+            // Load armies
+            $result = $pdo->query("SELECT name FROM army")->fetchAll();
+            self::$NumArmies = count($result);
+            for ($i = 0; $i < self::$NumArmies; $i++)
+                self::$ArmyNames[] = $result[$i]['name'];
 
-            self::$NumKits = (int)$pdo->query("SELECT COUNT(id) FROM kit")->fetchColumn(0);
+            // Load kits
+            $result = $pdo->query("SELECT name FROM kit")->fetchAll();
+            self::$NumKits= count($result);
+            for ($i = 0; $i < self::$NumKits; $i++)
+                self::$KitNames[] = $result[$i]['name'];
 
-            self::$NumVehicles = (int)$pdo->query("SELECT COUNT(id) FROM vehicle")->fetchColumn(0);
+            // Load vehicles
+            $result = $pdo->query("SELECT name FROM vehicle")->fetchAll();
+            self::$NumVehicles = count($result);
+            for ($i = 0; $i < self::$NumVehicles; $i++)
+                self::$VehicleNames[] = $result[$i]['name'];
 
-            self::$NumWeapons = (int)$pdo->query("SELECT COUNT(id) FROM weapon")->fetchColumn(0);
+            // Load weapons
+            $result = $pdo->query("SELECT name FROM weapon")->fetchAll();
+            self::$NumVehicles = count($result);
+            for ($i = 0; $i < self::$NumWeapons; $i++)
+                self::$WeaponNames[] = $result[$i]['name'];
         }
     }
 }
