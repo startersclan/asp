@@ -15,7 +15,7 @@
             e.preventDefault();
 
             // The a element does not have a property disabled. So defining one won't
-            // affect any event handlers you may have attached to it. Therfore, we use data instead
+            // affect any event handlers you may have attached to it. Therefore, we use data instead
             if ($(this).data('disabled')) return;
 
             // Show client a message

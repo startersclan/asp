@@ -245,6 +245,7 @@ abstract class GameResult
                         'kills' => $data->kills,
                         'deaths' => $data->deaths,
                         'time' => $data->time,
+                        'time_string' => TimeHelper::SecondsToHms($data->time),
                         'roadKills' => $data->roadKills
                     ];
                 }
@@ -279,6 +280,7 @@ abstract class GameResult
                         'kills' => $data->kills,
                         'deaths' => $data->deaths,
                         'time' => $data->time,
+                        'time_string' => TimeHelper::SecondsToHms($data->time)
                     ];
                 }
             }
@@ -351,6 +353,7 @@ abstract class GameResult
                     'name' => $player->name,
                     'rank' => $player->rank,
                     'time' => $player->cmdTime,
+                    'time_string' => TimeHelper::SecondsToHms($player->cmdTime),
                     'score' => $player->commandScore,
                     'team' => $player->armyId
                 ];

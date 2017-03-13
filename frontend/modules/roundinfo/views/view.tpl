@@ -236,9 +236,7 @@
                         <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{rank}.gif"/>
                         {name}
                         <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/armies/small/{team}.png"/>
-                        - [<?php echo \System\TimeHelper::SecondsToHms({time}); ?>]
-                        {kills} kills,
-                        {deaths} deaths
+                        - [{time_string}] {kills} kills, {deaths} deaths
                     </span>
                 </span>
             </li>
@@ -260,9 +258,7 @@
                         <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{rank}.gif"/>
                         {name}
                         <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/armies/small/{team}.png"/>
-                        - [<?php echo \System\TimeHelper::SecondsToHms({time}); ?>]
-                        {kills} kills,
-                        {deaths} deaths
+                        - [{time_string}] {kills} kills, {deaths} deaths
                     </span>
                 </span>
             </li>
@@ -284,7 +280,7 @@
                     {name}
                 </span>
                 <span class="val">
-                    <span class="text-nowrap">{score} points [<?php echo \System\TimeHelper::SecondsToHms({time}); ?>]</span>
+                    <span class="text-nowrap">{score} points [{time_string}]</span>
                 </span>
             </li>
             {/commanders}
