@@ -168,8 +168,12 @@ class Snapshots extends Controller
                 $message = "Snapshot was processed successfully.";
             }
 
-            // Move file
-            $newPath = Path::Combine(SYSTEM_PATH, "snapshots", "processed", Path::GetFilename($file));
+            /**
+             * Move file. Use snapshot's getFilename() in case this import was planted by an admin,
+             * which was created locally on the bf2 servers snapshot path. Having the correct filename
+             * is important for the /roundinfo/view/ ASP page.
+             */
+            $newPath = Path::Combine(SYSTEM_PATH, "snapshots", "processed", $snapshot->getFilename());
             File::Move($file, $newPath);
 
             // Tell the client of the success
