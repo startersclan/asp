@@ -120,7 +120,7 @@ SQL;
         while ($row = $result->fetch())
         {
             $team = (int)$row['team'];
-            if ($team == 1)
+            if ($team == $round['team1'])
                 $players1[] = $row;
             else
                 $players2[] = $row;
@@ -138,7 +138,7 @@ FROM player_award AS pa
   LEFT JOIN player AS p ON pa.pid = p.id
   LEFT JOIN award AS a ON pa.id = a.id
   LEFT JOIN player_history AS h ON pa.pid = h.pid AND pa.roundid = h.roundid
-WHERE pa.roundid=($id) ORDER BY pa.id
+WHERE pa.roundid = $id ORDER BY pa.id
 SQL;
 
         // Fetch the round awards

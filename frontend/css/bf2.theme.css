@@ -38,6 +38,10 @@ div#title {
 	text-shadow:0 0 6px rgba(17, 17, 17, 0.5);
 }
 
+a {
+	color:#ed1427;
+}
+
 div#dbver {
 	text-align:center;
 	font-family: Verdana, serif;

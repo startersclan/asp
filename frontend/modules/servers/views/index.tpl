@@ -48,6 +48,7 @@
                 <td><?php echo ({authorized} == 1) ? 'Yes' : 'No'; ?></td>
                 <td>
                     <span class="btn-group">
+                        <a id="go-btn" href="/ASP/servers/view/{id}" rel="tooltip" title="View Server" class="btn btn-small"><i class="icon-eye-open"></i></a>
                         <a id="edit-btn-{id}" href="#"  rel="tooltip" title="Edit Server" class="btn btn-small"><i class="icon-pencil"></i></a>
                         <a id="auth-btn-{id}" href="#" rel="tooltip" title="Authorize Server" class="btn btn-small"
                         <?php echo ({authorized} == 0) ? '' : ' style="display: none"'; ?>><i class="icon-ok"></i></a>

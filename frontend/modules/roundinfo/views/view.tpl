@@ -15,7 +15,9 @@
             <li>
                 <span class="key"><i class="icon-monitor"></i> Server Name</span>
                 <span class="val">
-					<span class="text-nowrap">{round.server}</span>
+					<span class="text-nowrap">
+                        <a href="/ASP/servers/view/{round.serverid}">{round.server}</a>
+                    </span>
 				</span>
             </li>
             <li>
@@ -246,7 +248,7 @@
 </div>
 <div class="mws-panel grid_4 mws-collapsible">
     <div class="mws-panel-header">
-        <span><i class="icon-steering-wheel"></i> Top Vehicle Players</span>
+        <span><i class="icon-chopper"></i> Top Vehicle Players</span>
     </div>
     <div class="mws-panel-body no-padding">
         <ul class="mws-summary clearfix">

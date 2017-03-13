@@ -202,7 +202,26 @@ abstract class GameResult
     public $players = [];
 
     /**
-     * Fetches a list of vehicles that were usedthis round, and their respective top player.
+     * Fetches the Player object by PID, or false if the player
+     * was not found in this round.
+     *
+     * @param int $pid The player ID
+     *
+     * @return bool|Player
+     */
+    public function getPlayerById($pid)
+    {
+        foreach ($this->players as $player)
+        {
+            if ($player->pid == $pid)
+                return $player;
+        }
+
+        return false;
+    }
+
+    /**
+     * Fetches a list of vehicles that were used this round, and their respective top player.
      *
      * @return array [ vehicleName => [ 'id', 'pid', 'name', 'rank', 'team', 'kills', 'deaths', 'time', 'roadKills' ] ]
      */

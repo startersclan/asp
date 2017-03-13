@@ -2,7 +2,7 @@
 <div class="mws-stat-container clearfix">
 
 	<!-- Statistic Item -->
-	<a class="mws-stat" href="/ASP/mapinfo">
+	<a class="mws-stat" href="/ASP/roundinfo">
 		<!-- Statistic Icon (edit to change icon) -->
 		<span class="mws-stat-icon icol32-monitor-lightning"></span>
 

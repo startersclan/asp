@@ -167,10 +167,13 @@ class View
      * This method displays the page. It loads the header, footer, and view of the page.
      *
      * @param bool $full Load header and footer as well?
+     * @param bool $return if true, the output is returned instead of sent to the client.
      *
      * @internal param string $file The full path to the view file
+     *
+     * @return string|null returns the rendered source if $return is true
      */
-    public function render($full = true)
+    public function render($full = true, $return = false)
     {
         // Setup default Vars
         $header = '';
@@ -212,13 +215,24 @@ class View
         $this->source = $this->parse($page, $this->variables);
 
         // Prepare the output
-        $this->output();
+        $this->renderSource();
+
+        // Are we supposed to return the source, or output it?
+        if ($return)
+        {
+            return $this->source;
+        }
+        else
+        {
+            $this->output();
+            return null;
+        }
     }
 
     /**
      * This method outputs the page contents to the browser
      */
-    protected function output()
+    protected function renderSource()
     {
         // Include template file if it exists
         $___file = ROOT . DS . 'frontend' . DS . 'template.php';
@@ -242,8 +256,13 @@ class View
         // Capture the contents and call it a day
         $this->source = ob_get_contents();
         ob_end_clean();
+    }
 
-        // Echo the page to the browser
+    /**
+     * This method outputs the page contents to the browser
+     */
+    protected function output()
+    {
         echo $this->source;
     }
 
