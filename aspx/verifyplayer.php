@@ -63,9 +63,8 @@ else
     // Query failed or player does not exist
     if (!($row = $result->fetch()))
     {
-        $Response->responseError(true);
-        $Response->writeHeaderLine("asof", "err");
-        $Response->writeDataLine(time(), "Player Not Found!");
+        $Response->writeHeaderLine("result", "message");
+        $Response->writeDataLine("NOK", "Player Not Found!");
         $Response->send();
     }
     else
@@ -73,32 +72,29 @@ else
         // Ensure the player is using our services, and is not banned!
         if (strtolower($nick) != strtolower($row['name']))
         {
-            $Response->responseError(true);
-            $Response->writeHeaderLine("asof", "err");
-            $Response->writeDataLine(time(), "Player Nick Invalid!");
+            $Response->writeHeaderLine("result", "message");
+            $Response->writeDataLine("NOK", "Player Nick Invalid!");
             $Response->send();
         }
         else if ($row['permban'] != 0)
         {
-            $Response->responseError(true);
-            $Response->writeHeaderLine("asof", "err");
-            $Response->writeDataLine(time(), "Player Is Banned!");
+            $Response->writeHeaderLine("result", "message");
+            $Response->writeDataLine("NOK", "Player Is Banned!");
             $Response->send();
         }
         /*
         else if ($row['online'] == 0)
         {
-            $Response->responseError(true);
-            $Response->writeHeaderLine("asof", "err");
-            $Response->writeDataLine(time(), "Player Is Offline!");
+            $Response->writeHeaderLine("result", "message");
+            $Response->writeDataLine("NOK", "Player Is Offline!");
             $Response->send();
         }
         */
         else
         {
             // Just echo OK for now
-            $Response->writeHeaderLine("asof", "message");
-            $Response->writeDataLine(time(), "OK");
+            $Response->writeHeaderLine("result", "message");
+            $Response->writeDataLine("OK", "Player Is Valid");
             $Response->send();
         }
     }

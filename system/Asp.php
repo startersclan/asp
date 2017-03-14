@@ -107,7 +107,7 @@ class Asp
             }
         }
 
-        // Determine requested file name, protecting against XSS
+        // Determine requested file name, protecting against Local File Inclusion
         $file = Path::GetFilenameWithoutExtension(strtolower($_GET['aspx']));
         $file = Path::Combine(ROOT, "aspx", $file . ".php");
 
@@ -123,8 +123,30 @@ class Asp
         // Define content type as Text, and run the ASPX file
         header("Content-Type: text/plain; charset=utf-8");
 
-        /** @noinspection PhpIncludeInspection */
-        include $file;
+        try
+        {
+            /** @noinspection PhpIncludeInspection */
+            include $file;
+        }
+        catch (Exception $e)
+        {
+            // Create ASP log file instance
+            try
+            {
+                $LogWriter = new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "asp_debug.log"), "Asp");
+                Asp::LogException($e);
+            }
+            catch (Exception $ex)
+            {
+                // ignore
+            }
+
+            $response = new AspResponse();
+            $response->responseError(true, 500);
+            $response->writeHeaderLine("asof", "err");
+            $response->writeDataLine(time(), "Internal Server Error");
+            $response->send();
+        }
     }
 
     /**
@@ -134,10 +156,16 @@ class Asp
     {
         // First, Lets make sure the IP can view the ASP
         if (!Security::IsAuthorizedIp(Request::ClientIp()))
-            die("<font color='red'>ERROR:</font> You are NOT Authorised to access this Page! (Ip: " . Request::ClientIp() . ")");
+            die("<span style=\"color: red; \">ERROR:</span> You are NOT Authorised to access this Page! (Ip: " . Request::ClientIp() . ")");
 
         // Create ASP log file instance
-        $LogWriter = new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "asp_debug.log"), "Asp");
+        try {
+            $LogWriter = new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "asp_debug.log"), "Asp");
+        }
+        catch (Exception $e) {
+            // Use tmp file instead
+            $LogWriter = new LogWriter();
+        }
 
         // Set timezone
         date_default_timezone_set(Config::Get('admin_timezone'));
@@ -225,6 +253,8 @@ class Asp
         // Process the task by making sure the module exists
         $modNMame = strtolower($name);
         $className = ucfirst($name);
+
+        // The way we built this path here naturally protects against Local File Inclusion
         $file = Path::Combine(ROOT, 'frontend', 'modules', $modNMame, $className . '.php');
 
         // Check if the controller exists already, if not, import it
@@ -288,29 +318,35 @@ class Asp
     public static function LogException(Exception $e)
     {
         $log = LogWriter::Instance('Asp');
-        $log->logError('Exception Type: '. get_class($e));
-        $log->writeLine("\tMessage: ". $e->getMessage());
-        $log->writeLine("\tCode: ". $e->getCode());
-        $log->writeLine("\tFile: ". $e->getFile());
-        $log->writeLine("\tLine: ". $e->getLine());
-        $log->writeLine("\tStack Trace: ");
-        foreach ($e->getTrace() as $message)
+        if ($log instanceof LogWriter)
         {
-            $output = implode(', ', array_map(
-                function ($v, $k) { return sprintf("%s='%s'", $k, $v); },
-                $message,
-                array_keys($message)
-            ));
-            $log->writeLine("\t\t- ". $output);
-        }
-
-        if ($ex = $e->getPrevious())
-        {
-            $log->writeLine("\tInner Exceptions: ");
-            do {
-                $log->writeLine(sprintf("\t\t- %s [%s] (%d) : %s", $ex->getMessage(), $ex->getFile(), $ex->getLine(), get_class($ex)));
+            $log->logError('Exception Type: ' . get_class($e));
+            $log->writeLine("\tMessage: " . $e->getMessage());
+            $log->writeLine("\tCode: " . $e->getCode());
+            $log->writeLine("\tFile: " . $e->getFile());
+            $log->writeLine("\tLine: " . $e->getLine());
+            $log->writeLine("\tStack Trace: ");
+            foreach ($e->getTrace() as $message)
+            {
+                $output = implode(', ', array_map(
+                    function ($v, $k)
+                    {
+                        return sprintf("%s='%s'", $k, $v);
+                    },
+                    $message,
+                    array_keys($message)
+                ));
+                $log->writeLine("\t\t- " . $output);
             }
-            while ($ex = $e->getPrevious());
+
+            if ($ex = $e->getPrevious())
+            {
+                $log->writeLine("\tInner Exceptions: ");
+                do
+                {
+                    $log->writeLine(sprintf("\t\t- %s [%s] (%d) : %s", $ex->getMessage(), $ex->getFile(), $ex->getLine(), get_class($ex)));
+                } while ($ex = $e->getPrevious());
+            }
         }
     }
 }
