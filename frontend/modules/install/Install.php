@@ -152,13 +152,13 @@ class Install
             die;
         }
 
-        $DB = Database::GetConnection('stats');
+        $pdo = Database::GetConnection('stats');
         $current = '';
 
         // Fetch tables version
         try
         {
-            $DB->beginTransaction();
+            $pdo->beginTransaction();
 
             // Create parser
             $parser = new SqlFileParser(SYSTEM_PATH . DS . 'sql' . DS . 'schema.sql');
@@ -166,10 +166,10 @@ class Install
 
             // Read file contents
             foreach ($queries as $query)
-                $DB->exec($query);
+                $pdo->exec($query);
 
             // Commit changes
-            $DB->commit();
+            $pdo->commit();
 
             // Successful connection
             echo json_encode(['success' => true, 'message' => '']);
@@ -177,9 +177,9 @@ class Install
         }
         catch (Exception $e)
         {
-            if ($DB instanceof PDO)
+            if ($pdo instanceof PDO)
             {
-                $DB->rollBack();
+                $pdo->rollBack();
             }
 
             $logWriter = new LogWriter(SYSTEM_PATH . DS . 'logs' . DS . 'php_errors.log');

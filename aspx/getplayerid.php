@@ -21,16 +21,12 @@
 namespace System;
 
 use PDO;
-use PDOStatement;
 
 // No direct access
 defined("BF2_ADMIN") or die("No Direct Access");
 
 // Prepare output
 $Response = new AspResponse();
-
-// Get database connection
-$connection = Database::GetConnection("stats");
 
 // Get our Player Nick
 if (isset($_POST['nick']))
@@ -61,6 +57,9 @@ if (!empty($nick))
         $Response->send();
     }
 
+    // Get database connection
+    $connection = Database::GetConnection("stats");
+
     // Try to fetch players id
     $result = $connection->prepare("SELECT id FROM player WHERE name = :nick LIMIT 1");
     $result->bindValue(":nick", $nick, PDO::PARAM_STR);
@@ -68,28 +67,11 @@ if (!empty($nick))
     // Player does not exist
     if (!$result->execute() || !($pid = $result->fetchColumn(0)))
     {
-        if ($isAi)
-        {
-            // Use the internal procedure
-            $stmt = $connection->prepare("CALL `create_player` (?, ?, ? , ?, @pid)");
-            $stmt->bindValue(1, $nick, PDO::PARAM_STR);
-            $stmt->bindValue(2, '', PDO::PARAM_STR);
-            $stmt->bindValue(3, 'US', PDO::PARAM_STR);
-            $stmt->bindValue(4, '127.0.0.1', PDO::PARAM_STR);
-            $stmt->execute();
-
-            // Fetch Player id from procedure parameter
-            $stmt->bindColumn(1, $pid, PDO::PARAM_INT);
-            $stmt->fetch(PDO::FETCH_BOUND);
-        }
-        else
-        {
-            $Response->responseError(true);
-            $Response->writeHeaderLine("asof", "err");
-            $Response->writeDataLine(time(), "Player Not Found!");
-            $Response->send();
-            die;
-        }
+        $Response->responseError(true);
+        $Response->writeHeaderLine("asof", "err");
+        $Response->writeDataLine(time(), "Player Not Found!");
+        $Response->send();
+        die; // prevents PhpStorm IDE error below
     }
 
     // Send response

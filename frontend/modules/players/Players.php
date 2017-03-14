@@ -11,6 +11,8 @@ use System\Collections\Dictionary;
 use System\Controller;
 use System\Database;
 use System\DataTables;
+use System\IO\File;
+use System\IO\Path;
 use System\Player;
 use System\Response;
 use System\TimeHelper;
@@ -36,12 +38,17 @@ class Players extends Controller
         $view->attachScript("/ASP/frontend/js/validate/jquery.validate-min.js");
         $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");
         $view->attachScript("/ASP/frontend/js/select2/select2.min.js");
+        $view->attachScript("/ASP/frontend/js/fileinput/fileinput.js");
         $view->attachScript("/ASP/frontend/modules/players/js/index.js");
 
         // Attach needed stylesheets
         $view->attachStylesheet("/ASP/frontend/modules/players/css/links.css");
         $view->attachStylesheet("/ASP/frontend/css/icons/icol16.css");
         $view->attachStylesheet("/ASP/frontend/js/select2/select2.css");
+
+        // Set variables
+        $view->set('show_button', ((System\Config::Get('admin_ignore_ai') == 0) ? ' style="display: none;"' : ''));
+        $view->set('hide_button', ((System\Config::Get('admin_ignore_ai') == 1) ? ' style="display: none;"' : ''));
 
         // Send output
         $view->render();
@@ -129,7 +136,7 @@ class Players extends Controller
     public function postDelete()
     {
         // Form post?
-        if ($_POST['action'] != 'delete')
+        if ($_POST['action'] != 'delete' && $_POST['action'] != 'deleteBots')
         {
             echo json_encode( array('success' => false, 'message' => 'Invalid Action') );
             die;
@@ -146,20 +153,32 @@ class Players extends Controller
         // Prepared statement!
         try
         {
-            // Ensure pid exists
-            if (!isset($_POST['playerId']))
-                throw new Exception('No Player ID Specified!');
+            switch ($_POST['action'])
+            {
+                case "delete":
+                    // Ensure pid exists
+                    if (!isset($_POST['playerId']))
+                        throw new Exception('No Player ID Specified!');
 
-            // Extract player ID
-            $playerId = (int)$_POST['playerId'];
+                    // Extract player ID
+                    $playerId = (int)$_POST['playerId'];
 
-            // Prepare statement
-            $stmt = $pdo->prepare("DELETE FROM player WHERE id=:id");
-            $stmt->bindValue(':id', $playerId, PDO::PARAM_INT);
-            $stmt->execute();
+                    // Prepare statement
+                    $stmt = $pdo->prepare("DELETE FROM player WHERE id=:id");
+                    $stmt->bindValue(':id', $playerId, PDO::PARAM_INT);
+                    $stmt->execute();
 
-            // Echo success
-            echo json_encode( array('success' => true, 'message' => $_POST['playerId']) );
+                    // Echo success
+                    echo json_encode( array('success' => true, 'message' => $_POST['playerId']) );
+                    break;
+                case "deleteBots":
+                    // Prepare statement
+                    $result = $pdo->exec("DELETE FROM player WHERE password=''");
+
+                    // Echo success
+                    echo json_encode( array('success' => true, 'message' => $result) );
+                    break;
+            }
         }
         catch (Exception $e)
         {
@@ -298,7 +317,8 @@ class Players extends Controller
             ];
 
             $pdo = Database::GetConnection('stats');
-            $data = DataTables::FetchData($_POST, $pdo, 'player', 'id', $columns);
+            $filter = (\System\Config::Get('admin_ignore_ai') == 1) ? "`password` != ''" : '';
+            $data = DataTables::FetchData($_POST, $pdo, 'player', 'id', $columns, $filter);
 
             echo json_encode($data);
         }
@@ -306,6 +326,118 @@ class Players extends Controller
         {
             Asp::LogException($e);
             echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * @protocol    POST
+     * @request     /ASP/players/import
+     * @output      json
+     */
+    public function postImport()
+    {
+        $output = Path::Combine(SYSTEM_PATH, "config", "botNames.ai");
+
+        if (isset($_FILES["botNamesFile"]))
+        {
+            $file = $_FILES["botNamesFile"];
+
+            //Filter the file types , if you want.
+            if ($file["error"] > 0 && $file['error'] != UPLOAD_ERR_OK)
+            {
+                switch ($file['error']) {
+                    case UPLOAD_ERR_NO_FILE:
+                        echo json_encode(['success' => false, 'error' => "No file received."]);
+                        break;
+                    case UPLOAD_ERR_INI_SIZE:
+                    case UPLOAD_ERR_FORM_SIZE:
+                        echo json_encode(['success' => false, 'error' => "Exceeded filesize limit."]);
+                        break;
+                    default:
+                        echo json_encode(['success' => false, 'error' => "Unknown Error."]);
+                        break;
+                }
+            }
+            else
+            {
+                try
+                {
+                    //move the uploaded file to uploads folder;
+                    @move_uploaded_file($file["tmp_name"], $output);
+
+                    // Open file
+                    $lines = File::ReadAllLines($output);
+                }
+                catch (Exception $e)
+                {
+                    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+                    die;
+                }
+
+                // Prepare for adding bots
+                $pattern = "/^aiSettings\.addBotName[\s\t]+(?<name>[". Player::NAME_REGEX ."]+)$/i";
+                $bots = [];
+
+                // Grab database connection
+                $pdo = Database::GetConnection('stats');
+                if ($pdo === false)
+                {
+                    echo json_encode( array('success' => false, 'message' => 'Unable to connect to database!') );
+                    die;
+                }
+
+
+                // Parse file lines
+                foreach ($lines as $line)
+                {
+                    if (preg_match($pattern, $line, $match))
+                    {
+                        $bots[] = $match["name"];
+                    }
+                }
+
+                try
+                {
+                    $imported = 0;
+
+                    // wrap these inserts in a transaction, to speed things along.
+                    $pdo->beginTransaction();
+                    foreach ($bots as $bot)
+                    {
+                        try
+                        {
+                            // Quote name
+                            $name = $pdo->quote($bot);
+
+                            // Check if name exists already
+                            $exists = $pdo->query("SELECT id FROM player WHERE name={$name} LIMIT 1")->fetchColumn(0);
+                            if ($exists === false)
+                            {
+                                $pdo->exec("INSERT INTO `player`(`name`, `country`, `password`) VALUES ({$name}, 'US', '');");
+                                $imported++;
+                            }
+                        }
+                        catch (PDOException $e)
+                        {
+                            // ignore
+                        }
+                    }
+
+                    // Submit changes
+                    $pdo->commit();
+
+                    echo json_encode(['success' => true, 'error' => "File Received OK. Added ". $imported . " Bots"]);
+                }
+                catch (Exception $e)
+                {
+                    $pdo->rollBack();
+                    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+                }
+            }
+        }
+        else
+        {
+            echo json_encode(['success' => false, 'error' => "No file received."]);
         }
     }
 }

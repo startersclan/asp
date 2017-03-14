@@ -8,6 +8,10 @@
             <div class="btn-group">
                 <a id="add-new" href="#" class="btn"><i class="icol-add"></i> Add New Player</a>
                 <a id="refresh" href="#" class="btn"><i class="icol-arrow-refresh"></i> Refresh Table</a>
+                <a id="import-bots" href="#" class="btn"><i class="icol-application-get"></i> Import Bot Players</a>
+                <a id="show-bots" href="#" class="btn"{show_button}><i class="icol-lightbulb"></i> Show Bot Players</a>
+                <a id="hide-bots" href="#" class="btn"{hide_button}><i class="icol-lightbulb-off"></i> Hide Bot Players</a>
+                <a id="delete-bots" href="#" class="btn"><i class="icol-drive-delete"></i> Delete Bot Players</a>
             </div>
         </div>
     </div>
@@ -28,6 +32,25 @@
             </tr>
             </thead>
         </table>
+    </div>
+
+    <!-- Import Bots Form -->
+    <div id="import-form">
+        <form id="mws-validate-2" class="mws-form" method="post" action="/ASP/players/import" enctype="multipart/form-data">
+            <div id="mws-validate-error-2" class="mws-form-message error" style="display:none;"></div>
+            <div id="jui-message-2" class="alert" style="display: none; width: 92%; margin-bottom: 20px;"></div>
+            <div style="margin-bottom: 20px; font-weight: 500">
+                This form allows you to insert bot players into the database, using the "/mods/bf2/ai/botNames.ai" file.
+            </div>
+            <div class="mws-form-inline">
+                <div class="mws-form-row">
+                    <label class="mws-form-label">Bot Names File</label>
+                    <div class="mws-form-item">
+                        <input type="file" name="botNamesFile" accept=".ai">
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
 
     <!-- Add New Player Ajax Model -->
@@ -339,7 +362,7 @@
         </form>
     </div>
 
-    <!-- Delete Server Confirmation Model -->
+    <!-- Delete Player Confirmation Model -->
     <div id="mws-jui-dialog">
         <div class="mws-dialog-inner"></div>
     </div>

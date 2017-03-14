@@ -325,8 +325,8 @@
                         </label>
                         <div class="mws-form-item">
                             <select class="small" name="cfg__admin_ignore_ai" title="">
-                                <option value="0" <?php if('{config.admin_ignore_ai}' == '1') echo 'selected="selected"'; ?>>Yes</option>
-                                <option value="1" <?php if('{config.admin_ignore_ai}' == '0') echo 'selected="selected"'; ?>>No</option>
+                                <option value="1" <?php if('{config.admin_ignore_ai}' == '1') echo 'selected="selected"'; ?>>Yes</option>
+                                <option value="0" <?php if('{config.admin_ignore_ai}' == '0') echo 'selected="selected"'; ?>>No</option>
                             </select>
                         </div>
                     </div>

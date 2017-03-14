@@ -88,6 +88,20 @@
                 }]
             });
 
+            $("#import-form").dialog({
+                autoOpen: false,
+                title: "Import Bots",
+                modal: true,
+                width: "640",
+                resizable: false,
+                buttons: [{
+                    text: "Submit",
+                    click: function () {
+                        $(this).find('form#mws-validate-2').submit();
+                    }
+                }]
+            });
+
             $("#mws-jui-dialog").dialog({
                 autoOpen: false,
                 title: "Confirm Delete Award",
@@ -120,6 +134,27 @@
                 $("#add-player-form").dialog("option", {
                     modal: true,
                     title: "Create New Award"
+                }).dialog("open");
+
+                // Just to be sure, older IE's needs this
+                return false;
+            });
+
+            // Import Click
+            $("#import-bots").click(function(e) {
+
+                // For all modern browsers, prevent default behavior of the click
+                e.preventDefault();
+
+                // Hide previous errors
+                $("#mws-validate-error-2").hide();
+                $('#jui-message-2').hide();
+                validator.resetForm();
+
+                // Show dialog form
+                $("#import-form").dialog("option", {
+                    modal: false,
+                    title: "Import Player Bots"
                 }).dialog("open");
 
                 // Just to be sure, older IE's needs this
@@ -158,6 +193,37 @@
             timeout: 5000
         });
 
+        // Ajax Form
+        // noinspection JSJQueryEfficiency
+        $("#mws-validate-2").ajaxForm({
+            beforeSubmit: function (arr, data, options)
+            {
+                $("#mws-validate-error-2").hide();
+                $('#jui-message-2').attr('class', 'alert loading').html("Submitting form data...").slideDown(200);
+                return true;
+            },
+            success: function (response, statusText, xhr, $form) {
+                // Parse the JSON response
+                var result = jQuery.parseJSON(response);
+                if (result.success == true) {
+
+                    // Reload the table
+                    // noinspection JSUnresolvedFunction
+                    Table.ajax.reload();
+
+                    // Close dialog
+                    $("#import-form").dialog("close");
+                }
+                else {
+                    $('#jui-message-2').attr('class', 'alert error').html(result.message).slideDown(500);
+                }
+            },
+            error: function(request, status, error) {
+                $('#jui-message-2').attr('class', 'alert error').html('AJAX Error! Please check the console log.').slideDown(500);
+            },
+            timeout: 5000
+        });
+
         // Spinners
         // noinspection JSUnresolvedVariable
         $.fn.spinner && $('.mws-spinner').spinner();
@@ -170,6 +236,10 @@
         // noinspection JSUnresolvedVariable
         $.fn.select2 && $("select.mws-select2").select2();
 
+        /* File Input Styling */
+        // noinspection JSUnresolvedVariable
+        $.fn.fileInput && $("input[type='file']").fileInput();
+
         // Refresh Click
         $("#refresh").click(function(e) {
 
@@ -179,6 +249,133 @@
             // Reload page (temporary).
             // noinspection JSUnresolvedFunction
             Table.ajax.reload();
+
+            // Just to be sure, older IE's needs this
+            return false;
+        });
+
+        // Show Bots Button Click
+        $("#show-bots").click(function(e) {
+
+            // For all modern browsers, prevent default behavior of the click
+            e.preventDefault();
+
+            // The a element does not have a property disabled. So defining one won't
+            // affect any event handlers you may have attached to it. Therefore, we use data instead
+            if ($(this).data('disabled')) return;
+
+            $("#show-bots").data('disabled', true);
+
+            // Push the request
+            $.post( "/ASP/config/save", { cfg__admin_ignore_ai: 0 })
+                .done(function( data ) {
+                    // Parse response
+                    var result = jQuery.parseJSON(data);
+                    if (result.success == false) {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500);
+                    }
+                    else {
+                        // Reload table with the new changes
+                        Table.ajax.reload();
+
+                        // Switch button views
+                        $("#show-bots").hide();
+                        $("#hide-bots").show();
+                    }
+
+                    $("#show-bots").data('disabled', false);
+                });
+
+            // Just to be sure, older IE's needs this
+            return false;
+        });
+
+        // Add New Server Click
+        $("#hide-bots").click(function(e) {
+
+            // For all modern browsers, prevent default behavior of the click
+            e.preventDefault();
+
+            // The a element does not have a property disabled. So defining one won't
+            // affect any event handlers you may have attached to it. Therefore, we use data instead
+            if ($(this).data('disabled')) return;
+
+            $("#hide-bots").data('disabled', true);
+
+            // Push the request
+            $.post( "/ASP/config/save", { cfg__admin_ignore_ai: 1 })
+                .done(function( data ) {
+                    // Parse response
+                    var result = jQuery.parseJSON(data);
+                    if (result.success == false) {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500);
+                    }
+                    else {
+                        // Reload table with the new changes
+                        Table.ajax.reload();
+
+                        // Switch button views
+                        $("#hide-bots").hide();
+                        $("#show-bots").show();
+                    }
+
+                    $("#hide-bots").data('disabled', false);
+                });
+
+            // Just to be sure, older IE's needs this
+            return false;
+        });
+
+        // Add New Server Click
+        $("#delete-bots").click(function(e) {
+
+            // For all modern browsers, prevent default behavior of the click
+            e.preventDefault();
+
+            $('#jui-global-message').hide();
+
+            // Show dialog form
+            $("#mws-jui-dialog")
+                .html('Are you sure you want to delete all player bots? This action will cause data fragmentation and cannot be undone!')
+                .dialog("option", {
+                    modal: true,
+                    buttons: [{
+                        text: "Confirm",
+                        class: "btn btn-danger",
+                        click: function () {
+
+                            $.post( "/ASP/players/delete", { ajax: true, action: "deleteBots" })
+                                .done(function( data ) {
+                                    // Parse response
+                                    var result = jQuery.parseJSON(data);
+                                    if (result.success == false) {
+                                        $('#jui-global-message')
+                                            .attr('class', 'alert error')
+                                            .html(result.message)
+                                            .slideDown(500);
+                                    }
+                                    else {
+                                        // Update Table
+                                        Table.ajax.reload();
+                                    }
+                                });
+
+                            $(this).dialog("close");
+                        }
+                    },
+                    {
+                        text: "Cancel",
+                        click: function () {
+                            $(this).dialog("close");
+                        }
+                    }]
+                }).dialog("open");
 
             // Just to be sure, older IE's needs this
             return false;
@@ -232,7 +429,7 @@
             }
             else if (action == 'unban') {
                 // Push the request
-                $.post( "/ASP/players/authorize", { action: "unban", playerId: id })
+                $.post( "/ASP/players/authorize", { ajax: true, action: "unban", playerId: id })
                     .done(function( data ) {
                         // Parse response
                         var result = jQuery.parseJSON(data);
@@ -254,7 +451,7 @@
             }
             else if (action == 'ban') {
                 // Push the request
-                $.post( "/ASP/players/authorize", { action: "ban", playerId: id })
+                $.post( "/ASP/players/authorize", { ajax: true, action: "ban", playerId: id })
                     .done(function( data ) {
                         // Parse response
                         var result = jQuery.parseJSON(data);
@@ -286,7 +483,7 @@
                                 class: "btn btn-danger",
                                 click: function () {
 
-                                    $.post( "/ASP/players/delete", { action: "delete", playerId: id })
+                                    $.post( "/ASP/players/delete", { ajax: true, action: "delete", playerId: id })
                                         .done(function( data ) {
                                             // Parse response
                                             var result = jQuery.parseJSON(data);

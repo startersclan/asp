@@ -696,5 +696,3 @@ INSERT INTO `_version`(`updateid`, `version`) VALUES (30000, '3.0.0');
 
 INSERT INTO `server`(`ip`, `prefix`, `name`, `port`, `queryport`) VALUES ('127.0.0.1', 'w212', 'Local Server 1', 16567, 29900);
 INSERT INTO `server`(`ip`, `prefix`, `name`, `port`, `queryport`) VALUES ('::1', 'w212', 'Local Server 2', 16567, 29900);
-
-INSERT INTO `player`(`id`, `name`, `country`, `password`) VALUES (101249154, ' wilson212', 'US', '');

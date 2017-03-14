@@ -30,9 +30,11 @@ class DataTables
      * @param  string $primaryKey Primary key of the table
      * @param  array $columns Column information array
      *
-     * @return array          Server-side processing response array
+     * @param string $customFilter
+     *
+     * @return array Server-side processing response array
      */
-    public static function FetchData($request, $conn, $table, $primaryKey, $columns)
+    public static function FetchData($request, $conn, $table, $primaryKey, $columns, $customFilter = '')
     {
         $bindings = array();
         self::$connection = $conn;
@@ -40,7 +42,7 @@ class DataTables
         // Build the SQL query string from the request
         $limit = self::limit($request, $columns);
         $order = self::order($request, $columns);
-        $where = self::filter($request, $columns, $bindings);
+        $where = self::filter($request, $columns, $bindings, $customFilter);
 
         // Main query to actually get the data
         $data = self::executeSql($bindings,
@@ -198,9 +200,11 @@ class DataTables
      * @param  array $bindings Array of values for PDO bindings, used in the
      *    sql_exec() function
      *
+     * @param $customFilter
+     *
      * @return string SQL where clause
      */
-    static function filter($request, $columns, &$bindings)
+    static function filter($request, $columns, &$bindings, $customFilter)
     {
         $globalSearch = array();
         $columnSearch = array();
@@ -263,6 +267,12 @@ class DataTables
         if ($where !== '')
         {
             $where = 'WHERE ' . $where;
+            if (!empty($customFilter))
+                $where .= ' AND '. $customFilter;
+        }
+        else if (!empty($customFilter))
+        {
+            $where = 'WHERE ' . $customFilter;
         }
 
         return $where;

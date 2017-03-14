@@ -9,6 +9,7 @@
  */
 use System\Controller;
 use System\Database as DB;
+use System\Database\SqlFileParser;
 use System\IO\Directory;
 use System\IO\File;
 use System\IO\Path;
@@ -400,7 +401,7 @@ class Database extends Controller
             }
 
             // Reset auto increments
-            $pdo->exec("ALTER TABLE `player` AUTO_INCREMENT = 1;");
+            $pdo->exec("ALTER TABLE `player` AUTO_INCREMENT = 29000000;");
             $pdo->exec("ALTER TABLE `server` AUTO_INCREMENT = 1;");
             $pdo->exec("ALTER TABLE `round_history` AUTO_INCREMENT = 1;");
 
