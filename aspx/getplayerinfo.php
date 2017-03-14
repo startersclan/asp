@@ -314,6 +314,9 @@ SQL;
             $Output["awn-{$i}"] = $rowa["wins"];
         }
 
+        // Send response
+        $Response->writeHeaderLine("asof");
+        $Response->writeDataLine(time());
         $Response->writeHeaderDataArray($Output);
         $Response->send($transpose);
     }

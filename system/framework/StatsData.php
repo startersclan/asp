@@ -83,7 +83,7 @@ class StatsData
 
             // Load weapons
             $result = $pdo->query("SELECT name FROM weapon")->fetchAll();
-            self::$NumVehicles = count($result);
+            self::$NumWeapons = count($result);
             for ($i = 0; $i < self::$NumWeapons; $i++)
                 self::$WeaponNames[] = $result[$i]['name'];
         }
