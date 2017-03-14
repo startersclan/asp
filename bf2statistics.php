@@ -51,6 +51,14 @@ namespace System
     // Disable Z lib Compression
     ini_set('zlib.output_compression', '0');
 
+    // Check user agent first and foremost
+    if (trim($_SERVER['HTTP_USER_AGENT'])  != "GameSpyHTTP/1.0")
+    {
+        header("Content-Type: text/plain; charset=utf-8");
+        header('HTTP/1.1 403 Forbidden');
+        die(_ERR_RESPONSE . "You are not authorised to access this page.");
+    }
+
     // Make Sure Script doesn't timeout even if the user disconnects!
     set_time_limit(300);
     ignore_user_abort(true);
@@ -151,20 +159,25 @@ namespace System
     try
     {
         // Create and write the snapshot data into a backup file
-        $file = new FileStream(SNAPSHOT_TEMP_PATH . DS . $fileName, FileStream::WRITE);
+        $file = new FileStream(SNAPSHOT_TEMP_PATH . DS . $fileName, 'w');
         $file->write(json_encode($data->toArray(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK));
         $file->close();
 
         // Log
         $LogWriter->logNotice("SNAPSHOT Data Logged (%s)", $fileName);
 
+        // start buffer output
+        ob_start();
+
         // Tell the game server that the snapshot has been received
-        $out = "O\nH\tresponseD\tOK\n$\tOK\t$";
+        echo "O\nH\tresponseD\tOK\n$\tOK\t$";
+
+        // Set headers to close the connection
         header("Connection: close");
-        header("Content-Length: " . strlen($out));
-        echo $out;
-        @ob_flush();
-        @flush();
+        header("Content-Length: " . ob_get_length());
+
+        // Flush output to server
+        ob_end_flush();
     }
     catch (Exception $e)
     {

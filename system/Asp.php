@@ -63,6 +63,18 @@ class Asp
         ini_set('zlib.output_compression', '0');
         ini_set("display_errors", "0");
 
+        // Check user-agent
+        if (Config::Get('stats_strict_api') == 1)
+        {
+            if (trim($_SERVER['HTTP_USER_AGENT'])  != "GameSpyHTTP/1.0")
+            {
+                header('HTTP/1.1 403 Forbidden');
+                echo "<h1>403 Forbidden</h1>";
+                echo "You are not authorised to access this page.";
+                die;
+            }
+        }
+
         // Connect to the stats database
         try
         {

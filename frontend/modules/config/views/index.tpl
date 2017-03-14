@@ -301,14 +301,32 @@
                                rel="popover"
                                data-trigger="hover"
                                data-placement="right"
+                               data-original-title="Stats API Access"
+                               data-content="Sets the access level for the stats aspx calls.">
+                            Stats API Access:
+                        </label>
+                        <div class="mws-form-item">
+                            <select class="small" name="cfg__stats_strict_api" title="">
+                                <option value="1" <?php if('{config.stats_strict_api}' == '0') echo 'selected="selected"'; ?>>Public</option>
+                                <option value="0" <?php if('{config.stats_strict_api}' == '1') echo 'selected="selected"'; ?>>
+                                    Restricted to BF2 Client and Servers only
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mws-form-row">
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
                                data-original-title="Ignore AI Players"
                                data-content="Ignore AI players in player lists?">
                             Ignore AI Players:
                         </label>
                         <div class="mws-form-item">
                             <select class="small" name="cfg__admin_ignore_ai" title="">
-                                <option value="1" <?php if('{config.admin_ignore_ai}' == '1') echo 'selected="selected"'; ?>>Yes</option>
-                                <option value="0" <?php if('{config.admin_ignore_ai}' == '0') echo 'selected="selected"'; ?>>No</option>
+                                <option value="0" <?php if('{config.admin_ignore_ai}' == '1') echo 'selected="selected"'; ?>>Yes</option>
+                                <option value="1" <?php if('{config.admin_ignore_ai}' == '0') echo 'selected="selected"'; ?>>No</option>
                             </select>
                         </div>
                     </div>
