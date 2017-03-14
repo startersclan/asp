@@ -317,7 +317,8 @@ class Players extends Controller
             ];
 
             $pdo = Database::GetConnection('stats');
-            $filter = (\System\Config::Get('admin_ignore_ai') == 1) ? "`password` != ''" : '';
+            $applyFilter = ((int)$_POST['showBots']) == 0;
+            $filter = ($applyFilter) ? "`password` != ''" : '';
             $data = DataTables::FetchData($_POST, $pdo, 'player', 'id', $columns, $filter);
 
             echo json_encode($data);

@@ -2,6 +2,8 @@
 
     $(document).ready(function() {
 
+        var showBots = true;
+
         /**
          * Extracts the filename, without extension from a path
          *
@@ -21,7 +23,12 @@
             serverSide: true,
             ajax: {
                 url: "/ASP/players/list",
-                type: "POST"
+                type: "POST",
+                data: function ( d ) {
+                    return $.extend( {}, d, {
+                        showBots: (showBots) ? 1 : 0
+                    });
+                }
             },
             columns: [
                 { "data": "id" },
@@ -265,29 +272,16 @@
             if ($(this).data('disabled')) return;
 
             $("#show-bots").data('disabled', true);
+            showBots = true;
 
-            // Push the request
-            $.post( "/ASP/config/save", { cfg__admin_ignore_ai: 0 })
-                .done(function( data ) {
-                    // Parse response
-                    var result = jQuery.parseJSON(data);
-                    if (result.success == false) {
-                        $('#jui-global-message')
-                            .attr('class', 'alert error')
-                            .html(result.message)
-                            .slideDown(500);
-                    }
-                    else {
-                        // Reload table with the new changes
-                        Table.ajax.reload();
+            // noinspection JSUnresolvedFunction
+            Table.ajax.reload();
 
-                        // Switch button views
-                        $("#show-bots").hide();
-                        $("#hide-bots").show();
-                    }
+            $("#show-bots").data('disabled', false);
 
-                    $("#show-bots").data('disabled', false);
-                });
+            // Switch button views
+            $("#show-bots").hide();
+            $("#hide-bots").show();
 
             // Just to be sure, older IE's needs this
             return false;
@@ -304,29 +298,16 @@
             if ($(this).data('disabled')) return;
 
             $("#hide-bots").data('disabled', true);
+            showBots = false;
 
-            // Push the request
-            $.post( "/ASP/config/save", { cfg__admin_ignore_ai: 1 })
-                .done(function( data ) {
-                    // Parse response
-                    var result = jQuery.parseJSON(data);
-                    if (result.success == false) {
-                        $('#jui-global-message')
-                            .attr('class', 'alert error')
-                            .html(result.message)
-                            .slideDown(500);
-                    }
-                    else {
-                        // Reload table with the new changes
-                        Table.ajax.reload();
+            // noinspection JSUnresolvedFunction
+            Table.ajax.reload();
 
-                        // Switch button views
-                        $("#hide-bots").hide();
-                        $("#show-bots").show();
-                    }
+            $("#hide-bots").data('disabled', false);
 
-                    $("#hide-bots").data('disabled', false);
-                });
+            // Switch button views
+            $("#hide-bots").hide();
+            $("#show-bots").show();
 
             // Just to be sure, older IE's needs this
             return false;

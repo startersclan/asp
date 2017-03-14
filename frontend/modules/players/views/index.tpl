@@ -9,8 +9,8 @@
                 <a id="add-new" href="#" class="btn"><i class="icol-add"></i> Add New Player</a>
                 <a id="refresh" href="#" class="btn"><i class="icol-arrow-refresh"></i> Refresh Table</a>
                 <a id="import-bots" href="#" class="btn"><i class="icol-application-get"></i> Import Bot Players</a>
-                <a id="show-bots" href="#" class="btn"{show_button}><i class="icol-lightbulb"></i> Show Bot Players</a>
-                <a id="hide-bots" href="#" class="btn"{hide_button}><i class="icol-lightbulb-off"></i> Hide Bot Players</a>
+                <a id="show-bots" href="#" class="btn" style="display: none"><i class="icol-lightbulb"></i> Show Bot Players</a>
+                <a id="hide-bots" href="#" class="btn"><i class="icol-lightbulb-off"></i> Hide Bot Players</a>
                 <a id="delete-bots" href="#" class="btn"><i class="icol-drive-delete"></i> Delete Bot Players</a>
             </div>
         </div>
