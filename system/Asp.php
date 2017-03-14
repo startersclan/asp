@@ -222,8 +222,17 @@ class Asp
         // Check and see if the user is logged in
         if (!Security::IsValidSession())
         {
-            $View = new View('login');
-            $View->render(false);
+            // Check for an ajax request, and answer accordingly
+            if (isset($_POST['ajax']) && filter_var($_POST['ajax'], FILTER_VALIDATE_BOOLEAN))
+            {
+                // Respond in a commonly expected format for this admin panel
+                echo json_encode(['success' => false, 'message' => "Login session has expired! Please refresh the page and login again."]);
+            }
+            else
+            {
+                $View = new View('login');
+                $View->render(false);
+            }
             return;
         }
 

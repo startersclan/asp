@@ -121,6 +121,7 @@
         // Ajax Form
         // noinspection JSJQueryEfficiency
         $("#mws-validate").ajaxForm({
+            data: { ajax: true },
             beforeSubmit: function (arr, data, options)
             {
                 $('#mws-validate-error').hide();

@@ -35,7 +35,7 @@ $(document).ready(function() {
         $.ajax({
             type: "POST",
             url: '/ASP/config/test',
-            data: { action : 'runtests' },
+            data: { action : 'runtests', ajax: true },
             dataType: "json",
             timeout: 30000, // in milliseconds
             success: function(result)

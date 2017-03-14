@@ -81,6 +81,7 @@ $(document).ready(function() {
     // ===============================================
     // bind the Config form using 'ajaxForm'
     $('#configForm').ajaxForm({
+        data: { ajax: true },
         beforeSubmit: function (arr, data, options)
         {
             $("#mws-validate-error").hide();
@@ -109,6 +110,5 @@ $(document).ready(function() {
         {
             $('#js_message').attr('class', 'alert error').html('There was an error saving the configuration file. ' + result.message);
         }
-        $('#js_message').delay(5000).slideUp(300);
     }
 });

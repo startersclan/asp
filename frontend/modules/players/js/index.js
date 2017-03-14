@@ -26,6 +26,7 @@
                 type: "POST",
                 data: function ( d ) {
                     return $.extend( {}, d, {
+                        ajax: true,
                         showBots: (showBots) ? 1 : 0
                     });
                 }
@@ -172,6 +173,7 @@
         // Ajax Form
         // noinspection JSJQueryEfficiency
         $("#mws-validate").ajaxForm({
+            data: { ajax: true },
             beforeSubmit: function (arr, data, options)
             {
                 $("#mws-validate-error").hide();
@@ -203,6 +205,7 @@
         // Ajax Form
         // noinspection JSJQueryEfficiency
         $("#mws-validate-2").ajaxForm({
+            data: { ajax: true },
             beforeSubmit: function (arr, data, options)
             {
                 $("#mws-validate-error-2").hide();

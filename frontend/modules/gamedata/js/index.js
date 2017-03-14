@@ -124,6 +124,7 @@
                             // Push the request
                             $.post( "/ASP/gamedata/delete", {
                                 action: "delete",
+                                ajax: true,
                                 itemType: currentType,
                                 itemId: currentId
                             }).done(function( data ) {

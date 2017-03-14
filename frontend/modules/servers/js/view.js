@@ -38,7 +38,7 @@
             e.preventDefault();
 
             // Push the request
-            $.post( "/ASP/servers/authorize", { action: "auth", servers: [serverId] })
+            $.post( "/ASP/servers/authorize", { action: "auth", ajax: true, servers: [serverId] })
                 .done(function( data ) {
 
                     // Parse response
@@ -68,7 +68,7 @@
             e.preventDefault();
 
             // Push the request
-            $.post( "/ASP/servers/authorize", { action: "unauth", servers: [serverId] })
+            $.post( "/ASP/servers/authorize", { action: "unauth", ajax: true, servers: [serverId] })
                 .done(function( data ) {
 
                     // Parse response
@@ -117,7 +117,7 @@
             $.ajax({
                 url: "/ASP/servers/status",
                 type: "POST",
-                data: { action: "status", serverId: serverId },
+                data: { action: "status", ajax: true, serverId: serverId },
                 dataType: "json",
                 timeout: 10000, // in milliseconds
                 success: function(result) {
