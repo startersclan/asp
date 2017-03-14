@@ -79,6 +79,19 @@
             }
         });
 
+        $("#mws-validate-2").validate({
+            invalidHandler: function (form, validator) {
+                var errors = validator.numberOfInvalids();
+                if (errors) {
+                    var message = errors == 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
+                    $("#mws-validate-error-2").html(message).show();
+                    $('#jui-message-2').hide();
+                } else {
+                    $("#mws-validate-error-2").hide();
+                }
+            }
+        });
+
         // Modal forms
         // noinspection JSUnresolvedVariable
         if( $.fn.dialog ) {

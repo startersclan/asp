@@ -46,7 +46,8 @@
                 <div class="mws-form-row">
                     <label class="mws-form-label">Bot Names File</label>
                     <div class="mws-form-item">
-                        <input type="file" name="botNamesFile" accept=".ai">
+                        <input class="required" type="file" id="botNamesFile" name="botNamesFile" accept=".ai">
+                        <label for="botNamesFile" class="error" generated="true" style="display:none"></label>
                     </div>
                 </div>
             </div>

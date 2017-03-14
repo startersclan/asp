@@ -73,7 +73,7 @@ class Snapshot extends GameResult
 
         // Misc Data
         $this->gameMode = (int)$snapshotData["gameMode"];
-        $this->mod = $snapshotData["mod"];
+        $this->mod = preg_replace("/[^A-Za-z0-9_\\.\\-]/", '', $snapshotData['mod']);
         $this->playersConnected = (int)$snapshotData["pc"];
 
         // Army Data... There is no RWA key if there was no winner...

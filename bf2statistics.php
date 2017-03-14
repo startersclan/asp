@@ -22,7 +22,6 @@ namespace System
     use Exception;
     use SecurityException;
     use System\Collections\Dictionary;
-    use System\IO\Directory;
     use System\IO\File;
     use System\IO\FileStream;
     use System\IO\Path;
@@ -198,19 +197,14 @@ namespace System
     }
     catch (SecurityException $e)
     {
-        $path = SNAPSHOT_AUTH_PATH . DS . Request::ClientIp();
         try
         {
-            // Sub dir name is the client IP address
-            if (!Directory::Exists($path))
-                Directory::CreateDirectory($path, 0775);
-
-            // Move unprocessed file to the failed folder
-            File::Move(SNAPSHOT_TEMP_PATH . DS . $fileName, $path . DS . $fileName);
+            // Move unprocessed file to the unauthorised folder
+            File::Move(SNAPSHOT_TEMP_PATH . DS . $fileName, SNAPSHOT_AUTH_PATH . DS . $fileName);
         }
         catch (Exception $e)
         {
-            $LogWriter->logError("Unable to create a new Un-Authorized SNAPSHOT Folder (%s): %s", [$path, $e->getMessage()]);
+            $LogWriter->logError("Unable to move SNAPSHOT to the UnAuth Folder: %s", $e->getMessage());
         }
     }
     catch (Exception $e)
