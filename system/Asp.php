@@ -107,8 +107,9 @@ class Asp
             }
         }
 
-        // Determine requested game
-        $file = Path::Combine(ROOT, "aspx", strtolower($_GET['aspx']) . ".php");
+        // Determine requested file name, protecting against XSS
+        $file = Path::GetFilenameWithoutExtension(strtolower($_GET['aspx']));
+        $file = Path::Combine(ROOT, "aspx", $file . ".php");
 
         // Make sure file exists
         if (!file_exists($file))

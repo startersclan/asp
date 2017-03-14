@@ -21,28 +21,28 @@ class Home extends Controller
      * @request     /ASP/[?:home/]
      * @output      html
      */
-	public function index()
-	{
-	    // Require database connection
+    public function index()
+    {
+        // Require database connection
         $this->requireDatabase();
         $pdo = Database::GetConnection('stats');
 
-	    // Create view
+        // Create view
         $view = new View('index', 'home');
         $view->set('php_version', PHP_VERSION);
         $view->set('server_name', php_uname('s'));
-        $view->set('server_version', apache_get_version() );
+        $view->set('server_version', apache_get_version());
         $view->set('db_version', $pdo->query('SELECT version()')->fetchColumn(0));
         $view->set('last_login', date('F jS, Y g:i A T', Config::Get('admin_last_login')));
 
-	    // Get database size
+        // Get database size
         $size = 0;
         $q = $pdo->query("SHOW TABLE STATUS");
         while ($row = $q->fetch())
         {
             $size += $row["Data_length"] + $row["Index_length"];
         }
-        $view->set('db_size', number_format($size / (1024*1024), 2));
+        $view->set('db_size', number_format($size / (1024 * 1024), 2));
 
         // Games Processed
         $rounds = $pdo->query('SELECT COUNT(id) FROM round_history')->fetchColumn();
@@ -61,7 +61,7 @@ class Home extends Controller
         $twoWeekAgo = time() - (86400 * 14);
 
         // Number of Active players
-        $result = $pdo->query("SELECT COUNT(id) FROM player WHERE lastonline > ". $oneWeekAgo);
+        $result = $pdo->query("SELECT COUNT(id) FROM player WHERE lastonline > " . $oneWeekAgo);
         $active = (int)$result->fetchColumn(0);
         $view->set('num_active_players', number_format($active));
 
@@ -71,7 +71,7 @@ class Home extends Controller
         $view->set('active_player_raise', ($inactive == $active) ? '' : (($inactive > $active) ? ' down' : ' up'));
 
         // Number of Active servers
-        $result = $pdo->query("SELECT COUNT(id) FROM server WHERE lastupdate > ". $oneWeekAgo);
+        $result = $pdo->query("SELECT COUNT(id) FROM server WHERE lastupdate > " . $oneWeekAgo);
         $active = (int)$result->fetchColumn(0);
         $view->set('num_active_servers', number_format($active));
 
@@ -89,8 +89,8 @@ class Home extends Controller
         $view->attachStylesheet("/ASP/frontend/css/icons/icol32.css");
 
         // Draw View
-		$view->render();
-	}
+        $view->render();
+    }
 
     /**
      * @protocol    GET
@@ -103,9 +103,9 @@ class Home extends Controller
         $pdo = Database::GetConnection('stats');
 
         $output = array(
-            'week' => ['y' =>[], 'x' => []],
-            'month' => ['y' =>[], 'x' => []],
-            'year' => ['y' =>[], 'x' => []]
+            'week' => ['y' => [], 'x' => []],
+            'month' => ['y' => [], 'x' => []],
+            'year' => ['y' => [], 'x' => []]
         );
 
         /* -------------------------------------------------------
@@ -120,7 +120,7 @@ class Home extends Controller
         // Build array
         for ($iDay = 6; $iDay >= 0; $iDay--)
         {
-            $key  = date('l (m/d)', time() - ($iDay * 86400));
+            $key = date('l (m/d)', time() - ($iDay * 86400));
             $temp[$key] = 0;
         }
 
@@ -168,7 +168,7 @@ class Home extends Controller
 
             // Append
             $timeArrays[$timestamp] = $p->getTimestamp();
-            $temp[] = $key1 .' - '. $key2;
+            $temp[] = $key1 . ' - ' . $key2;
         }
 
         $i = 0;
@@ -223,7 +223,8 @@ class Home extends Controller
         }
 
         // Output
-        echo json_encode($output); die;
+        echo json_encode($output);
+        die;
     }
 
     protected function getApacheVersion()
@@ -232,14 +233,14 @@ class Home extends Controller
         {
             if (preg_match('|Apache\/(\d+)\.(\d+)\.(\d+)|', apache_get_version(), $version))
             {
-                return $version[1].'.'.$version[2].'.'.$version[3];
+                return $version[1] . '.' . $version[2] . '.' . $version[3];
             }
         }
         elseif (isset($_SERVER['SERVER_SOFTWARE']))
         {
             if (preg_match('|Apache\/(\d+)\.(\d+)\.(\d+)|', $_SERVER['SERVER_SOFTWARE'], $version))
             {
-                return $version[1].'.'.$version[2].'.'.$version[3];
+                return $version[1] . '.' . $version[2] . '.' . $version[3];
             }
         }
 
