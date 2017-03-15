@@ -18,16 +18,25 @@
 */
 
 /**
- * The purpose of this ASPX call is for servers to verify a few things
- * about a player (this helps prevent cross service exploitation):
+ * The purpose of this ASPX call is to prevent players from using any kind of
+ * Cross Service Exploitation. An example of this is being logged into a Gamespy
+ * service provider A, and playing on a server that uses Service B's Stats system.
  *
- * 1. The player exists in our stats database
- * 2. His name matches the name we have on file.
- * 3. Player is not banned
- * 4. Player is logged in using our gamespy servers.
+ * Servers using our service will use this page to verify the following:
  *
- * If this page outputs any kind of error, the server must kick the player
- * as submission of a snapshot with this player involved will be voided.
+ *  1. The player exists in our stats database (by PID)
+ *  2. The player's name matches the name we have in the database.
+ *  3. The player is not flagged as banned in our stats database
+ *  4. The player is logged on using our gamespy servers.
+ *
+ * This page will output either "OK" or "NOK" under the "result" header.
+ * If a server receives a "NOK" result, and submits a snapshot with said player in it,
+ * the snapshot will be rejected during processing. The new 3.0 python contains the
+ * compiled python scripts to properly use this service.
+ *
+ * Whether a server uses this service or not, is on the administrator. However,
+ * the snapshot processor will deny processing any snapshots that detect any kind
+ * of Cross Service Exploitation, which in turn will make the server "Unranked".
  */
 
 // Namespace
@@ -58,10 +67,10 @@ else
 
     // Make sure the player exists
     $query = "SELECT `name`, `permban` FROM `player` WHERE `id` = {$pid}";
-    $result = $connection->query($query);
+    $player = $connection->query($query)->fetch();
 
     // Query failed or player does not exist
-    if (!($row = $result->fetch()))
+    if (!$player)
     {
         $Response->writeHeaderLine("result", "message");
         $Response->writeDataLine("NOK", "Player Not Found!");
@@ -70,20 +79,20 @@ else
     else
     {
         // Ensure the player is using our services, and is not banned!
-        if (strtolower($nick) != strtolower($row['name']))
+        if (strtolower($nick) != strtolower($player['name']))
         {
             $Response->writeHeaderLine("result", "message");
             $Response->writeDataLine("NOK", "Player Nick Invalid!");
             $Response->send();
         }
-        else if ($row['permban'] != 0)
+        else if ($player['permban'] != 0)
         {
             $Response->writeHeaderLine("result", "message");
             $Response->writeDataLine("NOK", "Player Is Banned!");
             $Response->send();
         }
         /*
-        else if ($row['online'] == 0)
+        else if ($player['online'] == 0)
         {
             $Response->writeHeaderLine("result", "message");
             $Response->writeDataLine("NOK", "Player Is Offline!");

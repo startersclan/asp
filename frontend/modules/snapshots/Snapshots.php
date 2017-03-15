@@ -34,8 +34,12 @@ class Snapshots extends Controller
         $snapshots = [];
         foreach ($files as $file)
         {
+            // Open snapshot file, and grab its JSON
             $stream = File::OpenRead($file);
             $json = json_decode($stream->readToEnd(), true);
+            $stream->close();
+
+            // Ensure the JSON is valid
             if ($json != null)
             {
                 $snapshot = new Dictionary(true, $json);
