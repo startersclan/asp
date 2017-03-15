@@ -50,7 +50,7 @@ $Response = new AspResponse();
 
 // Make sure we have a valid PID. Casting to int will sanitize input
 $pid = (isset($_GET['pid'])) ? (int)$_GET['pid'] : 0;
-$nick = (isset($_GET['nick'])) ? str_replace('%20', '', $_GET['nick']) : '';
+$nick = (isset($_GET['nick'])) ? str_replace('%20', ' ', $_GET['nick']) : '';
 
 // Player id specified?
 if ($pid == 0 || empty($nick))

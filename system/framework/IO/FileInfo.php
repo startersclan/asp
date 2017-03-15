@@ -9,6 +9,7 @@
  */
 namespace System\IO;
 
+use DirectoryNotFoundException;
 use FileNotFoundException;
 use IOException;
 use Exception;
@@ -189,23 +190,17 @@ class FileInfo
      *
      * @param string $newPath The full file name (including full path) to move to
      *
-     * @throws IOException Thrown if there was an error creating the new directory path
+     * @throws IOException Thrown if there was an error creating or writing to the new file
      * @throws \SecurityException Thrown if the $newPath directory could not be opened
      *   for various security reasons such as permissions.
+     * @throws DirectoryNotFoundException if the directory specified in fileName does not exist.
      *
      * @return void
      */
     public function moveTo($newPath)
     {
-        // Grab the contents from this file
-        $stream = $this->openRead();
-        $contents = $stream->readToEnd();
-        $stream->close();
-
-        // Create the new file, or truncate it to zero if it already exists
-        $file = new FileStream($newPath, 'w');
-        $file->write($contents);
-        $file->close();
+        // Copy this file's contents to the new
+        $this->copyTo($newPath, true);
 
         // Delete old file
         @unlink($this->filePath);
@@ -222,6 +217,8 @@ class FileInfo
      * @param bool $overwrite Defines whether to overwrite an existing
      *     file, if it exists
      *
+     * @throws DirectoryNotFoundException if the directory specified in fileName does not exist.
+     *
      * @return bool Returns true on success, false otherwise
      */
     public function copyTo($fileName, $overwrite = false)
@@ -230,8 +227,23 @@ class FileInfo
         if (!$overwrite && file_exists($fileName))
             return false;
 
+        // Ensure directory exists
+        $dir = Path::GetDirectoryName($fileName);
+        if (!Directory::Exists($dir))
+            throw new DirectoryNotFoundException("Could not find part of path: ". $dir);
+
+        // Grab the contents from this file
+        $stream = $this->openRead();
+        $contents = $stream->readToEnd();
+        $stream->close();
+
+        // Create the new file, or truncate it to zero if it already exists
+        $file = new FileStream($fileName, 'w');
+        $bytesWritten = $file->write($contents);
+        $file->close();
+
         // return the copy result
-        return @copy($this->filePath, $fileName);
+        return $bytesWritten > 0;
     }
 
     /**

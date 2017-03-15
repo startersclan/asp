@@ -247,7 +247,7 @@ class Snapshot extends GameResult
                 $query->set('damageassists', '+', $player->damageAssists);
                 $query->set('heals', '+', $player->heals);
                 $query->set('revives', '+', $player->revives);
-                $query->set('ammos', '+', $player->ammos);
+                $query->set('ammos', '+', $player->resupplies);
                 $query->set('repairs', '+', $player->repairs);
                 $query->set('targetassists', '+', $player->targetAssists);
                 $query->set('driverspecials', '+', $player->driverSpecials);

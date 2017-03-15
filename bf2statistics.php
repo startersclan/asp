@@ -59,7 +59,7 @@ namespace System
     }
 
     // Make Sure Script doesn't timeout even if the user disconnects!
-    set_time_limit(300);
+    set_time_limit(30);
     ignore_user_abort(true);
 
     // Register Class Autoloader
@@ -177,6 +177,7 @@ namespace System
 
         // Flush output to server
         ob_end_flush();
+        @flush();
     }
     catch (Exception $e)
     {

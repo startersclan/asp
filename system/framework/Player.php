@@ -152,7 +152,7 @@ class Player
 
     public $heals = 0;
     public $revives = 0;
-    public $ammos = 0;
+    public $resupplies = 0;
     public $repairs = 0;
 
     public $flagCaptures = 0;
@@ -219,7 +219,7 @@ class Player
         $this->heals = (int)$playerData["he"];
         $this->revives = (int)$playerData["rev"];
         $this->repairs = (int)$playerData["rep"];
-        $this->ammos = (int)$playerData["rsp"];
+        $this->resupplies = (int)$playerData["rsp"];
         $this->flagCaptures = (int)$playerData["cpc"];
         $this->flagCaptureAssists = (int)$playerData["cpa"];
         $this->flagDefends = (int)$playerData["cpd"];
