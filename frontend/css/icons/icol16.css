@@ -541,3 +541,6 @@
 .icol-zone{background-position:-464px -240px;}
 .icol-zones{background-position:-480px -240px;}
 .icol-zone-money{background-position:-496px -240px;}
+.icol-gun{
+	background-image:url(icol16/src/gun.png);
+}

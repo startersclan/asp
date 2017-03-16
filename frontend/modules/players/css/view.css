@@ -1,0 +1,7 @@
+.mws-table tfoot tr td {
+    color: #feffde;
+}
+
+.mws-table tfoot tr:nth-child(2) {
+    border-top: 1px dotted #888888;
+}

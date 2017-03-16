@@ -10,6 +10,9 @@
 
 namespace System;
 
+use System\IO\File;
+use System\IO\Path;
+
 abstract class Controller
 {
     /**
@@ -24,5 +27,22 @@ abstract class Controller
             Response::Redirect('install');
             die;
         }
+    }
+
+    protected function loadModel($modelName, $module)
+    {
+        // Load the class if it has not been loaded already
+        if (!class_exists($modelName, false))
+        {
+            $path = Path::Combine(ROOT, 'frontend', 'modules', $module, 'models', $modelName . '.php');
+            if (!File::Exists($path))
+                throw new \Exception("Unable to locate class model: ". $path);
+
+            /** @noinspection PhpIncludeInspection */
+            require $path;
+        }
+
+        // Create instance and attach to this class
+        $this->{$modelName} = new $modelName();
     }
 }

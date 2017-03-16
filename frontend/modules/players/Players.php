@@ -16,10 +16,16 @@ use System\IO\Path;
 use System\Player;
 use System\Response;
 use System\TimeHelper;
+use System\TimeSpan;
 use System\View;
 
 class Players extends Controller
 {
+    /**
+     * @var PlayerModel
+     */
+    protected $PlayerModel = null;
+
     /**
      * @protocol    ANY
      * @request     /ASP/players
@@ -56,24 +62,79 @@ class Players extends Controller
 
     /**
      * @protocol    ANY
-     * @request     /ASP/players/view/id
+     * @request     /ASP/players/view/$id/$subpage/$subid
      * @output      html
+     *
+     * @param int $id The player ID
+     * @param string $subpage
+     * @param int $subid
      */
-    public function view($id)
+    public function view($id, $subpage = '', $subid = 0)
     {
         // Require database connection
-        $this->requireDatabase();
+        parent::requireDatabase();
 
-        // make sure we have an ID
-        if (empty($id))
+        // Ensure correct format for ID
+        $id = (int)$id;
+        if ($id == 0)
         {
             Response::Redirect('players');
             die;
         }
 
+        // Grab database
+        $pdo = Database::GetConnection('stats');
+
+        // Fetch player
+        $query = <<<SQL
+SELECT `name`, `rank`, `joined`, `time`, `lastonline`, `score`, `skillscore`, `cmdscore`, `teamscore`, 
+  `kills`, `deaths`, `teamkills`, `kicked`, `banned`, `permban`, `heals`, `repairs`, `ammos`, `revives`,
+  `captures`, `captureassists`, `defends`, `country`, `driverspecials`
+FROM player
+WHERE `id`={$id}
+SQL;
+        $player = $pdo->query($query)->fetch();
+        if ($player == false)
+        {
+            // Load view
+            $view = new View('404', __CLASS__);
+            $view->set('id', $id);
+            $view->render();
+            return;
+        }
+
         // Load view
-        $view = new View('view', 'players');
+        $view = new View('view',  __CLASS__);
         $view->set('id', $id);
+
+        // Attach Model
+        parent::loadModel("PlayerModel", __CLASS__);
+
+        // Set player formatted variables
+        $view->set('player', $this->PlayerModel->formatPlayerData($player));
+
+        // Attach player object stats
+        $this->PlayerModel->attachArmyData($id, $view, $pdo);
+        $this->PlayerModel->attachKitData($id, $view, $pdo);
+        $this->PlayerModel->attachVehicleData($id, $view, $pdo);
+        $this->PlayerModel->attachWeaponData($id, $view, $pdo);
+
+        // Attach needed scripts for the form
+        $view->attachScript("/ASP/frontend/js/jquery.form.js");
+        $view->attachScript("/ASP/frontend/js/validate/jquery.validate-min.js");
+        $view->attachScript("/ASP/frontend/js/select2/select2.min.js");
+        $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");
+        $view->attachScript("/ASP/frontend/modules/players/js/view.js");
+
+        // Attach needed stylesheets
+        $view->attachStylesheet("/ASP/frontend/js/select2/select2.css");
+        $view->attachStylesheet("/ASP/frontend/css/icons/icol16.css");
+        $view->attachStylesheet("/ASP/frontend/modules/players/css/view.css");
+
+        // Fetch player
+        $query = "SELECT * FROM award WHERE type=2";
+        $awards= $pdo->query($query)->fetchAll();
+        $view->set('medals', $awards);
 
         // Send output
         $view->render();
@@ -238,9 +299,20 @@ class Players extends Controller
                     if (!empty($items['playerPassword']))
                         $cols['password'] = $items['playerPassword'];
 
+                    // do update
                     $pdo->update('player', $cols, ['id' => $id]);
 
-                    echo json_encode(['success' => true, 'mode' => 'update']);
+                    // Load model
+                    parent::loadModel("PlayerModel", __CLASS__);
+
+                    echo json_encode([
+                        'success' => true,
+                        'mode' => 'update',
+                        'name' => $name,
+                        'rank' => $items['playerRank'],
+                        'iso' => $items['playerCountry'],
+                        'rankName' => $this->PlayerModel->getRankName((int)$items['playerRank'])
+                    ]);
                     break;
                 default:
                     echo json_encode(array('success' => false, 'message' => 'Invalid Action'));
