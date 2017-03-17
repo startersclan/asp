@@ -8,6 +8,14 @@
         var playerName = $("#changeableName").html();
         var playerIso = $("#playerCurrentIso").html();
 
+        function getCountryName() {
+            var element = $("#country").find("option[value='" + playerIso + "']");
+            return ( element.val() === undefined) ? "Unknown" : element.text();
+        }
+
+        // Set country name
+        $("#fullCountryName").html(getCountryName());
+
         // Data Tables
         $(".mws-table").DataTable({
             bPaginate: false,
@@ -113,6 +121,7 @@
 
                     $("#changeableName").html(result.name);
                     $("#changeableRank").html(result.rankName);
+                    $("#fullCountryName").html(getCountryName());
                     $("#rankIcon").attr('src', "/ASP/frontend/images/ranks/rank_" + result.rank + ".gif");
                     $("#flag").attr('src', "/ASP/frontend/images/flags/" + result.iso + ".png");
 

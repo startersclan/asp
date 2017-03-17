@@ -39,7 +39,6 @@
                 <span class="val">
 					<span class="text-nowrap">
                         <span id="changeableName">{player.name}</span>
-                        <img id="flag" style="margin: -3px 0 0 0" src="/ASP/frontend/images/flags/{player.country}.png"/>
                     </span>
 				</span>
             </li>
@@ -50,6 +49,13 @@
                         <img id="rankIcon" style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{player.rank}.gif"/>
                         <span id="changeableRank">{player.rankName}</span>
                     </span>
+				</span>
+            </li>
+            <li>
+                <span class="key"><i class="icon-flag"></i> Player Country</span>
+                <span class="val">
+                    <img id="flag" style="margin: -3px 10px 0 0; height: 16px;" src="/ASP/frontend/images/flags/{player.country}.png"/>
+					<span id="fullCountryName" class="text-nowrap">{player.country}</span>
 				</span>
             </li>
             <li>
@@ -88,12 +94,6 @@
 					<span class="text-nowrap">{player.kicked} / {player.banned}</span>
 				</span>
             </li>
-            <li>
-                <span class="key"><i class="icon-skull"></i> Team Kills</span>
-                <span class="val">
-					<span class="text-nowrap">{player.teamkills}</span>
-				</span>
-            </li>
         </ul>
     </div>
 </div>
@@ -123,7 +123,7 @@
 				</span>
             </li>
             <li>
-                <span class="key"><i class="icon-official"></i> Command Score</span>
+                <span class="key"><i class="icon-star"></i> Command Score</span>
                 <span class="val">
 					<span class="text-nowrap">{player.cmdscore}</span>
 				</span>
@@ -147,9 +147,15 @@
 				</span>
             </li>
             <li>
-                <span class="key"><i class="icon-picassa-2"></i> Score Per Min.</span>
+                <span class="key"><i class="icon-meter-fast"></i> Score Per Min.</span>
                 <span class="val">
 					<span class="text-nowrap">{player.spm}</span>
+				</span>
+            </li>
+            <li>
+                <span class="key"><i class="icon-screenshot"></i> Accuracy</span>
+                <span class="val">
+					<span class="text-nowrap">{weaponAverage.accuracy}%</span>
 				</span>
             </li>
         </ul>
@@ -189,13 +195,25 @@
             <li>
                 <span class="key"><i class="icon-flag"></i> Flag Captures</span>
                 <span class="val">
-					<span class="text-nowrap">{player.captures}</span>
+					<span class="text-nowrap"
+                          style="border-bottom: 1px dotted #000;"
+                          rel="tooltip"
+                          data-placement="right"
+                          title="Captures / Assists">
+                        {player.captures} / {player.captureassists}
+                    </span>
 				</span>
             </li>
             <li>
-                <span class="key"><i class="icon-flag2"></i> Capture Assists</span>
+                <span class="key"><i class="icon-flag2"></i> Neutralizes</span>
                 <span class="val">
-					<span class="text-nowrap">{player.captureassists}</span>
+					<span class="text-nowrap"
+                          style="border-bottom: 1px dotted #000;"
+                          rel="tooltip"
+                          data-placement="right"
+                          title="Neutralizes / Assists">
+                        {player.neutralizes} / {player.neutralizeassists}
+                    </span>
 				</span>
             </li>
             <li>
@@ -210,11 +228,163 @@
 					<span class="text-nowrap">{player.driverspecials}</span>
 				</span>
             </li>
+            <li>
+                <span class="key"><i class="icon-screenshot"></i> Kill Assists</span>
+                <span class="val">
+					<span class="text-nowrap">{player.damageassists}</span>
+				</span>
+            </li>
         </ul>
     </div>
 </div>
 
-<div class="mws-panel grid_4 clear">
+<div class="mws-panel grid_2">
+    <div class="mws-panel-header">
+        <span>Game Statistics</span>
+    </div>
+    <div class="mws-panel-body no-padding">
+        <ul class="mws-summary clearfix">
+            <li>
+                <span class="key"><i class="icon-retweet"></i> Rounds Played</span>
+                <span class="val">
+					<span class="text-nowrap">{player.rounds}</span>
+				</span>
+            </li>
+            <li>
+                <span class="key"><i class="icon-trophy"></i> Wins</span>
+                <span class="val">
+					<span class="text-nowrap">{player.wins}</span>
+				</span>
+            </li>
+            <li>
+                <span class="key"><i class="icon-ban-circle"></i> Losses</span>
+                <span class="val">
+					<span class="text-nowrap">{player.losses}</span>
+				</span>
+            </li>
+            <li>
+                <span class="key"><i class="icon-chart"></i> W/L Ratio</span>
+                <span class="val">
+					<span class="text-nowrap">{player.WLRatio}</span>
+				</span>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="mws-panel grid_2">
+    <div class="mws-panel-header">
+        <span>Time Statistics</span>
+    </div>
+    <div class="mws-panel-body no-padding">
+        <ul class="mws-summary clearfix">
+            <li>
+                <span class="key"><i class="icon-stars"></i> Commander</span>
+                <span class="val">
+					<span class="text-nowrap">{player.cmdtime}</span>
+				</span>
+            </li>
+            <li>
+                <span class="key"><i class="icon-star"></i> Squad Leader</span>
+                <span class="val">
+					<span class="text-nowrap">{player.sqltime}</span>
+				</span>
+            </li>
+            <li>
+                <span class="key"><i class="icon-star-empty"></i> Squad Member</span>
+                <span class="val">
+					<span class="text-nowrap">{player.sqmtime}</span>
+				</span>
+            </li>
+            <li>
+                <span class="key"><i class="icon-rocket"></i> Lone Wolf</span>
+                <span class="val">
+					<span class="text-nowrap">{player.lwtime}</span>
+				</span>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="mws-panel grid_2">
+    <div class="mws-panel-header">
+        <span>Negative Statistics</span>
+    </div>
+    <div class="mws-panel-body no-padding">
+        <ul class="mws-summary clearfix">
+            <li>
+                <span class="key"><i class="icon-skull"></i> Team Kills</span>
+                <span class="val">
+					<span class="text-nowrap">{player.teamkills}</span>
+				</span>
+            </li>
+            <li>
+                <span class="key"><i class="icon-pandage"></i> Team Damage</span>
+                <span class="val">
+					<span class="text-nowrap">{player.teamdamage}</span>
+				</span>
+            </li>
+            <li>
+                <span class="key"><i class="icon-truck"></i> Team Vehicle Dam.</span>
+                <span class="val">
+					<span class="text-nowrap">{player.teamvehicledamage}</span>
+				</span>
+            </li>
+            <li>
+                <span class="key"><i class="icon-heart-broken3"></i> Suicides</span>
+                <span class="val">
+					<span class="text-nowrap">{player.suicides}</span>
+				</span>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="mws-panel grid_2">
+    <div class="mws-panel-header">
+        <span>Misc Statistics</span>
+    </div>
+    <div class="mws-panel-body no-padding">
+        <ul class="mws-summary clearfix">
+            <li>
+                <span class="key"><i class="icon-screenshot"></i> Best Kill Streak</span>
+                <span class="val">
+					<span class="text-nowrap">{player.killstreak}</span>
+				</span>
+            </li>
+            <li>
+                <span class="key"><i class="icon-trophy-2"></i> Best Round Score</span>
+                <span class="val">
+					<span class="text-nowrap">{player.rndscore}</span>
+				</span>
+            </li>
+            <li>
+                <span class="key"><i class="icon-skull"></i> Favorite Victim</span>
+                <span class="val">
+					<span class="text-nowrap">
+                        <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{favVictim.rank}.gif"/>
+                        <a href="/ASP/players/view/{favVictim.id}">
+                            {favVictim.name}
+                        </a> ({favVictim.count})
+                    </span>
+				</span>
+            </li>
+            <li>
+                <span class="key"><i class="icon-skull2"></i> Worst Enemy</span>
+                <span class="val">
+					<span class="text-nowrap">
+                        <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{worstOp.rank}.gif"/>
+                        <a href="/ASP/players/view/{worstOp.id}">
+                            {worstOp.name}
+                        </a> ({worstOp.count})
+                    </span>
+				</span>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="mws-panel grid_4 mws-collapsible clear">
     <div class="mws-panel-header">
         <span>Kit Data</span>
     </div>
@@ -260,7 +430,7 @@
     </div>
 </div>
 
-<div class="mws-panel grid_4">
+<div class="mws-panel grid_4 mws-collapsible">
     <div class="mws-panel-header">
         <span>Vehicle Data</span>
     </div>
@@ -310,7 +480,7 @@
     </div>
 </div>
 
-<div class="mws-panel grid_4 clear">
+<div class="mws-panel grid_4 mws-collapsible clear">
     <div class="mws-panel-header">
         <span>Army Data</span>
     </div>
@@ -360,7 +530,7 @@
     </div>
 </div>
 
-<div class="mws-panel grid_4">
+<div class="mws-panel grid_4 mws-collapsible">
     <div class="mws-panel-header">
         <span>Weapon Data</span>
     </div>
@@ -447,7 +617,7 @@
                               data-placement="bottom"
                               data-original-title="{name}"
                               data-content="Player has not earned this award yet!">
-                            <img style="opacity: 0.5" src="/ASP/frontend/images/awards/grey/badges/{id}.png"/>
+                            <img style="opacity: 0.5; filter: alpha(opacity=50);" src="/ASP/frontend/images/awards/grey/badges/{id}.png"/>
                         </span>
                     </li>
                     <?php endif ?>
@@ -476,7 +646,7 @@
                           data-placement="bottom"
                           data-original-title="{name}"
                           data-content="Player has not earned this award yet!">
-                        <img style="opacity: 0.5" src="/ASP/frontend/images/awards/grey/medals/{id}.png"/>
+                        <img style="opacity: 0.5; filter: alpha(opacity=50);" src="/ASP/frontend/images/awards/grey/medals/{id}.png"/>
                     </span>
                 </li>
                 <?php endif ?>
@@ -505,7 +675,7 @@
                               data-placement="bottom"
                               data-original-title="{name}"
                               data-content="Player has not earned this award yet!">
-                            <img style="opacity: 0.5" src="/ASP/frontend/images/awards/grey/ribbons/{id}.png"/>
+                            <img style="opacity: 0.5; filter: alpha(opacity=50);" src="/ASP/frontend/images/awards/grey/ribbons/{id}.png"/>
                         </span>
                     </li>
                     <?php endif ?>

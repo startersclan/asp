@@ -394,6 +394,13 @@ class PlayerModel
         $view->set("weaponAverage", $averages);
     }
 
+    /**
+     * Fetches the name of a rank by ID
+     *
+     * @param int $rank
+     *
+     * @return string
+     */
     public function getRankName($rank)
     {
         if (empty($this->ranks))
@@ -416,11 +423,20 @@ class PlayerModel
         return abs($x);
     }
 
+    /**
+     * Formats player scores and times
+     *
+     * @param array $player
+     *
+     * @return array
+     */
     public function formatPlayerData(array $player)
     {
         $data = [];
         $time = 0;
         $score = 0;
+        $wins = 0;
+        $losses = 0;
 
         foreach ($player as $key => $value)
         {
@@ -438,6 +454,13 @@ class PlayerModel
                 case 'lastonline':
                     $data['lastonline'] = date('F jS, Y g:i A T', (int)$value);
                     break;
+                case 'cmdtime':
+                case 'sqmtime':
+                case 'sqltime':
+                case 'lwtime':
+                    $data[$key] = TimeHelper::SecondsToHms((int)$value);
+                    break;
+                break;
                 case 'kills':
                 case 'deaths':
                 case 'teamscore':
@@ -449,9 +472,26 @@ class PlayerModel
                 case 'repairs':
                 case 'captures':
                 case 'captureassists':
+                case 'neutralizes':
+                case 'neutralizeassists':
                 case 'defends':
                 case 'driverspecials':
+                case 'damageassists':
+                case 'rounds':
+                case 'teamdamage':
+                case 'teamvehicledamage':
+                case 'suicides':
+                case 'killstreak':
+                case 'rndscore':
                     $data[$key] = number_format((int)$value);
+                    break;
+                case 'wins':
+                    $wins = (int)$value;
+                    $data[$key] = number_format($wins);
+                    break;
+                case 'losses':
+                    $losses = (int)$value;
+                    $data[$key] = number_format($losses);
                     break;
                 case 'score':
                     $score = (int)$value;
@@ -472,13 +512,17 @@ class PlayerModel
         // Set rank name
         $data['rankName'] = $this->getRankName((int)$player['rank']);
 
+        // Set W/L Ratio
+        $den = $this->getDenominator($wins, $losses);
+        $data['WLRatio'] = ($wins / $den) . '/' . ($losses / $den);
+
         // Calculate SPM
         $data['spm'] = ($time > 0) ? number_format( round($score / ($time / 60) , 3), 3 ) : 0;
         return $data;
     }
 
     /**
-     * Appends Kit data to a view
+     * Appends Award data to a view
      *
      * @param int $id
      * @param View $view
@@ -561,6 +605,74 @@ class PlayerModel
         $view->set('medals', $medals);
         $view->set('badges', $badges);
         $view->set('ribbons', $ribbons);
+    }
+
+    /**
+     * Adds the favorite victim and opponent data to the current output
+     *
+     * @param int $id
+     * @param View $view
+     * @param PDO $pdo
+     */
+    public function attachTopVictimAndOpp($id, View $view, PDO $pdo)
+    {
+        // Fetch Fav Victim
+        $result = $pdo->query("SELECT victim, `count` FROM player_kill WHERE attacker={$id} ORDER BY `count` DESC LIMIT 1");
+        if ($row = $result->fetch())
+        {
+            $victim = $row['victim'];
+            $count = $row['count'];
+            $result = $pdo->query("SELECT name, rank FROM player WHERE id={$victim}");
+            if ($row = $result->fetch())
+            {
+                $data = [
+                    'id' => $victim,
+                    'name' => $row['name'],
+                    'rank' => $row['rank'],
+                    'count' => $count
+                ];
+                $view->set('favVictim', $data);
+            }
+        }
+        else
+        {
+            $data = [
+                'id' => $id . "/#",
+                'name' => "N/A",
+                'rank' => 0,
+                'count' => 0
+            ];
+            $view->set('favVictim', $data);
+        }
+
+        // Fetch Fav Opponent
+        $result = $pdo->query("SELECT attacker, `count` FROM player_kill WHERE victim={$id} ORDER BY `count` DESC LIMIT 1");
+        if ($row = $result->fetch())
+        {
+            $attacker = $row['attacker'];
+            $count = $row['count'];
+            $result = $pdo->query("SELECT name, rank FROM player WHERE id={$attacker}");
+            if ($row = $result->fetch())
+            {
+                $data = [
+                    'id' => $attacker,
+                    'name' => $row['name'],
+                    'rank' => $row['rank'],
+                    'count' => $count
+                ];
+                $view->set('worstOp', $data);
+            }
+        }
+        else
+        {
+            $data = [
+                'id' => $id . "/#",
+                'name' => "N/A",
+                'rank' => 0,
+                'count' => 0
+            ];
+            $view->set('worstOp', $data);
+        }
     }
 
     protected function getBadgePrefix($level)

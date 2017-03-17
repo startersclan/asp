@@ -90,7 +90,9 @@ class Players extends Controller
         $query = <<<SQL
 SELECT `name`, `rank`, `joined`, `time`, `lastonline`, `score`, `skillscore`, `cmdscore`, `teamscore`, 
   `kills`, `deaths`, `teamkills`, `kicked`, `banned`, `permban`, `heals`, `repairs`, `ammos`, `revives`,
-  `captures`, `captureassists`, `defends`, `country`, `driverspecials`
+  `captures`, `captureassists`, `defends`, `country`, `driverspecials`, `neutralizes`, `neutralizeassists`,
+  `damageassists`, `rounds`, `wins`, `losses`, `cmdtime`, `sqmtime`, `sqltime`, `lwtime`, `suicides`, 
+  `teamdamage`, `teamvehicledamage`, `killstreak`, `rndscore`
 FROM player
 WHERE `id`={$id}
 SQL;
@@ -118,6 +120,7 @@ SQL;
         $this->PlayerModel->attachVehicleData($id, $view, $pdo);
         $this->PlayerModel->attachWeaponData($id, $view, $pdo);
         $this->PlayerModel->attachAwardData($id, $view, $pdo);
+        $this->PlayerModel->attachTopVictimAndOpp($id, $view, $pdo);
 
         // Attach needed scripts for the form
         $view->attachScript("/ASP/frontend/js/jquery.form.js");
