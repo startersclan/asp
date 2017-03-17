@@ -212,6 +212,7 @@ class Snapshot extends GameResult
 
             // Grab round ID
             $roundId = $connection->lastInsertId("id");
+            $wasDrawRound = ($this->winningArmyId == -1);
 
             // ********************************
             // Process Players
@@ -263,19 +264,57 @@ class Snapshot extends GameResult
                 $query->set('sqmtime', '+', $player->sqmTime);
                 $query->set('lwtime', '+', $player->lwTime);
                 $query->set('timepara', '+', $player->timeParachute);
-                $query->set('wins', '+', $onWinningTeam ? 1 : 0);
-                $query->set('losses', '+', (!$onWinningTeam) ? 1 : 0);
-                $query->set('rndscore', '+', $player->roundScore);
                 $query->set('lastonline', '=', $this->roundEndTime);
                 $query->set('mode0', '+', ($this->gameMode == 0) ? 1 : 0);
                 $query->set('mode1', '+', ($this->gameMode == 1) ? 1 : 0);
                 $query->set('mode2', '+', ($this->gameMode == 2) ? 1 : 0);
 
-                // Check if player exists already
-                $sql = "SELECT lastip, country, rank, killstreak, deathstreak, rndscore FROM player WHERE id=%d LIMIT 1";
-                $result = $connection->query(sprintf($sql, $player->pid));
+                // Set wins / losses
+                if (!$wasDrawRound)
+                {
+                    $query->set('wins', '+', $onWinningTeam ? 1 : 0);
+                    $query->set('losses', '+', (!$onWinningTeam) ? 1 : 0);
+                }
 
-                if ($row = $result->fetch())
+                // Check if player exists already
+                $sql = "SELECT lastip, country, rank, killstreak, deathstreak, rndscore, permban, bantime FROM player WHERE id=%d LIMIT 1";
+                $row = $connection->query(sprintf($sql, $player->pid))->fetch();
+
+                // If player does not exist, stop here!
+                if (!$row)
+                {
+                    // Is this a Cross Service Exploitation?
+                    if (!$player->isAi)
+                    {
+                        $message = sprintf(
+                            "Player Not Found! Cross Service Exploitation found on player (%s) with pid (%d)",
+                            $player->name,
+                            $player->pid
+                        );
+                    }
+                    else
+                    {
+                        $message = sprintf("Unauthorized Bot/Offline player found: %s (%d)!", $player->name, $player->pid);
+                    }
+
+                    // Write log
+                    $this->logWriter->logError($message);
+                    throw new Exception($message);
+                }
+                else if (((int)$row['permban']) != 0)
+                {
+                    $bantime = (int)$row['bantime'];
+
+                    // Check if the player was banned before the start of the round. Servers should be
+                    // using the VerifyPlayer module to prevent this from happening
+                    if ($bantime < ($this->roundStartTime + 1))
+                    {
+                        $message = sprintf("Banned Player Found in Snapshot: %s (%d)!", $player->name, $player->pid);
+                        $this->logWriter->logError($message);
+                        throw new Exception($message);
+                    }
+                }
+                else
                 {
                     // Write log
                     $this->logWriter->logNotice("Updating EXISTING Player (". $player->pid .")");
@@ -301,26 +340,6 @@ class Snapshot extends GameResult
                     // Execute the update
                     $query->where('id', '=', $player->pid);
                     $query->executeUpdate();
-                }
-                else if ($player->isAi)
-                {
-                    // Write log
-                    $this->logWriter->logNotice("Adding NEW AI Player (" . $player->pid . ")");
-
-                    //$countryCode = ''; // TODO finish meh
-                    $query->set('id', '=', $player->pid);
-                    $query->set('name', '=', $player->name);
-                    $query->set('password', '=', '');
-                    $query->set('country', '=', 'US');
-                    $query->set('joined', '=', $this->roundEndTime);
-                    $query->set('killstreak', '=', $player->killStreak);
-                    $query->set('deathstreak', '=', $player->deathStreak);
-                    $query->set('rndscore', '=', $player->roundScore);
-                    $query->executeInsert();
-                }
-                else
-                {
-                    continue;
                 }
 
                 // ********************************

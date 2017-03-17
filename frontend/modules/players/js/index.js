@@ -381,13 +381,19 @@
         // Row Button Clicks
         $(document).on('click', 'a.btn-small', function(e) {
 
-            // For all modern browsers, prevent default behavior of the click
-            e.preventDefault();
-
             // Extract the server ID
             var sid = $(this).attr('id').split("-");
             var action = sid[0];
             var id = sid[sid.length-1];
+
+            // If action is "go", then let the link direct the user
+            if (action == "go") {
+                return;
+            }
+            else {
+                // For all modern browsers, prevent default behavior of the click
+                e.preventDefault();
+            }
 
             // Always have the user confirm his action here!
             var tr = $(this).closest('tr');

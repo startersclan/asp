@@ -165,6 +165,7 @@ SQL;
         parent::requireDatabase(true);
         $pdo = Database::GetConnection('stats');
         $mode = ($_POST['action'] == 'ban') ? 1 : 0;
+        $time = ($mode == 1) ? time() : 0;
 
         // Prepared statement!
         try
@@ -177,8 +178,10 @@ SQL;
             $playerId = (int)$_POST['playerId'];
 
             // Prepare statement
-            $stmt = $pdo->prepare("UPDATE player SET permban=$mode WHERE id=:id");
+            $stmt = $pdo->prepare("UPDATE player SET permban=:mode, bantime=:time WHERE id=:id");
             $stmt->bindValue(':id', $playerId, PDO::PARAM_INT);
+            $stmt->bindValue(':mode', $mode, PDO::PARAM_INT);
+            $stmt->bindValue(':time', $time, PDO::PARAM_INT);
             $stmt->execute();
 
             // Echo success
@@ -338,12 +341,7 @@ SQL;
         {
             $columns = [
                 ['db' => 'id', 'dt' => 'id'],
-                ['db' => 'name', 'dt' => 'name',
-                    'formatter' => function( $d, $row ) {
-                        $id = $row['id'];
-                        return '<a href="/ASP/players/view/'.$id.'">'. $d .'</a>';
-                    }
-                ],
+                ['db' => 'name', 'dt' => 'name'],
                 ['db' => 'rank', 'dt' => 'rank',
                     'formatter' => function( $d, $row ) {
                         return "<img class='center' src=\"/ASP/frontend/images/ranks/rank_{$d}.gif\">";
@@ -380,6 +378,7 @@ SQL;
                         $nbanned = ($row['permban'] == 0) ? '' : ' style="display: none"';
 
                         return '<span class="btn-group">
+                            <a id="go-'. $id .'" href="/ASP/players/view/'. $id .'"  rel="tooltip" title="View Player" class="btn btn-small"><i class="icon-eye-open"></i></i></a>
                             <a id="edit-btn-'. $id .'" href="#"  rel="tooltip" title="Edit Player" class="btn btn-small"><i class="icon-pencil"></i></a>
                             <a id="ban-btn-'. $id .'" href="#" rel="tooltip" title="Ban Player" class="btn btn-small"'. $nbanned .'><i class="icon-flag"></i></a>
                             <a id="unban-btn-'. $id .'" href="#" rel="tooltip" title="Unban Player" class="btn btn-small"'.$banned.'><i class="icon-ok"></i></a>
