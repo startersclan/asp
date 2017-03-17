@@ -421,29 +421,96 @@
 <div class="mws-panel grid_8">
     <div class="mws-tabs">
         <ul>
-            <li><a href="#tab-1">Medals</a></li>
-            <li><a href="#tab-2">Badges</a></li>
+            <li><a href="#tab-1">Badges</a></li>
+            <li><a href="#tab-2">Medals</a></li>
             <li><a href="#tab-3">Ribbons</a></li>
         </ul>
         <div id="tab-1">
             <ul class="thumbnails mws-gallery">
+                {badges}
+                    <?php if ({level} != 0): ?>
+                    <li>
+                    <span class="thumbnail"
+                          rel="popover"
+                          data-trigger="hover"
+                          data-placement="bottom"
+                          data-original-title="{prefix} {name}"
+                          data-content="<div><b>Earned</b>: {last}</div>">
+                        <img src="/ASP/frontend/images/awards/color/badges/{id}_{level}.png"/>
+                    </span>
+                    </li>
+                    <?php else: ?>
+                    <li>
+                        <span class="thumbnail"
+                              rel="popover"
+                              data-trigger="hover"
+                              data-placement="bottom"
+                              data-original-title="{name}"
+                              data-content="Player has not earned this award yet!">
+                            <img style="opacity: 0.5" src="/ASP/frontend/images/awards/grey/badges/{id}.png"/>
+                        </span>
+                    </li>
+                    <?php endif ?>
+                {/badges}
+            </ul>
+        </div>
+        <div id="tab-2">
+            <ul class="thumbnails mws-gallery">
             {medals}
+                <?php if ({level} != 0): ?>
                 <li>
                     <span class="thumbnail"
                           rel="popover"
                           data-trigger="hover"
                           data-placement="bottom"
                           data-original-title="{name}"
-                          data-content="<div><b>Award Count</b>: 1</div><div><b>First</b>: Today</div>">
-                        <img src="/ASP/frontend/images/awards/medals/{id}.png"/>
+                          data-content="<div><b>Award Count</b>: {level}</div><div><b>First</b>: {first}</div><div><b>Last</b>: {last}</div>">
+                        <img src="/ASP/frontend/images/awards/color/medals/{id}.png"/>
                     </span>
                 </li>
+                <?php else: ?>
+                <li>
+                    <span class="thumbnail"
+                          rel="popover"
+                          data-trigger="hover"
+                          data-placement="bottom"
+                          data-original-title="{name}"
+                          data-content="Player has not earned this award yet!">
+                        <img style="opacity: 0.5" src="/ASP/frontend/images/awards/grey/medals/{id}.png"/>
+                    </span>
+                </li>
+                <?php endif ?>
             {/medals}
             </ul>
         </div>
-        <div id="tab-2">
-        </div>
         <div id="tab-3">
+            <ul class="thumbnails mws-gallery">
+                {ribbons}
+                    <?php if ({level} != 0): ?>
+                    <li>
+                    <span class="thumbnail"
+                          rel="popover"
+                          data-trigger="hover"
+                          data-placement="bottom"
+                          data-original-title="{name}"
+                          data-content="<div><b>Earned</b>: {last}</div>">
+                        <img src="/ASP/frontend/images/awards/color/ribbons/{id}.png"/>
+                    </span>
+                    </li>
+                    <?php else: ?>
+                    <li>
+                        <span class="thumbnail"
+                              rel="popover"
+                              data-trigger="hover"
+                              data-placement="bottom"
+                              data-original-title="{name}"
+                              data-content="Player has not earned this award yet!">
+                            <img style="opacity: 0.5" src="/ASP/frontend/images/awards/grey/ribbons/{id}.png"/>
+                        </span>
+                    </li>
+                    <?php endif ?>
+                {/ribbons}
+            </ul>
         </div>
     </div>
 </div>

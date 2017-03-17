@@ -476,4 +476,97 @@ class PlayerModel
         $data['spm'] = ($time > 0) ? number_format( round($score / ($time / 60) , 3), 3 ) : 0;
         return $data;
     }
+
+    /**
+     * Appends Kit data to a view
+     *
+     * @param int $id
+     * @param View $view
+     * @param PDO $pdo
+     */
+    public function attachAwardData($id, View $view, PDO $pdo)
+    {
+        $medals = [];
+        $badges = [];
+        $ribbons = [];
+
+        // Ensure pid is an int
+        $id = (int)$id;
+
+        // Grab all awards
+        $awards = $pdo->query("SELECT * FROM award")->fetchAll();
+        foreach ($awards as $award)
+        {
+            $aid = (int)$award['id'];
+            $type = (int)$award['type'];
+
+            $data = [
+                'id' => $aid,
+                'name' => $award['name'],
+                'type' => $type,
+                'level' => 0,
+                'first' => "Never",
+                'last' => "Never"
+            ];
+
+            switch ($type)
+            {
+                case 0:
+                    $ribbons[$aid] = $data;
+                    break;
+                case 1:
+                    $badges[$aid] = $data;
+                    break;
+                case 2:
+                    $medals[$aid] = $data;
+                    break;
+            }
+        }
+
+        // Now fetch player awards
+        $query = "SELECT * FROM player_awards_view AS v JOIN award AS a ON a.id = v.id WHERE pid=".$id;
+        $awards = $pdo->query($query)->fetchAll();
+        foreach ($awards as $award)
+        {
+            $id = (int)$award['id'];
+            $type = (int)$award['type'];
+
+            $data = [
+                'level' => (int)$award['level'],
+                'first' => date('F jS, Y g:i A T', (int)$award['first']),
+                'last' => date('F jS, Y g:i A T', (int)$award['earned'])
+            ];
+
+            switch ($type)
+            {
+                case 0:
+                    $ribbons[$id]['level'] = $data['level'];
+                    $ribbons[$id]['first'] = $data['first'];
+                    $ribbons[$id]['last'] = $data['last'];
+                    break;
+                case 1:
+                    $badges[$id]['prefix'] = $this->getBadgePrefix((int)$data['level']);
+                    $badges[$id]['level'] = $data['level'];
+                    $badges[$id]['first'] = $data['first'];
+                    $badges[$id]['last'] = $data['last'];
+                    break;
+                case 2:
+                    $medals[$id]['level'] = $data['level'];
+                    $medals[$id]['first'] = $data['first'];
+                    $medals[$id]['last'] = $data['last'];
+                    break;
+            }
+        }
+
+        $view->set('medals', $medals);
+        $view->set('badges', $badges);
+        $view->set('ribbons', $ribbons);
+    }
+
+    protected function getBadgePrefix($level)
+    {
+        if ($level == 3) return 'Gold';
+        else if ($level == 2) return 'Silver';
+        else return 'Bronze';
+    }
 }

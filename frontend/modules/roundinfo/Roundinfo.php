@@ -28,7 +28,7 @@ class Roundinfo extends Controller
     public function index()
     {
         // Require database connection
-        $this->requireDatabase();
+        parent::requireDatabase();
 
         // Load view
         $view = new View('index', 'roundinfo');
@@ -53,19 +53,17 @@ class Roundinfo extends Controller
      */
     public function view($id = 0)
     {
-        // Require database connection
-        $this->requireDatabase();
+        // Grab database connection
+        parent::requireDatabase(true);
+        $pdo = Database::GetConnection('stats');
+        $id = (int)$id;
 
         // Ensure correct format for ID
-        if ($id == 0 || !is_numeric($id))
+        if ($id == 0)
         {
             Response::Redirect('roundinfo');
             die;
         }
-
-        // Grab database
-        $pdo = Database::GetConnection('stats');
-        $id = (int)$id;
 
         // Load view
         $view = new View('view', 'roundinfo');

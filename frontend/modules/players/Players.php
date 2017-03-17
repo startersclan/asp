@@ -34,7 +34,7 @@ class Players extends Controller
     public function index()
     {
         // Require database connection
-        $this->requireDatabase();
+        parent::requireDatabase();
 
         // Load view
         $view = new View('index', 'players');
@@ -52,10 +52,6 @@ class Players extends Controller
         $view->attachStylesheet("/ASP/frontend/css/icons/icol16.css");
         $view->attachStylesheet("/ASP/frontend/js/select2/select2.css");
 
-        // Set variables
-        $view->set('show_button', ((System\Config::Get('admin_ignore_ai') == 0) ? ' style="display: none;"' : ''));
-        $view->set('hide_button', ((System\Config::Get('admin_ignore_ai') == 1) ? ' style="display: none;"' : ''));
-
         // Send output
         $view->render();
     }
@@ -71,8 +67,16 @@ class Players extends Controller
      */
     public function view($id, $subpage = '', $subid = 0)
     {
+        // Are we loading a sub page?
+        if (!empty($subpage))
+        {
+            $this->showHistory($id, $subid);
+            return;
+        }
+
         // Require database connection
         parent::requireDatabase();
+        $pdo = Database::GetConnection('stats');
 
         // Ensure correct format for ID
         $id = (int)$id;
@@ -81,9 +85,6 @@ class Players extends Controller
             Response::Redirect('players');
             die;
         }
-
-        // Grab database
-        $pdo = Database::GetConnection('stats');
 
         // Fetch player
         $query = <<<SQL
@@ -97,20 +98,18 @@ SQL;
         if ($player == false)
         {
             // Load view
-            $view = new View('404', __CLASS__);
+            $view = new View('404', 'players');
             $view->set('id', $id);
             $view->render();
             return;
         }
 
-        // Load view
-        $view = new View('view',  __CLASS__);
-        $view->set('id', $id);
-
         // Attach Model
-        parent::loadModel("PlayerModel", __CLASS__);
+        parent::loadModel("PlayerModel", 'players');
 
-        // Set player formatted variables
+        // Load view
+        $view = new View('view',  'players');
+        $view->set('id', $id);
         $view->set('player', $this->PlayerModel->formatPlayerData($player));
 
         // Attach player object stats
@@ -118,6 +117,7 @@ SQL;
         $this->PlayerModel->attachKitData($id, $view, $pdo);
         $this->PlayerModel->attachVehicleData($id, $view, $pdo);
         $this->PlayerModel->attachWeaponData($id, $view, $pdo);
+        $this->PlayerModel->attachAwardData($id, $view, $pdo);
 
         // Attach needed scripts for the form
         $view->attachScript("/ASP/frontend/js/jquery.form.js");
@@ -131,13 +131,21 @@ SQL;
         $view->attachStylesheet("/ASP/frontend/css/icons/icol16.css");
         $view->attachStylesheet("/ASP/frontend/modules/players/css/view.css");
 
-        // Fetch player
-        $query = "SELECT * FROM award WHERE type=2";
-        $awards= $pdo->query($query)->fetchAll();
-        $view->set('medals', $awards);
-
         // Send output
         $view->render();
+    }
+
+    /**
+     * @protocol    ANY
+     * @request     /ASP/players/view/$id/history/$subid
+     * @output      html
+     *
+     * @param int $id The player ID
+     * @param int $subid
+     */
+    private function showHistory($id, $subid)
+    {
+
     }
 
     /**
@@ -147,21 +155,12 @@ SQL;
      */
     public function postAuthorize()
     {
-        // Form post?
-        if ($_POST['action'] != 'ban' && $_POST['action'] != 'unban')
-        {
-            echo json_encode( array('success' => false, 'message' => 'Invalid Action') );
-            die;
-        }
+        // We only accept these POST actions
+        parent::requireAction("ban", "unban");
 
         // Grab database connection
+        parent::requireDatabase(true);
         $pdo = Database::GetConnection('stats');
-        if ($pdo === false)
-        {
-            echo json_encode( array('success' => false, 'message' => 'Unable to connect to database!') );
-            die;
-        }
-
         $mode = ($_POST['action'] == 'ban') ? 1 : 0;
 
         // Prepared statement!
@@ -196,20 +195,12 @@ SQL;
      */
     public function postDelete()
     {
-        // Form post?
-        if ($_POST['action'] != 'delete' && $_POST['action'] != 'deleteBots')
-        {
-            echo json_encode( array('success' => false, 'message' => 'Invalid Action') );
-            die;
-        }
+        // We only accept these POST actions
+        parent::requireAction("delete", "deleteBots");
 
         // Grab database connection
+        parent::requireDatabase(true);
         $pdo = Database::GetConnection('stats');
-        if ($pdo === false)
-        {
-            echo json_encode( array('success' => false, 'message' => 'Unable to connect to database!') );
-            die;
-        }
 
         // Prepared statement!
         try
@@ -255,7 +246,10 @@ SQL;
      */
     public function postAdd()
     {
+        // Grab database connection
+        parent::requireDatabase(true);
         $pdo = Database::GetConnection('stats');
+
         try
         {
             // Use a dictionary here to gain an exception on missing array item
@@ -333,6 +327,10 @@ SQL;
      */
     public function postList()
     {
+        // Grab database connection
+        parent::requireDatabase(true);
+        $pdo = Database::GetConnection('stats');
+
         try
         {
             $columns = [
@@ -452,13 +450,8 @@ SQL;
                 $bots = [];
 
                 // Grab database connection
+                parent::requireDatabase(true);
                 $pdo = Database::GetConnection('stats');
-                if ($pdo === false)
-                {
-                    echo json_encode( array('success' => false, 'message' => 'Unable to connect to database!') );
-                    die;
-                }
-
 
                 // Parse file lines
                 foreach ($lines as $line)
@@ -513,4 +506,5 @@ SQL;
             echo json_encode(['success' => false, 'error' => "No file received."]);
         }
     }
+
 }
