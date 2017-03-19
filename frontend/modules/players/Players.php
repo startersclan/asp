@@ -16,7 +16,6 @@ use System\IO\Path;
 use System\Player;
 use System\Response;
 use System\TimeHelper;
-use System\TimeSpan;
 use System\View;
 
 class Players extends Controller
@@ -25,6 +24,11 @@ class Players extends Controller
      * @var PlayerModel
      */
     protected $PlayerModel = null;
+
+    /**
+     * @var PlayerHistoryModel
+     */
+    protected $PlayerHistoryModel = null;
 
     /**
      * @protocol    ANY
@@ -67,6 +71,14 @@ class Players extends Controller
      */
     public function view($id, $subpage = '', $subid = 0)
     {
+        // Ensure correct format for ID
+        $id = (int)$id;
+        if ($id == 0)
+        {
+            Response::Redirect('players');
+            die;
+        }
+
         // Are we loading a sub page?
         if (!empty($subpage))
         {
@@ -77,14 +89,6 @@ class Players extends Controller
         // Require database connection
         parent::requireDatabase();
         $pdo = Database::GetConnection('stats');
-
-        // Ensure correct format for ID
-        $id = (int)$id;
-        if ($id == 0)
-        {
-            Response::Redirect('players');
-            die;
-        }
 
         // Fetch player
         $query = <<<SQL
@@ -144,11 +148,103 @@ SQL;
      * @output      html
      *
      * @param int $id The player ID
-     * @param int $subid
+     * @param int $subid The round id, if any
      */
     private function showHistory($id, $subid)
     {
+        // Grab database connection
+        parent::requireDatabase(true);
+        $pdo = Database::GetConnection('stats');
+        $subid = (int)$subid;
 
+        // Showing history list or specific round?
+        if ($subid == 0)
+        {
+            // Load view
+            $view = new View('history', 'players');
+            $view->set('id', $id);
+
+            // Attach needed scripts for the form
+            $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");
+            $view->attachScript("/ASP/frontend/modules/players/js/history.js");
+
+            // Send output
+            $view->render();
+        }
+        else
+        {
+            // Attach Model
+            parent::loadModel("PlayerHistoryModel", 'players');
+
+            // Fetch round
+            $query = <<<SQL
+SELECT ph.*, h.*, p.name, mi.name AS `mapname`, s.name AS `server`, s.ip AS `ip`, s.port AS `port`,
+  h.pids1_end + h.pids2_end AS `playerCount`
+FROM player_history AS ph 
+  LEFT JOIN player AS p ON ph.pid = p.id
+  LEFT JOIN round_history AS h ON ph.roundid = h.id
+  LEFT JOIN mapinfo AS mi ON h.mapid = mi.id 
+  LEFT JOIN server AS s ON h.serverid = s.id
+WHERE pid={$id} AND roundid={$subid}
+SQL;
+            $round = $pdo->query($query)->fetch();
+            if ($round == false)
+            {
+                Response::Redirect('players/view/'. $id .'/history');
+                die;
+            }
+
+            // Create view
+            $view = new View('history_detail', 'players');
+
+            // Assign custom round values and attach to view
+            $round['teamName'] = $pdo->query("SELECT name FROM army WHERE id=". $round['team'])->fetchColumn(0);
+            $view->set('round', $this->PlayerHistoryModel->formatRoundInfo($round));
+
+            // Add advanced info if we can
+            $view->set('advanced', $this->PlayerHistoryModel->addAdvancedRoundInfo($id, $round, $view));
+
+            // Get next round ID
+            $query = "SELECT MIN(`roundid`) FROM player_history WHERE pid={$id} AND roundid > ". $subid;
+            $n = (int)$pdo->query($query)->fetchColumn(0);
+            $view->set('nextRoundId', $n);
+            $view->set('nBtnStyle', ($n == 0) ? ' disabled="disabled"' : '');
+
+            // Get previous round ID
+            $query = "SELECT MAX(`roundid`) FROM player_history WHERE pid={$id} AND roundid < ". $subid;
+            $n = (int)$pdo->query($query)->fetchColumn(0);
+            $view->set('prevRoundId', $n);
+            $view->set('pBtnStyle', ($n == 0) ? ' disabled="disabled"' : '');
+
+            // Attach scripts
+            $view->attachScript("/ASP/frontend/js/flot/jquery.flot.min.js");
+            $view->attachScript("/ASP/frontend/js/flot/plugins/jquery.flot.tooltip.js");
+            $view->attachScript("/ASP/frontend/js/flot/plugins/jquery.flot.pie.min.js");
+            $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");
+            $view->attachScript("/ASP/frontend/modules/players/js/history_detail.js");
+
+            // Attach stylesheets
+            $view->attachStylesheet("/ASP/frontend/modules/players/css/history_detail.css");
+            $view->attachStylesheet("/ASP/frontend/modules/players/css/view.css");
+
+            // Set kill/death Ratio Chart Data
+            $data = [
+                ['label' => "Kills", 'data' => $round['kills'], 'color' => "#00479f"],
+                ['label' => "Deaths", 'data' => $round['deaths'], 'color' => "#c75d7b"]
+            ];
+            $view->setJavascriptVar('killData', $data);
+
+            // Set Time Played As chart data
+            $vars = $view->getVars();
+            $data = [
+                ['label' => "Weapons", 'data' => $vars['weaponTotals']['time'], 'color' => "#00479f"],
+                ['label' => "Vehicles", 'data' => $vars['vehicleTotals']['time'], 'color' => "#c75d7b"]
+            ];
+            $view->setJavascriptVar('timePlayedData', $data);
+
+            // Send output
+            $view->render();
+        }
     }
 
     /**
@@ -392,6 +488,84 @@ SQL;
             $applyFilter = ((int)$_POST['showBots']) == 0;
             $filter = ($applyFilter) ? "`password` != ''" : '';
             $data = DataTables::FetchData($_POST, $pdo, 'player', 'id', $columns, $filter);
+
+            echo json_encode($data);
+        }
+        catch (Exception $e)
+        {
+            Asp::LogException($e);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * @protocol    POST
+     * @request     /ASP/players/history
+     * @output      json
+     */
+    public function postHistory()
+    {
+        // Grab database connection
+        parent::requireDatabase(true);
+        $pdo = Database::GetConnection('stats');
+        $id = (int)$_POST['playerId'];
+
+        try
+        {
+            $columns = [
+                ['db' => 'pid', 'dt' => 'id'],
+                ['db' => 'roundid', 'dt' => 'rid'],
+                ['db' => 'name', 'dt' => 'server'],
+                ['db' => 'mapname', 'dt' => 'map'],
+                ['db' => 'score', 'dt' => 'score',
+                    'formatter' => function( $d, $row ) {
+                        return number_format($d);
+                    }
+                ],
+                ['db' => 'kills', 'dt' => 'kills',
+                    'formatter' => function( $d, $row ) {
+                        return number_format($d);
+                    }
+                ],
+                ['db' => 'deaths', 'dt' => 'deaths',
+                    'formatter' => function( $d, $row ) {
+                        return number_format($d);
+                    }
+                ],
+                ['db' => 'time', 'dt' => 'time',
+                    'formatter' => function( $d, $row ) {
+                        $i = (int)$d;
+                        return TimeHelper::SecondsToHms($i);
+                    }
+                ],
+                ['db' => 'team', 'dt' => 'team',
+                    'formatter' => function( $d, $row ) {
+                        return "<img class='center' src=\"/ASP/frontend/images/armies/small/{$d}.png\">";
+                    }
+                ],
+                ['db' => 'timestamp', 'dt' => 'timestamp',
+                    'formatter' => function( $d, $row ) {
+                        $i = (int)$d;
+                        return date('F jS, Y g:i A T', $i);
+                    }
+                ],
+                ['db' => 'rank', 'dt' => 'actions',
+                    'formatter' => function( $d, $row ) {
+                        $id = (int)$row['pid'];
+                        $rid = (int)$row['roundid'];
+
+                        return '<span class="btn-group">
+                            <a href="/ASP/players/view/'. $id .'/history/'. $rid .'"  rel="tooltip" title="View Round Details" class="btn btn-small">
+                                <i class="icon-eye-open"></i>
+                            </a>
+                        </span>';
+                    }
+                ],
+            ];
+
+            // Fetch data
+            $filter = "`pid` = ". $id;
+            $data = DataTables::FetchData($_POST, $pdo, 'player_history_view', 'pid', $columns, $filter);
 
             echo json_encode($data);
         }

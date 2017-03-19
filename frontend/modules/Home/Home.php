@@ -99,9 +99,11 @@ class Home extends Controller
      */
     public function getChartData()
     {
+        // Hide errors. Specifically, Daylight Savings errors
+        ini_set("display_errors", "0");
+
         // Require database connection
         $pdo = Database::GetConnection('stats');
-
         $output = array(
             'week' => ['y' => [], 'x' => []],
             'month' => ['y' => [], 'x' => []],

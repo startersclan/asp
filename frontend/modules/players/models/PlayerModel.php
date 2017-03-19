@@ -311,7 +311,8 @@ class PlayerModel
             'time' => 0,
             'ratio' => "-",
             'accuracy' => 0.00,
-            'fired' => 0
+            'fired' => 0,
+            'hits' => 0
         ];
         $averages = [
             'kills' => 0,
@@ -319,7 +320,8 @@ class PlayerModel
             'time' => 0,
             'ratio' => 0.00,
             'accuracy' => 0.00,
-            'fired' => 0
+            'fired' => 0,
+            'hits' => 0
         ];
 
         // fetch player kit data
@@ -342,6 +344,7 @@ class PlayerModel
                 'kills' => $kills,
                 'deaths' => $deths,
                 'fired' => $fired,
+                'hits' =>(int)$row['hits'],
                 'time' => TimeHelper::SecondsToHms($time),
                 'ratio' => number_format($ratio, 3),
                 'accuracy' => round($acc, 2)
@@ -352,7 +355,8 @@ class PlayerModel
             $totals['deaths'] += $deths;
             $totals['time'] += $time;
             $totals['fired'] += $fired;
-            $totals['accuracy'] += $time;
+            $totals['hits'] += (int)$row['hits'];
+            $totals['accuracy'] += $acc;
             $totals['ratio'] += $ratio;
         }
 
@@ -375,15 +379,14 @@ class PlayerModel
             $averages['ratio'] = ($totals['ratio'] > 0)
                 ? round($totals['ratio'] / $length, 3)
                 : "0.00";
-            $averages['accuracy'] = ($totals['accuracy'] > 0)
-                ? round($totals['accuracy'] / $length, 2)
+            $averages['accuracy'] = ($totals['fired'] > 0)
+                ? round((($totals['hits'] / $totals['fired']) * 100), 2)
                 : "0.00";
         }
 
         // Finalize totals
         $totals['kills'] = number_format($totals['kills']);
         $totals['deaths'] = number_format($totals['deaths']);
-        $totals['accuracy'] = number_format($totals['accuracy'], 2);
         $totals['deaths'] = number_format($totals['fired']);
         $totals['time'] = TimeHelper::SecondsToHms($totals['time']);
         $averages['time'] = TimeHelper::SecondsToHms($averages['time']);

@@ -244,6 +244,8 @@ class Snapshot extends GameResult
                 $query->set('deaths', '+', $player->deaths);
                 $query->set('captures', '+', $player->flagCaptures);
                 $query->set('captureassists', '+', $player->flagCaptureAssists);
+                $query->set('neutralizes', '+', $player->flagNeutralizes);
+                $query->set('neutralizeassists', '+', $player->flagNeutralizeAssists);
                 $query->set('defends', '+', $player->flagDefends);
                 $query->set('damageassists', '+', $player->damageAssists);
                 $query->set('heals', '+', $player->heals);
@@ -265,15 +267,15 @@ class Snapshot extends GameResult
                 $query->set('lwtime', '+', $player->lwTime);
                 $query->set('timepara', '+', $player->timeParachute);
                 $query->set('lastonline', '=', $this->roundEndTime);
-                $query->set('mode0', '+', ($this->gameMode == 0) ? 1 : 0);
-                $query->set('mode1', '+', ($this->gameMode == 1) ? 1 : 0);
-                $query->set('mode2', '+', ($this->gameMode == 2) ? 1 : 0);
+                $query->set('mode0', '+', ($this->gameMode == 0));
+                $query->set('mode1', '+', ($this->gameMode == 1));
+                $query->set('mode2', '+', ($this->gameMode == 2));
 
                 // Set wins / losses
                 if (!$wasDrawRound)
                 {
-                    $query->set('wins', '+', $onWinningTeam ? 1 : 0);
-                    $query->set('losses', '+', (!$onWinningTeam) ? 1 : 0);
+                    $query->set('wins', '+', $onWinningTeam);
+                    $query->set('losses', '+', (!$onWinningTeam));
                 }
 
                 // Check if player exists already

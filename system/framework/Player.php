@@ -157,6 +157,8 @@ class Player
 
     public $flagCaptures = 0;
     public $flagCaptureAssists = 0;
+    public $flagNeutralizes= 0;
+    public $flagNeutralizeAssists = 0;
     public $flagDefends = 0;
 
     public $damageAssists = 0;
@@ -222,6 +224,8 @@ class Player
         $this->resupplies = (int)$playerData["rsp"];
         $this->flagCaptures = (int)$playerData["cpc"];
         $this->flagCaptureAssists = (int)$playerData["cpa"];
+        $this->flagNeutralizes = (int)$playerData->getValueOrDefault("cpn", 0);
+        $this->flagNeutralizeAssists = (int)$playerData->getValueOrDefault("cpna", 0);
         $this->flagDefends = (int)$playerData["cpd"];
         $this->damageAssists = (int)$playerData["ka"];
         $this->targetAssists = (int)$playerData["tre"];
@@ -310,7 +314,7 @@ class Player
         // Extract player kill data
         foreach ($playerData['victims'] as $player)
         {
-            $this->victims[$player['id']] = $player['count'];
+            $this->victims[$player['id']] = (int)$player['count'];
         }
     }
 }

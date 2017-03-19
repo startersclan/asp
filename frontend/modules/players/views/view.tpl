@@ -361,16 +361,27 @@
             <li>
                 <span class="key"><i class="icon-skull"></i> Favorite Victim</span>
                 <span class="val">
+                    <?php if ($favVictim['id'] == 0): ?>
+                    <span class="text-nowrap">
+                        None (0)
+                    </span>
+                    <?php else: ?>
 					<span class="text-nowrap">
                         <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{favVictim.rank}.gif"/>
                         <a href="/ASP/players/view/{favVictim.id}">
                             {favVictim.name}
                         </a> ({favVictim.count})
                     </span>
+                    <?php endif ?>
 				</span>
             </li>
             <li>
                 <span class="key"><i class="icon-skull2"></i> Worst Enemy</span>
+                <?php if ($worstOp['id'] == 0): ?>
+                <span class="text-nowrap">
+                        None (0)
+                    </span>
+                <?php else: ?>
                 <span class="val">
 					<span class="text-nowrap">
                         <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{worstOp.rank}.gif"/>
@@ -379,6 +390,7 @@
                         </a> ({worstOp.count})
                     </span>
 				</span>
+                <?php endif ?>
             </li>
         </ul>
     </div>

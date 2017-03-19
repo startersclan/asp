@@ -58,7 +58,10 @@ class DataTables
         $recordsFiltered = $resFilterLength[0][0];
 
         // Total data set length
-        $resTotalLength = self::executeSql($bindings, "SELECT COUNT(`{$primaryKey}`) FROM `$table`");
+        if (empty($customFilter))
+            $resTotalLength = self::executeSql($bindings, "SELECT COUNT(`{$primaryKey}`) FROM `$table`");
+        else
+            $resTotalLength = self::executeSql($bindings, "SELECT COUNT(`{$primaryKey}`) FROM `$table` WHERE ". $customFilter);
         $recordsTotal = $resTotalLength[0][0];
 
         /*

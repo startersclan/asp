@@ -24,6 +24,7 @@
 
 	<!-- Required JavaScript Plugins -->
     <script type="text/javascript" src="/ASP/frontend/js/jquery-1.8.3.min.js"></script>
+	{JS_VARS}
 
     <!-- jQuery-UI Dependent Scripts -->
     <script type="text/javascript" src="/ASP/frontend/jui/js/jquery-ui-1.9.2.min.js"></script>

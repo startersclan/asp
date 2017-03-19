@@ -303,7 +303,7 @@ abstract class GameResult
             'commandScore' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
             'heals' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
             'revives' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
-            'ammos' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'resupplies' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
             'repairs' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
             'flagCaptures' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
             'flagDefends' => ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],

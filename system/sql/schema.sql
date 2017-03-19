@@ -7,11 +7,12 @@
 -- Delete Tables/Views/Triggers First
 -- --------------------------------------------------------
 
-DROP TRIGGER IF EXISTS `server_update`;
 DROP TRIGGER IF EXISTS `player_joined`;
 DROP TRIGGER IF EXISTS `_version_inserttime`;
 DROP TRIGGER IF EXISTS `player_award_timestamps`;
 DROP VIEW IF EXISTS `player_weapon_view`;
+DROP VIEW IF EXISTS `round_history_view`;
+DROP VIEW IF EXISTS `player_history_view`;
 DROP VIEW IF EXISTS `player_awards_view`;
 DROP PROCEDURE IF EXISTS `create_player`;
 DROP TABLE IF EXISTS `ip2nationcountries`;
@@ -116,7 +117,7 @@ CREATE TABLE `server` (
   `port` SMALLINT UNSIGNED DEFAULT 0,
   `queryport` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `authorized` TINYINT(1) NOT NULL DEFAULT 1, -- Servers are allowed to post snapshots
-  `lastupdate` INT NOT NULL DEFAULT 0,
+  `lastupdate` INT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`id`),
   CONSTRAINT `ip-port-unq` UNIQUE (`ip`, `port`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -212,29 +213,29 @@ CREATE TABLE `player` (
   `time` INT UNSIGNED NOT NULL DEFAULT 0,
   `rounds` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `rank` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
-  `score` INT UNSIGNED NOT NULL DEFAULT 0,
-  `cmdscore` INT UNSIGNED NOT NULL DEFAULT 0,
-  `skillscore` INT UNSIGNED NOT NULL DEFAULT 0,
-  `teamscore` INT UNSIGNED NOT NULL DEFAULT 0,
-  `kills` INT UNSIGNED NOT NULL DEFAULT 0,
-  `deaths` INT UNSIGNED NOT NULL DEFAULT 0,
-  `captures` INT UNSIGNED NOT NULL DEFAULT 0,
-  `neutralizes` INT UNSIGNED NOT NULL DEFAULT 0,
-  `captureassists` INT UNSIGNED NOT NULL DEFAULT 0,
-  `neutralizeassists` INT UNSIGNED NOT NULL DEFAULT 0,
-  `defends` INT UNSIGNED NOT NULL DEFAULT 0,
-  `damageassists` INT UNSIGNED NOT NULL DEFAULT 0,
-  `heals` INT UNSIGNED NOT NULL DEFAULT 0,
-  `revives` INT UNSIGNED NOT NULL DEFAULT 0,
-  `ammos` INT UNSIGNED NOT NULL DEFAULT 0,
-  `repairs` INT UNSIGNED NOT NULL DEFAULT 0,
-  `targetassists` INT UNSIGNED NOT NULL DEFAULT 0,
-  `driverspecials` INT UNSIGNED NOT NULL DEFAULT 0,
-  `driverassists` INT UNSIGNED NOT NULL DEFAULT 0,
-  `passengerassists` INT UNSIGNED NOT NULL DEFAULT 0,
-  `teamkills` INT UNSIGNED NOT NULL DEFAULT 0,
-  `teamdamage` INT UNSIGNED NOT NULL DEFAULT 0,
-  `teamvehicledamage` INT UNSIGNED NOT NULL DEFAULT 0,
+  `score` MEDIUMINT NOT NULL DEFAULT 0,
+  `cmdscore` MEDIUMINT NOT NULL DEFAULT 0,
+  `skillscore` MEDIUMINT NOT NULL DEFAULT 0,
+  `teamscore` MEDIUMINT NOT NULL DEFAULT 0,
+  `kills` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `deaths` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `captures` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `neutralizes` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `captureassists` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `neutralizeassists` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `defends` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `damageassists` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `heals` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `revives` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `ammos` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `repairs` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `targetassists` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `driverspecials` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `driverassists` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `passengerassists` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `teamkills` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `teamdamage` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `teamvehicledamage` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `suicides` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `killstreak` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `deathstreak` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
@@ -346,8 +347,8 @@ CREATE TABLE `player_kit` (
   `id` TINYINT UNSIGNED NOT NULL,
   `pid` INT UNSIGNED NOT NULL,
   `time` INT UNSIGNED NOT NULL DEFAULT 0,
-  `kills` INT UNSIGNED NOT NULL DEFAULT 0,
-  `deaths` INT UNSIGNED NOT NULL DEFAULT 0,
+  `kills` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `deaths` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`pid`,`id`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`id`) REFERENCES kit(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
@@ -396,9 +397,9 @@ CREATE TABLE `player_vehicle` (
   `id` TINYINT UNSIGNED NOT NULL,
   `pid` INT UNSIGNED NOT NULL,
   `time` INT UNSIGNED NOT NULL DEFAULT 0,
-  `kills` INT UNSIGNED NOT NULL DEFAULT 0,
-  `deaths` INT UNSIGNED NOT NULL DEFAULT 0,
-  `roadkills` INT UNSIGNED NOT NULL DEFAULT 0,
+  `kills` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `deaths` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `roadkills` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`pid`,`id`),
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`id`) REFERENCES vehicle(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
@@ -412,8 +413,8 @@ CREATE TABLE `player_weapon` (
   `id` TINYINT UNSIGNED NOT NULL,
   `pid` INT UNSIGNED NOT NULL,
   `time` INT UNSIGNED NOT NULL DEFAULT 0,
-  `kills` INT UNSIGNED NOT NULL DEFAULT 0,
-  `deaths` INT UNSIGNED NOT NULL DEFAULT 0,
+  `kills` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `deaths` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `fired` INT UNSIGNED NOT NULL DEFAULT 0,
   `hits` INT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`pid`,`id`),
@@ -460,15 +461,22 @@ CREATE OR REPLACE VIEW `player_weapon_view` AS
 CREATE OR REPLACE VIEW `player_awards_view` AS
   SELECT a.id AS `id`, a.pid AS `pid`, MAX(r.round_end) AS `earned`, MIN(r.round_end) AS `first`, COUNT(`level`) AS `level`
   FROM player_award AS a
-    JOIN round_history AS r ON a.roundid = r.id
+    LEFT JOIN round_history AS r ON a.roundid = r.id
   GROUP BY a.pid, a.id;
 
 CREATE OR REPLACE VIEW `round_history_view` AS
   SELECT h.id AS `id`, mi.name AS `map`, h.round_end AS `round_end`, h.team1 AS `team1`, h.team2 AS `team2`, h.winner AS `winner`,
     h.pids1 + h.pids2 AS `players`, GREATEST(h.tickets1, h.tickets2) AS `tickets`, s.name AS `server`
   FROM `round_history` AS h
-  JOIN `mapinfo` AS mi ON h.mapid = mi.id
-  JOIN `server` AS s ON h.serverid = s.id;
+    LEFT JOIN `mapinfo` AS mi ON h.mapid = mi.id
+    LEFT JOIN `server` AS s ON h.serverid = s.id;
+
+CREATE OR REPLACE VIEW `player_history_view` AS
+  SELECT ph.*, mi.name AS mapname, server.name AS name, rh.pids1_end + rh.pids2_end AS `playerCount`
+  FROM player_history AS ph
+    LEFT JOIN round_history AS rh ON ph.roundid = rh.id
+    LEFT JOIN server ON rh.serverid = server.id
+    LEFT JOIN mapinfo AS mi ON rh.mapid = mi.id;
 
 -- --------------------------------------------------------
 -- Create Procedures

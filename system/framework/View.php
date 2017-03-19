@@ -50,6 +50,12 @@ class View
     protected static $scripts = array();
 
     /**
+     * An array of javascript Variables
+     * @var array $name => $value
+     */
+    protected static $jsVariables = array();
+
+    /**
      * Our parser loop limit to stop data holes
      * @var int
      */
@@ -151,6 +157,23 @@ class View
     }
 
     /**
+     * Sets a JavaScript variable that can be used globally in the view JavaScript file.
+     *
+     * @param string $name the name of the variable
+     * @param mixed $value the value of the variable. Arrays will be converted to JSON format.
+     * @param bool $quoteString indicates whether string values are to be quoted.
+     */
+    public function setJavascriptVar($name, $value, $quoteString = true)
+    {
+        if (is_array($value))
+            $value = json_encode($value, JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        else if (!is_numeric($value) && $quoteString)
+            $value = '"'. trim($value, "\"'\t\n") .'"';
+
+        self::$jsVariables[$name] = $value;
+    }
+
+    /**
      * Adds a message to be displayed in the Global Messages container of the layout
      *
      * @param string $type The html class type ie: "error", "info", "warning" etc
@@ -192,6 +215,19 @@ class View
                 $buffer .= "<link rel=\"stylesheet\" type=\"text/css\" href=\"{$css}\" media=\"screen\" />" . PHP_EOL;
 
             $header = str_replace($this->LDelim . "VIEW_CSS" . $this->RDelim, $buffer, $header);
+
+            // Add variables
+            $buffer = '';
+            if (count(self::$jsVariables) > 0)
+            {
+                $buffer = "<script type=\"text/javascript\">" . PHP_EOL;
+                foreach (self::$jsVariables as $key => $val)
+                    $buffer .= "var {$key} = {$val};" . PHP_EOL;
+
+                $buffer .= "</script>" . PHP_EOL;
+            }
+
+            $header = str_replace($this->LDelim . "JS_VARS" . $this->RDelim, $buffer, $header);
 
             // Add attached scripts
             $buffer = '';
