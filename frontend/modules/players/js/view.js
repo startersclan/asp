@@ -213,5 +213,141 @@
             return false;
         });
 
+        // Reset Stats and Awards Button Click
+        $("#reset-stats").click(function(e) {
+
+            // For all modern browsers, prevent default behavior of the click
+            e.preventDefault();
+
+            // Show dialog form
+            $("#mws-jui-dialog")
+                .html('Are you sure you want to reset this players stats? This action cannot be undone!')
+                .dialog("option", {
+                    modal: true,
+                    buttons: [{
+                        text: "Confirm",
+                        class: "btn btn-danger",
+                        click: function () {
+
+                            $.post( "/ASP/players/reset", { ajax: true, action: "stats", playerId: playerId })
+                                .done(function( data ) {
+                                    // Parse response
+                                    var result = jQuery.parseJSON(data);
+                                    if (result.success == false) {
+                                        $('#jui-global-message')
+                                            .attr('class', 'alert error')
+                                            .html(result.message)
+                                            .slideDown(500);
+                                    }
+                                    else {
+                                        // Reload window
+                                        location.reload();
+                                    }
+                                });
+
+                            // Close dropdown menu
+                            $("#dlDropDown").dropdown("toggle");
+
+                            // Close dialog
+                            $(this).dialog("close");
+                        }
+                    },
+                    {
+                        text: "Cancel",
+                        click: function () {
+                            $(this).dialog("close");
+                        }
+                    }]
+                }).dialog("open");
+
+            // Just to be sure, older IE's needs this
+            return false;
+        });
+
+        // Reset Awards Button Click
+        $("#reset-awards").click(function(e) {
+
+            // For all modern browsers, prevent default behavior of the click
+            e.preventDefault();
+
+            // Show dialog form
+            $("#mws-jui-dialog")
+                .html('Are you sure you want to reset this players awards? This action cannot be undone!')
+                .dialog("option", {
+                    modal: true,
+                    buttons: [{
+                        text: "Confirm",
+                        class: "btn btn-danger",
+                        click: function () {
+
+                            $.post( "/ASP/players/reset", { ajax: true, action: "awards", playerId: playerId })
+                                .done(function( data ) {
+                                    // Parse response
+                                    var result = jQuery.parseJSON(data);
+                                    if (result.success == false) {
+                                        $('#jui-global-message')
+                                            .attr('class', 'alert error')
+                                            .html(result.message)
+                                            .slideDown(500);
+                                    }
+                                    else {
+                                        // Reload window
+                                        location.reload();
+                                    }
+                                });
+
+                            // Close dropdown menu
+                            $("#dlDropDown").dropdown("toggle");
+
+                            // Close dialog
+                            $(this).dialog("close");
+                        }
+                    },
+                    {
+                        text: "Cancel",
+                        click: function () {
+                            $(this).dialog("close");
+                        }
+                    }]
+                }).dialog("open");
+
+            // Just to be sure, older IE's needs this
+            return false;
+
+            // Just to be sure, older IE's needs this
+            return false;
+        });
+
+        // Reset Unlocks Button Click
+        $("#reset-unlocks").click(function(e) {
+
+            // For all modern browsers, prevent default behavior of the click
+            e.preventDefault();
+
+            $.post( "/ASP/players/reset", { ajax: true, action: "unlocks", playerId: playerId })
+                .done(function( data ) {
+                    // Parse response
+                    var result = jQuery.parseJSON(data);
+                    if (result.success == false) {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500);
+                    }
+                    else {
+                        $('#jui-global-message')
+                            .attr('class', 'alert success')
+                            .html("Player unlocks were successfully reset.")
+                            .slideDown(500);
+                    }
+
+                    // Close dropdown menu
+                    $("#dlDropDown").dropdown("toggle");
+                });
+
+            // Just to be sure, older IE's needs this
+            return false;
+        });
+
     });
 })(jQuery, window, document);

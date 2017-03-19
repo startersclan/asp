@@ -20,3 +20,7 @@
     display:table-cell;
     width:33.33vw;
 }
+
+.flotTip {
+    z-index: 9999;
+}

@@ -45,7 +45,8 @@
                 show: false
             },
             grid: {
-                hoverable: true
+                hoverable: true,
+                clickable: true
             },
             tooltip: true,
             tooltipOpts: {
@@ -76,7 +77,8 @@
                 show: false
             },
             grid: {
-                hoverable: true
+                hoverable: true,
+                clickable: true
             },
             tooltip: true,
             tooltipOpts: {

@@ -14,7 +14,7 @@
                     <i class="icol-accept"></i> Un-Ban Player
                 </a>
                 <a href="/ASP/players/view/{id}/history" class="btn"><i class="icol-clock"></i> View Round History</a>
-                <a href="#" class="btn dropdown-toggle" data-toggle="dropdown">
+                <a id="dlDropDown" href="#" class="btn dropdown-toggle" data-toggle="dropdown">
                     <i class="icol-arrow-refresh"></i> Reset <span class="caret"></span>
                 </a>
                 <ul class="dropdown-menu pull-right">
@@ -143,7 +143,7 @@
             <li>
                 <span class="key"><i class="icon-balance"></i> K/D Ratio</span>
                 <span class="val">
-					<span class="text-nowrap">{player.ratio}</span>
+					<span class="text-nowrap">{player.ratio} (<span style="color: {player.ratioColor}">{player.ratio2}</span>)</span>
 				</span>
             </li>
             <li>
@@ -265,7 +265,7 @@
             <li>
                 <span class="key"><i class="icon-chart"></i> W/L Ratio</span>
                 <span class="val">
-					<span class="text-nowrap">{player.WLRatio}</span>
+                    <span class="text-nowrap">{player.WLRatio} (<span style="color: {player.WLRatioColor}">{player.WLRatio2}</span>)</span>
 				</span>
             </li>
         </ul>
@@ -1003,4 +1003,9 @@
             </div>
         </div>
     </form>
+</div>
+
+<!-- Reset Player Confirmation Model -->
+<div id="mws-jui-dialog">
+    <div class="mws-dialog-inner"></div>
 </div>

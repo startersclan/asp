@@ -48,8 +48,19 @@ else
     $Response->writeDataLine($pid, time());
     $Response->writeHeaderLine("award", "level", "when", "first");
 
+    // We will not use a view this time, performance is key
+    $query = <<<SQL
+SELECT a.id AS `id`, a.pid AS `pid`, MAX(r.round_end) AS `earned`, MIN(r.round_end) AS `first`, COUNT(`level`) AS `level`
+FROM player_award AS a
+  LEFT JOIN round_history AS r ON a.roundid = r.id
+WHERE `pid`=$pid
+GROUP BY a.pid, a.id
+ORDER BY a.id;
+SQL;
+
+
     // Query and get all of the Players awards
-    $stmt = $connection->query("SELECT * FROM `player_awards_view` WHERE `pid`=$pid ORDER BY `id`");
+    $stmt = $connection->query($query);
     while ($award = $stmt->fetch())
     {
         // Ribbons will get a 'first' value of 0

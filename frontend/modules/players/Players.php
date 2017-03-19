@@ -249,6 +249,110 @@ SQL;
 
     /**
      * @protocol    POST
+     * @request     /ASP/players/reset
+     * @output      json
+     */
+    public function postReset()
+    {
+        // We only accept these POST actions
+        parent::requireAction("stats", "awards", "unlocks");
+
+        // Grab database connection
+        parent::requireDatabase(true);
+        $pdo = Database::GetConnection('stats');
+
+        // Extract player ID
+        $playerId = (int)$_POST['playerId'];
+
+        try
+        {
+            switch ($_POST['action'])
+            {
+                case "stats":
+
+                    // Start transaction
+                    $pdo->beginTransaction();
+
+                    // Delete all records from the following tables for this player
+                    $tables = ['player_kit', 'player_army', 'player_award', 'player_map', 'player_vehicle', 'player_weapon', 'player_unlock'];
+                    foreach ($tables as $table)
+                    {
+                        $pdo->exec("DELETE FROM {$table} WHERE pid={$playerId}");
+                    }
+
+                    // Reset all player stats
+                    $query = new Database\UpdateOrInsertQuery($pdo, 'player');
+                    $query->set('time', '=', 0);
+                    $query->set('rounds', '=', 0);
+                    $query->set('score', '=', 0);
+                    $query->set('cmdscore', '=', 0);
+                    $query->set('skillscore', '=', 0);
+                    $query->set('teamscore', '=', 0);
+                    $query->set('kills', '=', 0);
+                    $query->set('wins', '=', 0);
+                    $query->set('losses', '=', 0);
+                    $query->set('deaths', '=', 0);
+                    $query->set('captures', '=', 0);
+                    $query->set('captureassists', '=', 0);
+                    $query->set('neutralizes', '=', 0);
+                    $query->set('neutralizeassists', '=', 0);
+                    $query->set('defends', '=', 0);
+                    $query->set('damageassists', '=', 0);
+                    $query->set('heals', '=', 0);
+                    $query->set('revives', '=', 0);
+                    $query->set('ammos', '=', 0);
+                    $query->set('repairs', '=', 0);
+                    $query->set('targetassists', '=', 0);
+                    $query->set('driverspecials', '=', 0);
+                    $query->set('teamkills', '=', 0);
+                    $query->set('teamdamage', '=', 0);
+                    $query->set('teamvehicledamage', '=', 0);
+                    $query->set('suicides', '=', 0);
+                    $query->set('rank', '=', 0);
+                    $query->set('cmdtime', '=', 0);
+                    $query->set('sqltime', '=', 0);
+                    $query->set('sqmtime', '=', 0);
+                    $query->set('lwtime', '=', 0);
+                    $query->set('timepara', '=', 0);
+                    $query->set('mode0', '=', 0);
+                    $query->set('mode1', '=', 0);
+                    $query->set('mode2', '=', 0);
+                    $query->set('rndscore', '=', 0);
+                    $query->set('deathstreak', '=', 0);
+                    $query->set('killstreak', '=', 0);
+                    $query->where('id', '=', $playerId);
+                    $query->executeUpdate();
+
+                    // Commit changes
+                    $pdo->commit();
+                    break;
+                case "awards":
+                    $pdo->exec("DELETE FROM player_award WHERE pid={$playerId}");
+                    break;
+                case "unlocks":
+                    $pdo->exec("DELETE FROM player_unlock WHERE pid={$playerId}");
+                    break;
+            }
+
+            // Echo success
+            echo json_encode( array('success' => true, 'message' => $_POST['playerId']) );
+        }
+        catch (Exception $e)
+        {
+            // Rollback changes
+            if ($_POST['action'] == "stats")
+                $pdo->rollBack();
+
+            // Log exception
+            Asp::LogException($e);
+
+            // Tell the client that we have failed
+            echo json_encode( array('success' => false, 'message' => 'Query Failed! '. $e->getMessage()) );
+        }
+    }
+
+    /**
+     * @protocol    POST
      * @request     /ASP/players/authorize
      * @output      json
      */
