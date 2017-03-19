@@ -65,7 +65,7 @@ function build_navigation()
         $navigation->append($group);
 
         // Add Player Links
-        $group = new NavigationItem("Manage Players", "#", "icon-users", in_array($task, $players));
+        $group = new NavigationItem("Player Manager", "#", "icon-users", in_array($task, $players));
         $group->append('/ASP/players', 'Manage Players');
         $group->append('/ASP/players/merge', 'Merge Players');
         $navigation->append($group);

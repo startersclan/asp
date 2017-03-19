@@ -47,6 +47,14 @@
                 }]
             });
 
+            $("#mws-jui-dialog").dialog({
+                autoOpen: false,
+                title: "Confirm Delete Award",
+                modal: true,
+                width: "640",
+                resizable: false
+            });
+
             // Add New Server Click
             $("#edit-player").click(function(e) {
 
