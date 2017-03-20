@@ -47,10 +47,128 @@ else
     $result = $connection->query("SELECT * FROM `player_unlock` WHERE `unlockid` = $id AND `pid` = $pid LIMIT 1");
     if (!($exists = $result->fetch()))
     {
-        /** TODO prevent cheating here via HTTP calls! */
-        $connection->exec("INSERT INTO player_unlock VALUES ($pid, $id)");
+        // Grab player rank
+        $rank = (int)$connection->query("SELECT rank FROM `player` WHERE `pid` = $pid LIMIT 1")->fetchColumn(0);
+
+        // Determine Earned Unlocks due to Rank
+        $unlocks = getRankUnlocks($rank);
+
+        // Determine Bonus Unlocks due to Kit Badges
+        $unlocks += getBonusUnlocks($pid, $rank, $connection);
+
+        // Check Used Unlocks
+        $query = "SELECT COUNT(`pid`) AS `count` FROM `player_unlock` WHERE `pid` = {$pid}";
+        $result = $connection->query($query);
+        $used = (int)$result->fetchColumn(0);
+
+        // Determine available unlocks count
+        $available = max(0, $unlocks - $used);
+
+        // Finally, if the user HAS available unlocks, let them choose this one
+        if ($available > 0)
+        {
+            $connection->exec("INSERT INTO player_unlock VALUES ($pid, $id)");
+            $Response->writeLine("OK");
+        }
+        else
+        {
+            $Response->writeLine("NOK");
+        }
     }
 
-    $Response->writeLine("OK");
+    // Send response
     $Response->send();
+}
+
+/**
+ * This method returns the number of unlocks due to rank
+ *
+ * @param int $rank The players current rank
+ *
+ * @return int The amount of unlocks due to rank
+ */
+function getRankUnlocks($rank)
+{
+    // Determine Earned Unlocks due to Rank
+    if ($rank >= 9)
+    {
+        return 7;
+    }
+    elseif ($rank >= 7)
+    {
+        return 6;
+    }
+    elseif ($rank >= 6)
+    {
+        return 5;
+    }
+    elseif ($rank >= 5)
+    {
+        return 4;
+    }
+    elseif ($rank >= 4)
+    {
+        return 3;
+    }
+    elseif ($rank >= 3)
+    {
+        return 2;
+    }
+    elseif ($rank >= 2)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+/**
+ * This method returns the amount of bonus unlocks due to
+ * earned badges
+ *
+ * @param int $pid The player ID
+ * @param int $rank The players rank
+ * @param \System\Database\DbConnection $connection
+ *
+ * @return int
+ */
+function getBonusUnlocks($pid, $rank, $connection)
+{
+    // Check if Minimum Rank Unlocks obtained
+    if ($rank < Config::Get('game_unlocks_bonus_min'))
+        return 0;
+
+    // Are bonus Unlocks available?
+    $level = (int)Config::Get('game_unlocks_bonus');
+    if ($level == 0)
+        return 0;
+
+    // Define Kit Badges Array
+    $kitbadges = array(
+        "1031119",        // Assault
+        "1031120",        // Anti-tank
+        "1031109",        // Sniper
+        "1031115",        // Spec-Ops
+        "1031121",        // Support
+        "1031105",        // Engineer
+        "1031113"         // Medic
+    );
+
+    // Count number of kit badges obtained
+    $checkawds = "'" . implode("','", $kitbadges) . "'";
+    $query = <<<SQL
+SELECT COUNT(`id`) AS `count` 
+FROM `player_award` 
+WHERE `pid` = $pid 
+  AND (
+    `id` IN ($checkawds) 
+      AND `level` >= $level
+  );
+SQL;
+
+    $result = $connection->query($query);
+
+    return (int)$result->fetchColumn(0);
 }

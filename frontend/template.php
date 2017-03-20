@@ -87,6 +87,9 @@ function build_navigation()
         $navigation->append($group);
     }
 
+    //$group = new NavigationItem("Message Center", "#", "icon-warning-sign", false);
+    //$navigation->append($group);
+
     // Logout
     $group = new NavigationItem("Logout", "/ASP/index.php?action=logout", "icon-off", false);
     $navigation->append($group);

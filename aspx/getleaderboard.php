@@ -321,7 +321,7 @@ SELECT
   p.name AS name, p.rank AS rank, p.country AS country, 
   k.pid AS pid, k.kills AS kills, k.deaths AS deaths, k.time AS `time`
 FROM player_kit AS k
-INNER JOIN player AS p ON k.pid = p.id
+  INNER JOIN player AS p ON k.pid = p.id
 WHERE k.id = $id AND k.kills > 0
 ORDER BY kills DESC, time DESC
 LIMIT $min, $max
@@ -397,7 +397,7 @@ SELECT
   p.name AS name, p.rank AS rank, p.country AS country, 
   k.pid AS pid, k.kills AS kills, k.deaths AS deaths, k.time AS `time`
 FROM player_vehicle AS k
-INNER JOIN player AS p ON k.pid = p.id
+  INNER JOIN player AS p ON k.pid = p.id
 WHERE k.id = $id AND k.kills > 0
 ORDER BY kills DESC, time DESC
 LIMIT $min, $max
@@ -474,7 +474,7 @@ SELECT
   p.name AS name, p.rank AS rank, p.country AS country, 
   k.pid AS pid, k.kills AS kills, k.deaths AS deaths, k.time AS `time`, k.hits AS hits, k.fired AS fired
 FROM player_weapon_view AS k
-INNER JOIN player AS p ON k.pid = p.id
+  INNER JOIN player AS p ON k.pid = p.id
 WHERE k.id = $id AND k.kills > 0
 ORDER BY kills DESC, accuracy DESC
 LIMIT $min, $max

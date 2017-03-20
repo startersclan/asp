@@ -53,10 +53,10 @@
             	<img id="logo" src="/ASP/frontend/images/bf2logo.png" alt="BF2 Private Stats Admin" />
 			</div>
         </div>
-		
+
 		<div id="title">Private Stats Admin</div>
 		<div id="dbver">Code Version: <?php echo CODE_VER; ?> || Database Version: <?php echo DB_VER ?> </div>
-        
+
     </div>
     
     <!-- Start Main Wrapper -->
