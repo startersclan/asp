@@ -202,7 +202,8 @@ SQL;
             $view->set('round', $this->PlayerHistoryModel->formatRoundInfo($round));
 
             // Add advanced info if we can
-            $view->set('advanced', $this->PlayerHistoryModel->addAdvancedRoundInfo($id, $round, $view));
+            $advanced = $this->PlayerHistoryModel->addAdvancedRoundInfo($id, $round, $view);
+            $view->set('advanced', $advanced);
 
             // Get next round ID
             $query = "SELECT MIN(`roundid`) FROM player_history WHERE pid={$id} AND roundid > ". $subid;
@@ -227,20 +228,23 @@ SQL;
             $view->attachStylesheet("/ASP/frontend/modules/players/css/history_detail.css");
             $view->attachStylesheet("/ASP/frontend/modules/players/css/view.css");
 
-            // Set kill/death Ratio Chart Data
-            $data = [
-                ['label' => "Kills", 'data' => $round['kills'], 'color' => "#00479f"],
-                ['label' => "Deaths", 'data' => $round['deaths'], 'color' => "#c75d7b"]
-            ];
-            $view->setJavascriptVar('killData', $data);
+            if ($advanced)
+            {
+                // Set kill/death Ratio Chart Data
+                $data = [
+                    ['label' => "Kills", 'data' => $round['kills'], 'color' => "#00479f"],
+                    ['label' => "Deaths", 'data' => $round['deaths'], 'color' => "#c75d7b"]
+                ];
+                $view->setJavascriptVar('killData', $data);
 
-            // Set Time Played As chart data
-            $vars = $view->getVars();
-            $data = [
-                ['label' => "Weapons", 'data' => $vars['weaponTotals']['time'], 'color' => "#00479f"],
-                ['label' => "Vehicles", 'data' => $vars['vehicleTotals']['time'], 'color' => "#c75d7b"]
-            ];
-            $view->setJavascriptVar('timePlayedData', $data);
+                // Set Time Played As chart data
+                $vars = $view->getVars();
+                $data = [
+                    ['label' => "Weapons", 'data' => $vars['weaponTotals']['time'], 'color' => "#00479f"],
+                    ['label' => "Vehicles", 'data' => $vars['vehicleTotals']['time'], 'color' => "#c75d7b"]
+                ];
+                $view->setJavascriptVar('timePlayedData', $data);
+            }
 
             // Send output
             $view->render();

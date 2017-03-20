@@ -124,7 +124,12 @@ class PlayerHistoryModel
         $kills = (int)$round['kills'];
         $deaths = (int)$round['deaths'];
         $den = $this->getDenominator($kills, $deaths);
-        $data['ratio'] = ($kills / $den) . '/' . ($deaths / $den);
+        if ($den == 0)
+            $data['ratio'] = "0/0";
+        else
+            $data['ratio'] = ($kills / $den) . '/' . ($deaths / $den);
+        $data['ratio2'] = ($deaths > 0) ? round( $kills / $deaths, 2) : $kills . ".00";
+        $data['ratioColor'] = ($data['ratio2'] > 0.99) ? "green" : "red";
 
         // Set date formats
         $data['round_start_date'] = date('F jS, Y g:i A T', (int)$round['round_start']);

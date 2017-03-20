@@ -136,7 +136,7 @@
             <li>
                 <span class="key"><i class="icon-balance"></i> K/D Ratio</span>
                 <span class="val">
-					<span class="text-nowrap">{round.ratio}</span>
+					<span class="text-nowrap">{round.ratio} (<span style="color: {round.ratioColor}">{round.ratio2}</span>)</span>
 				</span>
             </li>
             <li>

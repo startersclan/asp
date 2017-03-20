@@ -51,7 +51,7 @@ namespace System
     ini_set('zlib.output_compression', '0');
 
     // Check user agent first and foremost
-    if (trim($_SERVER['HTTP_USER_AGENT'])  != "GameSpyHTTP/1.0")
+    if (trim($_SERVER['HTTP_USER_AGENT']) != "GameSpyHTTP/1.0")
     {
         header("Content-Type: text/plain; charset=utf-8");
         header('HTTP/1.1 403 Forbidden');

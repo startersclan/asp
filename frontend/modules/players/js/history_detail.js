@@ -27,68 +27,72 @@
         $("[rel=popover]").popover({html: true});
 
         // Kill Death Ratio Chart
-        // noinspection JSUnresolvedVariable
-        $.plot($("#mws-pie-1"), killData, {
-            series: {
-                pie: {
-                    innerRadius: 0.3,
-                    highlight: {
-                        opacity: 0.2
-                    },
-                    stroke: {
-                        width: 1
-                    },
-                    show: true
-                }
-            },
-            legend: {
-                show: false
-            },
-            grid: {
-                hoverable: true,
-                clickable: true
-            },
-            tooltip: true,
-            tooltipOpts: {
-                content: function(label, xval, yval, flotItem){ // expects to pass these arguments
-                    return "%s : %y";
+        if ($("#mws-pie-1").length > 0) {
+            // noinspection JSUnresolvedVariable
+            $.plot($("#mws-pie-1"), killData, {
+                series: {
+                    pie: {
+                        innerRadius: 0.3,
+                        highlight: {
+                            opacity: 0.2
+                        },
+                        stroke: {
+                            width: 1
+                        },
+                        show: true
+                    }
                 },
-                defaultTheme: false,
-                cssClass: 'flotTip'
-            }
-        });
+                legend: {
+                    show: false
+                },
+                grid: {
+                    hoverable: true,
+                    clickable: true
+                },
+                tooltip: true,
+                tooltipOpts: {
+                    content: function (label, xval, yval, flotItem) { // expects to pass these arguments
+                        return "%s : %y";
+                    },
+                    defaultTheme: false,
+                    cssClass: 'flotTip'
+                }
+            });
+        }
 
         // Time Played As Chart
-        // noinspection JSUnresolvedVariable
-        $.plot($("#mws-pie-2"), timePlayedData, {
-            series: {
-                pie: {
-                    innerRadius: 0.3,
-                    highlight: {
-                        opacity: 0.2
-                    },
-                    stroke: {
-                        width: 1
-                    },
-                    show: true
-                }
-            },
-            legend: {
-                show: false
-            },
-            grid: {
-                hoverable: true,
-                clickable: true
-            },
-            tooltip: true,
-            tooltipOpts: {
-                content: function(label, xval, yval, flotItem){ // expects to pass these arguments
-                    return "%s : %y";
+        if ($("#mws-pie-2").length > 0) {
+            // noinspection JSUnresolvedVariable
+            $.plot($("#mws-pie-2"), timePlayedData, {
+                series: {
+                    pie: {
+                        innerRadius: 0.3,
+                        highlight: {
+                            opacity: 0.2
+                        },
+                        stroke: {
+                            width: 1
+                        },
+                        show: true
+                    }
                 },
-                defaultTheme: false,
-                cssClass: 'flotTip'
-            }
-        });
+                legend: {
+                    show: false
+                },
+                grid: {
+                    hoverable: true,
+                    clickable: true
+                },
+                tooltip: true,
+                tooltipOpts: {
+                    content: function (label, xval, yval, flotItem) { // expects to pass these arguments
+                        return "%s : %y";
+                    },
+                    defaultTheme: false,
+                    cssClass: 'flotTip'
+                }
+            });
+        }
 
         // Row Button Clicks
         $(document).on('click', 'button.btn', function(e) {
