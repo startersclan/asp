@@ -277,7 +277,7 @@ class Database extends Controller
 
             // A list of tables we care about
             $tables = [
-                'army', 'kit', 'vehicle', 'weapon', 'unlock',
+                'army', 'kit', 'vehicle', 'weapon', 'unlock', 'risingstar',
                 'mapinfo', 'server', 'round_history', 'player', 'player_army', 'player_award', 'player_weapon',
                 'player_kit', 'player_kill', 'player_map', 'player_history', 'player_vehicle', 'player_unlock'
             ];
@@ -391,7 +391,8 @@ class Database extends Controller
             // A list of tables we care about
             $tables = [
                 'mapinfo', 'server', 'round_history', 'player', 'player_army', 'player_award', 'player_weapon',
-                'player_kit', 'player_kill', 'player_map', 'player_history', 'player_vehicle', 'player_unlock'
+                'player_kit', 'player_kill', 'player_map', 'player_history', 'player_vehicle', 'player_unlock',
+                'risingstar'
             ];
 
             // Clear old stuff

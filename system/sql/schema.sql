@@ -14,9 +14,11 @@ DROP VIEW IF EXISTS `player_weapon_view`;
 DROP VIEW IF EXISTS `round_history_view`;
 DROP VIEW IF EXISTS `player_history_view`;
 DROP VIEW IF EXISTS `player_awards_view`;
+DROP PROCEDURE IF EXISTS `generate_rising_star`;
 DROP PROCEDURE IF EXISTS `create_player`;
 DROP TABLE IF EXISTS `ip2nationcountries`;
 DROP TABLE IF EXISTS `ip2nation`;
+DROP TABLE IF EXISTS `risingstar`;
 DROP TABLE IF EXISTS `player_weapon`;
 DROP TABLE IF EXISTS `player_unlock`;
 DROP TABLE IF EXISTS `player_vehicle`;
@@ -260,6 +262,14 @@ CREATE TABLE `player` (
   PRIMARY KEY(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Create Indexes for BFHQ Leaderboard
+--
+CREATE INDEX `idx_player_score` ON player(`score`);
+CREATE INDEX `idx_player_skillscore` ON player(`skillscore`);
+CREATE INDEX `idx_player_teamscore` ON player(`teamscore`);
+CREATE INDEX `idx_player_cmdscore` ON player(`cmdscore`);
+
 delimiter $$
 
 CREATE TRIGGER `player_joined` BEFORE INSERT ON `player`
@@ -357,7 +367,7 @@ CREATE TABLE `player_kit` (
 --
 -- Add index for the GetLeaderboard.aspx
 --
-ALTER TABLE `player_kit` ADD INDEX `player_kit_id_kills_time` (`id`, `kills`, `time`);
+CREATE INDEX `idx_player_kit_id_kills_time` ON player_kit(`id`, `kills`, `time`);
 
 --
 -- Table structure for table `player_history`
@@ -382,7 +392,7 @@ CREATE TABLE `player_history` (
   FOREIGN KEY(`team`) REFERENCES army(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-ALTER TABLE `player_history` ADD INDEX `player_history_timestamp_score_pid` (`timestamp`, `score`, `pid`);
+CREATE INDEX `idx_player_history_timestamp_score_pid` ON player_history(`timestamp`, `score`, `pid`);
 
 --
 -- Table structure for table `player_unlock`
@@ -415,7 +425,7 @@ CREATE TABLE `player_vehicle` (
 --
 -- Add index for the GetLeaderboard.aspx
 --
-ALTER TABLE `player_vehicle` ADD INDEX `player_vehicle_id_kills_time` (`id`, `kills`, `time`);
+CREATE INDEX `idx_player_vehicle_id_kills_time` ON player_vehicle(`id`, `kills`, `time`);
 
 --
 -- Table structure for table `weapons`
@@ -437,7 +447,19 @@ CREATE TABLE `player_weapon` (
 --
 -- Add index for the GetLeaderboard.aspx
 --
-ALTER TABLE `player_weapon` ADD INDEX `player_weapon_id_kills_time` (`id`, `kills`, `time`);
+CREATE INDEX `idx_player_weapon_id_kills_time` ON player_weapon(`id`, `kills`, `time`);
+
+--
+-- Table structure for table `risingstar`
+--
+CREATE TABLE `risingstar` (
+  `pos` INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  `pid` INT UNSIGNED NOT NULL,
+  `weeklyscore` INT UNSIGNED NOT NULL,
+  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE INDEX `idx_risingstar_pid` ON risingstar(`pid`);
 
 --
 -- Table structure for table `ip2nation`
@@ -507,12 +529,30 @@ CREATE PROCEDURE `create_player`(
   IN `ipAddress` VARCHAR(46),
   OUT `pid` INT
 )
-BEGIN
-  -- SELECT COALESCE(max(id), 29000000) + 1 INTO pid FROM player;
-  INSERT INTO player(`id`, `name`, `password`, `country`, `lastip`)
-    VALUES(pid, playerName, playerPassword, countryCode, ipAddress);
-  SELECT pid;
-END $$
+  BEGIN
+    INSERT INTO player(`id`, `name`, `password`, `country`, `lastip`)
+      VALUES(pid, playerName, playerPassword, countryCode, ipAddress);
+    SELECT pid;
+  END $$
+
+CREATE PROCEDURE `generate_rising_star`()
+  BEGIN
+    -- Get timestamp from a week ago
+    DECLARE lastweek INT;
+    SET lastweek = UNIX_TIMESTAMP() - (86400 * 7);
+
+    -- Delete all rising star rows
+    DELETE FROM `risingstar`;
+    ALTER TABLE `risingstar` AUTO_INCREMENT = 1;
+
+    -- Fill Rising Star Table
+    INSERT INTO `risingstar`(pid, weeklyscore)
+      SELECT pid, sum(h.score) AS weeklyscore
+      FROM player_history AS h
+      WHERE timestamp >= lastweek AND score > 0
+      GROUP BY pid
+      ORDER BY weeklyscore DESC;
+  END $$
 
 delimiter ;
 

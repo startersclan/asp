@@ -245,47 +245,35 @@ else
     # Need weekly score calculations!
     elseif ($type == 'risingstar')
     {
-        // Lets cache this since the query requires filesort and a temporary table
-        $expireTime = Config::Get('stats_aspx_cache_time');
-        if (!$pid && $expireTime > 0)
+        // Check if the result set is expired
+        if (Config::Get('stats_risingstar_refresh') < time())
         {
-            // Fetch cached response
-            $cache = CacheManager::GetInstance('FileCache');
-            $item = $cache->getItem("rising_star_{$pos}_{$before}_{$after}");
-            $response = $item->get();
-
-            // Check if response is empty (expired)
-            if (!empty($response))
-                die($response);
-
-            // Set expire time of new cached response
-            $item->expiresAfter($expireTime);
+            // Call the proceedure to fill the risingstar table
+            $connection->exec("CALL `generate_rising_star`");
+            Config::Set('stats_risingstar_refresh', time() + (86400 * 7));
+            Config::Save();
         }
 
         // Grab total count
-        $timestamp = time() - (60 * 60 * 24 * 7);
-        $query = "SELECT COUNT(DISTINCT(pid)) FROM player_history WHERE timestamp >= {$timestamp} AND score > 0";
-        $result = $connection->query($query);
-        $Response->writeDataLine($result->fetchColumn(), time());
+        $query = "SELECT COUNT(pid) FROM risingstar";
+        $total = (int)$connection->query($query)->fetchColumn(0);
+        $Response->writeDataLine($total, time());
         $Response->writeHeaderLine("n", "pid", "nick", "weeklyscore", "totaltime", "date", "playerrank", "countrycode");
 
         if (!$pid)
         {
             $query = <<<SQL
-SELECT sum(h.score) AS weeklyscore, p.id, name, p.rank, country, p.time, p.joined
-FROM player_history AS h
-  LEFT JOIN player AS p ON p.id = h.pid
-WHERE h.timestamp >= {$timestamp} AND h.score > 0
-GROUP BY h.pid
-ORDER BY weeklyscore DESC
-LIMIT $min, $max
+SELECT pos, pid, r.weeklyscore, p.name, p.rank, p.country, p.joined, p.time
+FROM risingstar AS r 
+  INNER JOIN player AS p ON r.pid = p.id 
+WHERE pos BETWEEN $min AND $max
 SQL;
             $result = $connection->query($query);
             while ($row = $result->fetch())
             {
                 $Response->writeDataLine(
-                    $pos++,
-                    $row['id'],
+                    $row['pos'],
+                    $row['pid'],
                     trim($row['name']),
                     $row['weeklyscore'],
                     $row['time'],
@@ -297,8 +285,6 @@ SQL;
         }
         else
         {
-            /** @todo: Cache this stuff somehow */
-
             // Ensure Player exists by PID
             $query = "SELECT `id`, `name`, `rank`, `country`, `time`, `joined` FROM player WHERE id={$pid} LIMIT 1";
             $result = $connection->query($query);
@@ -308,23 +294,22 @@ SQL;
                 die;
             }
 
-            // Grab player weekly score
-            $query = "SELECT COALESCE(sum(score), 0) AS score FROM player_history WHERE pid=%d AND timestamp >= %d";
-            $result = $connection->query(sprintf($query, $pid, $timestamp));
-            $score = ((int)$result->fetchColumn(0));
+            // Get players position relative to everyone else
+            $query = "SELECT pos, weeklyscore FROM risingstar WHERE pid=%d";
+            $result = $connection->query(sprintf($query, $pid))->fetch();
+
+            // Fix empty result
+            if (empty($result))
+            {
+                $result = ['pos' => $total + 1, 'weeklyscore' => 0];
+            }
 
             // Get players position relative to everyone else
-            $query = <<<SQL
-SELECT COUNT(*) FROM (
-  SELECT sum(score) AS score FROM player_history WHERE timestamp >= %d AND score > %d GROUP BY pid
-) AS tbl
-SQL;
-            $result = $connection->query(sprintf($query, $timestamp, $score));
             $Response->writeDataLine(
-                ((int)$result->fetchColumn(0)) + 1,
+                $result['pos'],
                 $player['id'],
                 trim($player['name']),
-                $score,
+                $result['weeklyscore'],
                 $player['time'],
                 date('m/d/y h:i:00 A', $player['joined']),
                 $player['rank'],
