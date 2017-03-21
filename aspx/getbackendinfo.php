@@ -19,12 +19,31 @@
 
 // Namespace
 namespace System;
+use System\Cache\CacheManager;
 
 // No direct access
 defined("BF2_ADMIN") or die("No Direct Access");
 
 // Connect to the database
 $connection = Database::GetConnection("stats");
+
+// Check file cache for cached response?
+$item = null;
+$expireTime = Config::Get('stats_aspx_cache_time');
+if ($expireTime > 0)
+{
+    // Fetch cached response
+    $cache = CacheManager::GetInstance('FileCache');
+    $item = $cache->getItem('getbackendinfo.aspx');
+    $response = $item->get();
+
+    // Check if response is empty (expired)
+    if (!empty($response))
+        die($response);
+
+    // Set expire time of new cached response
+    $item->expiresAfter($expireTime);
+}
 
 // Prepare response
 $Response = new AspResponse();
@@ -39,4 +58,4 @@ while ($row = $stmt->fetch())
     $Response->writeDataLine($row['id'], $row['kit'], $row['name'], $row['desc']);
 }
 
-$Response->send();
+$Response->send(false, $item);

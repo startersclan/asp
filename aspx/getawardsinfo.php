@@ -33,7 +33,7 @@ $transpose = (isset($_GET['transpose'])) ? (int)$_GET['transpose'] : 0;
 // Player id specified?
 if ($pid == 0)
 {
-    $Response->responseError(true);
+    $Response->responseError(true, 107);
     $Response->writeHeaderLine("asof", "err");
     $Response->writeDataLine(time(), "Invalid Syntax!");
     $Response->send();

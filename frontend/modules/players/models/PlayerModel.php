@@ -514,7 +514,7 @@ class PlayerModel
             $data['ratio'] = "0/0";
         else
             $data['ratio'] = ($kills / $den) . '/' . ($deaths / $den);
-        $data['ratio2'] = ($deaths > 0) ? round( $kills / $deaths, 2) : $kills . ".00";
+        $data['ratio2'] = ($deaths > 0) ? number_format( $kills / $deaths, 2) : $kills . ".00";
         $data['ratioColor'] = ($data['ratio2'] > 0.99) ? "green" : "red";
 
         // Set W/L Ratio
@@ -523,14 +523,14 @@ class PlayerModel
             $data['WLRatio'] = "0/0";
         else
             $data['WLRatio'] = ($wins / $den) . '/' . ($losses / $den);
-        $data['WLRatio2'] = ($losses > 0) ? round( $wins / $losses, 2) : $wins . ".00";
+        $data['WLRatio2'] = ($losses > 0) ? number_format( $wins / $losses, 2) : $wins . ".00";
         $data['WLRatioColor'] = ($data['WLRatio2'] > 0.99) ? "green" : "red";
 
         // Set rank name
         $data['rankName'] = $this->getRankName((int)$player['rank']);
 
         // Calculate SPM
-        $data['spm'] = ($time > 0) ? number_format( round($score / ($time / 60) , 3), 3 ) : 0;
+        $data['spm'] = ($time > 0) ? number_format( $score / ($time / 60), 3 ) : 0;
         return $data;
     }
 

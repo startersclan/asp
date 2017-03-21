@@ -33,7 +33,7 @@ $id = (isset($_GET['id'])) ? (int)$_GET['id'] : 0;
 // Check user input
 if ($pid == 0 || $id == 0)
 {
-    $Response->responseError(true);
+    $Response->responseError(true, 107);
     $Response->writeHeaderLine("asof", "err");
     $Response->writeDataLine(time(), "Invalid Syntax!");
     $Response->send();

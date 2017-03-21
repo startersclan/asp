@@ -136,7 +136,7 @@ class Autoloader
     public static function LoadClass($class)
     {
         // Check for namespaced class
-        $nameparts = explode('\\', $class);
+        $nameparts = explode('\\', trim($class, '\\'));
         $length = count($nameparts);
 
         // If the class name is namespaced, we will use the namespace to determine

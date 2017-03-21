@@ -307,8 +307,8 @@
                         </label>
                         <div class="mws-form-item">
                             <select class="small" name="cfg__stats_strict_api" title="">
-                                <option value="1" <?php if('{config.stats_strict_api}' == '0') echo 'selected="selected"'; ?>>Public</option>
-                                <option value="0" <?php if('{config.stats_strict_api}' == '1') echo 'selected="selected"'; ?>>
+                                <option value="0" <?php if('{config.stats_strict_api}' == '0') echo 'selected="selected"'; ?>>Public</option>
+                                <option value="1" <?php if('{config.stats_strict_api}' == '1') echo 'selected="selected"'; ?>>
                                     Restricted to BF2 Client and Servers only
                                 </option>
                             </select>

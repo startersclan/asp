@@ -1,5 +1,6 @@
 .idea/
 system/backups/
+system/cache/
 system/logs/*.log
 system/snapshots/processed/
 system/snapshots/failed/

@@ -8,6 +8,7 @@
  *
  */
 namespace System;
+use System\Cache\CacheItem;
 
 /**
  * The AspResponse class is used to properly format
@@ -137,12 +138,43 @@ class AspResponse
      * @param bool $transpose Enabling transpose will print the data
      *  to the browser in a different format. All headers will be a new line,
      *  with the following data to the left of the header, separated by tabs
+     * @param CacheItem $item If this response is to be cached, provide the CacheItem
+     *  object. otherwise, leave null
      * @param bool $killScript If set to true, the script
      *  will die when this method is called.
      *
      * @return void
      */
-    public function send($transpose = false, $killScript = true)
+    public function send($transpose = false, CacheItem $item = null, $killScript = true)
+    {
+        // Do we cache this response?
+        if (is_null($item))
+        {
+            // output the response
+            echo $this->getString($transpose);
+        }
+        else
+        {
+            $contents = $this->getString($transpose);
+            $item->set($contents);
+            $item->save();
+            echo $contents;
+        }
+
+        // Kill the script
+        if ($killScript) die;
+    }
+
+    /**
+     * Gets the current response as a string
+     *
+     * @param bool $transpose Enabling transpose will print the data
+     *  to the browser in a different format. All headers will be a new line,
+     *  with the following data to the left of the header, separated by tabs
+     *
+     * @return string
+     */
+    public function getString($transpose = false)
     {
         // Initial line
         $line = (($this->error) ? "E" : "O");
@@ -197,21 +229,22 @@ class AspResponse
             // Output the data, adding the number of characters
             $output = implode("\n", $lines);
             $num = strlen(preg_replace('/[\t\n]/', '', $output));
-            echo $output, "\n", "$\t$num\t$";
+
+            return $output . "\n" . "$\t$num\t$";
         }
         else
         {
+            // Create a new reference
+            $lines = $this->lines;
+
             // Prepend the response type
-            array_unshift($this->lines, $line);
+            array_unshift($lines, $line);
 
             // Output the data, adding the number of characters
-            $output = implode("\n", $this->lines);
+            $output = implode("\n", $lines);
             $num = strlen(preg_replace('/[\t\n]/', '', $output));
-            echo $output, "\n", "$\t$num\t$";
-        }
 
-        // Kill the script
-        if ($killScript)
-            die;
+            return $output . "\n" . "$\t$num\t$";
+        }
     }
 }

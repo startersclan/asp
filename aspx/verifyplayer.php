@@ -55,7 +55,7 @@ $nick = (isset($_GET['nick'])) ? str_replace('%20', ' ', $_GET['nick']) : '';
 // Player id specified?
 if ($pid == 0 || empty($nick))
 {
-    $Response->responseError(true);
+    $Response->responseError(true, 107);
     $Response->writeHeaderLine("asof", "err");
     $Response->writeDataLine(time(), "Invalid Syntax!");
     $Response->send();

@@ -355,6 +355,11 @@ CREATE TABLE `player_kit` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
+-- Add index for the GetLeaderboard.aspx
+--
+ALTER TABLE `player_kit` ADD INDEX `player_kit_id_kills_time` (`id`, `kills`, `time`);
+
+--
 -- Table structure for table `player_history`
 --
 
@@ -376,6 +381,8 @@ CREATE TABLE `player_history` (
   FOREIGN KEY(`roundid`) REFERENCES round_history(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   FOREIGN KEY(`team`) REFERENCES army(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE `player_history` ADD INDEX `player_history_timestamp_score_pid` (`timestamp`, `score`, `pid`);
 
 --
 -- Table structure for table `player_unlock`
@@ -406,6 +413,11 @@ CREATE TABLE `player_vehicle` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
+-- Add index for the GetLeaderboard.aspx
+--
+ALTER TABLE `player_vehicle` ADD INDEX `player_vehicle_id_kills_time` (`id`, `kills`, `time`);
+
+--
 -- Table structure for table `weapons`
 --
 
@@ -421,6 +433,11 @@ CREATE TABLE `player_weapon` (
   FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`id`) REFERENCES weapon(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Add index for the GetLeaderboard.aspx
+--
+ALTER TABLE `player_weapon` ADD INDEX `player_weapon_id_kills_time` (`id`, `kills`, `time`);
 
 --
 -- Table structure for table `ip2nation`

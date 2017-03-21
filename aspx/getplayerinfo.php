@@ -44,7 +44,7 @@ $transpose = (isset($_GET['transpose'])) ? (int)$_GET['transpose'] : 0;
 // Ensure we have the required url parameters
 if ($pid == 0 || empty($info))
 {
-    $Response->responseError(true);
+    $Response->responseError(true, 107);
     $Response->writeHeaderLine("asof", "err");
     $Response->writeDataLine(time(), "Invalid Syntax!");
     $Response->send();
