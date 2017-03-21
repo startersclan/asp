@@ -452,10 +452,12 @@ class PlayerModel
                     $data['timeplayed'] = $span->format("%d Days, %y Hours, %j Mins");
                     break;
                 case 'joined':
-                    $data['joined'] = date('F jS, Y g:i A T', (int)$value);
+                    $value = (int)$value;
+                    $data['joined'] = ($value == 0) ? "Never" : date('F jS, Y g:i A T', $value);
                     break;
                 case 'lastonline':
-                    $data['lastonline'] = date('F jS, Y g:i A T', (int)$value);
+                    $value = (int)$value;
+                    $data['lastonline'] = ($value == 0) ? "Never" : date('F jS, Y g:i A T', $value);
                     break;
                 case 'cmdtime':
                 case 'sqmtime':

@@ -21,8 +21,6 @@
 namespace System;
 
 // No direct access
-use System\Cache\CacheManager;
-
 defined("BF2_ADMIN") or die("No Direct Access");
 
 // Prepare output
@@ -116,7 +114,7 @@ else
             if ($pid == 0)
             {
                 $query = "SELECT id, name, rank, country, cmdtime, cmdscore FROM player WHERE cmdscore > 0"
-                    . " ORDER BY cmdscore DESC, name DESC LIMIT {$min}, {$max}";
+                    . " ORDER BY cmdscore DESC LIMIT {$min}, {$max}";
                 $result = $connection->query($query);
                 while ($row = $result->fetch())
                 {
@@ -160,7 +158,7 @@ else
             if ($pid == 0)
             {
                 $query = "SELECT id, name, rank, country, time, teamscore FROM player WHERE teamscore > 0
-				    ORDER BY teamscore DESC, name DESC LIMIT " . $min . ", " . $max;
+				    ORDER BY teamscore DESC LIMIT " . $min . ", " . $max;
                 $result = $connection->query($query);
                 while ($row = $result->fetch())
                 {
@@ -204,7 +202,7 @@ else
             if (!$pid)
             {
                 $query = "SELECT id, name, rank, country, time, kills, skillscore FROM player WHERE skillscore > 0
-				    ORDER BY skillscore DESC, name DESC LIMIT " . $min . ", " . $max;
+				    ORDER BY skillscore DESC LIMIT " . $min . ", " . $max;
                 $result = $connection->query($query);
                 while ($row = $result->fetch())
                 {
