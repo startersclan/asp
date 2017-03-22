@@ -18,7 +18,8 @@ class ServerModel
      * @param string $ip The servers IP address
      * @param int $port The servers Game Query Port
      *
-     * @return array
+     * @return array|false an array of server details, or false if
+     *  the server is offline
      */
     public function queryServer($ip, $port)
     {
@@ -32,8 +33,12 @@ class ServerModel
         $GameQ->setOption('timeout', 5); // seconds
         $results = $GameQ->process();
 
-        // Prepare return values
+        // Is the server offline?
         $results = $results[$key];
+        if (!$results['gq_online'])
+            return false;
+
+        // Prepare return values
         $return = [
             'server' => [],
             'team1' => [],
@@ -83,6 +88,7 @@ class ServerModel
                 $name = "Middle Eastern Coalition";
                 return true;
 
+            case "usmc":
             case "us":
             case "usa":
                 $flag = 0;
@@ -129,6 +135,21 @@ class ServerModel
             case "eu":
                 $flag = 9;
                 $name = "European Union";
+                return true;
+
+            case "ger":
+                $flag = 10;
+                $name = "German Forces";
+                return true;
+
+            case "ukr":
+                $flag = 12;
+                $name = "Ukrainian Forces";
+                return true;
+
+            case "un":
+                $flag = 13;
+                $name = "United Nations";
                 return true;
 
             default:
@@ -178,7 +199,7 @@ class ServerModel
                 case 'teams':
                     $return['team1score'] = 0;
                     $return['team2score'] = 0;
-                    if (is_array($value))
+                    if (is_array($value) && count($value) == 2)
                     {
                         $return['team1score'] = $value[0]['score'];
                         $return['team2score'] = $value[1]['score'];
@@ -208,14 +229,23 @@ class ServerModel
         foreach ($players as $player)
         {
             $id = (int)$player['pid'];
-            $rows = $pdo->query("SELECT name, rank FROM player WHERE id={$id} LIMIT 1");
-            if ($row = $rows->fetch())
+            if ($id == 0)
             {
-                $player['rank'] = ($row['name'] == $player['name']) ? (int)$row['rank'] : 0;
+                $player['rank'] = 0;
             }
             else
             {
-                $player['rank'] = 0;
+                $rows = $pdo->query("SELECT name, rank FROM player WHERE id={$id} LIMIT 1");
+                if ($row = $rows->fetch())
+                {
+                    $sn = strtolower(trim($player['player']));
+                    $dn = strtolower(trim($row['name']));
+                    $player['rank'] = ($dn == $sn) ? (int)$row['rank'] : 0;
+                }
+                else
+                {
+                    $player['rank'] = 0;
+                }
             }
 
             $return[] = $player;

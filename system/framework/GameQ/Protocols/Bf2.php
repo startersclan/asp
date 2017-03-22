@@ -85,7 +85,7 @@ class Bf2 extends Gamespy3
         // Individual
         'player'  => [
             'name'   => 'player',
-            'kills'  => 'score',
+            'kills'  => 'skill',
             'deaths' => 'deaths',
             'ping'   => 'ping',
             'score'  => 'score',
