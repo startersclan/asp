@@ -120,6 +120,8 @@ CREATE TABLE `server` (
   `queryport` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `authorized` TINYINT(1) NOT NULL DEFAULT 1, -- Servers are allowed to post snapshots
   `lastupdate` INT UNSIGNED NOT NULL DEFAULT 0,
+  `plasma` TINYINT(1) NOT NULL DEFAULT 0,
+  `online` TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY(`id`),
   CONSTRAINT `ip-port-unq` UNIQUE (`ip`, `port`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -208,6 +210,7 @@ CREATE TABLE `player` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(32) UNIQUE NOT NULL,
   `password` VARCHAR(32) NOT NULL,
+  `email` VARCHAR(64) DEFAULT NULL,
   `country` CHAR(2) NOT NULL DEFAULT 'xx',
   `lastip` VARCHAR(15) NOT NULL DEFAULT '0.0.0.0',
   `joined` INT UNSIGNED NOT NULL DEFAULT 0,
@@ -259,6 +262,7 @@ CREATE TABLE `player` (
   `permban` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
   `bantime` INT UNSIGNED NOT NULL DEFAULT 0,    -- Banned Timestamp
   `clantag` VARCHAR(20) NOT NULL DEFAULT '',
+  `online` TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

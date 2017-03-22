@@ -31,6 +31,7 @@
                     });
                 }
             },
+            order: [[ 3, "desc" ]], // Order by global score
             columns: [
                 { "data": "id" },
                 { "data": "rank" },
@@ -397,7 +398,7 @@
 
             // Always have the user confirm his action here!
             var tr = $(this).closest('tr');
-            var name = tr.find('td:eq(2) a').html();
+            var name = tr.find('td:eq(2)').html();
 
             if (action == 'edit') {
 

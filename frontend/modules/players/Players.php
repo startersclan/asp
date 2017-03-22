@@ -501,13 +501,13 @@ SQL;
 
                     // Add password if it is not empty
                     if (!empty($items['playerPassword']))
-                        $cols['password'] = $items['playerPassword'];
+                        $cols['password'] = md5($items['playerPassword']);
 
                     // do update
                     $pdo->update('player', $cols, ['id' => $id]);
 
                     // Load model
-                    parent::loadModel("PlayerModel", __CLASS__);
+                    parent::loadModel("PlayerModel", "players");
 
                     echo json_encode([
                         'success' => true,
