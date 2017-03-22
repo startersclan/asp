@@ -118,7 +118,7 @@ CREATE TABLE `server` (
   `name` VARCHAR(100) DEFAULT NULL,
   `port` SMALLINT UNSIGNED DEFAULT 0,
   `queryport` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-  `authorized` TINYINT(1) NOT NULL DEFAULT 1, -- Servers are allowed to post snapshots
+  `authorized` TINYINT(1) NOT NULL DEFAULT 0, -- Servers are allowed to post snapshots
   `lastupdate` INT UNSIGNED NOT NULL DEFAULT 0,
   `plasma` TINYINT(1) NOT NULL DEFAULT 0,
   `online` TINYINT(1) NOT NULL DEFAULT 0,

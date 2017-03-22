@@ -47,9 +47,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
-                            .slideDown(500)
-                            .delay(5000)
-                            .fadeOut('slow');
+                            .slideDown(500);
                     }
                     else {
                         $("#auth-server").hide();
@@ -77,13 +75,69 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
-                            .slideDown(500)
-                            .delay(5000)
-                            .fadeOut('slow');
+                            .slideDown(500);
                     }
                     else {
                         $("#auth-server").show();
                         $("#unauth-server").hide();
+                    }
+                });
+
+            // Just to be sure, older IE's needs this
+            return false;
+        });
+
+        // Plasma Click
+        $("#plasma-server").click(function(e) {
+
+            // For all modern browsers, prevent default behavior of the click
+            e.preventDefault();
+
+            // Push the request
+            $.post( "/ASP/servers/plasma", { action: "plasma", ajax: true, servers: [serverId] })
+                .done(function( data ) {
+
+                    // Parse response
+                    var result = jQuery.parseJSON(data);
+                    if (result.success == false) {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500);
+                    }
+                    else {
+                        $("#plasma").html("Yes").css('color', 'green');
+                        $("#plasma-server").hide();
+                        $("#unplasma-server").show();
+                    }
+                });
+
+            // Just to be sure, older IE's needs this
+            return false;
+        });
+
+        // Un-Plasma Click
+        $("#unplasma-server").click(function(e) {
+
+            // For all modern browsers, prevent default behavior of the click
+            e.preventDefault();
+
+            // Push the request
+            $.post( "/ASP/servers/plasma", { action: "unplasma", ajax: true, servers: [serverId] })
+                .done(function( data ) {
+
+                    // Parse response
+                    var result = jQuery.parseJSON(data);
+                    if (result.success == false) {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500);
+                    }
+                    else {
+                        $("#plasma").html("No").css('color', 'black');
+                        $("#unplasma-server").hide();
+                        $("#plasma-server").show();
                     }
                 });
 

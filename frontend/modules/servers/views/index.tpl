@@ -10,6 +10,8 @@
                 <a id="delete-selected" href="#" class="btn"><i class="icol-cross"></i> Delete Selected</a>
                 <a id="auth-selected" href="#" class="btn"><i class="icol-accept"></i> Authorize Selected</a>
                 <a id="unauth-selected" href="#" class="btn"><i class="icol-cross-shield-2"></i> Un-Authorize Selected</a>
+                <a id="plasma-selected" href="#" class="btn"><i class="icol-sort-date"></i> Plasma Selected</a>
+                <a id="unplasma-selected" href="#" class="btn"><i class="icol-sort"></i> Un-Plasma Selected</a>
                 <a id="refresh" href="#" class="btn"><i class="icol-arrow-refresh"></i> Refresh</a>
             </div>
         </div>
@@ -23,12 +25,13 @@
                 </th>
                 <th style="width: 5%">SID</th>
                 <th>Server Name</th>
-                <th style="width: 15%">Server Token</th>
-                <th style="width: 15%">Server IP Address</th>
+                <th style="width: 12%">Server Token</th>
+                <th style="width: 12%">Server IP Address</th>
                 <th style="width: 7%">Server Port</th>
                 <th style="width: 7%">Query Port</th>
                 <th style="width: 6%">Snapshots</th>
                 <th style="width: 6%">Authorized</th>
+                <th style="width: 6%">Plasma</th>
                 <th style="width: 7%">Actions</th>
             </tr>
             </thead>
@@ -46,6 +49,7 @@
                 <td>{queryport}</td>
                 <td>{snapshots}</td>
                 <td><?php echo ({authorized} == 1) ? 'Yes' : 'No'; ?></td>
+                <td><?php echo ({plasma} == 1) ? 'Yes' : 'No'; ?></td>
                 <td>
                     <span class="btn-group">
                         <a id="go-btn" href="/ASP/servers/view/{id}" rel="tooltip" title="View Server" class="btn btn-small"><i class="icon-eye-open"></i></a>

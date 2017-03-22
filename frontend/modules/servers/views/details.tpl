@@ -40,6 +40,18 @@
 					<span class="text-nowrap">{server.roundtime}</span>
 				</span>
             </li>
+            <li>
+                <span class="key"><i class="icon-flag"></i> Team 1 Score</span>
+                <span class="val">
+					<span class="text-nowrap">{server.team1score}</span>
+				</span>
+            </li>
+            <li>
+                <span class="key"><i class="icon-flag2"></i> Team 2 Score</span>
+                <span class="val">
+					<span class="text-nowrap">{server.team2score}</span>
+				</span>
+            </li>
         </ul>
     </div>
 </div>
@@ -202,11 +214,11 @@
             {players1}
                 <tr>
                     <td><img src="/ASP/frontend/images/ranks/rank_{rank}.gif"/></td>
-                    <td>{name}</td>
-                    <td>{score}</td>
-                    <td>{kills}</td>
-                    <td>{deaths}</td>
-                    <td>{ping}</td>
+                    <td>{gq_name}</td>
+                    <td>{gq_score}</td>
+                    <td>{gq_kills}</td>
+                    <td>{gq_deaths}</td>
+                    <td>{gq_ping}</td>
                 </tr>
             {/players1}
             </tbody>
@@ -236,11 +248,11 @@
             {players2}
                 <tr>
                     <td><img src="/ASP/frontend/images/ranks/rank_{rank}.gif"/></td>
-                    <td>{name}</td>
-                    <td>{score}</td>
-                    <td>{kills}</td>
-                    <td>{deaths}</td>
-                    <td>{ping}</td>
+                    <td>{gq_name}</td>
+                    <td>{gq_score}</td>
+                    <td>{gq_kills}</td>
+                    <td>{gq_deaths}</td>
+                    <td>{gq_ping}</td>
                 </tr>
             {/players2}
             </tbody>

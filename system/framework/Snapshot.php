@@ -180,6 +180,20 @@ class Snapshot extends GameResult
             throw new Exception("Minimum round Player count does not meet the ASP requirement");
         }
 
+        // Ensure the army IDs are not unknown
+        if ($this->team1ArmyId >= StatsData::$NumArmies)
+        {
+            $message = sprintf("Unknown ArmyId (%d) found in Snapshot.. Aborting", $this->team1ArmyId);
+            $this->logWriter->logWarning($message);
+            throw new Exception($message);
+        }
+        else if ($this->team2ArmyId >= StatsData::$NumArmies)
+        {
+            $message = sprintf("Unknown ArmyId (%d) found in Snapshot.. Aborting", $this->team2ArmyId);
+            $this->logWriter->logWarning($message);
+            throw new Exception($message);
+        }
+
         // To prevent half complete snapshots due to exceptions,
         // Put the whole thing in a try block, and rollback on error
         try
@@ -554,7 +568,7 @@ class Snapshot extends GameResult
             // Process ServerInfo
             // ********************************
             $query = new UpdateOrInsertQuery($connection, 'server');
-            $query->set('name', '=', substr($this->serverName, 0, 100));
+            $query->set('name', '=', StringHelper::SubStrWords($this->serverName, 100));
             $query->set('queryport', '=', $this->queryPort);
             $query->set('lastupdate', '=', time());
             $query->where('id', '=', $serverId);

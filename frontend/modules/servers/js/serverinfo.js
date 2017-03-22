@@ -316,11 +316,7 @@
             e.preventDefault();
 
             // Get all checked
-            var serverIds = $('input[type=checkbox]:checked').map(function() {
-                // Extract the server ID
-                var sid = $(this).attr('id').split("-");
-                return sid[sid.length-1];
-            }).get();
+            var serverIds = getSelectedServers();
 
             // Is anything selected?
             if (serverIds.length < 1)
@@ -360,11 +356,7 @@
             e.preventDefault();
 
             // Get all checked
-            var checkValues = $('input[type=checkbox]:checked').map(function() {
-                // Extract the server ID
-                var sid = $(this).attr('id').split("-");
-                return sid[sid.length-1];
-            }).get();
+            var checkValues = getSelectedServers();
 
             // Push the request
             $.post( "/ASP/servers/authorize", { action: "unauth", servers: checkValues })
@@ -376,9 +368,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
-                            .slideDown(500)
-                            .delay(5000)
-                            .fadeOut('slow');
+                            .slideDown(500);
                     }
                     else {
                         // Remove each row
@@ -402,11 +392,7 @@
             e.preventDefault();
 
             // Get all checked
-            var checkValues = $('input[type=checkbox]:checked').map(function() {
-                // Extract the server ID
-                var sid = $(this).attr('id').split("-");
-                return sid[sid.length-1];
-            }).get();
+            var checkValues = getSelectedServers();
 
             // Push the request
             $.post( "/ASP/servers/authorize", { action: "auth", servers: checkValues })
@@ -418,9 +404,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
-                            .slideDown(500)
-                            .delay(5000)
-                            .fadeOut('slow');
+                            .slideDown(500);
                     }
                     else {
                         // Remove each row
@@ -429,6 +413,74 @@
                             $('#tr-server-' + value).find('td:eq(8)').html('Yes');
                             $('#unauth-btn-' + value).show();
                             $('#auth-btn-' + value).hide();
+                        });
+                    }
+                });
+
+            // Just to be sure, older IE's needs this
+            return false;
+        });
+
+        // Plasma Click
+        $("#plasma-selected").click(function(e) {
+
+            // For all modern browsers, prevent default behavior of the click
+            e.preventDefault();
+
+            // Get all checked
+            var checkValues = getSelectedServers();
+
+            // Push the request
+            $.post( "/ASP/servers/plasma", { action: "plasma", ajax: true, servers: [checkValues] })
+                .done(function( data ) {
+
+                    // Parse response
+                    var result = jQuery.parseJSON(data);
+                    if (result.success == false) {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500);
+                    }
+                    else {
+                        // Update each row
+                        $.each(checkValues, function (key, value) {
+                            // Update html and button displays
+                            $('#tr-server-' + value).find('td:eq(9)').html('Yes');
+                        });
+                    }
+                });
+
+            // Just to be sure, older IE's needs this
+            return false;
+        });
+
+        // Plasma Click
+        $("#unplasma-selected").click(function(e) {
+
+            // For all modern browsers, prevent default behavior of the click
+            e.preventDefault();
+
+            // Get all checked
+            var checkValues = getSelectedServers();
+
+            // Push the request
+            $.post( "/ASP/servers/plasma", { action: "unplasma", ajax: true, servers: [checkValues] })
+                .done(function( data ) {
+
+                    // Parse response
+                    var result = jQuery.parseJSON(data);
+                    if (result.success == false) {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500);
+                    }
+                    else {
+                        // Update each row
+                        $.each(checkValues, function (key, value) {
+                            // Update html and button displays
+                            $('#tr-server-' + value).find('td:eq(9)').html('No');
                         });
                     }
                 });
@@ -462,9 +514,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
-                            .slideDown(500)
-                            .delay(5000)
-                            .fadeOut('slow');
+                            .slideDown(500);
                     }
                     else {
                         // Remove each row
@@ -473,6 +523,15 @@
                         });
                     }
                 });
+        }
+
+        function getSelectedServers()
+        {
+            return $('input[type=checkbox]:checked').map(function() {
+                // Extract the server ID
+                var sid = $(this).attr('id').split("-");
+                return sid[sid.length-1];
+            }).get();
         }
 
     });

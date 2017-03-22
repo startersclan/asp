@@ -15,12 +15,18 @@
         <div class="btn-toolbar">
             <div class="btn-group">
                 <a id="auth-server" href="#" class="btn" <?php echo ({server.authorized} == 0) ? '' : ' style="display: none"'; ?>>
-                    <i class="icol-accept"></i> Authorize Selected
+                    <i class="icol-accept"></i> Authorize
                 </a>
                 <a id="unauth-server" href="#" class="btn" <?php echo ({server.authorized} == 1) ? '' : ' style="display: none"'; ?>>
-                    <i class="icol-cross-shield-2"></i> Un-Authorize Server
+                    <i class="icol-cross-shield-2"></i> Un-Authorize
                 </a>
-                <a id="refresh" href="#" class="btn"><i class="icol-arrow-refresh"></i> Re-Query Server</a>
+                <a id="plasma-server" href="#" class="btn" <?php echo ({server.plasma} == 0) ? '' : ' style="display: none"'; ?>>
+                    <i class="icol-sort-date"></i> Plasma
+                </a>
+                <a id="unplasma-server" href="#" class="btn" <?php echo ({server.plasma} == 1) ? '' : ' style="display: none"'; ?>>
+                    <i class="icol-sort"></i> Un-Plasma
+                </a>
+                <a id="refresh" href="#" class="btn"><i class="icol-arrow-refresh"></i> Re-Query</a>
             </div>
         </div>
     </div>
@@ -51,7 +57,19 @@
 				</span>
             </li>
             <li>
-                <span class="key"><i class="icon-history-2"></i> Last Snapshot</span>
+                <span class="key"><i class="icon-pushpin"></i> Plasma Server</span>
+                <span class="val">
+					<span class="text-nowrap">
+                        <?php if({server.plasma} == 1): ?>
+                        <span id="plasma" style="color: green">Yes</span>
+                        <?php else: ?>
+                        <span id="plasma" style="color: black">No</span>
+                        <?php endif ?>
+                    </span>
+				</span>
+            </li>
+            <li>
+                <span class="key"><i class="icon-history-2"></i> Last Seen</span>
                 <span class="val">
 					<span class="text-nowrap">{server.last_update}</span>
 				</span>
