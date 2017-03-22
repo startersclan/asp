@@ -6,6 +6,7 @@
         var playerId = parseInt($("#playerCurrentId").html());
         var playerRank = parseInt($("#playerCurrentRank").html());
         var playerName = $("#changeableName").html();
+        var playerEmail = $("#playerCurrentEmail").html();
         var playerIso = $("#playerCurrentIso").html();
 
         function getCountryName() {
@@ -66,6 +67,7 @@
 
                 // Set form default values
                 $('input[name="playerName"]').val(playerName);
+                $('input[name="playerEmail"]').val(playerEmail);
                 $("#rankSelect").val(playerRank);
                 $("select.mws-select2").val(playerIso).change();
 
@@ -88,6 +90,11 @@
                     required: true,
                     minlength: 3,
                     maxlength: 32
+                },
+                playerEmail: {
+                    required: true,
+                    email: true, //for validate email
+                    maxlength: 64
                 }
             },
             invalidHandler: function (form, validator) {
@@ -121,10 +128,12 @@
                     playerName = result.name;
                     playerRank = result.rank;
                     playerIso = result.iso;
+                    playerEmail = result.email;
 
                     // Update html
                     $("#playerCurrentRank").html(result.rank);
                     $("#playerCurrentName").html(result.name);
+                    $("#playerCurrentEmail").html(result.email);
                     $("#playerCurrentIso").html(result.iso);
 
                     $("#changeableName").html(result.name);

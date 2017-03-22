@@ -35,19 +35,16 @@ if (isset($_POST['nick']))
 }
 else
 {
-    $nick = (isset($_GET['nick'])) ? $_GET['nick'] : '';
+    $nick = (isset($_GET['nick'])) ? str_replace('%20', ' ', $_GET['nick']) : '';
 }
 
-// Indicate whether this player is an AI bot
-$isAi = ((isset($_GET['ai'])) ? (int)$_GET['ai'] : 0) > 0;
+// Sanitize nick
+$pattern = Player::NAME_REGEX;
+$nick = preg_replace("/[^{$pattern}]/", '', trim($nick));
 
 // Search by name?
 if (!empty($nick))
 {
-    // Sanitize nick
-    $pattern = Player::NAME_REGEX;
-    $nick = preg_replace("/[^{$pattern}]/", '', $nick);
-
     // Ensure nick is not too long!
     if (strlen($nick) > 32)
     {

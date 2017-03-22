@@ -13,7 +13,7 @@ use System\TimeHelper;
 class ServerModel
 {
     /**
-     * Queries a BF2 server for its current round iformation
+     * Queries a BF2 server for its current round information
      *
      * @param string $ip The servers IP address
      * @param int $port The servers Game Query Port

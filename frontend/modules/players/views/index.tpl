@@ -69,6 +69,12 @@
                     </div>
                 </div>
                 <div class="mws-form-row">
+                    <label class="mws-form-label">Update Email</label>
+                    <div class="mws-form-item">
+                        <input type="text" name="playerEmail" class="large" title="">
+                    </div>
+                </div>
+                <div class="mws-form-row">
                     <label id="passwordLabel" class="mws-form-label">Update Password</label>
                     <div class="mws-form-item">
                         <input type="text" name="playerPassword" class="large" title="">

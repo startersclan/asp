@@ -66,6 +66,11 @@
                     required: true,
                     minlength: 3,
                     maxlength: 32
+                },
+                playerEmail: {
+                    required: true,
+                    email: true,
+                    maxlength: 64
                 }
             },
             invalidHandler: function (form, validator) {
@@ -149,8 +154,12 @@
                 // Set form default values
                 $('input[name="playerName"]').val("");
                 $('input[name="playerPassword"]').val("").rules('add', { required: true });
-                $('#passwordLabel').html('Password');
+                $('input[name="playerEmail"]').val("").rules('add', { required: true });
                 $("#rankSelect").val(0);
+
+                // Update labels
+                $('#emailLabel').html('Email');
+                $('#passwordLabel').html('Password');
 
                 // Show dialog form
                 $("#add-player-form").dialog("option", {
@@ -414,6 +423,10 @@
                 // Set form values
                 $('input[name="playerName"]').val(name);
                 $('input[name="playerPassword"]').val("").rules('remove', 'required');
+                $('input[name="playerEmail"]').val("").rules('remove', 'required');
+
+                // Update labels
+                $('#emailLabel').html('Update Email');
                 $('#passwordLabel').html('Update Password');
 
                 // Set player rank

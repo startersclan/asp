@@ -92,7 +92,7 @@ class Players extends Controller
 
         // Fetch player
         $query = <<<SQL
-SELECT `name`, `rank`, `joined`, `time`, `lastonline`, `score`, `skillscore`, `cmdscore`, `teamscore`, 
+SELECT `name`, `rank`, `email`, `joined`, `time`, `lastonline`, `score`, `skillscore`, `cmdscore`, `teamscore`, 
   `kills`, `deaths`, `teamkills`, `kicked`, `banned`, `permban`, `heals`, `repairs`, `ammos`, `revives`,
   `captures`, `captureassists`, `defends`, `country`, `driverspecials`, `neutralizes`, `neutralizeassists`,
   `damageassists`, `rounds`, `wins`, `losses`, `cmdtime`, `sqmtime`, `sqltime`, `lwtime`, `suicides`, 
@@ -474,9 +474,10 @@ SQL;
             {
                 case 'add':
                     $pdo->insert('player', [
-                        'name' => ' '. trim($name),
-                        'password' => md5($items['playerPassword']),
+                        'name' => trim($name),
+                        'password' => md5(trim($items['playerPassword'])),
                         'rank' => $items['playerRank'],
+                        'email' => trim($items['playerEmail']),
                         'country' => $items['playerCountry']
                     ]);
 
@@ -494,14 +495,20 @@ SQL;
                     }
 
                     $cols = [
-                        'name' => $name,
+                        'name' => trim($name),
                         'country' => $items['playerCountry'],
                         'rank' => $items['playerRank']
                     ];
 
                     // Add password if it is not empty
-                    if (!empty($items['playerPassword']))
-                        $cols['password'] = md5($items['playerPassword']);
+                    $pass = trim($items['playerPassword']);
+                    if (!empty($pass))
+                        $cols['password'] = md5($pass);
+
+                    // Add email if it is not empty
+                    $email = trim($items['playerEmail']);
+                    if (!empty($email))
+                        $cols['email'] = $email;
 
                     // do update
                     $pdo->update('player', $cols, ['id' => $id]);
@@ -514,6 +521,7 @@ SQL;
                         'mode' => 'update',
                         'name' => $name,
                         'rank' => $items['playerRank'],
+                        'email' => $items['playerEmail'],
                         'iso' => $items['playerCountry'],
                         'rankName' => $this->PlayerModel->getRankName((int)$items['playerRank'])
                     ]);
@@ -763,7 +771,8 @@ SQL;
                             $exists = $pdo->query("SELECT id FROM player WHERE name={$name} LIMIT 1")->fetchColumn(0);
                             if ($exists === false)
                             {
-                                $pdo->exec("INSERT INTO `player`(`name`, `country`, `password`) VALUES ({$name}, 'US', '');");
+                                $query = "INSERT INTO `player`(`name`, `country`, `email`, `password`) VALUES ({$name}, 'US', 'bot@botNames.ai', '')";
+                                $pdo->exec($query);
                                 $imported++;
                             }
                         }

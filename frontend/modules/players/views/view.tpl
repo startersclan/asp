@@ -34,6 +34,7 @@
                 <span id="playerCurrentId" style="display: none">{id}</span>
                 <span id="playerCurrentRank" style="display: none">{player.rank}</span>
                 <span id="playerCurrentIso" style="display: none">{player.country}</span>
+                <span id="playerCurrentEmail" style="display: none">{player.email}</span>
                 <!-- End Hidden fields for JavaScript -->
                 <span class="key"><i class="icon-user"></i> Player Name</span>
                 <span class="val">
@@ -708,6 +709,12 @@
                 <label class="mws-form-label">Player Name</label>
                 <div class="mws-form-item">
                     <input type="text" name="playerName" class="required large" title="">
+                </div>
+            </div>
+            <div class="mws-form-row">
+                <label class="mws-form-label">Player Email</label>
+                <div class="mws-form-item">
+                    <input type="text" name="playerEmail" class="required large" title="">
                 </div>
             </div>
             <div class="mws-form-row">
