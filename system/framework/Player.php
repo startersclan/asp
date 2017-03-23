@@ -242,7 +242,7 @@ class Player
         {
             if ($obj['id'] < StatsData::$NumArmies)
             {
-                $this->timeAsArmy[$obj['id']] = $obj['time'];
+                $this->timeAsArmy[$obj['id']] = (int)$obj['time'];
             }
         }
 
@@ -253,10 +253,10 @@ class Player
             {
                 // Create new object stat
                 $object = new ObjectStat();
-                $object->id = $obj['id'];
-                $object->time = $obj['time'];
-                $object->kills = $obj['kills'];
-                $object->deaths = $obj['deaths'];
+                $object->id = (int)$obj['id'];
+                $object->time = (int)$obj['time'];
+                $object->kills = (int)$obj['kills'];
+                $object->deaths = (int)$obj['deaths'];
 
                 // Add object to list
                 $this->kitData[] = $object;
@@ -270,11 +270,11 @@ class Player
             {
                 // Create new object stat
                 $object = new ObjectStat();
-                $object->id = $obj['id'];
-                $object->time = $obj['time'];
-                $object->kills = $obj['kills'];
-                $object->deaths = $obj['deaths'];
-                $object->roadKills = $obj['roadkills'];
+                $object->id = (int)$obj['id'];
+                $object->time = (int)$obj['time'];
+                $object->kills = (int)$obj['kills'];
+                $object->deaths = (int)$obj['deaths'];
+                $object->roadKills = (int)$obj['roadkills'];
 
                 // Add object to list
                 $this->vehicleData[] = $object;
@@ -288,13 +288,13 @@ class Player
             {
                 // Create new object stat
                 $object = new ObjectStat();
-                $object->id = $obj['id'];
-                $object->time = $obj['time'];
-                $object->kills = $obj['kills'];
-                $object->deaths = $obj['deaths'];
-                $object->fired = $obj['fired'];
-                $object->hits = $obj['hits'];
-                $object->deployed = $obj['deployed'];
+                $object->id = (int)$obj['id'];
+                $object->time = (int)$obj['time'];
+                $object->kills = (int)$obj['kills'];
+                $object->deaths = (int)$obj['deaths'];
+                $object->fired = (int)$obj['fired'];
+                $object->hits = (int)$obj['hits'];
+                $object->deployed = (int)$obj['deployed'];
 
                 // Add object to list
                 $this->weaponData[] = $object;

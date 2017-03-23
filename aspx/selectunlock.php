@@ -48,7 +48,17 @@ else
     if (!($exists = $result->fetch()))
     {
         // Grab player rank
-        $rank = (int)$connection->query("SELECT rank FROM `player` WHERE `pid` = $pid LIMIT 1")->fetchColumn(0);
+        $rank = $connection->query("SELECT rank FROM `player` WHERE `id` = $pid LIMIT 1")->fetchColumn(0);
+        if ($rank === false)
+        {
+            $Response->responseError(true);
+            $Response->writeHeaderLine("asof", "err");
+            $Response->writeDataLine(time(), "Player Not Found!");
+            $Response->send();
+        }
+
+        // Case to integer
+        $rank = (int)$rank;
 
         // Determine Earned Unlocks due to Rank
         $unlocks = getRankUnlocks($rank);
@@ -69,15 +79,21 @@ else
         {
             $connection->exec("INSERT INTO player_unlock VALUES ($pid, $id)");
             $Response->writeLine("OK");
+            $Response->send();
         }
         else
         {
-            $Response->writeLine("NOK");
+            $Response->responseError(true);
+            $Response->writeHeaderLine("asof", "err");
+            $Response->writeDataLine(time(), "No Unlocks Available!");
+            $Response->send();
         }
     }
-
-    // Send response
-    $Response->send();
+    else
+    {
+        $Response->writeLine("OK");
+        $Response->send();
+    }
 }
 
 /**
@@ -147,17 +163,17 @@ function getBonusUnlocks($pid, $rank, $connection)
 
     // Define Kit Badges Array
     $kitbadges = array(
-        "1031119",        // Assault
-        "1031120",        // Anti-tank
-        "1031109",        // Sniper
-        "1031115",        // Spec-Ops
-        "1031121",        // Support
-        "1031105",        // Engineer
-        "1031113"         // Medic
+        1031119,        // Assault
+        1031120,        // Anti-tank
+        1031109,        // Sniper
+        1031115,        // Spec-Ops
+        1031121,        // Support
+        1031105,        // Engineer
+        1031113         // Medic
     );
 
     // Count number of kit badges obtained
-    $checkawds = "'" . implode("','", $kitbadges) . "'";
+    $checkawds = implode(",", $kitbadges);
     $query = <<<SQL
 SELECT COUNT(`id`) AS `count` 
 FROM `player_award` 
@@ -168,7 +184,5 @@ WHERE `pid` = $pid
   );
 SQL;
 
-    $result = $connection->query($query);
-
-    return (int)$result->fetchColumn(0);
+    return (int)$connection->query($query)->fetchColumn(0);
 }

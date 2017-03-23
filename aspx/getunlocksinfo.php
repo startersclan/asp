@@ -211,17 +211,17 @@ function getBonusUnlocks($pid, $rank, $connection)
 
     // Define Kit Badges Array
     $kitbadges = array(
-        "1031119",        // Assault
-        "1031120",        // Anti-tank
-        "1031109",        // Sniper
-        "1031115",        // Spec-Ops
-        "1031121",        // Support
-        "1031105",        // Engineer
-        "1031113"         // Medic
+        1031119,        // Assault
+        1031120,        // Anti-tank
+        1031109,        // Sniper
+        1031115,        // Spec-Ops
+        1031121,        // Support
+        1031105,        // Engineer
+        1031113         // Medic
     );
 
     // Count number of kit badges obtained
-    $checkawds = "'" . implode("','", $kitbadges) . "'";
+    $checkawds = implode(",", $kitbadges);
     $query = <<<SQL
 SELECT COUNT(`id`) AS `count` 
 FROM `player_award` 
@@ -232,7 +232,5 @@ WHERE `pid` = $pid
   );
 SQL;
 
-    $result = $connection->query($query);
-
-    return (int)$result->fetchColumn(0);
+    return (int)$connection->query($query)->fetchColumn(0);
 }
