@@ -179,7 +179,7 @@ class Player
      *
      * Award data is expected to be loaded already before constructing!
      *
-     * @param Dictionary $playerData
+     * @param Dictionary $playerData the player data array from the Snapshot
      */
     public function __construct(Dictionary $playerData)
     {

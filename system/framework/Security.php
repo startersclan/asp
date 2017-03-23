@@ -30,39 +30,12 @@ class Security
      */
     public static function Login($username, $password)
     {
-        // Initialize or retrieve the current values for the login variables
-        if (!isset($_SESSION['loginAttempts']))
-            $_SESSION['loginAttempts'] = 1;
-
-        // If the posted username and/or password doesn't match whats set in config.
-        if ($username != Config::Get('admin_user') || $password != Config::Get('admin_pass'))
-        {
-            // If first login attempt, initiate a login attempt counter
-            if ($_SESSION['loginAttempts'] < 3)
-            {
-                $_SESSION['loginAttempts'] += 1;
-                return false;
-            }
-
-            // Otherwise, check if attempts are at 3, if so then lock the ASP for now
-            else
-            {
-                echo '<blink>
-                    <p style="font-weight:bold;font-size:170px;color:red;font-family:sans-serif;">
-                        <center>Max Login Attempts Reached</center>
-                    </p>
-                    </blink>';
-                exit;
-            }
-        }
-
-        // Else, the username and password matched, login is a success
-        else
+        // Check if the username and password matches the config
+        if ($username == Config::Get('admin_user') && $password == Config::Get('admin_pass'))
         {
             // Start Session, set session variables
             $_SESSION['adminAuth'] = sha1(Config::Get('admin_user') . ':' . Config::Get('admin_pass'));
             $_SESSION['adminTime'] = time();
-            $_SESSION['loginAttempts'] = 0;
 
             // Update last login time
             $last = Config::Get('admin_current_login');
@@ -72,6 +45,8 @@ class Security
 
             return true;
         }
+
+        return false;
     }
 
     /**

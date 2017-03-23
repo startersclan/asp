@@ -120,7 +120,7 @@
                         Good job soldier! Your Battlefield 2 ASP Stats System Setup is now Complete.
                     </div>
                     <br /><br />
-                    <input type="button" id="button-to-home" class="btn btn-success" value="Go To Home Page" data-target="/ASP/">
+                    <input type="button" id="button-to-home" class="btn btn-success" value="Run System Tests" data-target="/ASP/config/test">
                 </div>
                 <div id="install-failed" style="text-align: center; margin: 10px 0; display: none;">
                     <img src="/ASP/frontend/modules/install/images/Cross.png" style="margin-top: 10px">

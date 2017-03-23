@@ -69,7 +69,7 @@
                     </div>
                 </div>
                 <div class="mws-form-row">
-                    <label class="mws-form-label">Update Email</label>
+                    <label id="emailLabel" class="mws-form-label">Update Email</label>
                     <div class="mws-form-item">
                         <input type="text" name="playerEmail" class="large" title="">
                     </div>

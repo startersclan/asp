@@ -130,7 +130,7 @@ class Servers extends Controller
         // Form post?
         if ($_POST['action'] != 'status' || !isset($_POST['serverId']))
         {
-            echo json_encode(array('success' => false, 'message' => 'Invalid Action'));
+            echo json_encode(['success' => false, 'message' => 'Invalid Action']);
             die;
         }
 
@@ -141,7 +141,7 @@ class Servers extends Controller
         $id = (int)$_POST['serverId'];
         if ($id == 0)
         {
-            echo json_encode(array('success' => false, 'message' => 'Invalid Server Id'));
+            echo json_encode(['success' => false, 'message' => 'Invalid Server Id']);
             die;
         }
 
@@ -156,7 +156,7 @@ class Servers extends Controller
         // Does server exist?
         if (!$server)
         {
-            echo json_encode(array('success' => false, 'message' => 'Invalid Server Id'));
+            echo json_encode(['success' => false, 'message' => 'Invalid Server Id']);
             die;
         }
 
@@ -167,7 +167,7 @@ class Servers extends Controller
         // If we get a false response, server is offline
         if (!$result)
         {
-            echo json_encode(array('success' => true, 'online' => false, 'message' => ''));
+            echo json_encode(['success' => true, 'online' => false, 'message' => '']);
             die;
         }
 
@@ -265,13 +265,17 @@ class Servers extends Controller
                     ]);
                     break;
                 default:
-                    echo json_encode(array('success' => false, 'message' => 'Invalid Action'));
+                    echo json_encode(['success' => false, 'message' => 'Invalid Action']);
                     die;
             }
         }
         catch (Exception $e)
         {
-            echo json_encode(array('success' => false, 'message' => 'Query Failed! ' . $e->getMessage(), 'lastQuery' => $pdo->lastQuery));
+            echo json_encode([
+                'success' => false,
+                'message' => 'Query Failed! ' . $e->getMessage(),
+                'lastQuery' => $pdo->lastQuery
+            ]);
             die;
         }
     }
@@ -290,7 +294,7 @@ class Servers extends Controller
         $pdo = Database::GetConnection('stats');
         if ($pdo === false)
         {
-            echo json_encode(array('success' => false, 'message' => 'Unable to connect to database!'));
+            echo json_encode(['success' => false, 'message' => 'Unable to connect to database!']);
             die;
         }
 
@@ -320,7 +324,7 @@ class Servers extends Controller
                 $pdo->commit();
 
             // Echo success
-            echo json_encode(array('success' => true, 'message' => $_POST['servers']));
+            echo json_encode(['success' => true, 'message' => $_POST['servers']]);
         }
         catch (Exception $e)
         {
@@ -328,7 +332,7 @@ class Servers extends Controller
             if ($count > 5)
                 $pdo->rollBack();
 
-            echo json_encode(array('success' => false, 'message' => 'Query Failed! ' . $e->getMessage()));
+            echo json_encode(['success' => false, 'message' => 'Query Failed! ' . $e->getMessage()]);
             die;
         }
     }
@@ -347,7 +351,7 @@ class Servers extends Controller
         $pdo = Database::GetConnection('stats');
         if ($pdo === false)
         {
-            echo json_encode(array('success' => false, 'message' => 'Unable to connect to database!'));
+            echo json_encode(['success' => false, 'message' => 'Unable to connect to database!']);
             die;
         }
 
@@ -378,7 +382,7 @@ class Servers extends Controller
                 $pdo->commit();
 
             // Echo success
-            echo json_encode(array('success' => true, 'message' => $_POST['servers']));
+            echo json_encode(['success' => true, 'message' => $_POST['servers']]);
         }
         catch (Exception $e)
         {
@@ -386,7 +390,7 @@ class Servers extends Controller
             if ($count > 5)
                 $pdo->rollBack();
 
-            echo json_encode(array('success' => false, 'message' => 'Query Failed! ' . $e->getMessage()));
+            echo json_encode(['success' => false, 'message' => 'Query Failed! ' . $e->getMessage()]);
             die;
         }
     }
@@ -405,7 +409,7 @@ class Servers extends Controller
         $pdo = Database::GetConnection('stats');
         if ($pdo === false)
         {
-            echo json_encode(array('success' => false, 'message' => 'Unable to connect to database!'));
+            echo json_encode(['success' => false, 'message' => 'Unable to connect to database!']);
             die;
         }
 
@@ -436,7 +440,7 @@ class Servers extends Controller
                 $pdo->commit();
 
             // Echo success
-            echo json_encode(array('success' => true, 'message' => $_POST['servers']));
+            echo json_encode(['success' => true, 'message' => $_POST['servers']]);
         }
         catch (Exception $e)
         {
@@ -444,7 +448,7 @@ class Servers extends Controller
             if ($count > 5)
                 $pdo->rollBack();
 
-            echo json_encode(array('success' => false, 'message' => 'Query Failed! ' . $e->getMessage()));
+            echo json_encode(['success' => false, 'message' => 'Query Failed! ' . $e->getMessage()]);
             die;
         }
     }

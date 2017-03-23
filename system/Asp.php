@@ -154,9 +154,43 @@ class Asp
      */
     protected static function HandleAdminRequest()
     {
-        // First, Lets make sure the IP can view the ASP
+        // First and Foremost, Set timezone
+        date_default_timezone_set(Config::Get('admin_timezone'));
+
+        // Next, Lets make sure the IP can view the ASP
         if (!Security::IsAuthorizedIp(Request::ClientIp()))
-            die("<span style=\"color: red; \">ERROR:</span> You are NOT Authorised to access this Page! (Ip: " . Request::ClientIp() . ")");
+            die('<span style="color: red; ">ERROR:</span> You are NOT Authorised to access this Page! (Ip: ' . Request::ClientIp() . ')');
+
+        // Always set a post and get actions
+        if (!isset($_POST['action'])) $_POST['action'] = '';
+        if (!isset($_GET['action'])) $_GET['action'] = '';
+
+        // Check for login / logout requests
+        if ($_POST['action'] == 'login' && isset($_POST['username']) && isset($_POST['password']))
+        {
+            Security::Login($_POST['username'], $_POST['password']);
+        }
+        elseif ($_POST['action'] == 'logout' || $_GET['action'] == 'logout')
+        {
+            Security::Logout();
+        }
+
+        // Check and see if the user is logged in
+        if (!Security::IsValidSession())
+        {
+            // Check for an ajax request, and answer accordingly
+            if (isset($_POST['ajax']) && filter_var($_POST['ajax'], FILTER_VALIDATE_BOOLEAN))
+            {
+                // Respond in a commonly expected format for this admin panel
+                echo json_encode(['success' => false, 'message' => "Login session has expired! Please refresh the page and login again."]);
+            }
+            else
+            {
+                $View = new View('login');
+                $View->render(false);
+            }
+            return;
+        }
 
         // Create ASP log file instance
         try {
@@ -166,9 +200,6 @@ class Asp
             // Use tmp file instead
             $LogWriter = new LogWriter();
         }
-
-        // Set timezone
-        date_default_timezone_set(Config::Get('admin_timezone'));
 
         // Connect to the stats database
         try
@@ -203,37 +234,6 @@ class Asp
         {
             Config::Set('db_expected_ver', DB_VER);
             Config::Save();
-        }
-
-        // Always set a post and get actions
-        if (!isset($_POST['action'])) $_POST['action'] = '';
-        if (!isset($_GET['action'])) $_GET['action'] = '';
-
-        // Check for login / logout requests
-        if ($_POST['action'] == 'login' && isset($_POST['username']) && isset($_POST['password']))
-        {
-            Security::Login($_POST['username'], $_POST['password']);
-        }
-        elseif ($_POST['action'] == 'logout' || $_GET['action'] == 'logout')
-        {
-            Security::Logout();
-        }
-
-        // Check and see if the user is logged in
-        if (!Security::IsValidSession())
-        {
-            // Check for an ajax request, and answer accordingly
-            if (isset($_POST['ajax']) && filter_var($_POST['ajax'], FILTER_VALIDATE_BOOLEAN))
-            {
-                // Respond in a commonly expected format for this admin panel
-                echo json_encode(['success' => false, 'message' => "Login session has expired! Please refresh the page and login again."]);
-            }
-            else
-            {
-                $View = new View('login');
-                $View->render(false);
-            }
-            return;
         }
 
         // Get our MVC route
