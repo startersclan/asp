@@ -42,15 +42,19 @@ else
     // Connect to the database
     $connection = Database::GetConnection("stats");
 
-    $result = $connection->query("SELECT `rank` FROM `player` WHERE `id` = {$pid}");
-    if (!($row = $result->fetch()))
+    // Fetch player rank notifications
+    $row = $connection->query("SELECT `chng`, `decr` FROM `player` WHERE `id` = {$pid}")->fetch();
+    if (empty($row))
     {
         $Response->responseError(true);
         $Response->writeLine("Player Not Found");
     }
     else
     {
-        if ($row['chng'] != '0' || $row['decr'] != '0')
+        // DO we need to update the database, and clear notifications?
+        $chng = (int)$row['chng'];
+        $decr = (int)$row['decr'];
+        if ($chng > 0 || $decr > 0)
         {
             $query = "UPDATE `player` SET `chng` = 0, `decr` = 0 WHERE `id` = {$pid}";
             $result = $connection->exec($query);
