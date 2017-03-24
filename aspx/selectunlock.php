@@ -44,7 +44,7 @@ else
     $connection = Database::GetConnection("stats");
 
     // Check if unlock is already selected first!
-    $query = "SELECT * FROM `player_unlock` WHERE `unlockid` = $id AND `pid` = $pid LIMIT 1";
+    $query = "SELECT * FROM `player_unlock` WHERE `pid` = $pid AND `unlockid` = $id LIMIT 1";
     $result = $connection->query($query)->fetch();
     if (empty($result))
     {
@@ -69,8 +69,7 @@ else
 
         // Check Used Unlocks
         $query = "SELECT COUNT(`pid`) AS `count` FROM `player_unlock` WHERE `pid` = {$pid}";
-        $result = $connection->query($query);
-        $used = (int)$result->fetchColumn(0);
+        $used = (int)$connection->query($query)->fetchColumn(0);
 
         // Determine available unlocks count
         $available = max(0, $unlocks - $used);

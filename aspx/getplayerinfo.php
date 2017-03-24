@@ -55,8 +55,8 @@ else
     if (stringStartsWith($info, "per*,cmb*"))
     {
         // Fetch Player Data
-        $result = $connection->query("SELECT * FROM player WHERE id = {$pid}");
-        if (!($row = $result->fetch()))
+        $row = $connection->query("SELECT * FROM player WHERE id = {$pid}")->fetch();
+        if (empty($row))
         {
             $Response->responseError(true);
             $Response->writeHeaderLine("asof", "err");
@@ -69,15 +69,10 @@ else
             $Response->writeHeaderLine("asof");
             $Response->writeDataLine(time());
 
-            # For MNG
-            $name = trim($row['name']);
-            if (strpos($info, 'mng-') !== false)
-                $name = htmlspecialchars($name);
-
             // Build initial header
             $Output = array(
                 'pid' => $row['id'],
-                'nick' => $name,
+                'nick' => trim($row['name']),
                 'scor' => $row['score'],
                 'jond' => $row['joined'],
                 'wins' => $row['wins'],
@@ -131,7 +126,7 @@ else
                 'vmns' => "-", // Top opponent name
                 'vmrs' => 0, // Top opponent rank
                 'fkit' => 0, // Fav Kit
-                'fmap' => 0, // Fav Map
+                'fmap' => getFavMap($pid), // Fav Map
                 'fveh' => 0, // Fav vehicle
                 'fwea' => 0, // Fav Weapon
                 'tnv' => 0, // NIGHT VISION GOGGLES Time - NOT USED
@@ -141,23 +136,44 @@ else
             // Add Weapon data
             addWeaponData($Output, $pid);
 
+            // Define our KD ratio callback
+            $kdRatio = function($val, $row)
+            {
+                $kills = (int)$row["kills"];
+                $deaths = (int)$row["deaths"];
+                return getKDRatioString($kills, $deaths);
+            };
+
             // Add Vehicle Data
-            addVehicleData($Output, $pid);
+            addData($Output, $pid, 'player_vehicle', NUM_VEHICLES, 'fveh', [
+                'vtm' => ['col' => 'time', 'dv' => 0],
+                'vkl' => ['col' => 'kills', 'dv' => 0],
+                'vdt' => ['col' => 'deaths', 'dv' => 0],
+                'vkd' => ['dv' => '0:0', 'f' => $kdRatio],
+                'vkr' => ['col' => 'roadkills', 'dv' => 0, 'inc' => 'vrk']
+            ]);
 
             // Add Army Data
-            addArmyData($Output, $pid);
+            addData($Output, $pid, 'player_army', 10, null, [
+                'atm' => ['col' => 'time', 'dv' => 0],
+                'awn' => ['col' => 'wins', 'dv' => 0],
+                'alo' => ['col' => 'losses', 'dv' => 0],
+                'abr' => ['col' => 'best', 'dv' => 0],
+            ]);
 
             // Add kit data
-            addKitData($Output, $pid);
+            addData($Output, $pid, 'player_kit', NUM_KITS, 'fkit', [
+                'ktm' => ['col' => 'time', 'dv' => 0],
+                'kkl' => ['col' => 'kills', 'dv' => 0],
+                'kdt' => ['col' => 'deaths', 'dv' => 0],
+                'kkd' => ['dv' => '0:0', 'f' => $kdRatio],
+            ]);
 
             // Add Tactical data
             addTacticalData($Output, $pid);
 
             // Add Fav Victim and Opponent data
             addPlayerTopVictimAndOpp($Output, $pid);
-
-            // Get Favorite Map
-            getFavMap($Output, $pid);
 
             // Add data and spit out the response
             $Response->writeHeaderDataArray($Output);
@@ -176,13 +192,13 @@ WHERE `id` = {$pid}
 SQL;
 
         // Make sure the Player exists
-        $result = $connection->query($query);
-        if (!($row = $result->fetch()))
+        $row = $connection->query($query)->fetch();
+        if (empty($row))
         {
             $Response->responseError(true);
             $Response->writeHeaderLine("asof", "err");
             $Response->writeDataLine(time(), "Player Not Found!");
-            $Response->send();
+            $Response->send($transpose);
         }
 
         // Load stats data
@@ -452,22 +468,18 @@ SQL;
             : "`pid` = {$pid} AND `mapid` < 700";
 
         // Fetch map data from DB
-        $query = "SELECT * FROM `player_map` WHERE {$where}";
-        $result = $connection->query($query);
-        if ($row = $result->fetch())
+        $result = $connection->query("SELECT * FROM `player_map` WHERE {$where}");
+        while ($row = $result->fetch())
         {
-            do
+            $i = (int)$row['mapid'];
+            $mtm[$i] = $row['time'];
+            $mwn[$i] = $row['wins'];
+            $mls[$i] = $row['losses'];
+            if ($Extended)
             {
-                $i = (int)$row['mapid'];
-                $mtm[$i] = $row['time'];
-                $mwn[$i] = $row['wins'];
-                $mls[$i] = $row['losses'];
-                if ($Extended)
-                {
-                    $mbs[$i] = $row['best'];
-                    $mws[$i] = $row['worst'];
-                }
-            } while ($row = $result->fetch());
+                $mbs[$i] = $row['best'];
+                $mws[$i] = $row['worst'];
+            }
         }
 
         /**
@@ -499,8 +511,8 @@ SQL;
     elseif ($info == 'rank')
     {
         $query = "SELECT `id`, `name`, `rank`, `chng`, `decr` FROM `player` WHERE `id` = {$pid}";
-        $result = $connection->query($query);
-        if (!($row = $result->fetch()))
+        $row = $connection->query($query)->fetch();
+        if (empty($row))
         {
             $Response->responseError(true);
             $Response->writeHeaderLine("asof", "err");
@@ -523,7 +535,79 @@ SQL;
         $Response->responseError(true);
         $Response->writeHeaderLine("asof", "err");
         $Response->writeDataLine(time(), "Parameter Error!");
-        $Response->send();
+        $Response->send($transpose);
+    }
+}
+
+/**
+ * Adds an objects data to the output array using the given parameters.
+ *
+ * @param array $Output [Reference Variable]
+ * @param int $pid The player ID
+ * @param string $table The table we are fetching data from
+ * @param int $limit The limit of rows
+ * @param string $favKey The favorite object id Key in the output, or null if none
+ * @param array $keyvals An array of [ out-key => $options ]. See Example
+ *
+ * @example:
+ *  $options = [
+ *      'outkey' => [
+ *          'col' => The column name for this output key
+ *          'dv' => The default value to output
+ *          'f' => A callback function to format the value. Receives 2 parameters: (value of 'col', $row)
+ *          'inc' => Increments the specified $Output key by the value returned by 'col' or 'f'
+ *      ]
+ * ];
+ */
+function addData(&$Output, $pid, $table, $limit, $favKey, $keyvals)
+{
+    /**
+     * Add Defaults
+     *
+     * ORDER IS IMPORTANT HERE FOR BFHQ!
+     */
+    foreach ($keyvals as $key => $val)
+    {
+        for ($i = 0; $i < $limit; $i++)
+            $Output["$key-$i"] = $val['dv'];
+    }
+
+    // Fetch DB connection
+    $connection = Database::GetConnection("stats");
+    $favTime = 0;
+    $addFav = !empty($favKey);
+
+    $result = $connection->query("SELECT * FROM {$table} WHERE pid = {$pid} AND id < {$limit} ORDER BY id");
+    while ($row = $result->fetch())
+    {
+        $i = (int)$row['id'];
+        foreach ($keyvals as $key => $value)
+        {
+            $val = (isset($value['col'])) ? $row[$value['col']] : 0;
+            if (isset($value['f']))
+            {
+                $formatter = $value['f'];
+                $val = $formatter($val, $row);
+            }
+
+            // Increment?
+            if (isset($value['inc']))
+                $Output[$value['inc']] += $val;
+
+            // Set output value
+            $Output["$key-$i"] = $val;
+        }
+
+        // Favorite
+        if ($addFav)
+        {
+            $time = (int)$row["time"];
+            if ($time > $favTime)
+            {
+                $Output[$favKey] = $i;
+                $favTime = $time;
+            }
+        }
     }
 }
 
@@ -548,30 +632,11 @@ function addWeaponData(&$Output, $pid)
     $eKills = $eDeaths = 0;
 
     /**
-     * Add Defaults
+     * Add Headers and Default Values
      *
      * ORDER IS IMPORTANT HERE FOR BFHQ!
      */
-
-    // Time
-    for ($i = 0; $i < $limit; $i++)
-        $Output["wtm-$i"] = 0;
-
-    // Kills
-    for ($i = 0; $i < $limit; $i++)
-        $Output["wkl-$i"] = 0;
-
-    // Deaths
-    for ($i = 0; $i < $limit; $i++)
-        $Output["wdt-$i"] = 0;
-
-    // Accuracy
-    for ($i = 0; $i < $limit; $i++)
-        $Output["wac-$i"] = 0;
-
-    //  K/D Ratio
-    for ($i = 0; $i < $limit; $i++)
-        $Output["wkd-$i"] = '0:0';
+    addHeaderRange($Output, 0, $limit, ['wtm' => 0, 'wkl' => 0, 'wdt' => 0, 'wac' => 0, 'wkd' => '0:0']);
 
     // Weapons
     $result = $connection->query("SELECT * FROM player_weapon WHERE pid = {$pid} ORDER BY id");
@@ -621,222 +686,17 @@ function addWeaponData(&$Output, $pid)
             else
             {
                 // K/D Ratio
-                if ($deaths != 0)
-                {
-                    $den = denominator($kills, $deaths);
-                    $Output["wkd-$i"] = ($kills / $den) . ':' . ($deaths / $den);
-                }
-                else
-                    $Output["wkd-$i"] = $kills . ':0';
+                $Output["wkd-$i"] = getKDRatioString($kills, $deaths);
             }
         }
     }
 
     // K/D Ratio for explosives
-    if ($eDeaths != 0)
-    {
-        $den = denominator($eKills, $eDeaths);
-        $Output["wkd-11"] = ($eKills / $den) . ':' . ($eDeaths / $den);
-    }
-    else
-        $Output["wkd-11"] = $eKills . ':0';
+    $Output["wkd-11"] = getKDRatioString($eKills, $eDeaths);
 
     // Set favorite data's
     $acc = ($totalHits != 0) ? round($totalHits / $totalFired, 2) * 100 : 0;
     $Output['osaa'] = number_format((float)$acc, 2, '.', '');
-}
-
-/**
- * Adds the vehicle data to the current output
- *
- * @param mixed[] $Output [Reference Variable]
- * @param string|int $pid The player ID
- */
-function addVehicleData(&$Output, $pid)
-{
-    // Fetch DB connection
-    $connection = Database::GetConnection("stats");
-
-    // Assign some vars
-    $favTime = 0;
-    $roadKills = 0;
-
-    /**
-     * Add Defaults
-     *
-     * ORDER IS IMPORTANT HERE FOR BFHQ!
-     */
-
-    // Time
-    for ($i = 0; $i < NUM_VEHICLES; $i++)
-        $Output["vtm-$i"] = 0;
-
-    // Kills
-    for ($i = 0; $i < NUM_VEHICLES; $i++)
-        $Output["vkl-$i"] = 0;
-
-    // Deaths
-    for ($i = 0; $i < NUM_VEHICLES; $i++)
-        $Output["vdt-$i"] = 0;
-
-    // Kill / Death ratio
-    for ($i = 0; $i < NUM_VEHICLES; $i++)
-        $Output["vkd-$i"] = '0:0';
-
-    // Road Kills
-    for ($i = 0; $i < NUM_VEHICLES; $i++)
-        $Output["vkr-$i"] = 0;
-
-    // Vehicles
-    $result = $connection->query("SELECT * FROM player_vehicle WHERE pid = {$pid} AND id < ". NUM_VEHICLES ." ORDER BY id");
-    while ($row = $result->fetch())
-    {
-        $i = (int)$row['id'];
-
-        // Vars
-        $time = (int)$row["time"];
-        $kills = (int)$row["kills"];
-        $deaths = (int)$row["deaths"];
-        $roadKills = (int)$row["roadkills"];
-
-        // Add data
-        $Output["vtm-$i"] = $time;
-        $Output["vkl-$i"] = $kills;
-        $Output["vdt-$i"] = $deaths;
-        $Output["vkr-$i"] = $roadKills;
-
-        // K/D Ratio
-        if ($deaths != 0)
-        {
-            $den = denominator($kills, $deaths);
-            $Output["vkd-{$i}"] = ($kills / $den) . ':' . ($deaths / $den);
-        }
-        else
-            $Output["vkd-{$i}"] = $kills . ':0';
-
-        // Favorite?
-        if ($time > $favTime)
-        {
-            $Output['fveh'] = $i;
-            $favTime = $time;
-        }
-    }
-
-    $Output['vrk'] = $roadKills;
-}
-
-/**
- * Adds the army data to the current output
- *
- * @param mixed[] $Output [Reference Variable]
- * @param string|int $pid The player ID
- */
-function addArmyData(&$Output, $pid)
-{
-    // Fetch DB connection
-    $connection = Database::GetConnection("stats");
-
-    /**
-     * Add Defaults
-     *
-     * ORDER IS IMPORTANT HERE FOR BFHQ!
-     */
-
-    // Time
-    for ($i = 0; $i < 10; $i++)
-        $Output["atm-$i"] = 0;
-
-    // Wins
-    for ($i = 0; $i < 10; $i++)
-        $Output["awn-$i"] = 0;
-
-    // Losses
-    for ($i = 0; $i < 10; $i++)
-        $Output["alo-$i"] = 0;
-
-    // Best Round
-    for ($i = 0; $i < 10; $i++)
-        $Output["abr-$i"] = 0;
-
-    // Weapons
-    $result = $connection->query("SELECT * FROM player_army WHERE pid = {$pid} AND id < 10 ORDER BY id");
-    while ($row = $result->fetch())
-    {
-        $i = (int)$row['id'];
-        $Output["atm-$i"] = $row["time"];
-        $Output["awn-$i"] = $row["wins"];
-        $Output["alo-$i"] = $row["losses"];
-        $Output["abr-$i"] = $row["best"];
-    }
-}
-
-/**
- * Adds the kit data to the current output
- *
- * @param mixed[] $Output [Reference Variable]
- * @param string|int $pid The player ID
- */
-function addKitData(&$Output, $pid)
-{
-    // Fetch DB connection
-    $connection = Database::GetConnection("stats");
-
-    // Assign some vars
-    $favTime = 0;
-
-    /**
-     * Add Defaults
-     *
-     * ORDER IS IMPORTANT HERE FOR BFHQ!
-     */
-    // Time
-    for ($i = 0; $i < NUM_KITS; $i++)
-        $Output["ktm-$i"] = 0; // Time
-
-    // Kills
-    for ($i = 0; $i < NUM_KITS; $i++)
-        $Output["kkl-$i"] = 0; // Kills
-
-    // Deaths
-    for ($i = 0; $i < NUM_KITS; $i++)
-        $Output["kdt-$i"] = 0; // Deaths
-
-    // K/D Ratio
-    for ($i = 0; $i < NUM_KITS; $i++)
-        $Output["kkd-$i"] = '0:0'; // K/D Ratio
-
-    // Weapons
-    $result = $connection->query("SELECT * FROM player_kit WHERE pid = {$pid} AND id < ". NUM_KITS ." ORDER BY id");
-    while ($row = $result->fetch())
-    {
-        $i = (int)$row['id'];
-
-        // Convert some vars to ints
-        $time = (int)$row["time"];
-        $kills = (int)$row["kills"];
-        $deaths = (int)$row["deaths"];
-
-        // Favorite
-        if ($time > $favTime)
-        {
-            $Output['fkit'] = $i;
-            $favTime = $time;
-        }
-
-        // Add Data
-        $Output["ktm-$i"] = $time;
-        $Output["kkl-$i"] = $kills;
-        $Output["kdt-$i"] = $deaths;
-
-        // K/D Ratio
-        if ($deaths != 0)
-        {
-            $den = denominator($kills, $deaths);
-            $Output["kkd-{$i}"] = ($kills / $den) . ':' . ($deaths / $den);
-        }
-        else
-            $Output["kkd-{$i}"] = $kills . ':0';
-    }
 }
 
 /**
@@ -855,13 +715,11 @@ function addTacticalData(&$Output, $pid)
      *
      * ORDER IS IMPORTANT HERE FOR BFHQ!
      */
-
-    // Time
     for ($i = 6; $i < 9; $i++)
         $Output["de-$i"] = 0;
 
     // Weapons
-    $result = $connection->query("SELECT * FROM player_weapon WHERE pid = {$pid} AND id > 15");
+    $result = $connection->query("SELECT * FROM player_weapon WHERE pid = {$pid} AND id BETWEEN 16 AND 18");
     while ($row = $result->fetch())
     {
         $i = ((int)$row['id']) - 10;
@@ -881,13 +739,14 @@ function addPlayerTopVictimAndOpp(&$Output, $pid)
     $connection = Database::GetConnection("stats");
 
     // Fetch Fav Victim
-    $result = $connection->query("SELECT victim, `count` FROM player_kill WHERE attacker={$pid} ORDER BY `count` DESC LIMIT 1");
-    if ($row = $result->fetch())
+    $query = "SELECT victim, `count` FROM player_kill WHERE attacker={$pid} ORDER BY `count` DESC LIMIT 1";
+    $row = $connection->query($query)->fetch();
+    if (!empty($row))
     {
         $victim = $row['victim'];
         $count = $row['count'];
-        $result = $connection->query("SELECT name, rank FROM player WHERE id={$victim}");
-        if ($row = $result->fetch())
+        $row = $connection->query("SELECT name, rank FROM player WHERE id={$victim}")->fetch();
+        if (!empty($row))
         {
             $Output['tvcr'] = $victim;
             $Output['mvks'] = $count;
@@ -897,13 +756,14 @@ function addPlayerTopVictimAndOpp(&$Output, $pid)
     }
 
     // Fetch Fav Opponent
-    $result = $connection->query("SELECT attacker, `count` FROM player_kill WHERE victim={$pid} ORDER BY `count` DESC LIMIT 1");
-    if ($row = $result->fetch())
+    $query = "SELECT attacker, `count` FROM player_kill WHERE victim={$pid} ORDER BY `count` DESC LIMIT 1";
+    $row = $connection->query($query)->fetch();
+    if (!empty($row))
     {
         $attacker = $row['attacker'];
         $count = $row['count'];
-        $result = $connection->query("SELECT name, rank FROM player WHERE id={$attacker}");
-        if ($row = $result->fetch())
+        $row = $connection->query("SELECT name, rank FROM player WHERE id={$attacker}")->fetch();
+        if (!empty($row))
         {
             $Output['topr'] = $attacker;
             $Output['vmks'] = $count;
@@ -914,22 +774,21 @@ function addPlayerTopVictimAndOpp(&$Output, $pid)
 }
 
 /**
- * Adds the favorite map data to the current output
+ * Returns the favorite map ID for the specified player
  *
- * @param mixed[] $Output [Reference Variable]
- * @param string|int $pid The player ID
+ * @param int $pid The player ID
+ *
+ * @return int
  */
-function getFavMap(&$Output, $pid)
+function getFavMap($pid)
 {
     // Fetch DB connection
     $connection = Database::GetConnection("stats");
 
     // Fetch Fav Victim
-    $result = $connection->query("SELECT mapid FROM player_map WHERE pid={$pid} AND mapid < 700 ORDER BY time DESC LIMIT 1");
-    if ($id = $result->fetchColumn())
-    {
-        $Output['fmap'] = $id;
-    }
+    $query = "SELECT mapid FROM player_map WHERE pid={$pid} AND mapid < 700 ORDER BY `time` DESC LIMIT 1";
+    $result = $connection->query($query)->fetchColumn(0);
+    return ($result !== false) ? (int)$result : 0;
 }
 
 function denominator($x, $y)
@@ -942,6 +801,29 @@ function denominator($x, $y)
     }
 
     return abs($x);
+}
+
+function getKDRatioString($kills, $deaths)
+{
+    // K/D Ratio
+    if ($deaths != 0)
+    {
+        $den = denominator($kills, $deaths);
+        return ($kills / $den) . ':' . ($deaths / $den);
+    }
+    else
+        return $kills . ':0';
+}
+
+function addHeaderRange(&$Output, $offset, $limit, $headers)
+{
+    foreach ($headers as $key => $value)
+    {
+        for ($i = $offset; $i < $limit; $i++)
+        {
+            $Output["$key-$i"] = $value;
+        }
+    }
 }
 
 /**
