@@ -44,8 +44,9 @@ else
     $connection = Database::GetConnection("stats");
 
     // Check if unlock is already selected first!
-    $result = $connection->query("SELECT * FROM `player_unlock` WHERE `unlockid` = $id AND `pid` = $pid LIMIT 1");
-    if (!($exists = $result->fetch()))
+    $query = "SELECT * FROM `player_unlock` WHERE `unlockid` = $id AND `pid` = $pid LIMIT 1";
+    $result = $connection->query($query)->fetch();
+    if (empty($result))
     {
         // Grab player rank
         $rank = $connection->query("SELECT rank FROM `player` WHERE `id` = $pid LIMIT 1")->fetchColumn(0);

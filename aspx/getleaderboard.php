@@ -88,8 +88,8 @@ else
             else
             {
                 $query = "SELECT id, name, rank, country, time, score FROM player WHERE id = {$pid}";
-                $result = $connection->query($query);
-                if ($row = $result->fetch())
+                $row = $connection->query($query)->fetch();
+                if (!empty($row))
                 {
                     $query = "SELECT COUNT(id) FROM player WHERE score > %d";
                     $stmt = $connection->query(vsprintf($query, [$row['score']]));
@@ -132,8 +132,8 @@ else
             else
             {
                 $query = "SELECT id, name, rank, country, cmdtime, cmdscore FROM player WHERE id = {$pid}";
-                $result = $connection->query($query);
-                if ($row = $result->fetch())
+                $row = $connection->query($query)->fetch();
+                if (!empty($row))
                 {
                     $query = "SELECT COUNT(id) FROM player WHERE cmdscore > %d";
                     $stmt = $connection->query(vsprintf($query, [$row['cmdcore']]));
@@ -176,8 +176,8 @@ else
             else
             {
                 $query = "SELECT id, name, rank, country, time, teamscore FROM player WHERE id = {$pid}";
-                $result = $connection->query($query);
-                if ($row = $result->fetch())
+                $row = $connection->query($query)->fetch();
+                if (!empty($row))
                 {
                     $query = "SELECT COUNT(id) FROM player WHERE teamscore > %d";
                     $stmt = $connection->query(vsprintf($query, [$row['teamscore']]));
@@ -221,8 +221,8 @@ else
             else
             {
                 $query = "SELECT id, name, rank, country, time, kills, skillscore FROM player WHERE id = {$pid}";
-                $result = $connection->query($query);
-                if ($row = $result->fetch())
+                $row = $connection->query($query)->fetch();
+                if (!empty($row))
                 {
                     $query = "SELECT COUNT(id) FROM player WHERE skillscore > %d";
                     $stmt = $connection->query(vsprintf($query, [$row['skillscore']]));
@@ -285,8 +285,8 @@ SQL;
         {
             // Ensure Player exists by PID
             $query = "SELECT `id`, `name`, `rank`, `country`, `time`, `joined` FROM player WHERE id={$pid} LIMIT 1";
-            $result = $connection->query($query);
-            if (!($player = $result->fetch()))
+            $player = $connection->query($query)->fetch();
+            if (empty($player))
             {
                 $Response->send();
                 die;
@@ -355,8 +355,8 @@ SQL;
         {
             // Ensure Player exists by PID
             $query = "SELECT `id`, `name`, `rank`, `country` FROM player WHERE id={$pid} LIMIT 1";
-            $result = $connection->query($query);
-            if (!($player = $result->fetch()))
+            $player = $connection->query($query)->fetch();
+            if (empty($player))
             {
                 $Response->send();
                 die;
@@ -434,8 +434,8 @@ SQL;
         {
             // Ensure Player exists by PID
             $query = "SELECT `id`, `name`, `rank`, `country` FROM player WHERE id={$pid} LIMIT 1";
-            $result = $connection->query($query);
-            if (!($player = $result->fetch()))
+            $player = $connection->query($query)->fetch();
+            if (empty($player))
             {
                 $Response->send();
                 die;
@@ -443,8 +443,8 @@ SQL;
 
             // Fetch players kit if he has one...
             $query = "SELECT `kills`, `deaths`, `time` FROM player_vehicle WHERE pid={$pid} AND id={$id} LIMIT 1";
-            $result = $connection->query($query);
-            if ($row = $result->fetch())
+            $row = $connection->query($query)->fetch();
+            if (!empty($row))
             {
                 $player += $row;
             }
@@ -518,8 +518,8 @@ SQL;
         {
             // Ensure Player exists by PID
             $query = "SELECT `id`, `name`, `rank`, `country` FROM player WHERE id={$pid} LIMIT 1";
-            $result = $connection->query($query);
-            if (!($player = $result->fetch()))
+            $player = $connection->query($query)->fetch();
+            if (empty($player))
             {
                 $Response->send();
                 die;
@@ -527,8 +527,8 @@ SQL;
 
             // Fetch players kit if he has one...
             $query = "SELECT `kills`, `deaths`, `time`, `hits`, `fired` FROM player_weapon WHERE pid=%d AND id=%d LIMIT 1";
-            $result = $connection->query(sprintf($query, $pid, $id));
-            if ($row = $result->fetch())
+            $row = $connection->query(sprintf($query, $pid, $id))->fetch();
+            if (!empty($row))
             {
                 $fired = (int)$row['fired'];
                 $hits = (int)$row['hits'];

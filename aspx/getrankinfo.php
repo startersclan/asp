@@ -44,10 +44,10 @@ else // Player exists
 
     // Make sure the player exists
     $query = "SELECT `rank`, `chng`, `decr` FROM `player` WHERE `id` = {$pid}";
-    $result = $connection->query($query);
+    $row = $connection->query($query)->fetch();
 
     // Query failed or player does not exist
-    if (!($row = $result->fetch()))
+    if (empty($row))
     {
         $Response->responseError(true);
         $Response->writeHeaderLine("asof", "err");
@@ -56,13 +56,16 @@ else // Player exists
     }
     else
     {
-        // Reset notifications
-        if ($row['chng'] != '0' || $row['decr'] != '0')
+        $chng = (int)$row['chng'];
+        $decr = (int)$row['decr'];
+
+        // Do we need to reset notifications?
+        if ($chng > 0 || $decr > 0)
             $connection->exec("UPDATE `player` SET `chng` = 0, `decr` = 0 WHERE `id` = {$pid}");
 
         // Send response
         $Response->writeHeaderLine("rank", "chng", "decr");
-        $Response->writeDataLine($row['rank'], $row['chng'], $row['decr']);
+        $Response->writeDataLine($row['rank'], $chng, $decr);
         $Response->send();
     }
 }

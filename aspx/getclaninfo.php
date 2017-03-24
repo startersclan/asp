@@ -1,6 +1,6 @@
 <?php
 /*
-	Copyright (C) 2006-2013  BF2Statistics
+	Copyright (C) 2006-2017  BF2Statistics
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -17,13 +17,17 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-// No direct access
-if(!defined("BF2_ADMIN"))
-    die("No Direct Access");
-	
+/**
+ * @todo: Redo this clan manager! Should not be doing full table scans, and outputting (potentially) thousands of lines.
+ */
+
 // Namespace
 namespace System;
-use PDOStatement;
+use Exception;
+use PDO;
+
+// No direct access
+defined("BF2_ADMIN") or die("No Direct Access");
 
 // Prepare output
 $Response = new AspResponse();
@@ -113,7 +117,7 @@ else
     $Response->writeHeaderLine("size", "asof");
 
 	// Prepare our statement query
-	$stmt = $connection->prepare("SELECT id, name FROM player WHERE ip != '0.0.0.0'{$where} ORDER BY id ASC");
+	$stmt = $connection->prepare("SELECT id, name FROM player WHERE lastip != '0.0.0.0'{$where} ORDER BY id ASC");
 	foreach($binds as $k => $v)
     {
         $type = (is_int($v)) ? PDO::PARAM_INT : PDO::PARAM_STR;

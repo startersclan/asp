@@ -46,8 +46,8 @@ else
     {
         case 0:
             // Get Player Data
-            $result = $connection->query("SELECT `name`, `score`, `rank` FROM `player` WHERE `id` = {$pid}");
-            if (!($row = $result->fetch()))
+            $row = $connection->query("SELECT `name`, `score`, `rank` FROM `player` WHERE `id` = {$pid}")->fetch();
+            if (empty($row))
             {
                 $Response->writeHeaderLine("pid", "nick", "asof");
                 $Response->writeDataLine($pid, "No_Player", time());
@@ -62,24 +62,23 @@ else
                 $rank = (int)$row['rank'];
 
                 // Determine Earned Unlocks due to Rank
-                $rankunlocks = getRankUnlocks($rank);
+                $unlocks = getRankUnlocks($rank);
 
                 // Determine Bonus Unlocks due to Kit Badges
-                $bonusunlocks = getBonusUnlocks($pid, $rank, $connection);
+                $unlocks += getBonusUnlocks($pid, $rank, $connection);
 
                 // Check Used Unlocks
                 $query = "SELECT COUNT(`pid`) AS `count` FROM `player_unlock` WHERE `pid` = {$pid}";
-                $result = $connection->query($query);
-                $usedunlocks = (int)$result->fetchColumn(0);
+                $used = (int)$connection->query($query)->fetchColumn(0);
 
                 // Determine available unlocks count
-                $availunlocks = max(0, ($rankunlocks + $bonusunlocks) - $usedunlocks);
+                $available = max(0, ($unlocks - $used));
 
                 // Prepare output
                 $Response->writeHeaderLine("pid", "nick", "asof");
                 $Response->writeDataLine($pid, $row['name'], time());
                 $Response->writeHeaderLine("enlisted", "officer");
-                $Response->writeDataLine($availunlocks, 0);
+                $Response->writeDataLine($available, 0);
                 $Response->writeHeaderLine("id", "state");
 
                 // Get players current unlocks
