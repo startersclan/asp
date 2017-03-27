@@ -133,7 +133,7 @@ class Asp
             // Create ASP log file instance
             try
             {
-                $LogWriter = new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "asp_debug.log"), "Asp");
+                new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "asp_debug.log"), "Asp");
                 Asp::LogException($e);
             }
             catch (Exception $ex)
@@ -340,7 +340,9 @@ class Asp
                 $output = implode(', ', array_map(
                     function ($v, $k)
                     {
-                        return sprintf("%s='%s'", $k, $v);
+                        return (is_array($v))
+                            ? sprintf("%s=[%s]", $k, var_export($v, true))
+                            : sprintf("%s='%s'", $k, $v);
                     },
                     $message,
                     array_keys($message)

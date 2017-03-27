@@ -132,9 +132,9 @@ namespace System
     // Parse Snapshot
     try
     {
-        // Add ipaddress of connecting client
-        $data = new Dictionary(false, $data);
-        $data['serverIp'] = Request::ClientIp();
+        // Add ip address of connecting client
+        $prefix = ['serverIp' => Request::ClientIp()];
+        $data = new Dictionary(false, $prefix + $data);
 
         // Create snapshot object
         $snapshot = new Snapshot($data);

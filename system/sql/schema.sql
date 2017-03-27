@@ -569,16 +569,16 @@ delimiter ;
 -- Dumping data for table `army`
 --
 
-INSERT INTO `army` VALUES (0, 'U.S Marines');
+INSERT INTO `army` VALUES (0, 'United States Marines Corps');
 INSERT INTO `army` VALUES (1, 'Middle Eastern Collation');
 INSERT INTO `army` VALUES (2, 'Peoples Liberation Army');
-INSERT INTO `army` VALUES (3, 'Navy Seals');
-INSERT INTO `army` VALUES (4, 'SAS');
-INSERT INTO `army` VALUES (5, 'SPETZNAS');
+INSERT INTO `army` VALUES (3, 'United States Navy Seals');
+INSERT INTO `army` VALUES (4, 'British Special Air Service');
+INSERT INTO `army` VALUES (5, 'Russian SPETZNAS');
 INSERT INTO `army` VALUES (6, 'MEC Special Forces');
-INSERT INTO `army` VALUES (7, 'Rebels');
-INSERT INTO `army` VALUES (8, 'Insurgents');
-INSERT INTO `army` VALUES (9, 'Euro Forces');
+INSERT INTO `army` VALUES (7, 'Rebel Forces');
+INSERT INTO `army` VALUES (8, 'Insurgent Forces');
+INSERT INTO `army` VALUES (9, 'European Union');
 INSERT INTO `army` VALUES (10, 'German Forces');
 INSERT INTO `army` VALUES (11, 'Ukrainian Forces');
 INSERT INTO `army` VALUES (12, 'United Nations');

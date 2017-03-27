@@ -6,9 +6,10 @@
         var currentAction = '';
         var currentId = '';
         var currentType = '';
+        var tableRow;
 
         // Ajax and form Validation
-        //noinspection JSJQueryEfficiency
+        // noinspection JSJQueryEfficiency
         var validator = $("#mws-validate").validate({
             rules: {
                 itemName: {
@@ -91,6 +92,7 @@
         }
 
         // Tooltips
+        // noinspection JSUnresolvedVariable
         $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
 
         // Row Button Clicks
@@ -108,7 +110,7 @@
             currentAction = sid[0];
             currentType = sid[1];
             currentId = sid[2];
-            var tableRow = $(this).closest('tr');
+            tableRow = $(this).closest('tr');
             var name = tableRow.find('td:eq(1)').html();
 
             if (currentAction == 'delete') {
@@ -192,8 +194,9 @@
                 var result = jQuery.parseJSON(response);
                 if (result.success == true) {
 
-                    // Reload the table
-                    var markup = '<tr><td>' + result.itemId + '<td>' + result.itemName + '</td><td> \
+                    if (currentAction == 'add') {
+                        // Reload the table
+                        var markup = '<tr><td>' + result.itemId + '<td>' + result.itemName + '</td><td> \
                             <span class="btn-group"> \
                                 <a id="edit-' + currentType + '-' + result.itemId + '" href="#"  rel="tooltip" title="Edit Name" class="btn btn-small"> \
                                     <i class="icon-pencil"></i>\
@@ -204,10 +207,14 @@
                             </span> \
                             </td> \
                         </tr>';
-                    $("table#" + currentType + " tbody").append(markup);
+                        $("table#" + currentType + " tbody").append(markup);
 
-                    // Refresh buttons
-                    disable_btns_for(currentType);
+                        // Refresh buttons
+                        disable_btns_for(currentType);
+                    }
+                    else if (currentAction == 'edit') {
+                        tableRow.find('td:eq(1)').html(result.itemName);
+                    }
 
                     // Close dialog
                     $("#editor-form").dialog("close");
