@@ -183,13 +183,13 @@ class Snapshot extends GameResult
         // Ensure the army IDs are not unknown
         if ($this->team1ArmyId >= StatsData::$NumArmies)
         {
-            $message = sprintf("Unknown ArmyId (%d) found in Snapshot.. Aborting", $this->team1ArmyId);
+            $message = sprintf("Unknown ArmyId (%d) for team 1 found in Snapshot.. Aborting", $this->team1ArmyId);
             $this->logWriter->logWarning($message);
             throw new Exception($message);
         }
         else if ($this->team2ArmyId >= StatsData::$NumArmies)
         {
-            $message = sprintf("Unknown ArmyId (%d) found in Snapshot.. Aborting", $this->team2ArmyId);
+            $message = sprintf("Unknown ArmyId (%d) for team 2 found in Snapshot.. Aborting", $this->team2ArmyId);
             $this->logWriter->logWarning($message);
             throw new Exception($message);
         }
@@ -395,8 +395,8 @@ class Snapshot extends GameResult
                     // If the player ended the game as this army, update with round info
                     if ($player->armyId == $id)
                     {
-                        $query->set('wins', '+', $onWinningTeam ? 1 : 0);
-                        $query->set('losses', '+', $onWinningTeam ? 0 : 1);
+                        $query->set('wins', '+', $onWinningTeam);
+                        $query->set('losses', '+', (!$onWinningTeam));
                         $query->set('best', 'g', $player->roundScore);
                         $query->set('worst', 'l', $player->roundScore);
                     }

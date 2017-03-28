@@ -186,8 +186,8 @@ class Asp
             }
             else
             {
-                $View = new View('login');
-                $View->render(false);
+                $view = new View('login');
+                $view->render(false);
             }
             return;
         }
