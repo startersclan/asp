@@ -39,7 +39,7 @@ class UpdateOrInsertQuery
      */
     protected $connection;
 
-    public function __construct(DbConnection $connection, $table)
+    public function __construct(PDO $connection, $table)
     {
         $this->connection = $connection;
         $this->table = $table;
@@ -59,6 +59,20 @@ class UpdateOrInsertQuery
             $value = ($value) ? 1 : 0;
 
         $this->columns[$column] = array($operator, $value);
+    }
+
+    /**
+     * Sets an array of columns and values
+     *
+     * @param array $pairs A key value collections
+     * @param string $operator The comparison operator
+     */
+    public function setArray($pairs, $operator)
+    {
+        foreach ($pairs as $column => $value)
+        {
+            $this->set($column, $operator, $value);
+        }
     }
 
     /**

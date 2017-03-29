@@ -270,11 +270,44 @@ class File
 
         // Make sure Dest directory exists
         if (!Directory::Exists($newPath))
-            Directory::CreateDirectory($newPath);
+            Directory::CreateDirectory($newPath, 0777);
 
         // Create new file
         $file = new FileInfo($source);
         $file->moveTo($destination);
+    }
+
+    /**
+     * Copies a source file to a destination file. If the destination file already exists,
+     * it will be overwritten.
+     *
+     * @param string $source The full file path, including filename, of the
+     *        file we are moving
+     * @param string $destination The full file path, including filename, of the
+     *        file that will be created or overwritten.
+     *
+     * @throws InvalidArgumentException Thrown if any parameters are left null
+     * @throws IOException Thrown if there was an error copying the file, or
+     *     creating the destination file's directory if it did not exist
+     *
+     * @return void
+     */
+    public static function Copy($source, $destination)
+    {
+        // Make sure we have a filename
+        if (empty($source) || empty($destination))
+            throw new InvalidArgumentException("Invalid file name passed");
+
+        // Correct new path
+        $newPath = dirname($destination);
+
+        // Make sure Dest directory exists
+        if (!Directory::Exists($newPath))
+            Directory::CreateDirectory($newPath, 0777);
+
+        // Create new file
+        $file = new FileInfo($source);
+        $file->copyTo($destination);
     }
 
     /**

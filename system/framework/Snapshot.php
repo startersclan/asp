@@ -29,6 +29,11 @@ class Snapshot extends GameResult
     protected $isProcessed = false;
 
     /**
+     * @var BattleSpy
+     */
+    protected $battleSpy;
+
+    /**
      * Returns the server IP that posted this snapshot. If no Server
      * IP is provided (Ex: loading snapshot from a file), then the local
      * loopback address will be returned instead
@@ -36,7 +41,6 @@ class Snapshot extends GameResult
      * @var string
      */
     public $serverIp = '';
-
 
     /**
      * Snapshot constructor.
@@ -228,6 +232,9 @@ class Snapshot extends GameResult
             $roundId = $connection->lastInsertId("id");
             $wasDrawRound = ($this->winningArmyId == -1);
 
+            // Init BattleSpy
+            $this->battleSpy = new BattleSpy($connection, $serverId, $roundId);
+
             // ********************************
             // Process Players
             // ********************************
@@ -239,58 +246,11 @@ class Snapshot extends GameResult
                 if ($player->roundTime < Config::Get('stats_min_player_game_time') || $player->isAi && Config::Get('stats_ignore_ai'))
                     continue;
 
-                // Write log
-                $this->logWriter->logNotice("Processing Player (". $player->pid .")");
-
                 // Define some variables
                 $onWinningTeam = $player->team == $this->winningTeam;
 
-                // Prepare for player update / insertion
-                $query = new UpdateOrInsertQuery($connection, 'player');
-                $query->set('time', '+', $player->roundTime);
-                $query->set('rounds', '+', (int)$player->completedRound);
-                $query->set('lastip', '=', $player->ipAddress);
-                $query->set('score', '+', $player->roundScore);
-                $query->set('cmdscore', '+', $player->commandScore);
-                $query->set('skillscore', '+', $player->skillScore);
-                $query->set('teamscore', '+', $player->teamScore);
-                $query->set('kills', '+', $player->kills);
-                $query->set('deaths', '+', $player->deaths);
-                $query->set('captures', '+', $player->flagCaptures);
-                $query->set('captureassists', '+', $player->flagCaptureAssists);
-                $query->set('neutralizes', '+', $player->flagNeutralizes);
-                $query->set('neutralizeassists', '+', $player->flagNeutralizeAssists);
-                $query->set('defends', '+', $player->flagDefends);
-                $query->set('damageassists', '+', $player->damageAssists);
-                $query->set('heals', '+', $player->heals);
-                $query->set('revives', '+', $player->revives);
-                $query->set('ammos', '+', $player->resupplies);
-                $query->set('repairs', '+', $player->repairs);
-                $query->set('targetassists', '+', $player->targetAssists);
-                $query->set('driverspecials', '+', $player->driverSpecials);
-                $query->set('teamkills', '+', $player->teamKills);
-                $query->set('teamdamage', '+', $player->teamDamage);
-                $query->set('teamvehicledamage', '+', $player->teamVehicleDamage);
-                $query->set('suicides', '+', $player->suicides);
-                $query->set('rank', '=', $player->rank);
-                $query->set('banned', '+', $player->timesBanned);
-                $query->set('kicked', '+', $player->timesKicked);
-                $query->set('cmdtime', '+', $player->cmdTime);
-                $query->set('sqltime', '+', $player->sqlTime);
-                $query->set('sqmtime', '+', $player->sqmTime);
-                $query->set('lwtime', '+', $player->lwTime);
-                $query->set('timepara', '+', $player->timeParachute);
-                $query->set('lastonline', '=', $this->roundEndTime);
-                $query->set('mode0', '+', ($this->gameMode == 0));
-                $query->set('mode1', '+', ($this->gameMode == 1));
-                $query->set('mode2', '+', ($this->gameMode == 2));
-
-                // Set wins / losses
-                if (!$wasDrawRound)
-                {
-                    $query->set('wins', '+', $onWinningTeam);
-                    $query->set('losses', '+', (!$onWinningTeam));
-                }
+                // Write log
+                $this->logWriter->logNotice("Processing Player (". $player->pid .")");
 
                 // Check if player exists already
                 $sql = "SELECT lastip, country, rank, killstreak, deathstreak, rndscore, permban, bantime FROM player WHERE id=%d LIMIT 1";
@@ -334,6 +294,56 @@ class Snapshot extends GameResult
                 {
                     // Write log
                     $this->logWriter->logNotice("Updating EXISTING Player (". $player->pid .")");
+
+                    // Run player check through BattleSpy
+                    $this->battleSpy->analyze($player);
+
+                    // Prepare for player update / insertion
+                    $query = new UpdateOrInsertQuery($connection, 'player');
+                    $query->set('time', '+', $player->roundTime);
+                    $query->set('rounds', '+', (int)$player->completedRound);
+                    $query->set('lastip', '=', $player->ipAddress);
+                    $query->set('score', '+', $player->roundScore);
+                    $query->set('cmdscore', '+', $player->commandScore);
+                    $query->set('skillscore', '+', $player->skillScore);
+                    $query->set('teamscore', '+', $player->teamScore);
+                    $query->set('kills', '+', $player->kills);
+                    $query->set('deaths', '+', $player->deaths);
+                    $query->set('captures', '+', $player->flagCaptures);
+                    $query->set('captureassists', '+', $player->flagCaptureAssists);
+                    $query->set('neutralizes', '+', $player->flagNeutralizes);
+                    $query->set('neutralizeassists', '+', $player->flagNeutralizeAssists);
+                    $query->set('defends', '+', $player->flagDefends);
+                    $query->set('damageassists', '+', $player->damageAssists);
+                    $query->set('heals', '+', $player->heals);
+                    $query->set('revives', '+', $player->revives);
+                    $query->set('ammos', '+', $player->resupplies);
+                    $query->set('repairs', '+', $player->repairs);
+                    $query->set('targetassists', '+', $player->targetAssists);
+                    $query->set('driverspecials', '+', $player->driverSpecials);
+                    $query->set('teamkills', '+', $player->teamKills);
+                    $query->set('teamdamage', '+', $player->teamDamage);
+                    $query->set('teamvehicledamage', '+', $player->teamVehicleDamage);
+                    $query->set('suicides', '+', $player->suicides);
+                    $query->set('rank', '=', $player->rank);
+                    $query->set('banned', '+', $player->timesBanned);
+                    $query->set('kicked', '+', $player->timesKicked);
+                    $query->set('cmdtime', '+', $player->cmdTime);
+                    $query->set('sqltime', '+', $player->sqlTime);
+                    $query->set('sqmtime', '+', $player->sqmTime);
+                    $query->set('lwtime', '+', $player->lwTime);
+                    $query->set('timepara', '+', $player->timeParachute);
+                    $query->set('lastonline', '=', $this->roundEndTime);
+                    $query->set('mode0', '+', ($this->gameMode == 0));
+                    $query->set('mode1', '+', ($this->gameMode == 1));
+                    $query->set('mode2', '+', ($this->gameMode == 2));
+
+                    // Set wins / losses
+                    if (!$wasDrawRound)
+                    {
+                        $query->set('wins', '+', $onWinningTeam);
+                        $query->set('losses', '+', (!$onWinningTeam));
+                    }
 
                     // Correct rank if needed
                     $rank = (int)$row['rank'];
@@ -585,6 +595,11 @@ class Snapshot extends GameResult
             $query->set('deaths', '+', $this->mapDeaths);
             $query->where('id', '=', $this->mapId);
             $query->executeUpdate();
+
+            // ********************************
+            // Save BattleSpy Reports
+            // ********************************
+            $this->battleSpy->finalize();
 
             // ********************************
             // Commit the Transaction and Log

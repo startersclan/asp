@@ -16,6 +16,8 @@ DROP VIEW IF EXISTS `player_history_view`;
 DROP VIEW IF EXISTS `player_awards_view`;
 DROP PROCEDURE IF EXISTS `generate_rising_star`;
 DROP PROCEDURE IF EXISTS `create_player`;
+DROP TABLE IF EXISTS `battlespy_message`;
+DROP TABLE IF EXISTS `battlespy_report`;
 DROP TABLE IF EXISTS `ip2nationcountries`;
 DROP TABLE IF EXISTS `ip2nation`;
 DROP TABLE IF EXISTS `risingstar`;
@@ -490,6 +492,34 @@ CREATE TABLE `ip2nationcountries` (
   `lat` float NOT NULL DEFAULT 0,
   `lon` float NOT NULL DEFAULT 0,
   PRIMARY KEY(`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `battlespy_report`
+--
+
+CREATE TABLE `battlespy_report` (
+  `id` INT UNSIGNED AUTO_INCREMENT,
+  `serverid` SMALLINT UNSIGNED NOT NULL,
+  `roundid` INT UNSIGNED NOT NULL,
+  PRIMARY KEY(`id`),
+  FOREIGN KEY(`serverid`) REFERENCES server(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`roundid`) REFERENCES round_history(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `battlespy_message`
+--
+
+CREATE TABLE `battlespy_message` (
+  `id` INT UNSIGNED AUTO_INCREMENT,
+  `reportid` INT UNSIGNED NOT NULL,      -- Report ID
+  `pid` INT UNSIGNED NOT NULL,                -- Player ID
+  `flag` MEDIUMINT UNSIGNED NOT NULL,
+  `message` VARCHAR(128),
+  PRIMARY KEY(`id`),
+  FOREIGN KEY(`reportid`) REFERENCES battlespy_report(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

@@ -119,11 +119,11 @@ class Config
                 $cfg .= "\$$key = '" . addslashes($val) . "';\n";
             }
         }
-        $cfg .= "?>";
 
-        // Copy the current config file for backup, and write the new config values to the new config
-        copy(self::$configFile, self::$configFile . '.bak');
+        // Copy the current config file for backup
+        File::Copy(self::$configFile, self::$configFile . '.bak');
 
+        // Write the new config values to the new config
         return File::WriteAllText(self::$configFile, $cfg);
     }
 

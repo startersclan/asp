@@ -55,6 +55,9 @@ function build_navigation()
     }
     else
     {
+        // Grab database connection
+        $pdo = System\Database::GetConnection('stats');
+
         // Append the rest of system links
         $group->append('/ASP/config/test', 'System Tests');
         $group->append('/ASP/database', 'Database Table Status');
@@ -79,6 +82,12 @@ function build_navigation()
         $group->append('/ASP/mapinfo', 'Map Statistics');
         $navigation->append($group);
 
+        // BattleSpy
+        $bsr = (int)$pdo->query("SELECT COUNT(`id`) FROM `battlespy_report`")->fetchColumn(0);
+        $title = 'BattleSpy Reports <span class="mws-nav-tooltip" title="Reports">'. $bsr .'</span>';
+        $group = new NavigationItem($title, "/ASP/battlespy", "icon-eye-open", $task == "battlespy");
+        $navigation->append($group);
+
         // Add Game Data Links
         $group = new NavigationItem("Game Data", "#", "icon-link", in_array($task, $game));
         $group->append('/ASP/gamedata', 'Manage Stat Keys');
@@ -86,9 +95,6 @@ function build_navigation()
         $group->append('/ASP/gamedata/unlocks', 'Manage unlocks');
         $navigation->append($group);
     }
-
-    //$group = new NavigationItem("Message Center", "#", "icon-warning-sign", false);
-    //$navigation->append($group);
 
     // Logout
     $group = new NavigationItem("Logout", "/ASP/index.php?action=logout", "icon-off", false);
