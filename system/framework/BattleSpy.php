@@ -82,6 +82,11 @@ class BattleSpy
     protected $roundId;
 
     /**
+     * @var bool Indicates whether BattleSpy is enabled
+     */
+    protected $enabled = false;
+
+    /**
      * @var int Gets or Sets the maximum score per minute threshold
      */
     protected $maxSPM = 0;
@@ -116,6 +121,7 @@ class BattleSpy
         $this->roundId = $roundId;
 
         // Load configuration
+        $this->enabled = ((int)Config::Get('battlespy_enable') != 0);
         $this->maxSPM = (float)Config::Get('battlespy_max_spm');
         $this->maxKPM = (float)Config::Get('battlespy_max_kpm');
         $this->maxTargetKills = (int)Config::Get('battlespy_max_target_kills');
@@ -130,11 +136,14 @@ class BattleSpy
      */
     public function analyze(Player $player)
     {
-        /** Check score per minute */
-        $mins = $player->roundTime / 60;
-        $spm = ($mins == 0) ? 0 : round($player->roundScore / $mins, 3);
+        // Quit if not enabled
+        if (!$this->enabled) return;
 
-        // Fill report if SPM is too high
+        // Calculate total time the player played in the round by minutes
+        $mins = round($player->roundTime / 60, 3);
+
+        /** Check score per minute */
+        $spm = ($mins == 0) ? 0 : round($player->roundScore / $mins, 3);
         if ($spm > $this->maxSPM)
         {
             $message = sprintf("Player Score per Min (%f) exceeds threshold of (%f)", $spm, $this->maxSPM);
@@ -142,13 +151,10 @@ class BattleSpy
         }
 
         /** Check kills per minute */
-        $mins = $player->roundTime / 60;
-        $spm = ($mins == 0) ? 0 : round($player->kills / $mins, 3);
-
-        // Fill report if SPM is too high
-        if ($spm > $this->maxSPM)
+        $kpm = ($mins == 0) ? 0 : round($player->kills / $mins, 3);
+        if ($kpm > $this->maxKPM)
         {
-            $message = sprintf("Player Kills per Min (%f) exceeds threshold of (%f)", $spm, $this->maxKPM);
+            $message = sprintf("Player Kills per Min (%f) exceeds threshold of (%f)", $kpm, $this->maxKPM);
             $this->report($player->pid, $message, self::FLAG_PLAYER_KILLS);
         }
 

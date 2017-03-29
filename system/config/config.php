@@ -35,6 +35,7 @@ $game_unlocks = 0;
 $game_unlocks_bonus = 2;
 $game_unlocks_bonus_min = 1;
 $game_awds_ignore_time = 0;
+$battlespy_enable = 1;
 $battlespy_max_spm = 7;
 $battlespy_max_kpm = 10;
 $battlespy_max_target_kills = 10;
