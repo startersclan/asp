@@ -11,7 +11,14 @@
             columnDefs: [
                 { "orderable": false, "targets": 0 },
             ]
+        }).on( 'draw.dt', function () {
+            //noinspection JSUnresolvedVariable
+            $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
         });
+
+        // Tooltips
+        //noinspection JSUnresolvedVariable
+        $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
 
     });
 })(jQuery, window, document);

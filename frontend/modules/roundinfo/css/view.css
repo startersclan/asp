@@ -20,3 +20,12 @@
     display:table-cell;
     width:33.33vw;
 }
+
+.mws-table tr td a:link {
+    color: #000000;
+}
+
+.mws-table tr td a:visited {
+    color: #000000;
+    text-decoration: underline;
+}

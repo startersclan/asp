@@ -148,7 +148,18 @@
             {players1}
                 <tr>
                     <td><img src="/ASP/frontend/images/ranks/rank_{rank}.gif"/></td>
+                    <?php if ({pid} == 0): ?>
                     <td>{name}</td>
+                    <?php else: ?>
+                    <td>
+                        <a href="/ASP/players/view/{pid}/history/{round.id}"
+                           rel="tooltip"
+                           data-placement="right"
+                           title="Click to view Player Round Details">
+                            {name}
+                        </a>
+                    </td>
+                    <?php endif ?>
                     <td>{score}</td>
                     <td>{skillscore}</td>
                     <td>{teamscore}</td>
@@ -186,7 +197,18 @@
             {players2}
                 <tr>
                     <td><img src="/ASP/frontend/images/ranks/rank_{rank}.gif"/></td>
+                    <?php if ({pid} == 0): ?>
                     <td>{name}</td>
+                    <?php else: ?>
+                    <td>
+                        <a href="/ASP/players/view/{pid}/history/{round.id}"
+                           rel="tooltip"
+                           data-placement="right"
+                           title="Click to view Player Round Details">
+                            {name}
+                        </a>
+                    </td>
+                    <?php endif ?>
                     <td>{score}</td>
                     <td>{skillscore}</td>
                     <td>{teamscore}</td>
