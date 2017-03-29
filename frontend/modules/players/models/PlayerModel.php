@@ -84,16 +84,16 @@ class PlayerModel
         if ($length > 0)
         {
             $averages['wins'] = ($totals['wins'] > 0)
-                ? number_format( round($totals['wins'] / $length, 0) )
+                ? number_format($totals['wins'] / $length, 0)
                 : 0;
             $averages['losses'] = ($totals['losses'] > 0)
-                ? number_format( round($totals['losses'] / $length, 0) )
+                ? number_format($totals['losses'] / $length, 0)
                 : 0;
             $averages['time'] = ($totals['time'] > 0)
-                ? number_format( round($totals['time'] / $length, 0) )
+                ? (int)round($totals['time'] / $length, 0)
                 : 0;
             $averages['best'] = ($totals['best'] > 0)
-                ? number_format( round($totals['best'] / $length, 0) )
+                ? number_format($totals['best'] / $length, 0)
                 : 0;
             $averages['ratio'] = ($totals['ratio'] > 0)
                 ? round($totals['ratio'] / $length, 3)
@@ -172,13 +172,13 @@ class PlayerModel
         if ($length > 0)
         {
             $averages['kills'] = ($totals['kills'] > 0)
-                ? number_format( round($totals['kills'] / $length, 0) )
+                ? number_format($totals['kills'] / $length, 0)
                 : 0;
             $averages['deaths'] = ($totals['deaths'] > 0)
-                ? number_format( round($totals['deaths'] / $length, 0) )
+                ? number_format($totals['deaths'] / $length, 0)
                 : 0;
             $averages['time'] = ($totals['time'] > 0)
-                ? number_format( round($totals['time'] / $length, 0) )
+                ? (int)round($totals['time'] / $length, 0)
                 : 0;
             $averages['ratio'] = ($totals['ratio'] > 0)
                 ? round($totals['ratio'] / $length, 3)
@@ -262,16 +262,16 @@ class PlayerModel
         if ($length > 0)
         {
             $averages['kills'] = ($totals['kills'] > 0)
-                ? number_format( round($totals['kills'] / $length, 0) )
+                ? number_format($totals['kills'] / $length, 0)
                 : 0;
             $averages['deaths'] = ($totals['deaths'] > 0)
-                ? number_format( round($totals['deaths'] / $length, 0) )
+                ? number_format($totals['deaths'] / $length, 0)
                 : 0;
             $averages['time'] = ($totals['time'] > 0)
-                ? number_format( round($totals['time'] / $length, 0) )
+                ? (int)round($totals['time'] / $length, 0)
                 : 0;
             $averages['roadKills'] = ($totals['roadKills'] > 0)
-                ? number_format( round($totals['roadKills'] / $length, 0) )
+                ? number_format($totals['roadKills'] / $length, 0)
                 : 0;
             $averages['ratio'] = ($totals['ratio'] > 0)
                 ? round($totals['ratio'] / $length, 3)
@@ -365,16 +365,16 @@ class PlayerModel
         if ($length > 0)
         {
             $averages['kills'] = ($totals['kills'] > 0)
-                ? number_format( round($totals['kills'] / $length, 0) )
+                ? number_format($totals['kills'] / $length, 0)
                 : 0;
             $averages['deaths'] = ($totals['deaths'] > 0)
-                ? number_format( round($totals['deaths'] / $length, 0) )
+                ? number_format($totals['deaths'] / $length, 0)
                 : 0;
             $averages['time'] = ($totals['time'] > 0)
-                ? number_format( round($totals['time'] / $length, 0) )
+                ? (int)round( $totals['time'] / $length, 0 )
                 : 0;
             $averages['fired'] = ($totals['fired'] > 0)
-                ? number_format( round($totals['fired'] / $length, 0) )
+                ? number_format($totals['fired'] / $length, 0)
                 : 0;
             $averages['ratio'] = ($totals['ratio'] > 0)
                 ? round($totals['ratio'] / $length, 3)
