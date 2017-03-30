@@ -11,6 +11,11 @@ use System\Controller;
 use System\Database;
 use System\View;
 
+/**
+ * Mapinfo Module Controller
+ *
+ * @package Modules
+ */
 class Mapinfo extends Controller
 {
     /**

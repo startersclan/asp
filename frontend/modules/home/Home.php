@@ -14,6 +14,11 @@ use System\IO\Directory;
 use System\IO\Path;
 use System\View;
 
+/**
+ * Home Module Controller
+ *
+ * @package Modules
+ */
 class Home extends Controller
 {
     /**

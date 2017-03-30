@@ -1,5 +1,4 @@
 <?php
-
 /**
  * BF2Statistics ASP Framework
  *
@@ -9,6 +8,7 @@
  *
  */
 use System\Config AS Cfg;
+use System\Controller;
 use System\Database;
 use System\IO\Directory;
 use System\IO\File;
@@ -16,7 +16,12 @@ use System\IO\Path;
 use System\Response;
 use System\View;
 
-class Config
+/**
+ * Config Module Controller
+ *
+ * @package Modules
+ */
+class Config extends Controller
 {
     /**
      * @protocol    ANY
@@ -52,7 +57,7 @@ class Config
                 // Lets sample the time there right now
                 $time = new DateTime(NULL, new DateTimeZone($timezone));
 
-                // Us dumb Americans can't handle millitary time
+                // Us dumb Americans can't handle military time
                 $ampm = $time->format('H') > 12 ? ' ('. $time->format('g:i a'). ')' : '';
 
                 // Remove region name and add a sample time
@@ -141,9 +146,9 @@ class Config
         ini_set('max_execution_time', 30);
 
         // Define our pass/fail messages for less typing
-        define('__PASS','<b><font color="green">Pass</font></b><br />');
-        define('__WARN','<b><font color="orange">Warn</font></b><br />');
-        define('__FAIL','<b><font color="red">Fail</font></b><br />');
+        define('__PASS', '<b><span style="color: green; ">Pass</span></b><br />');
+        define('__WARN', '<b><span style="color: orange; ">Warn</span></b><br />');
+        define('__FAIL', '<b><span style="color: red; ">Fail</span></b><br />');
 
         // Vars
         $errors = false;

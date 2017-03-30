@@ -1,9 +1,4 @@
 <?php
-use System\IO\Path;
-use System\TimeHelper;
-use System\TimeSpan;
-use System\View;
-
 /**
  * BF2Statistics ASP Framework
  *
@@ -12,13 +7,19 @@ use System\View;
  * License:      GNU GPL v3
  *
  */
+use System\Battlefield2;
+use System\TimeHelper;
+use System\TimeSpan;
+use System\View;
+
+/**
+ * Player Model
+ *
+ * @package Models
+ * @subpackage Players
+ */
 class PlayerModel
 {
-    /**
-     * @var array
-     */
-    public $ranks = [];
-
     /**
      * Appends Army data to a view
      *
@@ -398,22 +399,14 @@ class PlayerModel
     }
 
     /**
-     * Fetches the name of a rank by ID
+     * Calculate greatest common divisor of x and y. The result is always positive even
+     * if either of, or both, input operands are negative.
      *
-     * @param int $rank
+     * @param number $x
+     * @param number $y
      *
-     * @return string
+     * @return number A positive number that divides into both x and y
      */
-    public function getRankName($rank)
-    {
-        if (empty($this->ranks))
-        {
-            /** @noinspection PhpIncludeInspection */
-            $this->ranks = include Path::Combine(SYSTEM_PATH, 'config', 'ranks.php');
-        }
-        return ($rank > count($this->ranks)) ? "Unknown ({$rank})" : $this->ranks[$rank]['title'];
-    }
-
     public function getDenominator($x, $y)
     {
         while ($y != 0)
@@ -529,7 +522,7 @@ class PlayerModel
         $data['WLRatioColor'] = ($data['WLRatio2'] > 0.99) ? "green" : "red";
 
         // Set rank name
-        $data['rankName'] = $this->getRankName((int)$player['rank']);
+        $data['rankName'] = Battlefield2::GetRankName((int)$player['rank']);
 
         // Calculate SPM
         $data['spm'] = ($time > 0) ? number_format( $score / ($time / 60), 3 ) : 0;
@@ -604,7 +597,7 @@ class PlayerModel
                     $ribbons[$id]['last'] = $data['last'];
                     break;
                 case 1:
-                    $badges[$id]['prefix'] = $this->getBadgePrefix((int)$data['level']);
+                    $badges[$id]['prefix'] = Battlefield2::GetBadgePrefix((int)$data['level']);
                     $badges[$id]['level'] = $data['level'];
                     $badges[$id]['first'] = $data['first'];
                     $badges[$id]['last'] = $data['last'];
@@ -688,12 +681,5 @@ class PlayerModel
             ];
             $view->set('worstOp', $data);
         }
-    }
-
-    protected function getBadgePrefix($level)
-    {
-        if ($level == 3) return 'Gold';
-        else if ($level == 2) return 'Silver';
-        else return 'Bronze';
     }
 }

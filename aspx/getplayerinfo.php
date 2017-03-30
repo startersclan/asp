@@ -791,6 +791,15 @@ function getFavMap($pid)
     return ($result !== false) ? (int)$result : 0;
 }
 
+/**
+ * Calculate greatest common divisor of x and y. The result is always positive even
+ * if either of, or both, input operands are negative.
+ *
+ * @param number $x
+ * @param number $y
+ *
+ * @return number A positive number that divides into both x and y
+ */
 function denominator($x, $y)
 {
     while ($y != 0)

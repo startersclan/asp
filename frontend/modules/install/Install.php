@@ -1,10 +1,4 @@
 <?php
-use System\Config;
-use System\Database;
-use System\Database\SqlFileParser;
-use System\LogWriter;
-use System\View;
-
 /**
  * BF2Statistics ASP Framework
  *
@@ -13,7 +7,18 @@ use System\View;
  * License:      GNU GPL v3
  *
  */
-class Install
+use System\Config;
+use System\Database;
+use System\Database\SqlFileParser;
+use System\LogWriter;
+use System\View;
+
+/**
+ * Install Module Controller
+ *
+ * @package Modules
+ */
+class Install extends \System\Controller
 {
     /**
      * @protocol    GET
@@ -29,7 +34,7 @@ class Install
         $view = new View('index', 'install');
         $view->set('admin_user', Config::Get('admin_user'));
         $view->set('admin_pass', Config::Get('admin_pass'));
-        $view->set('ip_list', htmlentities($items, ENT_HTML5, "UTF-8"));
+        $view->set('ip_list', trim(htmlentities($items, ENT_HTML5, "UTF-8")));
 
         $view->set('db_host', Config::Get('db_host'));
         $view->set('db_port', Config::Get('db_port'));

@@ -77,13 +77,19 @@ abstract class Controller
     /**
      * Loads a model class from the specified module folder.
      *
-     * @param string $modelName
-     * @param string $module
+     * @param string $modelName The name of the Model class
+     * @param string $module The module name this Model is located with
+     * @param string $propertyName Sets the name of the property this Model will be
+     *  stored into. If no name is provided, this method will use the $moduleName
      *
      * @throws \Exception if the model file cannot be located
      */
-    protected function loadModel($modelName, $module)
+    protected function loadModel($modelName, $module, $propertyName = null)
     {
+        // Make sure we have a property name
+        if (empty($propertyName))
+            $propertyName = $modelName;
+
         // Load the class if it has not been loaded already
         if (!class_exists($modelName, false))
         {
@@ -96,6 +102,6 @@ abstract class Controller
         }
 
         // Create instance and attach to this class
-        $this->{$modelName} = new $modelName();
+        $this->{$propertyName} = new $modelName();
     }
 }

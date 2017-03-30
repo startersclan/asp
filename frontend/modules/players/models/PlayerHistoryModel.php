@@ -1,4 +1,13 @@
 <?php
+/**
+ * BF2Statistics ASP Framework
+ *
+ * Author:       Steven Wilson
+ * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
+ * License:      GNU GPL v3
+ *
+ */
+use System\Battlefield2;
 use System\Collections\Dictionary;
 use System\IO\Directory;
 use System\IO\File;
@@ -12,55 +21,22 @@ use System\TimeSpan;
 use System\View;
 
 /**
- * BF2Statistics ASP Framework
+ * Player History Model
  *
- * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
- * License:      GNU GPL v3
- *
+ * @package Models
+ * @subpackage Players
  */
 class PlayerHistoryModel
 {
     /**
-     * @var array
-     */
-    public $ranks = [];
-
-    protected function getBadgePrefix($level)
-    {
-        if ($level == 3) return 'Gold';
-        else if ($level == 2) return 'Silver';
-        else return 'Bronze';
-    }
-
-    public function getGameModeString($gamemode)
-    {
-        switch ((int)$gamemode)
-        {
-            default: return "Unknown";
-            case 0: return "Conquest";
-            case 1: return "Single Player";
-            case 2: return "Coop";
-        }
-    }
-
-    /**
-     * Fetches the name of a rank by ID
+     * Calculate greatest common divisor of x and y. The result is always positive even
+     * if either of, or both, input operands are negative.
      *
-     * @param int $rank
+     * @param number $x
+     * @param number $y
      *
-     * @return string
+     * @return number A positive number that divides into both x and y
      */
-    public function getRankName($rank)
-    {
-        if (empty($this->ranks))
-        {
-            /** @noinspection PhpIncludeInspection */
-            $this->ranks = include Path::Combine(SYSTEM_PATH, 'config', 'ranks.php');
-        }
-        return ($rank > count($this->ranks)) ? "Unknown ({$rank})" : $this->ranks[$rank]['title'];
-    }
-
     public function getDenominator($x, $y)
     {
         while ($y != 0)
@@ -112,7 +88,7 @@ class PlayerHistoryModel
                     $data[$key] = number_format($score);
                     break;
                 case 'gamemode':
-                    $data[$key] = $this->getGameModeString($value);
+                    $data[$key] = Battlefield2::GetGameModeString($value);
                     break;
                 default:
                     $data[$key] = $value;
@@ -136,7 +112,7 @@ class PlayerHistoryModel
         $data['round_end_date'] = date('F jS, Y g:i A T', (int)$round['round_end']);
 
         // Set rank name
-        $data['rankName'] = $this->getRankName((int)$round['rank']);
+        $data['rankName'] = Battlefield2::GetRankName((int)$round['rank']);
 
         // Set round time
         $span = TimeSpan::FromSeconds((int)$round['round_end'] - (int)$round['round_start']);
@@ -148,14 +124,13 @@ class PlayerHistoryModel
     }
 
     /**
-     * Adds advanced round statistics if the snapshot if found and able to
-     * be loaded properly.
+     * Attempts to attach advanced round info from the snapshot into the view
      *
-     * @param $pid
-     * @param $round
-     * @param View $view
+     * @param int $pid The player ID
+     * @param array $round The round info array from the round_history table
+     * @param View $view The view to attach advanced info into
      *
-     * @return bool
+     * @return bool true if the snapshot was loaded, otherwise false
      */
     public function addAdvancedRoundInfo($pid, $round, View $view)
     {
@@ -646,7 +621,7 @@ class PlayerHistoryModel
             switch ((int)$sid[0])
             {
                 case 1:
-                    $badges[] = ['id' => $id, 'prefix' => $this->getBadgePrefix($level), 'level' => $level];
+                    $badges[] = ['id' => $id, 'prefix' => Battlefield2::GetBadgePrefix($level), 'level' => $level];
                     break;
                 case 2:
                     $medals[] = ['id' => $id, 'level' => $level];
@@ -662,6 +637,13 @@ class PlayerHistoryModel
         $view->set('ribbons', $ribbons);
     }
 
+    /**
+     * Loads the snapshot data from a snapshot file, and returns the data array
+     *
+     * @param string $file
+     *
+     * @return array
+     */
     private function loadSnapshotData($file)
     {
         // Parse snapshot data

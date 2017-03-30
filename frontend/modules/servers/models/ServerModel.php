@@ -1,7 +1,4 @@
 <?php
-use GameQ\GameQ;
-use System\TimeHelper;
-
 /**
  * BF2Statistics ASP Framework
  *
@@ -9,6 +6,15 @@ use System\TimeHelper;
  * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
  * License:      GNU GPL v3
  *
+ */
+use GameQ\GameQ;
+use System\TimeHelper;
+
+/**
+ * Server Model
+ *
+ * @package Models
+ * @subpackage Servers
  */
 class ServerModel
 {

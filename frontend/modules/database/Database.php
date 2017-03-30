@@ -15,6 +15,11 @@ use System\IO\Path;
 use System\Version;
 use System\View;
 
+/**
+ * Database Module Controller
+ *
+ * @package Modules
+ */
 class Database extends Controller
 {
     /**
@@ -96,9 +101,6 @@ class Database extends Controller
 
             return;
         }
-
-        // Set timezone for backup
-
 
         // Check that the backup directory is writable
         $path = SYSTEM_PATH . DS . 'backups';
@@ -245,7 +247,6 @@ class Database extends Controller
         if (!isset($_POST['backup']))
         {
             echo json_encode(['success' => false, 'message' => 'No backup specified!']);
-
             return;
         }
 
@@ -260,7 +261,6 @@ class Database extends Controller
         if (!Directory::Exists($path))
         {
             echo json_encode(['success' => false, 'message' => 'Invalid Backup: Does not exist!']);
-
             return;
         }
 
@@ -274,7 +274,6 @@ class Database extends Controller
             if (!isset($data['dbver']) || !Version::Equals($data['dbver'], DB_VER))
             {
                 echo json_encode(['success' => false, 'message' => 'The backup database version does not match the table version!']);
-
                 return;
             }
 

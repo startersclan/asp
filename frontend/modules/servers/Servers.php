@@ -14,6 +14,11 @@ use System\Response;
 use System\TimeHelper;
 use System\View;
 
+/**
+ * Servers Module Controller
+ *
+ * @package Modules
+ */
 class Servers extends Controller
 {
     /**

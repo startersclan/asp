@@ -7,6 +7,7 @@
  * License:      GNU GPL v3
  *
  */
+use System\Battlefield2;
 use System\Collections\Dictionary;
 use System\Controller;
 use System\Database;
@@ -18,6 +19,11 @@ use System\Response;
 use System\TimeHelper;
 use System\View;
 
+/**
+ * Players Module Controller
+ *
+ * @package Modules
+ */
 class Players extends Controller
 {
     /**
@@ -101,7 +107,7 @@ FROM player
 WHERE `id`={$id}
 SQL;
         $player = $pdo->query($query)->fetch();
-        if ($player == false)
+        if (empty($player))
         {
             // Load view
             $view = new View('404', 'players');
@@ -188,7 +194,7 @@ FROM player_history AS ph
 WHERE pid={$id} AND roundid={$subid}
 SQL;
             $round = $pdo->query($query)->fetch();
-            if ($round == false)
+            if (empty($round))
             {
                 Response::Redirect('players/view/'. $id .'/history');
                 die;
@@ -485,15 +491,6 @@ SQL;
                     echo json_encode(['success' => true, 'mode' => 'add']);
                     break;
                 case 'edit':
-
-                    // Fetch player
-                    $pass = $pdo->query("SELECT `password` FROM player WHERE id=". $id)->fetchColumn(0);
-                    if (!empty($pass))
-                    {
-                        // Online player here
-                        $name = ' '. trim($name);
-                    }
-
                     $cols = [
                         'name' => trim($name),
                         'country' => $items['playerCountry'],
@@ -523,7 +520,7 @@ SQL;
                         'rank' => $items['playerRank'],
                         'email' => $items['playerEmail'],
                         'iso' => $items['playerCountry'],
-                        'rankName' => $this->PlayerModel->getRankName((int)$items['playerRank'])
+                        'rankName' => Battlefield2::GetRankName((int)$items['playerRank'])
                     ]);
                     break;
                 default:
@@ -547,7 +544,6 @@ SQL;
     {
         // Grab database connection
         parent::requireDatabase(true);
-        $pdo = Database::GetConnection('stats');
 
         try
         {
@@ -580,7 +576,7 @@ SQL;
                 ['db' => 'clantag', 'dt' => 'clan'],
                 ['db' => 'permban', 'dt' => 'permban',
                     'formatter' => function( $d, $row ) {
-                        return $d == 0 ? '<font color="green">No</font>' : '<font color="red">Yes</font>';
+                        return $d == 0 ? '<span style="color: green; ">No</span>' : '<span style="color: red; ">Yes</span>';
                     }
                 ],
                 ['db' => 'kicked', 'dt' => 'actions',

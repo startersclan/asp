@@ -17,6 +17,11 @@ use System\IO\Path;
 use System\Snapshot;
 use System\View;
 
+/**
+ * Snapshots Module Controller
+ *
+ * @package Modules
+ */
 class Snapshots extends Controller
 {
     /**
@@ -138,8 +143,8 @@ class Snapshots extends Controller
             $port = $snapshot->serverPort;
 
             // Ensure server exists and is authorized before proceeding
-            $result = $pdo->query("SELECT id, authorized FROM server WHERE `ip`={$ip} AND `port`={$port} LIMIT 1");
-            if (!($row = $result->fetch()))
+            $row = $pdo->query("SELECT id, authorized FROM server WHERE `ip`={$ip} AND `port`={$port} LIMIT 1")->fetch();
+            if (empty($row))
             {
                 // Create server entry
                 $query = new UpdateOrInsertQuery($pdo, 'server');

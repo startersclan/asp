@@ -7,6 +7,12 @@
  * License:      GNU GPL v3
  *
  */
+
+/**
+ * Battlespy Module Controller
+ *
+ * @package Modules
+ */
 class Battlespy
 {
 

@@ -12,6 +12,11 @@ use System\Controller;
 use System\Database;
 use System\View;
 
+/**
+ * Gamedata Module Controller
+ *
+ * @package Modules
+ */
 class Gamedata extends Controller
 {
     /**
@@ -256,11 +261,13 @@ class Gamedata extends Controller
             $type = preg_replace("/[^A-Za-z]/", '', $items['itemType']);
 
             // Prepare statement
+            /** @noinspection SqlResolve */
             $stmt = $pdo->prepare("DELETE FROM `player_{$type}` WHERE `id`=:id");
             $stmt->bindValue(':id', $itemId, PDO::PARAM_INT);
             $stmt->execute();
 
             // Prepare statement
+            /** @noinspection SqlResolve */
             $stmt = $pdo->prepare("DELETE FROM `{$type}` WHERE `id`=:id");
             $stmt->bindValue(':id', $itemId, PDO::PARAM_INT);
             $stmt->execute();
