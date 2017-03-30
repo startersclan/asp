@@ -9,7 +9,6 @@
  */
 use System\Controller;
 use System\Database as DB;
-use System\Database\SqlFileParser;
 use System\IO\Directory;
 use System\IO\File;
 use System\IO\Path;
@@ -43,15 +42,21 @@ class Database extends Controller
         $q = $pdo->query("SHOW TABLE STATUS");
         while ($row = $q->fetch())
         {
-            // Skip tables we dont care about
+            // Skip tables we don't care about
             if (!in_array($row['Name'], $whitelist))
                 continue;
 
+            // Get an accurate row count with InnoDB, since it returns an estimate in STATUS
+            $rowCount = (strtolower($row['Engine']) == 'innodb')
+                ? (int)$pdo->query("SELECT COUNT(*) FROM ". $row['Name'])->fetchColumn(0)
+                : $row['Rows'];
+
+            // Determine size, and output data
             $size = $row["Data_length"] + $row["Index_length"];
             $tables[] = [
                 'name' => $row['Name'],
                 'size' => $this->toFilesize($size),
-                'rows' => number_format($row['Rows']),
+                'rows' => number_format($rowCount),
                 'avg_row_length' => $this->toFilesize($row['Avg_row_length']),
                 'engine' => $row['Engine']
             ];
@@ -137,11 +142,13 @@ class Database extends Controller
                 $result = $pdo->query("SHOW TABLES LIKE '" . $table . "'");
                 if (!empty($result->fetchAll()))
                 {
+                    /** @noinspection SqlResolve */
                     $count = (int)$pdo->query("SELECT COUNT(*) FROM `{$table}`")->fetchColumn(0);
                     $i = 0;
                     while ($count > 0)
                     {
                         // Table Exists, lets back it up
+                        /** @noinspection SqlResolve */
                         $query = "SELECT *  FROM `{$table}` LIMIT 5000 OFFSET $i;";
                         $result = $pdo->query($query);
                         while ($row = $result->fetch())
@@ -206,7 +213,6 @@ class Database extends Controller
         $view->attachScript("/ASP/frontend/modules/database/js/restore.js");
 
         // Set vars
-        $pdo = DB::GetConnection('stats');
         $dirs = Directory::GetDirectories(Path::Combine(SYSTEM_PATH, 'backups'));
         for ($i = 0; $i < count($dirs); $i++)
             $dirs[$i] = Path::GetFileName($dirs[$i]);
@@ -285,6 +291,7 @@ class Database extends Controller
             // Clear old stuff
             foreach (array_reverse($tables) as $table)
             {
+                /** @noinspection SqlResolve */
                 $pdo->exec("DELETE FROM `{$table}`;");
             }
 
@@ -398,6 +405,7 @@ class Database extends Controller
             // Clear old stuff
             foreach (array_reverse($tables) as $table)
             {
+                /** @noinspection SqlResolve */
                 $pdo->exec("DELETE FROM `{$table}`;");
             }
 
