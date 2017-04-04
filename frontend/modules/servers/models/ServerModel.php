@@ -30,7 +30,7 @@ class ServerModel
     public function queryServer($ip, $port)
     {
         // Include the AutoLoader for GameQ
-        include SYSTEM_PATH . DS . 'framework' . DS . 'GameQ' . DS . 'Autoloader.php';
+        require_once SYSTEM_PATH . DS . 'framework' . DS . 'GameQ' . DS . 'Autoloader.php';
 
         // Query the server
         $key = $ip . ':'. $port;

@@ -75,6 +75,29 @@ abstract class Controller
     }
 
     /**
+     * Checks to see if the POST or GET action matches any of the arguments passed
+     * to this function, and returns the result
+     *
+     * @return bool true if one of the passed arguments matches the current action,
+     *  otherwise false.
+     */
+    public function isAction()
+    {
+        $args = func_get_args();
+        foreach ($args as $arg)
+        {
+            // Check if action is set and exists
+            if ($_POST['action'] == $arg || $_GET['action'] == $arg)
+            {
+                // quit here
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Loads a model class from the specified module folder.
      *
      * @param string $modelName The name of the Model class

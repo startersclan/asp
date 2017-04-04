@@ -20,8 +20,6 @@
 // Namespace
 namespace System;
 
-use PDOStatement;
-
 // No direct access
 defined("BF2_ADMIN") or die("No Direct Access");
 
@@ -39,7 +37,7 @@ $limit = (isset($_GET['customonly'])) ? (int)$_GET['customonly'] : 0;
 $transpose = (isset($_GET['transpose'])) ? (int)$_GET['transpose'] : 0;
 
 // Limit results to custom maps ONLY
-$maplimit = ($limit == 1) ? " AND id >= " . Config::Get('game_custom_mapid') : '';
+$maplimit = ($limit == 1) ? ' AND id >= 700' : '';
 
 if ($pid > 0)
 {

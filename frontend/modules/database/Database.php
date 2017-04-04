@@ -8,11 +8,8 @@
  *
  */
 use System\Controller;
-use System\Database as DB;
 use System\IO\Directory;
-use System\IO\File;
 use System\IO\Path;
-use System\Version;
 use System\View;
 
 /**
@@ -23,6 +20,11 @@ use System\View;
 class Database extends Controller
 {
     /**
+     * @var DatabaseModel
+     */
+    private $DatabaseModel;
+
+    /**
      * @protocol    ANY
      * @request     /ASP/database
      * @output      html
@@ -30,45 +32,21 @@ class Database extends Controller
     public function index()
     {
         // Require database connection
-        $this->requireDatabase();
-        $pdo = DB::GetConnection('stats');
+        parent::requireDatabase();
+
+        // Load Model
+        parent::loadModel('DatabaseModel', 'database');
+
+        // A list of tables we care about
+        $tables = [
+            'mapinfo', 'server', 'round_history', 'player', 'player_army', 'player_award', 'player_weapon',
+            'player_kit', 'player_kill', 'player_map', 'player_history', 'player_rank_history',
+            'player_vehicle', 'player_unlock'
+        ];
 
         // Create view
         $view = new View('index', 'database');
-
-        // A list of tables we care about
-        $whitelist = [
-            'mapinfo', 'server', 'round_history', 'player', 'player_army', 'player_award', 'player_weapon',
-            'player_kit', 'player_kill', 'player_map', 'player_history', 'player_vehicle', 'player_unlock'
-        ];
-        $tables = [];
-
-        // Get table sizes
-        $q = $pdo->query("SHOW TABLE STATUS");
-        while ($row = $q->fetch())
-        {
-            // Skip tables we don't care about
-            if (!in_array($row['Name'], $whitelist))
-                continue;
-
-            // Get an accurate row count with InnoDB, since it returns an estimate in STATUS
-            $rowCount = (strtolower($row['Engine']) == 'innodb')
-                ? (int)$pdo->query("SELECT COUNT(*) FROM ". $row['Name'])->fetchColumn(0)
-                : $row['Rows'];
-
-            // Determine size, and output data
-            $size = $row["Data_length"] + $row["Index_length"];
-            $tables[] = [
-                'name' => $row['Name'],
-                'size' => $this->toFilesize($size),
-                'rows' => number_format($rowCount),
-                'avg_row_length' => $this->toFilesize($row['Avg_row_length']),
-                'engine' => $row['Engine']
-            ];
-        }
-
-        // Render View
-        $view->set('tables', $tables);
+        $view->set('tables', $this->DatabaseModel->getTableStatus($tables));
         $view->render();
     }
 
@@ -92,108 +70,31 @@ class Database extends Controller
      */
     public function postBackup()
     {
-        if (!isset($_POST['action']) || $_POST['action'] != 'backup')
-        {
-            if (isset($_POST['ajax']))
-                echo json_encode(['success' => false, 'message' => 'Invalid Action!']);
-            else
-                $this->getBackup();
+        // Require proper action or redirect
+        parent::isAction('backup') or $this->getBackup();
 
-            return;
-        }
+        // We require a database!
+        parent::requireDatabase(true);
 
         // Check that the backup directory is writable
-        $path = SYSTEM_PATH . DS . 'backups';
+        $path = Path::Combine(SYSTEM_PATH, 'backups');
         if (!Directory::IsWritable($path))
         {
             echo json_encode(['success' => false, 'message' => 'Database backup path (' . $path . ') is not writable!']);
             die;
         }
 
-        // We require a database!
-        $this->requireDatabase();
-        $pdo = DB::GetConnection('stats');
-
         try
         {
             // Define backup folder path
             $path = Path::Combine(SYSTEM_PATH, 'backups', date('Y-m-d_Hi'));
 
-            // Delete directory for sub path if it does exist already
-            if (Directory::Exists($path))
-                Directory::Delete($path, true);
+            // Load model, and call method
+            parent::loadModel('DatabaseModel', 'database');
+            $this->DatabaseModel->createStatsBackup($path);
 
-            // Create directory
-            Directory::CreateDirectory($path, 0775);
-
-            // A list of tables we care about
-            $tables = [
-                'army', 'kit', 'vehicle', 'weapon', 'unlock',
-                'mapinfo', 'server', 'round_history', 'player', 'player_army', 'player_award', 'player_weapon',
-                'player_kit', 'player_kill', 'player_map', 'player_history', 'player_vehicle', 'player_unlock'
-            ];
-
-            // Perform backups
-            // Process each upgrade only if the version is newer
-            foreach ($tables as $table)
-            {
-                $backupFile = $path . DS . $table . ".csv";
-                $file = File::OpenWrite($backupFile);
-
-                // Check Table Exists
-                $result = $pdo->query("SHOW TABLES LIKE '" . $table . "'");
-                if (!empty($result->fetchAll()))
-                {
-                    /** @noinspection SqlResolve */
-                    $count = (int)$pdo->query("SELECT COUNT(*) FROM `{$table}`")->fetchColumn(0);
-                    $i = 0;
-                    while ($count > 0)
-                    {
-                        // Table Exists, lets back it up
-                        /** @noinspection SqlResolve */
-                        $query = "SELECT *  FROM `{$table}` LIMIT 5000 OFFSET $i;";
-                        $result = $pdo->query($query);
-                        while ($row = $result->fetch())
-                        {
-                            $file->writeCSVLine($row);
-                        }
-
-                        $i += 5000;
-                        $count -= 5000;
-                    }
-                }
-
-                $file->close();
-            }
-
-            // Prepare for Output
-            $html = '';
-            if (!empty($errors))
-            {
-                // Delete backup!
-                Directory::Delete($path, true);
-
-                // Generate error message
-                $html .= 'Failed to backup all database tables... <br /><br />List of Errors:<br /><ul>';
-                foreach ($errors as $e)
-                    $html .= '<li>' . $e . '</li>';
-
-                $html .= '</ul>';
-
-                echo json_encode(['success' => false, 'message' => $html]);
-            }
-            else
-            {
-                $data = ['dbver' => DB_VER, 'timestamp' => time()];
-
-                // Create manifest
-                $file = File::OpenWrite($path . DS . "backup.json");
-                $file->write(json_encode($data, JSON_PRETTY_PRINT));
-                $file->close();
-
-                // Tell the client that we were successful
-                echo json_encode(['success' => true, 'message' => 'System Data Backup Successful!']);
-            }
+            // Tell the client that we were successful
+            echo json_encode(['success' => true, 'message' => 'System Data Backup Successful!']);
         }
         catch (Exception $e)
         {
@@ -232,16 +133,11 @@ class Database extends Controller
      */
     public function postRestore()
     {
-        // Ensure a valid action
-        if (!isset($_POST['action']) || $_POST['action'] != 'restore')
-        {
-            if (isset($_POST['ajax']))
-                echo json_encode(['success' => false, 'message' => 'Invalid Action!']);
-            else
-                $this->getRestore();
+        // Require proper action or redirect
+        parent::isAction('restore') or $this->getRestore();
 
-            return;
-        }
+        // We require a database!
+        parent::requireDatabase(true);
 
         // Ensure we have a backup selected
         if (!isset($_POST['backup']))
@@ -249,10 +145,6 @@ class Database extends Controller
             echo json_encode(['success' => false, 'message' => 'No backup specified!']);
             return;
         }
-
-        // We require a database!
-        $this->requireDatabase();
-        $pdo = DB::GetConnection('stats');
 
         // Define backup folder path
         $path = Path::Combine(SYSTEM_PATH, 'backups', $_POST['backup']);
@@ -266,91 +158,17 @@ class Database extends Controller
 
         try
         {
-            // Check for the manifest
-            $file = File::OpenRead($path . DS . "backup.json");
-            $data = json_decode($file->readToEnd(), true);
+            // Load model, and call method
+            parent::loadModel('DatabaseModel', 'database');
+            $this->DatabaseModel->restoreStatsFromBackup($path);
 
-            // Check that the DB version matches the backup table version
-            if (!isset($data['dbver']) || !Version::Equals($data['dbver'], DB_VER))
-            {
-                echo json_encode(['success' => false, 'message' => 'The backup database version does not match the table version!']);
-                return;
-            }
-
-            // Start transaction as we are moving ALOT of data around.
-            $pdo->beginTransaction();
-
-            // A list of tables we care about
-            $tables = [
-                'army', 'kit', 'vehicle', 'weapon', 'unlock', 'risingstar',
-                'mapinfo', 'server', 'round_history', 'player', 'player_army', 'player_award', 'player_weapon',
-                'player_kit', 'player_kill', 'player_map', 'player_history', 'player_vehicle', 'player_unlock'
-            ];
-
-            // Clear old stuff
-            foreach (array_reverse($tables) as $table)
-            {
-                /** @noinspection SqlResolve */
-                $pdo->exec("DELETE FROM `{$table}`;");
-            }
-
-            // Reset auto increments
-            $pdo->exec("ALTER TABLE `player` AUTO_INCREMENT = 1;");
-            $pdo->exec("ALTER TABLE `server` AUTO_INCREMENT = 1;");
-            $pdo->exec("ALTER TABLE `round_history` AUTO_INCREMENT = 1;");
-
-            // Process each upgrade only if the version is newer
-            foreach ($tables as $table)
-            {
-                // Check Table Exists
-                $result = $pdo->query("SHOW TABLES LIKE '" . $table . "'");
-                if (!empty($result->fetchAll()))
-                {
-                    // Table Exists, lets back it up
-                    $backupFile = $pdo->quote($path . DS . $table . ".csv");
-                    $query = "LOAD DATA LOCAL INFILE {$backupFile} INTO TABLE `{$table}` FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\n';";
-
-                    // Try to execute
-                    try
-                    {
-                        $pdo->exec($query);
-                    }
-                    catch (PDOException $e)
-                    {
-                        $errors[] = "Table (" . $table . ") *NOT* Restored: {$e->getMessage()}}";
-                    }
-                }
-            }
-
-            // Commit changes
-            $pdo->commit();
-
-            // Prepare for Output
-            $html = '';
-            if (!empty($errors))
-            {
-                // Generate error message
-                $html .= 'Failed to restore all database tables... <br /><br />List of Errors:<br /><ul>';
-                foreach ($errors as $e)
-                    $html .= '<li>' . $e . '</li>';
-
-                $html .= '</ul>';
-
-                echo json_encode(['success' => false, 'message' => $html]);
-            }
-            else
-            {
-                // Tell the client that we were successful
-                echo json_encode(['success' => true, 'message' => 'System Data Backup Successful!']);
-            }
+            // Tell the client that we were successful
+            echo json_encode(['success' => true, 'message' => 'System Data Backup Successful!']);
         }
         catch (Exception $e)
         {
-            $pdo->rollBack();
-
             Asp::LogException($e);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
-
         }
     }
 
@@ -374,73 +192,25 @@ class Database extends Controller
      */
     public function postClear()
     {
-        // Ensure a valid action
-        if (!isset($_POST['action']) || $_POST['action'] != 'clear')
-        {
-            if (isset($_POST['ajax']))
-                echo json_encode(['success' => false, 'message' => 'Invalid Action!']);
-            else
-                $this->getClear();
-
-            return;
-        }
+        // Require proper action or redirect
+        parent::isAction('clear') or $this->getClear();
 
         // We require a database!
-        $this->requireDatabase();
-        $pdo = DB::GetConnection('stats');
+        parent::requireDatabase(true);
 
         try
         {
-            // Start transaction as we are moving ALOT of data around.
-            $pdo->beginTransaction();
-
-            // A list of tables we care about
-            $tables = [
-                'mapinfo', 'server', 'round_history', 'player', 'player_army', 'player_award', 'player_weapon',
-                'player_kit', 'player_kill', 'player_map', 'player_history', 'player_vehicle', 'player_unlock',
-                'risingstar'
-            ];
-
-            // Clear old stuff
-            foreach (array_reverse($tables) as $table)
-            {
-                /** @noinspection SqlResolve */
-                $pdo->exec("DELETE FROM `{$table}`;");
-            }
-
-            // Reset auto increments
-            $pdo->exec("ALTER TABLE `player` AUTO_INCREMENT = 29000000;");
-            $pdo->exec("ALTER TABLE `server` AUTO_INCREMENT = 1;");
-            $pdo->exec("ALTER TABLE `round_history` AUTO_INCREMENT = 1;");
-
-            // Commit changes
-            $pdo->commit();
+            // Load model, and call method
+            parent::loadModel('DatabaseModel', 'database');
+            $this->DatabaseModel->clearStatsTables();
 
             // Tell the client that we were successful
             echo json_encode(['success' => true, 'message' => 'Stats Data Cleared Successfully!']);
         }
         catch (Exception $e)
         {
-            $pdo->rollBack();
-
             Asp::LogException($e);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
-    }
-
-    /**
-     * Converts a size in bytes to a compact human readable string
-     *
-     * @param int $bytes The size in bytes
-     * @param int $decimals The number of decimal places
-     *
-     * @return string
-     */
-    private function toFilesize($bytes, $decimals = 2)
-    {
-        $size = array('B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
-        $factor = (int)floor((strlen($bytes) - 1) / 3);
-
-        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . ' ' . $size[$factor];
     }
 }

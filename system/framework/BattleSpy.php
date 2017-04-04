@@ -115,7 +115,7 @@ class BattleSpy
      */
     public function __construct(PDO $connection, $serverId, $roundId)
     {
-        //
+        // Set internals
         $this->pdo = $connection;
         $this->serverId = $serverId;
         $this->roundId = $roundId;

@@ -7,9 +7,10 @@
 -- Delete Tables/Views/Triggers First
 -- --------------------------------------------------------
 
-DROP TRIGGER IF EXISTS `player_joined`;
 DROP TRIGGER IF EXISTS `_version_inserttime`;
-DROP TRIGGER IF EXISTS `player_award_timestamps`;
+DROP TRIGGER IF EXISTS `_version_insert_time`;
+DROP TRIGGER IF EXISTS `player_joined`;
+DROP TRIGGER IF EXISTS `player_rank_change`;
 DROP VIEW IF EXISTS `player_weapon_view`;
 DROP VIEW IF EXISTS `round_history_view`;
 DROP VIEW IF EXISTS `player_history_view`;
@@ -57,7 +58,7 @@ CREATE TABLE `_version` (
   PRIMARY KEY(`updateid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TRIGGER `_version_inserttime` BEFORE INSERT ON `_version`
+CREATE TRIGGER `_version_insert_time` BEFORE INSERT ON `_version`
 FOR EACH ROW SET new.time = UNIX_TIMESTAMP();
 
 --
@@ -266,7 +267,7 @@ CREATE TABLE `player` (
   `clantag` VARCHAR(20) NOT NULL DEFAULT '',
   `online` TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2900000 DEFAULT CHARSET=utf8;
 
 --
 -- Create Indexes for BFHQ Leaderboard
@@ -276,18 +277,29 @@ CREATE INDEX `idx_player_skillscore` ON player(`skillscore`);
 CREATE INDEX `idx_player_teamscore` ON player(`teamscore`);
 CREATE INDEX `idx_player_cmdscore` ON player(`cmdscore`);
 
+--
+-- Create `player` table triggers
+--
+
 delimiter $$
 
+# Set player joined timestamp on insert
 CREATE TRIGGER `player_joined` BEFORE INSERT ON `player`
-FOR EACH ROW BEGIN
-  IF new.joined = 0 THEN
-    SET new.joined = UNIX_TIMESTAMP();
-  END IF;
-END $$
+  FOR EACH ROW BEGIN
+    IF new.joined = 0 THEN
+      SET new.joined = UNIX_TIMESTAMP();
+    END IF;
+  END $$
+
+# Insert row into `player_rank_history` on rank change
+CREATE TRIGGER `player_rank_change` AFTER UPDATE ON `player`
+  FOR EACH ROW BEGIN
+    IF new.rank != old.rank THEN
+      REPLACE INTO player_rank_history VALUES (new.id, new.rank, old.rank, UNIX_TIMESTAMP());
+    END IF;
+  END $$
 
 delimiter ;
-
-ALTER TABLE player AUTO_INCREMENT=2900000;
 
 --
 -- Table structure for table `player_army`
@@ -399,6 +411,19 @@ CREATE TABLE `player_history` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE INDEX `idx_player_history_timestamp_score_pid` ON player_history(`timestamp`, `score`, `pid`);
+
+--
+-- Table structure for table `player_rank_history`
+--
+
+CREATE TABLE `player_rank_history` (
+  `pid` INT UNSIGNED NOT NULL,
+  `to_rank` SMALLINT UNSIGNED NOT NULL,
+  `from_rank` SMALLINT UNSIGNED NOT NULL,
+  `timestamp` INT UNSIGNED NOT NULL,
+  PRIMARY KEY(`pid`,`timestamp`),
+  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET utf8;
 
 --
 -- Table structure for table `player_unlock`
