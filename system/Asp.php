@@ -157,6 +157,9 @@ class Asp
         // First and Foremost, Set timezone
         date_default_timezone_set(Config::Get('admin_timezone'));
 
+        // Then register error handler
+        \System\ErrorHandler::Register(true, true);
+
         // Next, Lets make sure the IP can view the ASP
         if (!Security::IsAuthorizedIp(Request::ClientIp()))
             die('<span style="color: red; ">ERROR:</span> You are NOT Authorised to access this Page! (Ip: ' . Request::ClientIp() . ')');
@@ -290,6 +293,10 @@ class Asp
         // Make sure the controller is not abstract object
         if ($rController->isAbstract())
             die('Module controller "'. $className .'" is abstract, and cannot be called via url');
+
+        // Ensure this class can be accessed by URL
+        if (!$rController->isSubclassOf('System\Controller'))
+            die('Module controller "'. $className .'" does not extend \\System\\Controller, therefor it cannot be called via url');
 
         // Construct our controller
         $controller = new $className();

@@ -22,7 +22,7 @@ class Database extends Controller
     /**
      * @var DatabaseModel
      */
-    private $DatabaseModel;
+    protected $databaseModel;
 
     /**
      * @protocol    ANY
@@ -46,7 +46,7 @@ class Database extends Controller
 
         // Create view
         $view = new View('index', 'database');
-        $view->set('tables', $this->DatabaseModel->getTableStatus($tables));
+        $view->set('tables', $this->databaseModel->getTableStatus($tables));
         $view->render();
     }
 
@@ -71,7 +71,15 @@ class Database extends Controller
     public function postBackup()
     {
         // Require proper action or redirect
-        parent::isAction('backup') or $this->getBackup();
+        if ($_POST['action'] != 'backup')
+        {
+            if (isset($_POST['ajax']))
+                echo json_encode(['success' => false, 'message' => 'Invalid Action!']);
+            else
+                $this->getBackup();
+
+            return;
+        }
 
         // We require a database!
         parent::requireDatabase(true);
@@ -91,7 +99,7 @@ class Database extends Controller
 
             // Load model, and call method
             parent::loadModel('DatabaseModel', 'database');
-            $this->DatabaseModel->createStatsBackup($path);
+            $this->databaseModel->createStatsBackup($path);
 
             // Tell the client that we were successful
             echo json_encode(['success' => true, 'message' => 'System Data Backup Successful!']);
@@ -134,7 +142,15 @@ class Database extends Controller
     public function postRestore()
     {
         // Require proper action or redirect
-        parent::isAction('restore') or $this->getRestore();
+        if ($_POST['action'] != 'restore')
+        {
+            if (isset($_POST['ajax']))
+                echo json_encode(['success' => false, 'message' => 'Invalid Action!']);
+            else
+                $this->getRestore();
+
+            return;
+        }
 
         // We require a database!
         parent::requireDatabase(true);
@@ -160,7 +176,7 @@ class Database extends Controller
         {
             // Load model, and call method
             parent::loadModel('DatabaseModel', 'database');
-            $this->DatabaseModel->restoreStatsFromBackup($path);
+            $this->databaseModel->restoreStatsFromBackup($path);
 
             // Tell the client that we were successful
             echo json_encode(['success' => true, 'message' => 'System Data Backup Successful!']);
@@ -193,7 +209,15 @@ class Database extends Controller
     public function postClear()
     {
         // Require proper action or redirect
-        parent::isAction('clear') or $this->getClear();
+        if ($_POST['action'] != 'clear')
+        {
+            if (isset($_POST['ajax']))
+                echo json_encode(['success' => false, 'message' => 'Invalid Action!']);
+            else
+                $this->getClear();
+
+            return;
+        }
 
         // We require a database!
         parent::requireDatabase(true);
@@ -202,7 +226,7 @@ class Database extends Controller
         {
             // Load model, and call method
             parent::loadModel('DatabaseModel', 'database');
-            $this->DatabaseModel->clearStatsTables();
+            $this->databaseModel->clearStatsTables();
 
             // Tell the client that we were successful
             echo json_encode(['success' => true, 'message' => 'Stats Data Cleared Successfully!']);

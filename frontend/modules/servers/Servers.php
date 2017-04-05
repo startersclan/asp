@@ -24,7 +24,7 @@ class Servers extends Controller
     /**
      * @var ServerModel
      */
-    protected $ServerModel;
+    protected $serverModel;
 
     /**
      * @protocol    ANY
@@ -167,7 +167,7 @@ class Servers extends Controller
 
         // Load model, and query server
         parent::loadModel('ServerModel', 'servers');
-        $result = $this->ServerModel->queryServer($server['ip'], $server['queryport']);
+        $result = $this->serverModel->queryServer($server['ip'], $server['queryport']);
 
         // If we get a false response, server is offline
         if (!$result)
@@ -178,13 +178,13 @@ class Servers extends Controller
 
         // Load view and start settings variables
         $view = new View('details', 'servers');
-        $view->set('server', $this->ServerModel->formatRules($result['server']));
-        $view->set('players1', $this->ServerModel->addPlayerRanks($pdo, $result['team1']));
-        $view->set('players2', $this->ServerModel->addPlayerRanks($pdo, $result['team2']));
+        $view->set('server', $this->serverModel->formatRules($result['server']));
+        $view->set('players1', $this->serverModel->addPlayerRanks($pdo, $result['team1']));
+        $view->set('players2', $this->serverModel->addPlayerRanks($pdo, $result['team2']));
 
         // Try and get team 1's real name and flag
         $name = $result['server']['bf2_team1'];
-        if ($this->ServerModel->getArmy($name, $flag))
+        if ($this->serverModel->getArmy($name, $flag))
         {
             $view->set('team1name', $name);
             $view->set('team1flag', $flag);
@@ -192,7 +192,7 @@ class Servers extends Controller
 
         // Try and get team 2's real name and flag
         $name = $result['server']['bf2_team2'];
-        if ($this->ServerModel->getArmy($name, $flag))
+        if ($this->serverModel->getArmy($name, $flag))
         {
             $view->set('team2name', $name);
             $view->set('team2flag', $flag);

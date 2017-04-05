@@ -24,7 +24,7 @@ class Roundinfo extends Controller
     /**
      * @var RoundInfoModel
      */
-    protected $RoundInfoModel;
+    protected $roundInfoModel;
 
     /**
      * @protocol    ANY
@@ -136,7 +136,7 @@ SQL;
 
         // Can we add advanced information?
         parent::loadModel('RoundInfoModel', 'roundinfo');
-        $result = $this->RoundInfoModel->addAdvancedRoundInfo($round, $view);
+        $result = $this->roundInfoModel->addAdvancedRoundInfo($round, $view);
         $view->set('advanced', $result);
 
         // Alert user if we could not load the snapshot
@@ -144,7 +144,7 @@ SQL;
             $view->displayMessage('warning', 'Unable to locate snapshot for this round. Some round details could not be displayed.');
 
         // Attach awards
-        $this->RoundInfoModel->attachAwards($id, $pdo, $view);
+        $this->roundInfoModel->attachAwards($id, $pdo, $view);
 
         // Attach needed scripts for the form
         $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");

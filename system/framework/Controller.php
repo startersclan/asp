@@ -104,6 +104,7 @@ abstract class Controller
      * @param string $module The module name this Model is located with
      * @param string $propertyName Sets the name of the property this Model will be
      *  stored into. If no name is provided, this method will use the $moduleName
+     *  in camel-case
      *
      * @throws \Exception if the model file cannot be located
      */
@@ -111,7 +112,7 @@ abstract class Controller
     {
         // Make sure we have a property name
         if (empty($propertyName))
-            $propertyName = $modelName;
+            $propertyName = lcfirst($modelName);
 
         // Load the class if it has not been loaded already
         if (!class_exists($modelName, false))

@@ -25,45 +25,23 @@ use System\View;
 class Snapshots extends Controller
 {
     /**
+     * @var SnapshotsModel
+     */
+    protected $snapshotsModel;
+
+    /**
      * @protocol    GET
      * @request     /ASP/snapshots
      * @output      html
      */
     public function index()
     {
-        // Get snapshots
-        $path = Path::Combine(SYSTEM_PATH, "snapshots", "unauthorized");
-        $files = Directory::GetFiles($path, '.*\.json');
-
-        // Create objects
-        $snapshots = [];
-        foreach ($files as $file)
-        {
-            // Open snapshot file, and grab its JSON
-            $stream = File::OpenRead($file);
-            $json = json_decode($stream->readToEnd(), true);
-            $stream->close();
-
-            // Ensure the JSON is valid
-            if ($json != null)
-            {
-                $snapshot = new Dictionary(true, $json);
-                $snapshots[] = [
-                    'name' => Path::GetFilenameWithoutExtension($file),
-                    'prefix' => $snapshot['prefix'],
-                    'server' => $snapshot['serverName'],
-                    'port' => $snapshot['gamePort'],
-                    'ipaddress' => $snapshot['serverIp'],
-                    'map' => $snapshot['mapName'],
-                    'players' => count($snapshot['players']),
-                    'date' => date('M j, Y G:i T', (int)$snapshot['mapEnd'])
-                ];
-            }
-        }
+        // Load model
+        parent::loadModel('SnapshotsModel', 'snapshots');
 
         // Load view
         $view = new View('index', 'snapshots');
-        $view->set('snapshots', $snapshots);
+        $view->set('snapshots', $this->snapshotsModel->getSnapshots("unauthorized"));
 
         // Attach needed scripts for the form
         $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");
@@ -84,7 +62,7 @@ class Snapshots extends Controller
     public function postAccept()
     {
         // Ensure a valid action
-        if (!isset($_POST['action']) || $_POST['action'] != 'process')
+        if ($_POST['action'] != 'process')
         {
             if (isset($_POST['ajax']))
                 echo json_encode(['success' => false, 'message' => 'Invalid Action!']);
@@ -119,71 +97,9 @@ class Snapshots extends Controller
 
         try
         {
-            $pdo = Database::GetConnection('stats');
-
-            // Parse snapshot data
-            $stream = File::OpenRead($file);
-            $json = $stream->readToEnd();
-            $data = json_decode($json, true);
-            $stream->close();
-
-            // Ensure we can parse json
-            if ($data == null)
-            {
-                echo json_encode(['success' => false, 'message' => "Unable to decode json from snapshot: " . $file]);
-                return;
-            }
-
-            // Create snapshot
-            $data = new Dictionary(false, $data);
-            $snapshot = new Snapshot($data);
-
-            // Ensure this is an authorized server
-            $ip = $pdo->quote($snapshot->serverIp);
-            $port = $snapshot->serverPort;
-
-            // Ensure server exists and is authorized before proceeding
-            $row = $pdo->query("SELECT id, authorized FROM server WHERE `ip`={$ip} AND `port`={$port} LIMIT 1")->fetch();
-            if (empty($row))
-            {
-                // Create server entry
-                $query = new UpdateOrInsertQuery($pdo, 'server');
-                $query->set('prefix', '=', $snapshot->serverPrefix);
-                $query->set('name', '=', $snapshot->serverName);
-                $query->set('ip', '=', $snapshot->serverIp);
-                $query->set('port', '=', $snapshot->serverPort);
-                $query->set('queryport', '=', $snapshot->queryPort);
-                $query->set('authorized', '=', 1);
-                $query->set('lastupdate', '=', $snapshot->roundEndTime);
-                $query->executeInsert();
-            }
-            else
-            {
-                $serverId = (int)$row['id'];
-                $authorized = ((int)$row['authorized']) == 1;
-                if (!$authorized)
-                    $pdo->exec("UPDATE `server` SET authorized=1 WHERE id={$serverId}");
-            }
-
-            // Ensure snapshot is not already processed from before!
-            if ($snapshot->isProcessed())
-            {
-                $message = "Snapshot was already processed.";
-            }
-            else
-            {
-                // Process data
-                $snapshot->processData();
-                $message = "Snapshot was processed successfully.";
-            }
-
-            /**
-             * Move file. Use snapshot's getFilename() in case this import was planted by an admin,
-             * which was created locally on the bf2 servers snapshot path. Having the correct filename
-             * is important for the /roundinfo/view/ ASP page.
-             */
-            $newPath = Path::Combine(SYSTEM_PATH, "snapshots", "processed", $snapshot->getFilename());
-            File::Move($file, $newPath);
+            // Load model, and call method
+            parent::loadModel('SnapshotsModel', 'database');
+            $this->snapshotsModel->importSnapshot($file, $message);
 
             // Tell the client of the success
             echo json_encode(['success' => true, 'message' => $message]);
@@ -220,7 +136,7 @@ class Snapshots extends Controller
     public function postDelete()
     {
         // Ensure a valid action
-        if (!isset($_POST['action']) || $_POST['action'] != 'delete')
+        if ($_POST['action'] != 'delete')
         {
             if (isset($_POST['ajax']))
                 echo json_encode(['success' => false, 'message' => 'Invalid Action!']);

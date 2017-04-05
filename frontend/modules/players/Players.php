@@ -29,12 +29,12 @@ class Players extends Controller
     /**
      * @var PlayerModel
      */
-    protected $PlayerModel = null;
+    protected $playerModel = null;
 
     /**
      * @var PlayerHistoryModel
      */
-    protected $PlayerHistoryModel = null;
+    protected $playerHistoryModel = null;
 
     /**
      * @protocol    ANY
@@ -122,15 +122,15 @@ SQL;
         // Load view
         $view = new View('view',  'players');
         $view->set('id', $id);
-        $view->set('player', $this->PlayerModel->formatPlayerData($player));
+        $view->set('player', $this->playerModel->formatPlayerData($player));
 
         // Attach player object stats
-        $this->PlayerModel->attachArmyData($id, $view, $pdo);
-        $this->PlayerModel->attachKitData($id, $view, $pdo);
-        $this->PlayerModel->attachVehicleData($id, $view, $pdo);
-        $this->PlayerModel->attachWeaponData($id, $view, $pdo);
-        $this->PlayerModel->attachAwardData($id, $view, $pdo);
-        $this->PlayerModel->attachTopVictimAndOpp($id, $view, $pdo);
+        $this->playerModel->attachArmyData($id, $view, $pdo);
+        $this->playerModel->attachKitData($id, $view, $pdo);
+        $this->playerModel->attachVehicleData($id, $view, $pdo);
+        $this->playerModel->attachWeaponData($id, $view, $pdo);
+        $this->playerModel->attachAwardData($id, $view, $pdo);
+        $this->playerModel->attachTopVictimAndOpp($id, $view, $pdo);
 
         // Attach needed scripts for the form
         $view->attachScript("/ASP/frontend/js/jquery.form.js");
@@ -205,10 +205,10 @@ SQL;
 
             // Assign custom round values and attach to view
             $round['teamName'] = $pdo->query("SELECT name FROM army WHERE id=". $round['team'])->fetchColumn(0);
-            $view->set('round', $this->PlayerHistoryModel->formatRoundInfo($round));
+            $view->set('round', $this->playerHistoryModel->formatRoundInfo($round));
 
             // Add advanced info if we can
-            $advanced = $this->PlayerHistoryModel->addAdvancedRoundInfo($id, $round, $view);
+            $advanced = $this->playerHistoryModel->addAdvancedRoundInfo($id, $round, $view);
             $view->set('advanced', $advanced);
 
             // Get next round ID
