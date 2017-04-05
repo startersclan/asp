@@ -99,7 +99,9 @@ small {
 small strong {
 	color: #808080;
 }
-
+span.bold {
+	font-weight: bold;
+}
 a.red, .red a
 h2.red, .red h2,
 h3.red, .red h3 {

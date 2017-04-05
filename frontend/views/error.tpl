@@ -28,12 +28,12 @@
         <ul class="action-tabs with-children-tip children-tip-left">
             <li>
                 <a href="javascript:history.back()" title="Go back">
-                    <img src="/ASP/frontend/images/icons/fugue/navigation-180.png" width="16" height="16">
+                    <img src="/ASP/frontend/images/icons/fugue/navigation-180.png" width="16" height="16" alt="Go Back">
                 </a>
             </li>
             <li>
                 <a href="javascript:window.location.reload()" title="Reload page">
-                    <img src="/ASP/frontend/images/icons/fugue/arrow-circle.png" width="16" height="16">
+                    <img src="/ASP/frontend/images/icons/fugue/arrow-circle.png" width="16" height="16" alt="Reload Page">
                 </a>
             </li>
         </ul>
@@ -42,7 +42,7 @@
                 <a href="https://github.com/BF2Statistics/ASP/issues"
                    title="Get Support for this Error"
                    target="_blank">
-                    <img src="/ASP/frontend/images/icons/fugue/balloon-reverse.png" width="16" height="16">
+                    <img src="/ASP/frontend/images/icons/fugue/balloon-reverse.png" width="16" height="16" alt="Support">
                 </a>
             </li>
         </ul>
@@ -59,17 +59,18 @@
 
                 <h2>Error Details</h2>
                 <ul class="picto-list">
-                    <li class="icon-type-small"><b>Type:</b> {type}</li>
-                    <li class="icon-tag-small"><b>Code:</b> {code}</li>
-                    <li class="icon-doc-small"><b>File:</b> {file}</li>
-                    <li class="icon-pin-small"><b>Line:</b> {line}</li>
+                    <li class="icon-type-small"><span class="bold">Type:</span> {type}</li>
+                    <li class="icon-tag-small"><span class="bold">Code:</span> {code}</li>
+                    <li class="icon-doc-small"><span class="bold">File:</span> {file}</li>
+                    <li class="icon-pin-small"><span class="bold">Line:</span> {line}</li>
                 </ul>
 
-                <h2>Stack Backtrace</h2>
+                <h2>Stack Trace</h2>
                 <ul class="picto-list icon-top with-line-spacing">
                     {stacktrace}
                     <li class="force-wrap">
-                        <b>{file}</b> @ line <b>{line}</b>: <br />
+                        <span class="bold">{file}</span> @ line <span class="bold">{line}</span>:
+                        <br />
                         <ul class="picto-list">
                             <li class="icon-arr-small"><span>{func}({args})</span></li>
                         </ul>

@@ -98,7 +98,7 @@ class Snapshots extends Controller
         try
         {
             // Load model, and call method
-            parent::loadModel('SnapshotsModel', 'database');
+            parent::loadModel('SnapshotsModel', 'snapshots');
             $this->snapshotsModel->importSnapshot($file, $message);
 
             // Tell the client of the success

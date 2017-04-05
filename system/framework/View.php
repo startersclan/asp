@@ -67,8 +67,14 @@ class View
      */
     public $source;
 
+    /**
+     * @var string The view name
+     */
     protected $viewName;
 
+    /**
+     * @var null|string The module name this View belongs to
+     */
     protected $moduleName;
 
     /**
