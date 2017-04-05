@@ -519,8 +519,8 @@ class View
         if (strpos($match, $this->LDelim . $this->LDelim) !== false)
         {
             $match = str_replace(
-                array($this->LDelim, $this->RDelim . $this->RDelim),
-                array("<<!", "!>>"),
+                array($this->LDelim . $this->LDelim, $this->RDelim . $this->RDelim),
+                array("<<!~", "~!>>"),
                 $match
             );
         }
@@ -555,10 +555,10 @@ class View
         }
 
         // Return nested vars
-        if (strpos($final_out, "<<!") !== false)
+        if (strpos($final_out, "<<!~") !== false)
         {
             $final_out = str_replace(
-                array("<<!", "!>>"),
+                array("<<!~", "~!>>"),
                 array($this->LDelim, $this->RDelim),
                 $final_out
             );

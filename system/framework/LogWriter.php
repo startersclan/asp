@@ -91,10 +91,6 @@ class LogWriter
      */
     public function __construct($filepath = null, $instanceName = null)
     {
-        // if no filepath is specified, open a tmp file
-        if (empty($filepath))
-            $filepath = tmpfile();
-
         // Create our FileStream instance
         $this->file = new FileStream($filepath, FileStream::WRITE);
 

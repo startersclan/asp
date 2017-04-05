@@ -121,6 +121,55 @@ class ErrorHandler
     }
 
     /**
+     * Logs a detailed and recursive exception to the asp_debug.log file
+     *
+     * @param Exception $e
+     */
+    public static function LogException(Exception $e)
+    {
+        $log = LogWriter::Instance('Asp');
+        if ($log instanceof LogWriter)
+        {
+            $log->logError('A Handled Exception was logged');
+            $log->writeLine("\tException Type: " . get_class($e));
+            $log->writeLine("\tMessage: " . $e->getMessage());
+            $log->writeLine("\tCode: " . $e->getCode());
+            $log->writeLine("\tFile: " . $e->getFile());
+            $log->writeLine("\tLine: " . $e->getLine());
+            $log->writeLine("\tStack Trace: ");
+
+            $i = 0;
+            $trace = self::BuildStackTrace($e->getTrace(), false);
+            foreach ($trace as $level)
+            {
+                $log->writeLine("\t\t[{$i}] => [");
+                $log->writeLine("\t\t\t\"{$level['file']}\" @ line {$level['line']}");
+                $log->writeLine("\t\t\t{$level['func']}({$level['args']})");
+                $log->writeLine("\t\t]");
+                $i++;
+            }
+
+            if ($ex = $e->getPrevious())
+            {
+                $i = 0;
+                $log->writeLine("\tInner Exceptions: ");
+                do
+                {
+                    $log->writeLine(
+                        sprintf("\t\t[%d] => %s [%s] (%d) : %s",
+                            $i++,
+                            $ex->getMessage(),
+                            $ex->getFile(),
+                            $ex->getLine(),
+                            get_class($ex)
+                        )
+                    );
+                } while ($ex = $e->getPrevious());
+            }
+        }
+    }
+
+    /**
      * Displays the error screen
      *
      * @param int $code The PHP error level or Exception code.
@@ -209,14 +258,25 @@ class ErrorHandler
      *
      * @param array $stack The stack trace
      *
+     * @param bool $htmlEntities
+     *
      * @return array
      */
-    private static function BuildStackTrace(array $stack)
+    private static function BuildStackTrace(array $stack, $htmlEntities = true)
     {
         $return = [];
 
         foreach ($stack as $level)
         {
+            // File
+            $file = '(unknown file)';
+            if (isset($level['file']))
+            {
+                $file = str_replace([ROOT, DS], ['', '/'], $level['file']);
+                if ($htmlEntities)
+                    $file = htmlspecialchars($file);
+            }
+
             // Check infos
             $function = isset($level['function']) ? $level['function'] : '(unknown function)';
             if (isset($level['class']) and strlen($level['class']) > 0)
@@ -242,10 +302,7 @@ class ErrorHandler
 
             // Append return
             $return[] = [
-                'file' => isset($level['file'])
-                    ? htmlspecialchars(
-                        str_replace([ROOT, DS], ['', '/'], $level['file'])
-                    ) : '(unknown file)',
+                'file' => $file,
                 'line' => isset($level['line']) ? $level['line'] : 0,
                 'func' => $function,
                 'args' => implode(', ', $args)

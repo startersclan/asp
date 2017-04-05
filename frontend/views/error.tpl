@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 
     <!-- Page title and icon -->
-    <title>Internal Server Error</title>
+    <title>Private Stats Admin :: Internal Server Error</title>
     <link rel="icon" type="image/png" href="/ASP/frontend/images/bf2_icon.png">
 
     <!-- JavaScript Plugins -->

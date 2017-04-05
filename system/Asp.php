@@ -11,6 +11,7 @@ use System\AspResponse;
 use System\Autoloader;
 use System\Database;
 use System\Config;
+use System\ErrorHandler;
 use System\IO\Path;
 use System\LogWriter;
 use System\Request;
@@ -158,7 +159,7 @@ class Asp
         date_default_timezone_set(Config::Get('admin_timezone'));
 
         // Then register error handler
-        \System\ErrorHandler::Register(true, true);
+        ErrorHandler::Register(true, true);
 
         // Next, Lets make sure the IP can view the ASP
         if (!Security::IsAuthorizedIp(Request::ClientIp()))
@@ -196,13 +197,7 @@ class Asp
         }
 
         // Create ASP log file instance
-        try {
-            $LogWriter = new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "asp_debug.log"), "Asp");
-        }
-        catch (Exception $e) {
-            // Use tmp file instead
-            $LogWriter = new LogWriter();
-        }
+        $LogWriter = new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "asp_debug.log"), "Asp");
 
         // Connect to the stats database
         try
@@ -219,7 +214,7 @@ class Asp
             );
 
             $stmt = $DB->query("SELECT `version` FROM `_version` ORDER BY `updateid` DESC LIMIT 1;");
-            $result = $stmt->fetchColumn();
+            $result = $stmt->fetchColumn(0);
             define('DB_VER', ($result === false) ? '0.0.0' : $result);
         }
         catch (Exception $e)
@@ -333,38 +328,6 @@ class Asp
      */
     public static function LogException(Exception $e)
     {
-        $log = LogWriter::Instance('Asp');
-        if ($log instanceof LogWriter)
-        {
-            $log->logError('Exception Type: ' . get_class($e));
-            $log->writeLine("\tMessage: " . $e->getMessage());
-            $log->writeLine("\tCode: " . $e->getCode());
-            $log->writeLine("\tFile: " . $e->getFile());
-            $log->writeLine("\tLine: " . $e->getLine());
-            $log->writeLine("\tStack Trace: ");
-            foreach ($e->getTrace() as $message)
-            {
-                $output = implode(', ', array_map(
-                    function ($v, $k)
-                    {
-                        return (is_array($v))
-                            ? sprintf("%s=[%s]", $k, var_export($v, true))
-                            : sprintf("%s='%s'", $k, $v);
-                    },
-                    $message,
-                    array_keys($message)
-                ));
-                $log->writeLine("\t\t- " . $output);
-            }
-
-            if ($ex = $e->getPrevious())
-            {
-                $log->writeLine("\tInner Exceptions: ");
-                do
-                {
-                    $log->writeLine(sprintf("\t\t- %s [%s] (%d) : %s", $ex->getMessage(), $ex->getFile(), $ex->getLine(), get_class($ex)));
-                } while ($ex = $e->getPrevious());
-            }
-        }
+        ErrorHandler::LogException($e);
     }
 }
