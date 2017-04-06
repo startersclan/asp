@@ -29,6 +29,20 @@ use System\View;
 class PlayerHistoryModel
 {
     /**
+     * @var PDO The stats database connection
+     */
+    protected $pdo;
+
+    /**
+     * PlayerHistoryModel constructor.
+     */
+    public function __construct()
+    {
+        // Fetch database connection
+        $this->pdo = System\Database::GetConnection('stats');
+    }
+
+    /**
      * Calculate greatest common divisor of x and y. The result is always positive even
      * if either of, or both, input operands are negative.
      *
@@ -47,6 +61,76 @@ class PlayerHistoryModel
         }
 
         return abs($x);
+    }
+
+    /**
+     * Fetches player round history data for the Players controller
+     *
+     * @param int $pid The player id
+     * @param int $roundid The round id
+     *
+     * @return bool|array
+     */
+    public function fetchPlayerRound($pid, $roundid)
+    {
+        // Cast to integers
+        $pid = (int)$pid;
+        $rid = (int)$roundid;
+
+        // Fetch round
+        $query = <<<SQL
+SELECT ph.*, h.*, p.name, mi.name AS `mapname`, s.name AS `server`, s.ip AS `ip`, s.port AS `port`,
+  h.pids1_end + h.pids2_end AS `playerCount`
+FROM player_history AS ph 
+  LEFT JOIN player AS p ON ph.pid = p.id
+  LEFT JOIN round_history AS h ON ph.roundid = h.id
+  LEFT JOIN mapinfo AS mi ON h.mapid = mi.id 
+  LEFT JOIN server AS s ON h.serverid = s.id
+WHERE pid={$pid} AND roundid={$rid}
+SQL;
+        return $this->pdo->query($query)->fetch();
+    }
+
+    /**
+     * Fetches the next round id that the specified player played in,
+     * after the specified round id
+     *
+     * @param int $pid The player id
+     * @param int $roundid The current round id
+     *
+     * @return int the next round id, or zero if the player hasn't played since the
+     *  specified round id.
+     */
+    public function getPlayerNextRoundId($pid, $roundid)
+    {
+        // Cast to integers
+        $pid = (int)$pid;
+        $rid = (int)$roundid;
+
+        // Get next round ID
+        $query = "SELECT MIN(`roundid`) FROM player_history WHERE pid={$pid} AND roundid > ". $rid;
+        return (int)$this->pdo->query($query)->fetchColumn(0);
+    }
+
+    /**
+     * Fetches the nprevious round id that the specified player played in,
+     * before the specified round id
+     *
+     * @param int $pid The player id
+     * @param int $roundid The current round id
+     *
+     * @return int the previous round id, or zero if the player hasn't played before the
+     *  specified round id.
+     */
+    public function getPlayerPreviousRoundId($pid, $roundid)
+    {
+        // Cast to integers
+        $pid = (int)$pid;
+        $rid = (int)$roundid;
+
+        // Get next round ID
+        $query = "SELECT MAX(`roundid`) FROM player_history WHERE pid={$pid} AND roundid < ". $rid;
+        return (int)$this->pdo->query($query)->fetchColumn(0);
     }
 
     /**
@@ -89,6 +173,11 @@ class PlayerHistoryModel
                     break;
                 case 'gamemode':
                     $data[$key] = Battlefield2::GetGameModeString($value);
+                    break;
+                case 'team':
+                    $val = (int)$value;
+                    $data[$key] = $val;
+                    $data['teamName'] = $this->pdo->query("SELECT name FROM army WHERE id=". $val)->fetchColumn(0);
                     break;
                 default:
                     $data[$key] = $value;

@@ -103,13 +103,8 @@ class Install extends \System\Controller
         }
         catch (Exception $e)
         {
-            echo json_encode(
-                array(
-                    'success' => false,
-                    'tablesExist' => false,
-                    'message' => 'Failed to establish connection to (' . Config::Get('db_host') . '): ' . $e->getMessage()
-                )
-            );
+            $message = 'Failed to establish connection to (' . Config::Get('db_host') . '): ' . $e->getMessage();
+            $this->sendJsonResponse(false, $message, ['tablesExist' => false]);
             die;
         }
 
@@ -120,26 +115,14 @@ class Install extends \System\Controller
             $versions = $stmt->fetchAll();
             if (!empty($versions))
             {
-                echo json_encode(
-                    array(
-                        'success' => true,
-                        'tablesExist' => true,
-                        'message' => ''
-                    )
-                );
+                $this->sendJsonResponse(true, '', ['tablesExist' => true]);
                 die;
             }
         }
         catch (Exception $e) {}
 
         // Successful connection
-        echo json_encode(
-            array(
-                'success' => true,
-                'tablesExist' => false,
-                'message' => ''
-            )
-        );
+        $this->sendJsonResponse(true, '', ['tablesExist' => false]);
         die;
     }
 
@@ -176,8 +159,8 @@ class Install extends \System\Controller
             // Commit changes
             $pdo->commit();
 
-            // Successful connection
-            echo json_encode(['success' => true, 'message' => '']);
+            // Success
+            $this->sendJsonResponse(true, 'Tables Created Successfully');
             die;
         }
         catch (Exception $e)
@@ -190,13 +173,8 @@ class Install extends \System\Controller
             $logWriter = new LogWriter(SYSTEM_PATH . DS . 'logs' . DS . 'php_errors.log');
             $logWriter->logDebug('Query Failed: ' . $current);
 
-            // Successful connection
-            echo json_encode(
-                array(
-                    'success' => false,
-                    'message' => 'Failed to install database tables! ' . $e->getMessage()
-                )
-            );
+            // Send Error Results
+            $this->sendJsonResponse(false, 'Failed to install database tables! ' . $e->getMessage());
             die;
         }
     }

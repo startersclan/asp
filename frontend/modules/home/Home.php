@@ -33,10 +33,10 @@ class Home extends Controller
     public function index()
     {
         // Require database connection
-        parent::requireDatabase();
+        $this->requireDatabase();
 
         // Load model
-        parent::loadModel('HomeModel', 'home');
+        $this->loadModel('HomeModel', 'home');
 
         // Create view
         $view = new View('index', 'home');
@@ -101,10 +101,10 @@ class Home extends Controller
         ini_set("display_errors", "0");
 
         // Require database connection
-        parent::requireDatabase(true);
+        $this->requireDatabase(true);
 
         // Load model
-        parent::loadModel('HomeModel', 'home');
+        $this->loadModel('HomeModel', 'home');
 
         // Use our model to do all the hard work
         $data = $this->homeModel->getChartData();

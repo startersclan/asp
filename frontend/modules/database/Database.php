@@ -32,10 +32,10 @@ class Database extends Controller
     public function index()
     {
         // Require database connection
-        parent::requireDatabase();
+        $this->requireDatabase();
 
         // Load Model
-        parent::loadModel('DatabaseModel', 'database');
+        $this->loadModel('DatabaseModel', 'database');
 
         // A list of tables we care about
         $tables = [
@@ -74,7 +74,7 @@ class Database extends Controller
         if ($_POST['action'] != 'backup')
         {
             if (isset($_POST['ajax']))
-                echo json_encode(['success' => false, 'message' => 'Invalid Action!']);
+                $this->sendJsonResponse(false, 'Invalid Action!');
             else
                 $this->getBackup();
 
@@ -82,13 +82,13 @@ class Database extends Controller
         }
 
         // We require a database!
-        parent::requireDatabase(true);
+        $this->requireDatabase(true);
 
         // Check that the backup directory is writable
         $path = Path::Combine(SYSTEM_PATH, 'backups');
         if (!Directory::IsWritable($path))
         {
-            echo json_encode(['success' => false, 'message' => 'Database backup path (' . $path . ') is not writable!']);
+            $this->sendJsonResponse(false, 'Database backup path (' . $path . ') is not writable!');
             die;
         }
 
@@ -98,16 +98,19 @@ class Database extends Controller
             $path = Path::Combine(SYSTEM_PATH, 'backups', date('Y-m-d_Hi'));
 
             // Load model, and call method
-            parent::loadModel('DatabaseModel', 'database');
+            $this->loadModel('DatabaseModel', 'database');
             $this->databaseModel->createStatsBackup($path);
 
             // Tell the client that we were successful
-            echo json_encode(['success' => true, 'message' => 'System Data Backup Successful!']);
+            $this->sendJsonResponse(true, 'System Data Backup Successful!');
         }
         catch (Exception $e)
         {
+            // Log exception
             Asp::LogException($e);
-            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+
+            // Tell the client that we have failed
+            $this->sendJsonResponse(false, $e->getMessage());
         }
     }
 
@@ -145,7 +148,7 @@ class Database extends Controller
         if ($_POST['action'] != 'restore')
         {
             if (isset($_POST['ajax']))
-                echo json_encode(['success' => false, 'message' => 'Invalid Action!']);
+                $this->sendJsonResponse(false, 'Invalid Action!');
             else
                 $this->getRestore();
 
@@ -153,12 +156,12 @@ class Database extends Controller
         }
 
         // We require a database!
-        parent::requireDatabase(true);
+        $this->requireDatabase(true);
 
         // Ensure we have a backup selected
         if (!isset($_POST['backup']))
         {
-            echo json_encode(['success' => false, 'message' => 'No backup specified!']);
+            $this->sendJsonResponse(false, 'No backup specified!');
             return;
         }
 
@@ -168,23 +171,26 @@ class Database extends Controller
         // Ensure the backup directory is real!
         if (!Directory::Exists($path))
         {
-            echo json_encode(['success' => false, 'message' => 'Invalid Backup: Does not exist!']);
+            $this->sendJsonResponse(false, 'Invalid Backup: Does not exist!');
             return;
         }
 
         try
         {
             // Load model, and call method
-            parent::loadModel('DatabaseModel', 'database');
+            $this->loadModel('DatabaseModel', 'database');
             $this->databaseModel->restoreStatsFromBackup($path);
 
             // Tell the client that we were successful
-            echo json_encode(['success' => true, 'message' => 'System Data Backup Successful!']);
+            $this->sendJsonResponse(true, 'System Data Backup Successful!');
         }
         catch (Exception $e)
         {
+            // Log exception
             Asp::LogException($e);
-            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+
+            // Tell the client that we have failed
+            $this->sendJsonResponse(false, $e->getMessage());
         }
     }
 
@@ -212,7 +218,7 @@ class Database extends Controller
         if ($_POST['action'] != 'clear')
         {
             if (isset($_POST['ajax']))
-                echo json_encode(['success' => false, 'message' => 'Invalid Action!']);
+                $this->sendJsonResponse(false, 'Invalid Action!');
             else
                 $this->getClear();
 
@@ -220,21 +226,24 @@ class Database extends Controller
         }
 
         // We require a database!
-        parent::requireDatabase(true);
+        $this->requireDatabase(true);
 
         try
         {
             // Load model, and call method
-            parent::loadModel('DatabaseModel', 'database');
+            $this->loadModel('DatabaseModel', 'database');
             $this->databaseModel->clearStatsTables();
 
             // Tell the client that we were successful
-            echo json_encode(['success' => true, 'message' => 'Stats Data Cleared Successfully!']);
+            $this->sendJsonResponse(true, 'Stats Data Cleared Successfully!');
         }
         catch (Exception $e)
         {
+            // Log exception
             Asp::LogException($e);
-            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+
+            // Tell the client that we have failed
+            $this->sendJsonResponse(false, $e->getMessage());
         }
     }
 }

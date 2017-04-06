@@ -7,6 +7,7 @@
  * License:      GNU GPL v3
  *
  */
+use System\Battlefield2;
 use System\Collections\Dictionary;
 use System\IO\Directory;
 use System\IO\File;
@@ -22,6 +23,84 @@ use System\View;
  */
 class RoundInfoModel
 {
+    /**
+     * @var \System\Database\DbConnection The stats database connection
+     */
+    protected $pdo;
+
+    /**
+     * RoundInfoModel constructor.
+     */
+    public function __construct()
+    {
+        // Fetch database connection
+        $this->pdo = System\Database::GetConnection('stats');
+    }
+
+    /**
+     * Fetches information about a round in a 2 dimensional array.
+     *
+     * @param int $id The round id
+     *
+     * @return array|bool the round information on success, false otherwise
+     */
+    public function fetchRoundInfoById($id)
+    {
+        // Fetch round
+        $query = <<<SQL
+SELECT h.*, mi.name AS `name`, s.name AS `server`, s.ip AS `ip`, s.port AS `port`
+FROM round_history AS h 
+  LEFT JOIN mapinfo AS mi ON h.mapid = mi.id 
+  LEFT JOIN server AS s ON h.serverid = s.id
+WHERE h.id={$id}
+SQL;
+        $round = $this->pdo->query($query)->fetch();
+        if (empty($round))
+            return false;
+
+        // Assign custom round values and attach to view
+        $round['round_start_date'] = date('F jS, Y g:i A T', (int)$round['round_start']);
+        $round['round_end_date'] = date('F jS, Y g:i A T', (int)$round['round_end']);
+        $round['gamemode'] = Battlefield2::GetGameModeString($round['gamemode']);
+        $round['team1name'] = $this->pdo->query("SELECT `name` FROM army WHERE id=". $round['team1'])->fetchColumn(0);
+        $round['team2name'] = $this->pdo->query("SELECT `name` FROM army WHERE id=". $round['team2'])->fetchColumn(0);
+
+        // Set winning team name
+        switch ((int)$round['winner'])
+        {
+            case 1:
+                $round['winningTeamName'] = $round['team1name'];
+                break;
+            case 2:
+                $round['winningTeamName'] = $round['team2name'];
+                break;
+            default:
+                $round['winningTeamName'] = "None";
+                break;
+        }
+
+        // Load players
+        $players1 = [];
+        $players2 = [];
+        $query = <<<SQL
+SELECT h.pid, h.team, h.score, h.kills, h.deaths, h.rank, h.cmdscore, h.skillscore, h.teamscore, p.name
+FROM player_history AS h 
+  LEFT JOIN player AS p ON h.pid = p.id
+WHERE roundid={$id}
+SQL;
+        $result = $this->pdo->query($query);
+        while ($row = $result->fetch())
+        {
+            $team = (int)$row['team'];
+            if ($team == $round['team1'])
+                $players1[] = $row;
+            else
+                $players2[] = $row;
+        }
+
+        return ['round' => $round, 'players1' => $players1, 'players2' => $players2];
+    }
+
     /**
      * Attempts to attach advanced round info from the snapshot into the view
      *
@@ -135,10 +214,9 @@ class RoundInfoModel
      * Attaches all the earned awards from a round to a View
      *
      * @param int $id The round ID to fetch awards from
-     * @param PDO $pdo Database connection
      * @param View $view
      */
-    public function attachAwards($id, PDO $pdo, View $view)
+    public function attachAwards($id, View $view)
     {
         // Load awards
         $query = <<<SQL
@@ -152,7 +230,7 @@ WHERE pa.roundid = $id ORDER BY pa.id
 SQL;
 
         // Fetch the round awards
-        $awards = $pdo->query($query)->fetchAll();
+        $awards = $this->pdo->query($query)->fetchAll();
 
         // Assign Player positions
         $i = 0;

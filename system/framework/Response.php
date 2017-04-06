@@ -377,6 +377,8 @@ class Response
      *   and 307 is a temporary redirect. Default is 301.
      *
      * @return void
+     *
+     * @throws OutputSentException
      */
     public static function Redirect($location, $wait = 0, $status = 301)
     {
@@ -391,7 +393,7 @@ class Response
             $location = Request::BaseUrl() . '/' . ltrim($location, '/');
         }
 
-        // Reset all set data, and proccess the redirect immediately
+        // Reset all set data, and process the redirect immediately
         if ($wait == 0)
         {
             self::$status = $status;

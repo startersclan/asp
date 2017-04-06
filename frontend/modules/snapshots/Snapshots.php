@@ -37,7 +37,7 @@ class Snapshots extends Controller
     public function index()
     {
         // Load model
-        parent::loadModel('SnapshotsModel', 'snapshots');
+        $this->loadModel('SnapshotsModel', 'snapshots');
 
         // Load view
         $view = new View('index', 'snapshots');
@@ -98,16 +98,16 @@ class Snapshots extends Controller
         try
         {
             // Load model, and call method
-            parent::loadModel('SnapshotsModel', 'snapshots');
+            $this->loadModel('SnapshotsModel', 'snapshots');
             $this->snapshotsModel->importSnapshot($file, $message);
 
             // Tell the client of the success
-            echo json_encode(['success' => true, 'message' => $message]);
+            $this->sendJsonResponse(true, $message);
         }
         catch (IOException $e)
         {
             $message = sprintf("Failed to process snapshot (%s)!\n\n%s", $file, $e->getMessage());
-            echo json_encode(['success' => false, 'message' => $message]);
+            $this->sendJsonResponse(false, $message);
         }
         catch (Exception $e)
         {
@@ -124,7 +124,7 @@ class Snapshots extends Controller
 
             // Output message
             $message = sprintf("Failed to process snapshot (%s)!\n\n%s", $file, $e->getMessage());
-            echo json_encode(['success' => false, 'message' => $message]);
+            $this->sendJsonResponse(false, $message);
         }
     }
 
@@ -139,7 +139,7 @@ class Snapshots extends Controller
         if ($_POST['action'] != 'delete')
         {
             if (isset($_POST['ajax']))
-                echo json_encode(['success' => false, 'message' => 'Invalid Action!']);
+                $this->sendJsonResponse(false, 'Invalid Action!');
             else
                 $this->index();
 
@@ -149,7 +149,7 @@ class Snapshots extends Controller
         // Ensure we have a backup selected
         if (!isset($_POST['snapshots']))
         {
-            echo json_encode(['success' => false, 'message' => 'No snapshots specified!']);
+            $this->sendJsonResponse(false, 'No snapshots specified!');
             return;
         }
 
@@ -163,11 +163,11 @@ class Snapshots extends Controller
                 File::Delete($file);
             }
 
-            echo json_encode(['success' => true, 'message' => 'Snapshots Removed.']);
+            $this->sendJsonResponse(true, 'Snapshots Removed.');
         }
         catch (Exception $e)
         {
-            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+            $this->sendJsonResponse(false, $e->getMessage());
         }
     }
 }

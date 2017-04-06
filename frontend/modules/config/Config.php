@@ -131,12 +131,12 @@ class Config extends Controller
 
             // Determine if our save is a success
             $result = Cfg::Save();
-            echo json_encode( array('success' => $result) );
+            $this->sendJsonResponse($result, '');
         }
         catch (Exception $e)
         {
-            // Determine if our save is a success
-            echo json_encode( array('success' => 'false', 'message' => $e->getMessage()) );
+            // Output exception message
+            $this->sendJsonResponse(false, $e->getMessage());
         }
     }
 

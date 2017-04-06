@@ -10,13 +10,10 @@
 use System\Battlefield2;
 use System\Collections\Dictionary;
 use System\Controller;
-use System\Database;
-use System\DataTables;
-use System\IO\File;
+use System\IO\Directory;
 use System\IO\Path;
 use System\Player;
 use System\Response;
-use System\TimeHelper;
 use System\View;
 
 /**
@@ -37,6 +34,11 @@ class Players extends Controller
     protected $playerHistoryModel = null;
 
     /**
+     * @var PlayerAjaxModel
+     */
+    protected $ajaxModel = null;
+
+    /**
      * @protocol    ANY
      * @request     /ASP/players
      * @output      html
@@ -44,7 +46,7 @@ class Players extends Controller
     public function index()
     {
         // Require database connection
-        parent::requireDatabase();
+        $this->requireDatabase();
 
         // Load view
         $view = new View('index', 'players');
@@ -82,7 +84,7 @@ class Players extends Controller
         if ($id == 0)
         {
             Response::Redirect('players');
-            die;
+            return;
         }
 
         // Are we loading a sub page?
@@ -92,21 +94,14 @@ class Players extends Controller
             return;
         }
 
+        // Attach Model
+        $this->loadModel("PlayerModel", 'players');
+
         // Require database connection
-        parent::requireDatabase();
-        $pdo = Database::GetConnection('stats');
+        $this->requireDatabase();
 
         // Fetch player
-        $query = <<<SQL
-SELECT `name`, `rank`, `email`, `joined`, `time`, `lastonline`, `score`, `skillscore`, `cmdscore`, `teamscore`, 
-  `kills`, `deaths`, `teamkills`, `kicked`, `banned`, `permban`, `heals`, `repairs`, `ammos`, `revives`,
-  `captures`, `captureassists`, `defends`, `country`, `driverspecials`, `neutralizes`, `neutralizeassists`,
-  `damageassists`, `rounds`, `wins`, `losses`, `cmdtime`, `sqmtime`, `sqltime`, `lwtime`, `suicides`, 
-  `teamdamage`, `teamvehicledamage`, `killstreak`, `rndscore`
-FROM player
-WHERE `id`={$id}
-SQL;
-        $player = $pdo->query($query)->fetch();
+        $player = $this->playerModel->fetchPlayer($id);
         if (empty($player))
         {
             // Load view
@@ -116,21 +111,18 @@ SQL;
             return;
         }
 
-        // Attach Model
-        parent::loadModel("PlayerModel", 'players');
-
         // Load view
         $view = new View('view',  'players');
         $view->set('id', $id);
         $view->set('player', $this->playerModel->formatPlayerData($player));
 
         // Attach player object stats
-        $this->playerModel->attachArmyData($id, $view, $pdo);
-        $this->playerModel->attachKitData($id, $view, $pdo);
-        $this->playerModel->attachVehicleData($id, $view, $pdo);
-        $this->playerModel->attachWeaponData($id, $view, $pdo);
-        $this->playerModel->attachAwardData($id, $view, $pdo);
-        $this->playerModel->attachTopVictimAndOpp($id, $view, $pdo);
+        $this->playerModel->attachArmyData($id, $view);
+        $this->playerModel->attachKitData($id, $view);
+        $this->playerModel->attachVehicleData($id, $view);
+        $this->playerModel->attachWeaponData($id, $view);
+        $this->playerModel->attachAwardData($id, $view);
+        $this->playerModel->attachTopVictimAndOpp($id, $view);
 
         // Attach needed scripts for the form
         $view->attachScript("/ASP/frontend/js/jquery.form.js");
@@ -158,13 +150,11 @@ SQL;
      */
     private function showHistory($id, $subid)
     {
-        // Grab database connection
-        parent::requireDatabase(true);
-        $pdo = Database::GetConnection('stats');
-        $subid = (int)$subid;
+        // Cast round id to an integer
+        $rid = (int)$subid;
 
         // Showing history list or specific round?
-        if ($subid == 0)
+        if ($rid == 0)
         {
             // Load view
             $view = new View('history', 'players');
@@ -179,21 +169,14 @@ SQL;
         }
         else
         {
+            // Grab database connection
+            $this->requireDatabase(true);
+
             // Attach Model
-            parent::loadModel("PlayerHistoryModel", 'players');
+            $this->loadModel("PlayerHistoryModel", 'players');
 
             // Fetch round
-            $query = <<<SQL
-SELECT ph.*, h.*, p.name, mi.name AS `mapname`, s.name AS `server`, s.ip AS `ip`, s.port AS `port`,
-  h.pids1_end + h.pids2_end AS `playerCount`
-FROM player_history AS ph 
-  LEFT JOIN player AS p ON ph.pid = p.id
-  LEFT JOIN round_history AS h ON ph.roundid = h.id
-  LEFT JOIN mapinfo AS mi ON h.mapid = mi.id 
-  LEFT JOIN server AS s ON h.serverid = s.id
-WHERE pid={$id} AND roundid={$subid}
-SQL;
-            $round = $pdo->query($query)->fetch();
+            $round = $this->playerHistoryModel->fetchPlayerRound($id, $rid);
             if (empty($round))
             {
                 Response::Redirect('players/view/'. $id .'/history');
@@ -204,7 +187,6 @@ SQL;
             $view = new View('history_detail', 'players');
 
             // Assign custom round values and attach to view
-            $round['teamName'] = $pdo->query("SELECT name FROM army WHERE id=". $round['team'])->fetchColumn(0);
             $view->set('round', $this->playerHistoryModel->formatRoundInfo($round));
 
             // Add advanced info if we can
@@ -212,14 +194,12 @@ SQL;
             $view->set('advanced', $advanced);
 
             // Get next round ID
-            $query = "SELECT MIN(`roundid`) FROM player_history WHERE pid={$id} AND roundid > ". $subid;
-            $n = (int)$pdo->query($query)->fetchColumn(0);
+            $n = $this->playerHistoryModel->getPlayerNextRoundId($id, $rid);
             $view->set('nextRoundId', $n);
             $view->set('nBtnStyle', ($n == 0) ? ' disabled="disabled"' : '');
 
             // Get previous round ID
-            $query = "SELECT MAX(`roundid`) FROM player_history WHERE pid={$id} AND roundid < ". $subid;
-            $n = (int)$pdo->query($query)->fetchColumn(0);
+            $n = $this->playerHistoryModel->getPlayerPreviousRoundId($id, $rid);
             $view->set('prevRoundId', $n);
             $view->set('pBtnStyle', ($n == 0) ? ' disabled="disabled"' : '');
 
@@ -265,99 +245,41 @@ SQL;
     public function postReset()
     {
         // We only accept these POST actions
-        parent::requireAction("stats", "awards", "unlocks");
+        $this->requireAction("stats", "awards", "unlocks");
 
         // Grab database connection
-        parent::requireDatabase(true);
-        $pdo = Database::GetConnection('stats');
+        $this->requireDatabase(true);
+
+        // Attach Model
+        $this->loadModel('PlayerModel', 'players');
 
         // Extract player ID
         $playerId = (int)$_POST['playerId'];
-
         try
         {
             switch ($_POST['action'])
             {
                 case "stats":
-
-                    // Start transaction
-                    $pdo->beginTransaction();
-
-                    // Delete all records from the following tables for this player
-                    $tables = ['player_kit', 'player_army', 'player_award', 'player_map', 'player_vehicle', 'player_weapon', 'player_unlock'];
-                    foreach ($tables as $table)
-                    {
-                        $pdo->exec("DELETE FROM {$table} WHERE pid={$playerId}");
-                    }
-
-                    // Reset all player stats
-                    $query = new Database\UpdateOrInsertQuery($pdo, 'player');
-                    $query->set('time', '=', 0);
-                    $query->set('rounds', '=', 0);
-                    $query->set('score', '=', 0);
-                    $query->set('cmdscore', '=', 0);
-                    $query->set('skillscore', '=', 0);
-                    $query->set('teamscore', '=', 0);
-                    $query->set('kills', '=', 0);
-                    $query->set('wins', '=', 0);
-                    $query->set('losses', '=', 0);
-                    $query->set('deaths', '=', 0);
-                    $query->set('captures', '=', 0);
-                    $query->set('captureassists', '=', 0);
-                    $query->set('neutralizes', '=', 0);
-                    $query->set('neutralizeassists', '=', 0);
-                    $query->set('defends', '=', 0);
-                    $query->set('damageassists', '=', 0);
-                    $query->set('heals', '=', 0);
-                    $query->set('revives', '=', 0);
-                    $query->set('ammos', '=', 0);
-                    $query->set('repairs', '=', 0);
-                    $query->set('targetassists', '=', 0);
-                    $query->set('driverspecials', '=', 0);
-                    $query->set('teamkills', '=', 0);
-                    $query->set('teamdamage', '=', 0);
-                    $query->set('teamvehicledamage', '=', 0);
-                    $query->set('suicides', '=', 0);
-                    $query->set('rank', '=', 0);
-                    $query->set('cmdtime', '=', 0);
-                    $query->set('sqltime', '=', 0);
-                    $query->set('sqmtime', '=', 0);
-                    $query->set('lwtime', '=', 0);
-                    $query->set('timepara', '=', 0);
-                    $query->set('mode0', '=', 0);
-                    $query->set('mode1', '=', 0);
-                    $query->set('mode2', '=', 0);
-                    $query->set('rndscore', '=', 0);
-                    $query->set('deathstreak', '=', 0);
-                    $query->set('killstreak', '=', 0);
-                    $query->where('id', '=', $playerId);
-                    $query->executeUpdate();
-
-                    // Commit changes
-                    $pdo->commit();
+                    $this->playerModel->resetPlayerStats($playerId);
                     break;
                 case "awards":
-                    $pdo->exec("DELETE FROM player_award WHERE pid={$playerId}");
+                    $this->playerModel->resetPlayerAwards($playerId);
                     break;
                 case "unlocks":
-                    $pdo->exec("DELETE FROM player_unlock WHERE pid={$playerId}");
+                    $this->playerModel->resetPlayerUnlocks($playerId);
                     break;
             }
 
             // Echo success
-            echo json_encode( array('success' => true, 'message' => $_POST['playerId']) );
+            $this->sendJsonResponse(true, $_POST['playerId']);
         }
         catch (Exception $e)
         {
-            // Rollback changes
-            if ($_POST['action'] == "stats")
-                $pdo->rollBack();
-
             // Log exception
             Asp::LogException($e);
 
             // Tell the client that we have failed
-            echo json_encode( array('success' => false, 'message' => 'Query Failed! '. $e->getMessage()) );
+            $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage());
         }
     }
 
@@ -369,15 +291,14 @@ SQL;
     public function postAuthorize()
     {
         // We only accept these POST actions
-        parent::requireAction("ban", "unban");
+        $this->requireAction("ban", "unban");
 
         // Grab database connection
-        parent::requireDatabase(true);
-        $pdo = Database::GetConnection('stats');
-        $mode = ($_POST['action'] == 'ban') ? 1 : 0;
-        $time = ($mode == 1) ? time() : 0;
+        $this->requireDatabase(true);
 
-        // Prepared statement!
+        // Attach Model
+        $this->loadModel('PlayerModel', 'players');
+
         try
         {
             // Ensure pid exists
@@ -386,21 +307,21 @@ SQL;
 
             // Extract player ID
             $playerId = (int)$_POST['playerId'];
+            $mode = ($_POST['action'] == 'ban');
 
-            // Prepare statement
-            $stmt = $pdo->prepare("UPDATE player SET permban=:mode, bantime=:time WHERE id=:id");
-            $stmt->bindValue(':id', $playerId, PDO::PARAM_INT);
-            $stmt->bindValue(':mode', $mode, PDO::PARAM_INT);
-            $stmt->bindValue(':time', $time, PDO::PARAM_INT);
-            $stmt->execute();
+            // Set status
+            $this->playerModel->setPlayerBanned($playerId, $mode);
 
             // Echo success
-            echo json_encode( array('success' => true, 'message' => $_POST['playerId']) );
+            $this->sendJsonResponse(true, $_POST['playerId']);
         }
         catch (Exception $e)
         {
-            echo json_encode( array('success' => false, 'message' => 'Query Failed! '. $e->getMessage()) );
-            die;
+            // Log exception
+            Asp::LogException($e);
+
+            // Tell the client that we have failed
+            $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage());
         }
     }
 
@@ -412,13 +333,14 @@ SQL;
     public function postDelete()
     {
         // We only accept these POST actions
-        parent::requireAction("delete", "deleteBots");
+        $this->requireAction("delete", "deleteBots");
 
         // Grab database connection
-        parent::requireDatabase(true);
-        $pdo = Database::GetConnection('stats');
+        $this->requireDatabase(true);
 
-        // Prepared statement!
+        // Attach Model
+        $this->loadModel('PlayerModel', 'players');
+
         try
         {
             switch ($_POST['action'])
@@ -431,27 +353,24 @@ SQL;
                     // Extract player ID
                     $playerId = (int)$_POST['playerId'];
 
-                    // Prepare statement
-                    $stmt = $pdo->prepare("DELETE FROM player WHERE id=:id");
-                    $stmt->bindValue(':id', $playerId, PDO::PARAM_INT);
-                    $stmt->execute();
-
-                    // Echo success
-                    echo json_encode( array('success' => true, 'message' => $_POST['playerId']) );
+                    // Delete player via the model
+                    $this->playerModel->deletePlayer($playerId);
+                    $this->sendJsonResponse(true, $_POST['playerId']);
                     break;
                 case "deleteBots":
-                    // Prepare statement
-                    $result = $pdo->exec("DELETE FROM player WHERE password=''");
-
-                    // Echo success
-                    echo json_encode( array('success' => true, 'message' => $result) );
+                    // Delete bots via the model
+                    $result = $this->playerModel->deleteBotPlayers();
+                    $this->sendJsonResponse(true, $result);
                     break;
             }
         }
         catch (Exception $e)
         {
-            echo json_encode( array('success' => false, 'message' => 'Query Failed! '. $e->getMessage()) );
-            die;
+            // Log exception
+            Asp::LogException($e);
+
+            // Tell the client that we have failed
+            $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage());
         }
     }
 
@@ -463,8 +382,10 @@ SQL;
     public function postAdd()
     {
         // Grab database connection
-        parent::requireDatabase(true);
-        $pdo = Database::GetConnection('stats');
+        $this->requireDatabase(true);
+
+        // Attach Model
+        $this->loadModel('PlayerModel', 'players');
 
         try
         {
@@ -479,16 +400,15 @@ SQL;
             switch ($_POST['action'])
             {
                 case 'add':
-                    $pdo->insert('player', [
-                        'name' => trim($name),
-                        'password' => md5(trim($items['playerPassword'])),
-                        'rank' => $items['playerRank'],
-                        'email' => trim($items['playerEmail']),
-                        'country' => $items['playerCountry']
-                    ]);
-
-                    // Get insert ID
-                    echo json_encode(['success' => true, 'mode' => 'add']);
+                    // Create player record
+                    $this->playerModel->createPlayer(
+                        $items['playerName'],
+                        $items['playerPassword'],
+                        $items['playerEmail'],
+                        $items['playerCountry'],
+                        $items['playerRank']
+                    );
+                    $this->sendJsonResponse(true, 'Player Created', ['mode' => 'add']);
                     break;
                 case 'edit':
                     $cols = [
@@ -507,14 +427,9 @@ SQL;
                     if (!empty($email))
                         $cols['email'] = $email;
 
-                    // do update
-                    $pdo->update('player', $cols, ['id' => $id]);
-
-                    // Load model
-                    parent::loadModel("PlayerModel", "players");
-
-                    echo json_encode([
-                        'success' => true,
+                    // Do update
+                    $this->playerModel->updatePlayer($id, $cols);
+                    $this->sendJsonResponse(true, 'Player Updated', [
                         'mode' => 'update',
                         'name' => $name,
                         'rank' => $items['playerRank'],
@@ -524,14 +439,17 @@ SQL;
                     ]);
                     break;
                 default:
-                    echo json_encode(array('success' => false, 'message' => 'Invalid Action'));
+                    $this->sendJsonResponse(false, "Invalid Action.");
                     die;
             }
         }
         catch (Exception $e)
         {
-            echo json_encode( array('success' => false, 'message' => 'Query Failed! '. $e->getMessage(), 'lastQuery' => $pdo->lastQuery) );
-            die;
+            // Log exception
+            Asp::LogException($e);
+
+            // Tell the client that we have failed
+            $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage());
         }
     }
 
@@ -542,70 +460,24 @@ SQL;
      */
     public function postList()
     {
-        // Grab database connection
-        parent::requireDatabase(true);
+        // Require a database connection
+        $this->requireDatabase(true);
+
+        // Attach Model
+        $this->loadModel('PlayerAjaxModel', 'players', 'ajaxModel');
 
         try
         {
-            $columns = [
-                ['db' => 'id', 'dt' => 'id'],
-                ['db' => 'name', 'dt' => 'name'],
-                ['db' => 'rank', 'dt' => 'rank',
-                    'formatter' => function( $d, $row ) {
-                        return "<img class='center' src=\"/ASP/frontend/images/ranks/rank_{$d}.gif\">";
-                    }
-                ],
-                ['db' => 'score', 'dt' => 'score',
-                    'formatter' => function( $d, $row ) {
-                        return number_format($d);
-                    }
-                ],
-                ['db' => 'country', 'dt' => 'country'],
-                ['db' => 'joined', 'dt' => 'joined',
-                    'formatter' => function( $d, $row ) {
-                        $i = (int)$d;
-                        return date('d M Y', $i);
-                    }
-                ],
-                ['db' => 'lastonline', 'dt' => 'online',
-                    'formatter' => function( $d, $row ) {
-                        $i = (int)$d;
-                        return TimeHelper::FormatDifference($i, time());
-                    }
-                ],
-                ['db' => 'clantag', 'dt' => 'clan'],
-                ['db' => 'permban', 'dt' => 'permban',
-                    'formatter' => function( $d, $row ) {
-                        return $d == 0 ? '<span style="color: green; ">No</span>' : '<span style="color: red; ">Yes</span>';
-                    }
-                ],
-                ['db' => 'kicked', 'dt' => 'actions',
-                    'formatter' => function( $d, $row ) {
-                        $id = $row['id'];
-                        $banned = ($row['permban'] == 1) ? '' : ' style="display: none"';
-                        $nbanned = ($row['permban'] == 0) ? '' : ' style="display: none"';
-
-                        return '<span class="btn-group">
-                            <a id="go-'. $id .'" href="/ASP/players/view/'. $id .'"  rel="tooltip" title="View Player" class="btn btn-small"><i class="icon-eye-open"></i></i></a>
-                            <a id="edit-btn-'. $id .'" href="#"  rel="tooltip" title="Edit Player" class="btn btn-small"><i class="icon-pencil"></i></a>
-                            <a id="ban-btn-'. $id .'" href="#" rel="tooltip" title="Ban Player" class="btn btn-small"'. $nbanned .'><i class="icon-flag"></i></a>
-                            <a id="unban-btn-'. $id .'" href="#" rel="tooltip" title="Unban Player" class="btn btn-small"'.$banned.'><i class="icon-ok"></i></a>
-                            <a id="delete-btn-'. $id .'" href="#" rel="tooltip" title="Delete Player" class="btn btn-small"><i class="icon-trash"></i></a>
-                        </span>';
-                    }
-                ],
-            ];
-
-            $pdo = Database::GetConnection('stats');
-            $applyFilter = ((int)$_POST['showBots']) == 0;
-            $filter = ($applyFilter) ? "`password` != ''" : '';
-            $data = DataTables::FetchData($_POST, $pdo, 'player', 'id', $columns, $filter);
-
+            // Fetch player list
+            $data = $this->ajaxModel->getPlayerList($_POST);
             echo json_encode($data);
         }
         catch (Exception $e)
         {
+            // Log Exception
             Asp::LogException($e);
+
+            // Send error message to client
             echo json_encode(['error' => $e->getMessage()]);
         }
     }
@@ -617,73 +489,25 @@ SQL;
      */
     public function postHistory()
     {
-        // Grab database connection
-        parent::requireDatabase(true);
-        $pdo = Database::GetConnection('stats');
+        // Require a database connection
+        $this->requireDatabase(true);
+
+        // Attach Model
+        $this->loadModel('PlayerAjaxModel', 'players', 'ajaxModel');
         $id = (int)$_POST['playerId'];
 
         try
         {
-            $columns = [
-                ['db' => 'pid', 'dt' => 'id'],
-                ['db' => 'roundid', 'dt' => 'rid'],
-                ['db' => 'name', 'dt' => 'server'],
-                ['db' => 'mapname', 'dt' => 'map'],
-                ['db' => 'score', 'dt' => 'score',
-                    'formatter' => function( $d, $row ) {
-                        return number_format($d);
-                    }
-                ],
-                ['db' => 'kills', 'dt' => 'kills',
-                    'formatter' => function( $d, $row ) {
-                        return number_format($d);
-                    }
-                ],
-                ['db' => 'deaths', 'dt' => 'deaths',
-                    'formatter' => function( $d, $row ) {
-                        return number_format($d);
-                    }
-                ],
-                ['db' => 'time', 'dt' => 'time',
-                    'formatter' => function( $d, $row ) {
-                        $i = (int)$d;
-                        return TimeHelper::SecondsToHms($i);
-                    }
-                ],
-                ['db' => 'team', 'dt' => 'team',
-                    'formatter' => function( $d, $row ) {
-                        return "<img class='center' src=\"/ASP/frontend/images/armies/small/{$d}.png\">";
-                    }
-                ],
-                ['db' => 'timestamp', 'dt' => 'timestamp',
-                    'formatter' => function( $d, $row ) {
-                        $i = (int)$d;
-                        return date('F jS, Y g:i A T', $i);
-                    }
-                ],
-                ['db' => 'rank', 'dt' => 'actions',
-                    'formatter' => function( $d, $row ) {
-                        $id = (int)$row['pid'];
-                        $rid = (int)$row['roundid'];
-
-                        return '<span class="btn-group">
-                            <a href="/ASP/players/view/'. $id .'/history/'. $rid .'"  rel="tooltip" title="View Round Details" class="btn btn-small">
-                                <i class="icon-eye-open"></i>
-                            </a>
-                        </span>';
-                    }
-                ],
-            ];
-
-            // Fetch data
-            $filter = "`pid` = ". $id;
-            $data = DataTables::FetchData($_POST, $pdo, 'player_history_view', 'pid', $columns, $filter);
-
+            // Fetch player round history list
+            $data = $this->ajaxModel->fetchPlayerRoundHistory($id, $_POST);
             echo json_encode($data);
         }
         catch (Exception $e)
         {
+            // Log Exception
             Asp::LogException($e);
+
+            // Send error message to client
             echo json_encode(['error' => $e->getMessage()]);
         }
     }
@@ -704,96 +528,54 @@ SQL;
             //Filter the file types , if you want.
             if ($file["error"] > 0 && $file['error'] != UPLOAD_ERR_OK)
             {
-                switch ($file['error']) {
+                switch ($file['error'])
+                {
                     case UPLOAD_ERR_NO_FILE:
-                        echo json_encode(['success' => false, 'error' => "No file received."]);
+                        $this->sendJsonResponse(false, "No file received.");
                         break;
                     case UPLOAD_ERR_INI_SIZE:
                     case UPLOAD_ERR_FORM_SIZE:
-                        echo json_encode(['success' => false, 'error' => "Exceeded filesize limit."]);
+                        $this->sendJsonResponse(false, "Exceeded filesize limit.");
                         break;
                     default:
-                        echo json_encode(['success' => false, 'error' => "Unknown Error."]);
+                        $this->sendJsonResponse(false, "Unknown Error.");
                         break;
                 }
             }
             else
             {
+                // Ensure the config directory if writable!
+                $path = Path::Combine(SYSTEM_PATH, "config");
+                if (!Directory::IsWritable($path))
+                {
+                    $this->sendJsonResponse(false, "System config directory is not writable!");
+                    return;
+                }
+
                 try
                 {
-                    //move the uploaded file to uploads folder;
+                    // Move the uploaded file to the config folder
                     @move_uploaded_file($file["tmp_name"], $output);
 
-                    // Open file
-                    $lines = File::ReadAllLines($output);
+                    // Import bots
+                    $count = $this->playerModel->importBotsFromFile($output);
+
+                    // Output success message
+                    $this->sendJsonResponse(true, "File Received OK. Added ". $count . " Bots");
                 }
                 catch (Exception $e)
                 {
-                    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
-                    die;
-                }
+                    // Log exception
+                    Asp::LogException($e);
 
-                // Prepare for adding bots
-                $pattern = "/^aiSettings\.addBotName[\s\t]+(?<name>[". Player::NAME_REGEX ."]+)$/i";
-                $bots = [];
-
-                // Grab database connection
-                parent::requireDatabase(true);
-                $pdo = Database::GetConnection('stats');
-
-                // Parse file lines
-                foreach ($lines as $line)
-                {
-                    if (preg_match($pattern, $line, $match))
-                    {
-                        $bots[] = $match["name"];
-                    }
-                }
-
-                try
-                {
-                    $imported = 0;
-
-                    // wrap these inserts in a transaction, to speed things along.
-                    $pdo->beginTransaction();
-                    foreach ($bots as $bot)
-                    {
-                        try
-                        {
-                            // Quote name
-                            $name = $pdo->quote($bot);
-
-                            // Check if name exists already
-                            $exists = $pdo->query("SELECT id FROM player WHERE name={$name} LIMIT 1")->fetchColumn(0);
-                            if ($exists === false)
-                            {
-                                $query = "INSERT INTO `player`(`name`, `country`, `email`, `password`) VALUES ({$name}, 'US', 'bot@botNames.ai', '')";
-                                $pdo->exec($query);
-                                $imported++;
-                            }
-                        }
-                        catch (PDOException $e)
-                        {
-                            // ignore
-                        }
-                    }
-
-                    // Submit changes
-                    $pdo->commit();
-
-                    echo json_encode(['success' => true, 'error' => "File Received OK. Added ". $imported . " Bots"]);
-                }
-                catch (Exception $e)
-                {
-                    $pdo->rollBack();
-                    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+                    // Tell the client that we have failed
+                    $this->sendJsonResponse(false, $e->getMessage());
                 }
             }
         }
         else
         {
-            echo json_encode(['success' => false, 'error' => "No file received."]);
+            $this->sendJsonResponse(false, "No file received.");
         }
     }
-
 }

@@ -41,7 +41,7 @@ abstract class Controller
             }
             else
             {
-                echo json_encode(['success' => false, 'message' => 'Unable to connect to database!']);
+                $this->sendJsonResponse(false, 'Unable to connect to database!');
             }
 
             // Kill the script
@@ -70,7 +70,7 @@ abstract class Controller
             }
         }
 
-        echo json_encode( array('success' => false, 'message' => 'Invalid Action') );
+        $this->sendJsonResponse(false, 'Invalid Action!');
         die;
     }
 
@@ -127,5 +127,20 @@ abstract class Controller
 
         // Create instance and attach to this class
         $this->{$propertyName} = new $modelName();
+    }
+
+    /**
+     * Sends a formalized ASP json response to the client. This method is suitable
+     * with ASP ajax responses.
+     *
+     * @param bool $success Indicates whether the expected result was successful
+     * @param string $message The result message to send to the client
+     * @param array $params Additional data to pass in the response (key => value)
+     */
+    protected function sendJsonResponse($success, $message, $params = [])
+    {
+        $params['success'] = $success;
+        $params['message'] = $message;
+        echo json_encode($params, JSON_PRETTY_PRINT);
     }
 }

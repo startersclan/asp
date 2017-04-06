@@ -8,6 +8,9 @@
  *
  */
 use System\Battlefield2;
+use System\Database\UpdateOrInsertQuery;
+use System\IO\File;
+use System\Player;
 use System\TimeHelper;
 use System\TimeSpan;
 use System\View;
@@ -21,13 +24,258 @@ use System\View;
 class PlayerModel
 {
     /**
-     * Appends Army data to a view
+     * @var \System\Database\DbConnection The stats database connection
+     */
+    protected $pdo;
+
+    /**
+     * PlayerModel constructor.
+     */
+    public function __construct()
+    {
+        // Fetch database connection
+        $this->pdo = System\Database::GetConnection('stats');
+    }
+
+    /**
+     * Creates a new player record in the player table
+     *
+     * @param string $name The player unique nick
+     * @param string $password The player password, or null if creating an offline account
+     * @param string $email The player email address
+     * @param string $iso The player country ISO code.
+     * @param int $rank The starting player rank
+     *
+     * @return bool true on success, otherwise false
+     *
+     * @throws ArgumentException thrown if any of the parameters are invalid.
+     */
+    public function createPlayer($name, $password, $email, $iso, $rank = 0)
+    {
+        // Check for valid ISO
+        $iso = trim($iso);
+        if (strlen($iso) != 2)
+            throw new ArgumentException('Invalid country ISO passed: '. $iso, 'iso');
+
+        // Check length of player name
+        $name = preg_replace("/[^". Player::NAME_REGEX ."]/", '', trim($name));
+        if (empty($name))
+            throw new ArgumentException('Empty player name passed', 'name');
+        else if (strlen($name) > 32)
+            throw new ArgumentException('Player name cannot be longer than 32 characters!', 'name');
+
+        // Prepare statement
+
+        return $this->pdo->insert('player', [
+            'name' => $name,
+            'password' => md5(trim($password)),
+            'rank' => (int)$rank,
+            'email' => trim($email),
+            'country' => $iso
+        ]);
+    }
+
+    /**
+     * Updates the specified player fields in the player table. Data is not filtered.
+     *
+     * @param int $id The player id
+     * @param array $cols An array of [colname => newvalue] to set for the player
+     *
+     * @return bool true on success, otherwise false
+     */
+    public function updatePlayer($id, $cols)
+    {
+        return $this->pdo->update('player', $cols, ['id' => $id]);
+    }
+
+    /**
+     * Deletes a player record from the player table, and all associated
+     * records from the other stats tables
+     *
+     * @param int $id The player id
+     *
+     * @return int The number of rows affected by the last SQL statement
+     */
+    public function deletePlayer($id)
+    {
+        // Prepare statement
+        $stmt = $this->pdo->prepare("DELETE FROM player WHERE id=:id");
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->rowCount();
+    }
+
+    /**
+     * Deletes all bot records from the player table, and all associated
+     * records from the other stats tables
+     *
+     * @return int The number of rows affected by the last SQL statement
+     */
+    public function deleteBotPlayers()
+    {
+        // Prepare statement
+        return $this->pdo->exec("DELETE FROM player WHERE password=''");
+    }
+
+    /**
+     * Fetches player data for the Players controller
+     *
+     * @param int $id the player ID
+     *
+     * @return bool|array
+     */
+    public function fetchPlayer($id)
+    {
+        // Fetch player
+        $query = <<<SQL
+SELECT `name`, `rank`, `email`, `joined`, `time`, `lastonline`, `score`, `skillscore`, `cmdscore`, `teamscore`, 
+  `kills`, `deaths`, `teamkills`, `kicked`, `banned`, `permban`, `heals`, `repairs`, `ammos`, `revives`,
+  `captures`, `captureassists`, `defends`, `country`, `driverspecials`, `neutralizes`, `neutralizeassists`,
+  `damageassists`, `rounds`, `wins`, `losses`, `cmdtime`, `sqmtime`, `sqltime`, `lwtime`, `suicides`, 
+  `teamdamage`, `teamvehicledamage`, `killstreak`, `rndscore`
+FROM player
+WHERE `id`={$id}
+SQL;
+        return $this->pdo->query($query)->fetch();
+    }
+
+    /**
+     * Resets a players stats, and removes all awards, unlocks, and rank histories
+     *
+     * @param int $id The player ID
+     *
+     * @throws Exception
+     */
+    public function resetPlayerStats($id)
+    {
+        // Cast id to an integer, to be safe
+        $id = (int)$id;
+
+        try
+        {
+            // Start transaction
+            $this->pdo->beginTransaction();
+
+            // Delete all records from the following tables for this player
+            $tables = [
+                'player_kit', 'player_army', 'player_award', 'player_rank_history',
+                'player_map', 'player_vehicle', 'player_weapon', 'player_unlock'
+            ];
+            foreach ($tables as $table)
+            {
+                $this->pdo->exec("DELETE FROM {$table} WHERE pid={$id}");
+            }
+
+            // Reset all player stats
+            $query = new UpdateOrInsertQuery($this->pdo, 'player');
+            $query->set('time', '=', 0);
+            $query->set('rounds', '=', 0);
+            $query->set('score', '=', 0);
+            $query->set('cmdscore', '=', 0);
+            $query->set('skillscore', '=', 0);
+            $query->set('teamscore', '=', 0);
+            $query->set('kills', '=', 0);
+            $query->set('wins', '=', 0);
+            $query->set('losses', '=', 0);
+            $query->set('deaths', '=', 0);
+            $query->set('captures', '=', 0);
+            $query->set('captureassists', '=', 0);
+            $query->set('neutralizes', '=', 0);
+            $query->set('neutralizeassists', '=', 0);
+            $query->set('defends', '=', 0);
+            $query->set('damageassists', '=', 0);
+            $query->set('heals', '=', 0);
+            $query->set('revives', '=', 0);
+            $query->set('ammos', '=', 0);
+            $query->set('repairs', '=', 0);
+            $query->set('targetassists', '=', 0);
+            $query->set('driverspecials', '=', 0);
+            $query->set('teamkills', '=', 0);
+            $query->set('teamdamage', '=', 0);
+            $query->set('teamvehicledamage', '=', 0);
+            $query->set('suicides', '=', 0);
+            $query->set('rank', '=', 0);
+            $query->set('cmdtime', '=', 0);
+            $query->set('sqltime', '=', 0);
+            $query->set('sqmtime', '=', 0);
+            $query->set('lwtime', '=', 0);
+            $query->set('timepara', '=', 0);
+            $query->set('mode0', '=', 0);
+            $query->set('mode1', '=', 0);
+            $query->set('mode2', '=', 0);
+            $query->set('rndscore', '=', 0);
+            $query->set('deathstreak', '=', 0);
+            $query->set('killstreak', '=', 0);
+            $query->where('id', '=', $id);
+            $query->executeUpdate();
+
+            // Commit changes
+            $this->pdo->commit();
+        }
+        catch (Exception $e)
+        {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Removes all awards for the specified player
+     *
+     * @param int $id the player id
+     *
+     * @return int the number of rows that were deleted
+     */
+    public function resetPlayerAwards($id)
+    {
+        // Cast id to an integer, to be safe
+        $id = (int)$id;
+        return $this->pdo->exec("DELETE FROM player_award WHERE pid={$id}");
+    }
+
+    /**
+     * Removes all weapon unlocks for the specified player
+     *
+     * @param int $id the player id
+     *
+     * @return int the number of rows that were deleted
+     */
+    public function resetPlayerUnlocks($id)
+    {
+        // Cast id to an integer, to be safe
+        $id = (int)$id;
+        return $this->pdo->exec("DELETE FROM player_unlock WHERE pid={$id}");
+    }
+
+    /**
+     * Bans or UnBans a player
+     *
+     * @param int $id The player id
+     * @param bool $banned
+     *
+     * @return int the number of rows affected by the last SQL statement
+     */
+    public function setPlayerBanned($id, $banned)
+    {
+        $time = ($banned == 1) ? time() : 0;
+        $mode = ($banned) ? 1 : 0;
+
+        // Prepare statement
+        $stmt = $this->pdo->prepare("UPDATE player SET permban=:mode, bantime=:time WHERE id=:id");
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->bindValue(':mode', $mode, PDO::PARAM_INT);
+        $stmt->bindValue(':time', $time, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->rowCount();
+    }
+
+    /**
+     * Appends a players Army data to a view
      *
      * @param int $id
      * @param View $view
-     * @param PDO $pdo
      */
-    public function attachArmyData($id, View $view, PDO $pdo)
+    public function attachArmyData($id, View $view)
     {
         // Insure $id is an integer
         $id = (int)$id;
@@ -51,7 +299,7 @@ class PlayerModel
 
         // fetch player kit data
         $query = "SELECT * FROM `player_army` AS pk JOIN army ON pk.id = army.id WHERE `pid`=".$id;
-        $result = $pdo->query($query);
+        $result = $this->pdo->query($query);
 
         // iterate through the results
         while ($row = $result->fetch())
@@ -114,13 +362,12 @@ class PlayerModel
     }
 
     /**
-     * Appends Kit data to a view
+     * Appends a players Kit data to a view
      *
      * @param int $id
      * @param View $view
-     * @param PDO $pdo
      */
-    public function attachKitData($id, View $view, PDO $pdo)
+    public function attachKitData($id, View $view)
     {
         // Insure $id is an integer
         $id = (int)$id;
@@ -142,7 +389,7 @@ class PlayerModel
 
         // fetch player kit data
         $query = "SELECT * FROM `player_kit` AS pk JOIN kit ON pk.id = kit.id WHERE `pid`=".$id;
-        $result = $pdo->query($query);
+        $result = $this->pdo->query($query);
 
         // iterate through the results
         while ($row = $result->fetch())
@@ -199,13 +446,12 @@ class PlayerModel
     }
 
     /**
-     * Appends Vehicle data to a view
+     * Appends a players Vehicle data to a view
      *
      * @param int $id
      * @param View $view
-     * @param PDO $pdo
      */
-    public function attachVehicleData($id, View $view, PDO $pdo)
+    public function attachVehicleData($id, View $view)
     {
         // Insure $id is an integer
         $id = (int)$id;
@@ -229,7 +475,7 @@ class PlayerModel
 
         // fetch player kit data
         $query = "SELECT * FROM `player_vehicle` AS pk JOIN vehicle ON pk.id = vehicle.id WHERE `pid`=".$id;
-        $result = $pdo->query($query);
+        $result = $this->pdo->query($query);
 
         // iterate through the results
         while ($row = $result->fetch())
@@ -293,13 +539,12 @@ class PlayerModel
     }
 
     /**
-     * Appends Kit data to a view
+     * Appends a players Weapon data to a view
      *
      * @param int $id
      * @param View $view
-     * @param PDO $pdo
      */
-    public function attachWeaponData($id, View $view, PDO $pdo)
+    public function attachWeaponData($id, View $view)
     {
         // Insure $id is an integer
         $id = (int)$id;
@@ -327,7 +572,7 @@ class PlayerModel
 
         // fetch player kit data
         $query = "SELECT * FROM `player_weapon_view` AS pk JOIN weapon ON pk.id = weapon.id WHERE `pid`=".$id;
-        $result = $pdo->query($query);
+        $result = $this->pdo->query($query);
 
         // iterate through the results
         while ($row = $result->fetch())
@@ -530,13 +775,12 @@ class PlayerModel
     }
 
     /**
-     * Appends Award data to a view
+     * Appends a players Award data to a view
      *
      * @param int $id
      * @param View $view
-     * @param PDO $pdo
      */
-    public function attachAwardData($id, View $view, PDO $pdo)
+    public function attachAwardData($id, View $view)
     {
         $medals = [];
         $badges = [];
@@ -546,7 +790,7 @@ class PlayerModel
         $id = (int)$id;
 
         // Grab all awards
-        $awards = $pdo->query("SELECT * FROM award")->fetchAll();
+        $awards = $this->pdo->query("SELECT * FROM award")->fetchAll();
         foreach ($awards as $award)
         {
             $aid = (int)$award['id'];
@@ -577,7 +821,7 @@ class PlayerModel
 
         // Now fetch player awards
         $query = "SELECT * FROM player_awards_view AS v JOIN award AS a ON a.id = v.id WHERE pid=".$id;
-        $awards = $pdo->query($query)->fetchAll();
+        $awards = $this->pdo->query($query)->fetchAll();
         foreach ($awards as $award)
         {
             $id = (int)$award['id'];
@@ -620,17 +864,16 @@ class PlayerModel
      *
      * @param int $id
      * @param View $view
-     * @param PDO $pdo
      */
-    public function attachTopVictimAndOpp($id, View $view, PDO $pdo)
+    public function attachTopVictimAndOpp($id, View $view)
     {
         // Fetch Fav Victim
-        $result = $pdo->query("SELECT victim, `count` FROM player_kill WHERE attacker={$id} ORDER BY `count` DESC LIMIT 1");
+        $result = $this->pdo->query("SELECT victim, `count` FROM player_kill WHERE attacker={$id} ORDER BY `count` DESC LIMIT 1");
         if ($row = $result->fetch())
         {
             $victim = $row['victim'];
             $count = $row['count'];
-            $result = $pdo->query("SELECT name, rank FROM player WHERE id={$victim}");
+            $result = $this->pdo->query("SELECT name, rank FROM player WHERE id={$victim}");
             if ($row = $result->fetch())
             {
                 $data = [
@@ -654,12 +897,12 @@ class PlayerModel
         }
 
         // Fetch Fav Opponent
-        $result = $pdo->query("SELECT attacker, `count` FROM player_kill WHERE victim={$id} ORDER BY `count` DESC LIMIT 1");
+        $result = $this->pdo->query("SELECT attacker, `count` FROM player_kill WHERE victim={$id} ORDER BY `count` DESC LIMIT 1");
         if ($row = $result->fetch())
         {
             $attacker = $row['attacker'];
             $count = $row['count'];
-            $result = $pdo->query("SELECT name, rank FROM player WHERE id={$attacker}");
+            $result = $this->pdo->query("SELECT name, rank FROM player WHERE id={$attacker}");
             if ($row = $result->fetch())
             {
                 $data = [
@@ -680,6 +923,73 @@ class PlayerModel
                 'count' => 0
             ];
             $view->set('worstOp', $data);
+        }
+    }
+
+    /**
+     * Imports a series of bot players into the player table from a botNames.ai file.
+     *
+     * @param string $filePath The filepath to the botNames.ai file
+     *
+     * @return int The number of bot entries imported into the database
+     *
+     * @throws Exception
+     */
+    public function importBotsFromFile($filePath)
+    {
+        // Open file
+        $lines = File::ReadAllLines($filePath);
+
+        // Prepare for adding bots
+        $pattern = "/^aiSettings\.addBotName[\s\t]+(?<name>[". Player::NAME_REGEX ."]+)$/i";
+        $bots = [];
+        $imported = 0;
+
+        // Parse file lines
+        foreach ($lines as $line)
+        {
+            if (preg_match($pattern, $line, $match))
+            {
+                $bots[] = $match["name"];
+            }
+        }
+
+        try
+        {
+            // wrap these inserts in a transaction, to speed things along.
+            $this->pdo->beginTransaction();
+            foreach ($bots as $bot)
+            {
+                try
+                {
+                    // Quote name
+                    $name = $this->pdo->quote($bot);
+
+                    // Check if name exists already
+                    $exists = $this->pdo->query("SELECT id FROM player WHERE name={$name} LIMIT 1")->fetchColumn(0);
+                    if ($exists === false)
+                    {
+                        $query = "INSERT INTO `player`(`name`, `country`, `email`, `password`) VALUES ({$name}, 'US', 'bot@botNames.ai', '')";
+                        $this->pdo->exec($query);
+                        $imported++;
+                    }
+                }
+                catch (PDOException $e)
+                {
+                    // ignore
+                }
+            }
+
+            // Submit changes
+            $this->pdo->commit();
+
+            // Return number of imported bots
+            return $imported;
+        }
+        catch (Exception $e)
+        {
+            $this->pdo->rollBack();
+            throw $e;
         }
     }
 }

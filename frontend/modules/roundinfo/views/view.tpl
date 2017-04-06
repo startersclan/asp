@@ -81,7 +81,7 @@
                     <img src="/ASP/frontend/images/icons/flag_blue.png" style="height: 24px"/> Winning Team
                 </span>
                 <span class="val">
-					<span class="text-nowrap">{winner}</span>
+					<span class="text-nowrap">{round.winningTeamName}</span>
 				</span>
             </li>
             <li>

@@ -166,7 +166,7 @@ class Servers extends Controller
         }
 
         // Load model, and query server
-        parent::loadModel('ServerModel', 'servers');
+        $this->loadModel('ServerModel', 'servers');
         $result = $this->serverModel->queryServer($server['ip'], $server['queryport']);
 
         // If we get a false response, server is offline
@@ -293,7 +293,7 @@ class Servers extends Controller
     public function postDelete()
     {
         // Form post?
-        parent::requireAction('delete');
+        $this->requireAction('delete');
 
         // Grab database connection
         $pdo = Database::GetConnection('stats');
@@ -350,7 +350,7 @@ class Servers extends Controller
     public function postAuthorize()
     {
         // Form post?
-        parent::requireAction('auth', 'unauth');
+        $this->requireAction('auth', 'unauth');
 
         // Grab database connection
         $pdo = Database::GetConnection('stats');
@@ -408,7 +408,7 @@ class Servers extends Controller
     public function postPlasma()
     {
         // Form post?
-        parent::requireAction('plasma', 'unplasma');
+        $this->requireAction('plasma', 'unplasma');
 
         // Grab database connection
         $pdo = Database::GetConnection('stats');
