@@ -196,8 +196,15 @@ class Asp
             return;
         }
 
-        // Create ASP log file instance
-        $LogWriter = new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "asp_debug.log"), "Asp");
+        // Create the required log writer for the ASP
+        try {
+            // Create ASP log file instance
+            $LogWriter = new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "asp_debug.log"), "Asp");
+        }
+        catch (Exception $e) {
+            // Use temporary file
+            $LogWriter = new LogWriter('php://memory', "Asp");
+        }
 
         // Connect to the stats database
         try
