@@ -115,7 +115,7 @@ class FileCache implements ICacheDriver
         $contents = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK);
 
         // Save contents
-        $file = new FileStream($fileName, 'w');
+        $file = new FileStream($fileName, 'w+');
         $file->write($contents);
         $file->close();
 

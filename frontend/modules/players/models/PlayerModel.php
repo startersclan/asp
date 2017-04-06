@@ -257,7 +257,7 @@ SQL;
      */
     public function setPlayerBanned($id, $banned)
     {
-        $time = ($banned == 1) ? time() : 0;
+        $time = ($banned) ? time() : 0;
         $mode = ($banned) ? 1 : 0;
 
         // Prepare statement

@@ -157,7 +157,7 @@ class Config extends Controller
         // Check Database Access
         $out = " > Checking Database...<br />";
         $DB = Database::GetConnection('stats');
-        if( $DB instanceof PDO )
+        if ($DB instanceof PDO)
         {
             $out .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Database Connection (".Cfg::Get('db_host')."): ".__PASS;
 
@@ -171,6 +171,20 @@ class Config extends Controller
         {
             $out .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Database Connection (".Cfg::Get('db_host')."): ".__FAIL;
             $errors = true;
+        }
+
+        // Check Cache Folder Write Access
+        $out .= " > Checking System Cache...<br />";
+        $out .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- System Cache Path Writable (system/cache): ";
+        $path = SYSTEM_PATH . DS .'cache'. DS;
+        if (!Directory::IsWritable( $path ))
+        {
+            $out .= __FAIL;
+            $errors = true;
+        }
+        else
+        {
+            $out .= __PASS;
         }
 
         // Check Config File Write Access

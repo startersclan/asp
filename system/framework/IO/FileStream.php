@@ -99,8 +99,11 @@ class FileStream
                 throw new IOException($error["message"]);
         }
 
-        // Set class variables
-        $this->mode = $mode;
+        /**
+         * Set readable and writable status of the stream
+         * Replace both b and t flags, as we don't care about those.
+         */
+        $this->mode = str_replace(['b', 't'], '', $mode);
         $this->canRead = in_array($mode, self::$readModes);
         $this->canWrite = in_array($mode, self::$writeModes);
 

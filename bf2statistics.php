@@ -74,6 +74,9 @@ namespace System
 
         // Log this access
         $LogWriter->logNotice("Incoming snapshot data from (%s): ", Request::ClientIp());
+
+        // Set timezone for logging timestamps
+        date_default_timezone_set(Config::Get('admin_timezone'));
     }
     catch (Exception $e)
     {
@@ -158,7 +161,7 @@ namespace System
     try
     {
         // Create and write the snapshot data into a backup file
-        $file = new FileStream(SNAPSHOT_TEMP_PATH . DS . $fileName, 'w');
+        $file = new FileStream(SNAPSHOT_TEMP_PATH . DS . $fileName, 'w+');
         $file->write(json_encode($data->toArray(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK));
         $file->close();
 
