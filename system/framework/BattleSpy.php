@@ -146,7 +146,7 @@ class BattleSpy
         $spm = ($mins == 0) ? 0 : round($player->roundScore / $mins, 3);
         if ($spm > $this->maxSPM)
         {
-            $message = sprintf("Player Score per Min (%f) exceeds threshold of (%f)", $spm, $this->maxSPM);
+            $message = sprintf("Player Score per Min (%.3f) exceeds threshold of (%.3f)", $spm, $this->maxSPM);
             $this->report($player->pid, $message, self::FLAG_PLAYER_SPM);
         }
 
@@ -154,7 +154,7 @@ class BattleSpy
         $kpm = ($mins == 0) ? 0 : round($player->kills / $mins, 3);
         if ($kpm > $this->maxKPM)
         {
-            $message = sprintf("Player Kills per Min (%f) exceeds threshold of (%f)", $kpm, $this->maxKPM);
+            $message = sprintf("Player Kills per Min (%.3f) exceeds threshold of (%.3f)", $kpm, $this->maxKPM);
             $this->report($player->pid, $message, self::FLAG_PLAYER_KILLS);
         }
 
