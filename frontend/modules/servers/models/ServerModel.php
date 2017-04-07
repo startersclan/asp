@@ -19,6 +19,156 @@ use System\TimeHelper;
 class ServerModel
 {
     /**
+     * @var \System\Database\DbConnection The stats database connection
+     */
+    protected $pdo;
+
+    /**
+     * ServerModel constructor.
+     */
+    public function __construct()
+    {
+        // Fetch database connection
+        $this->pdo = System\Database::GetConnection('stats');
+    }
+
+    /**
+     * Deletes a list of servers by id
+     *
+     * @param int[] $ids A list of server ids to perform the action on
+     *
+     * @throws Exception thrown if there is an error in the SQL statement
+     */
+    public function deleteServers($ids)
+    {
+        $count = count($ids);
+
+        // Prepared statement!
+        try
+        {
+            // Transaction if more than 2 servers
+            if ($count > 2)
+                $this->pdo->beginTransaction();
+
+            // Prepare statement
+            $stmt = $this->pdo->prepare("DELETE FROM server WHERE id=:id");
+            foreach ($ids as $serverId)
+            {
+                // Ignore the all!
+                if ($serverId == 'all') continue;
+
+                // Bind value and run query
+                $stmt->bindValue(':id', (int)$serverId, PDO::PARAM_INT);
+                $stmt->execute();
+            }
+
+            // Commit?
+            if ($count > 2)
+                $this->pdo->commit();
+        }
+        catch (Exception $e)
+        {
+            // Rollback?
+            if ($count > 2)
+                $this->pdo->rollBack();
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Sets the authorization level on a list of servers by id
+     *
+     * @param bool $mode true to authorize the specified server, otherwise false
+     * @param int[] $ids A list of server ids to perform the action on
+     *
+     * @throws Exception thrown if there is an error in the SQL statement
+     */
+    public function authorizeServers($mode, $ids)
+    {
+        $count = count($ids);
+        $mode = ($mode) ? 1 : 0;
+
+        // Prepared statement!
+        try
+        {
+            // Transaction if more than 2 servers
+            if ($count > 2)
+                $this->pdo->beginTransaction();
+
+            // Prepare statement
+            $stmt = $this->pdo->prepare("UPDATE server SET authorized=$mode WHERE id=:id");
+            foreach ($ids as $serverId)
+            {
+                // Ignore the all!
+                if ($serverId == 'all') continue;
+
+                // Bind value and run query
+                $stmt->bindValue(':id', (int)$serverId, PDO::PARAM_INT);
+                $stmt->execute();
+            }
+
+            // Commit?
+            if ($count > 2)
+                $this->pdo->commit();
+        }
+        catch (Exception $e)
+        {
+            // Rollback?
+            if ($count > 2)
+                $this->pdo->rollBack();
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Sets the plasma indicator on a list of servers by id
+     *
+     * @param bool $mode true to plasma the specified server, otherwise false
+     * @param int[] $ids A list of server ids to perform the action on
+     *
+     * @throws Exception thrown if there is an error in the SQL statement
+     */
+    public function plasmaServers($mode, $ids)
+    {
+        $count = count($ids);
+        $mode = ($mode) ? 1 : 0;
+
+        // Prepared statement!
+        try
+        {
+            // Transaction if more than 2 servers
+            if ($count > 2)
+                $this->pdo->beginTransaction();
+
+            // Prepare statement
+            $stmt = $this->pdo->prepare("UPDATE server SET plasma=$mode WHERE id=:id");
+            foreach ($ids as $serverId)
+            {
+                // Ignore the all!
+                if ($serverId == 'all') continue;
+
+                // Bind value and run query
+                $stmt->bindValue(':id', (int)$serverId, PDO::PARAM_INT);
+                $stmt->execute();
+            }
+
+            // Commit?
+            if ($count > 2)
+                $this->pdo->commit();
+        }
+        catch (Exception $e)
+        {
+            // Rollback?
+            if ($count > 2)
+                $this->pdo->rollBack();
+
+            throw $e;
+        }
+    }
+
+    /**
      * Queries a BF2 server for its current round information
      *
      * @param string $ip The servers IP address

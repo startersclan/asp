@@ -97,11 +97,8 @@ class Servers extends Controller
         $id = (int)$id;
 
         // Fetch server list!
-        $result = $pdo->query("SELECT * FROM `server` WHERE id=" . $id);
-        $server = $result->fetch();
-
-        // Does server exist?
-        if (!$server)
+        $server = $pdo->query("SELECT * FROM `server` WHERE id=" . $id)->fetch();
+        if (empty($server))
         {
             Response::Redirect('servers');
             die;
@@ -292,53 +289,28 @@ class Servers extends Controller
      */
     public function postDelete()
     {
-        // Form post?
+        // Require specific actions
         $this->requireAction('delete');
 
-        // Grab database connection
-        $pdo = Database::GetConnection('stats');
-        if ($pdo === false)
-        {
-            echo json_encode(['success' => false, 'message' => 'Unable to connect to database!']);
-            die;
-        }
+        // Require database connection
+        $this->requireDatabase(true);
 
-        $count = count($_POST['servers']);
+        // Attach Model
+        $this->loadModel('ServerModel', 'servers');
 
-        // Prepared statement!
         try
         {
-            // Transaction if more than 5 servers
-            if ($count > 5)
-                $pdo->beginTransaction();
-
-            // Prepare statement
-            $stmt = $pdo->prepare("DELETE FROM server WHERE id=:id");
-            foreach ($_POST['servers'] as $serverId)
-            {
-                // Ignore the all!
-                if ($serverId == 'all') continue;
-
-                // Bind value and run query
-                $stmt->bindValue(':id', (int)$serverId, PDO::PARAM_INT);
-                $stmt->execute();
-            }
-
-            // Commit?
-            if ($count > 5)
-                $pdo->commit();
-
-            // Echo success
-            echo json_encode(['success' => true, 'message' => $_POST['servers']]);
+            // Delete servers
+            $this->serverModel->deleteServers($_POST['servers']);
+            $this->sendJsonResponse(true, $_POST['servers']);
         }
         catch (Exception $e)
         {
-            // Rollback?
-            if ($count > 5)
-                $pdo->rollBack();
+            // Log exception
+            Asp::LogException($e);
 
-            echo json_encode(['success' => false, 'message' => 'Query Failed! ' . $e->getMessage()]);
-            die;
+            // Tell the client that we have failed
+            $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage());
         }
     }
 
@@ -349,54 +321,29 @@ class Servers extends Controller
      */
     public function postAuthorize()
     {
-        // Form post?
+        // Require specific actions
         $this->requireAction('auth', 'unauth');
 
-        // Grab database connection
-        $pdo = Database::GetConnection('stats');
-        if ($pdo === false)
-        {
-            echo json_encode(['success' => false, 'message' => 'Unable to connect to database!']);
-            die;
-        }
+        // Require database connection
+        $this->requireDatabase(true);
 
-        $mode = ($_POST['action'] == 'auth') ? 1 : 0;
-        $count = count($_POST['servers']);
+        // Attach Model
+        $this->loadModel('ServerModel', 'servers');
 
-        // Prepared statement!
         try
         {
-            // Transaction if more than 5 servers
-            if ($count > 5)
-                $pdo->beginTransaction();
-
-            // Prepare statement
-            $stmt = $pdo->prepare("UPDATE server SET authorized=$mode WHERE id=:id");
-            foreach ($_POST['servers'] as $serverId)
-            {
-                // Ignore the all!
-                if ($serverId == 'all') continue;
-
-                // Bind value and run query
-                $stmt->bindValue(':id', (int)$serverId, PDO::PARAM_INT);
-                $stmt->execute();
-            }
-
-            // Commit?
-            if ($count > 5)
-                $pdo->commit();
-
-            // Echo success
-            echo json_encode(['success' => true, 'message' => $_POST['servers']]);
+            // Delete servers
+            $mode = ($_POST['action'] == 'auth');
+            $this->serverModel->authorizeServers($mode, $_POST['servers']);
+            $this->sendJsonResponse(true, $_POST['servers']);
         }
         catch (Exception $e)
         {
-            // Rollback?
-            if ($count > 5)
-                $pdo->rollBack();
+            // Log exception
+            Asp::LogException($e);
 
-            echo json_encode(['success' => false, 'message' => 'Query Failed! ' . $e->getMessage()]);
-            die;
+            // Tell the client that we have failed
+            $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage());
         }
     }
 
@@ -407,54 +354,29 @@ class Servers extends Controller
      */
     public function postPlasma()
     {
-        // Form post?
-        $this->requireAction('plasma', 'unplasma');
+        // Require specific actions
+        $this->requireAction('auth', 'unauth');
 
-        // Grab database connection
-        $pdo = Database::GetConnection('stats');
-        if ($pdo === false)
-        {
-            echo json_encode(['success' => false, 'message' => 'Unable to connect to database!']);
-            die;
-        }
+        // Require database connection
+        $this->requireDatabase(true);
 
-        $mode = ($_POST['action'] == 'plasma') ? 1 : 0;
-        $count = count($_POST['servers']);
+        // Attach Model
+        $this->loadModel('ServerModel', 'servers');
 
-        // Prepared statement!
         try
         {
-            // Transaction if more than 5 servers
-            if ($count > 5)
-                $pdo->beginTransaction();
-
-            // Prepare statement
-            $stmt = $pdo->prepare("UPDATE server SET plasma=$mode WHERE id=:id");
-            foreach ($_POST['servers'] as $serverId)
-            {
-                // Ignore the all!
-                if ($serverId == 'all') continue;
-
-                // Bind value and run query
-                $stmt->bindValue(':id', (int)$serverId, PDO::PARAM_INT);
-                $stmt->execute();
-            }
-
-            // Commit?
-            if ($count > 5)
-                $pdo->commit();
-
-            // Echo success
-            echo json_encode(['success' => true, 'message' => $_POST['servers']]);
+            // Delete servers
+            $mode = ($_POST['action'] == 'auth');
+            $this->serverModel->plasmaServers($mode, $_POST['servers']);
+            $this->sendJsonResponse(true, $_POST['servers']);
         }
         catch (Exception $e)
         {
-            // Rollback?
-            if ($count > 5)
-                $pdo->rollBack();
+            // Log exception
+            Asp::LogException($e);
 
-            echo json_encode(['success' => false, 'message' => 'Query Failed! ' . $e->getMessage()]);
-            die;
+            // Tell the client that we have failed
+            $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage());
         }
     }
 }

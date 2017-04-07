@@ -146,25 +146,43 @@ class BattleSpy
         $spm = ($mins == 0) ? 0 : round($player->roundScore / $mins, 3);
         if ($spm > $this->maxSPM)
         {
+            // Determine severity
+            $plus50p = $this->maxSPM + ($this->maxSPM / 2);
+            $double = $this->maxSPM * 2;
+
+            // Report player for having too high of a SPM
+            $severity = ($spm > $double) ? 3 : ($spm > $plus50p) ? 2 : 1;
             $message = sprintf("Player Score per Min (%.3f) exceeds threshold of (%.3f)", $spm, $this->maxSPM);
-            $this->report($player->pid, $message, self::FLAG_PLAYER_SPM);
+            $this->report($player->pid, $message, self::FLAG_PLAYER_SPM, $severity);
         }
 
         /** Check kills per minute */
         $kpm = ($mins == 0) ? 0 : round($player->kills / $mins, 3);
         if ($kpm > $this->maxKPM)
         {
+            // Determine severity
+            $plus50p = $this->maxKPM + ($this->maxKPM / 2);
+            $double = $this->maxKPM * 2;
+
+            // Report player for having too high of a KPM
+            $severity = ($spm > $double) ? 3 : ($spm > $plus50p) ? 2 : 1;
             $message = sprintf("Player Kills per Min (%.3f) exceeds threshold of (%.3f)", $kpm, $this->maxKPM);
-            $this->report($player->pid, $message, self::FLAG_PLAYER_KILLS);
+            $this->report($player->pid, $message, self::FLAG_PLAYER_KILLS, $severity);
         }
+
+        // Set severity limits
+        $plus50p = $this->maxTargetKills + ($this->maxTargetKills / 2);
+        $double = $this->maxTargetKills * 2;
 
         /** Check target kills */
         foreach ($player->victims as $pid => $count)
         {
             if ($count > $this->maxTargetKills)
             {
+                // Report player for having too many kills on a single player
+                $severity = ($count > $double) ? 3 : ($count > $plus50p) ? 2 : 1;
                 $message = sprintf("Player Kills on Player (%d) exceeds threshold of (%d)", $pid, $this->maxTargetKills);
-                $this->report($player->pid, $message, self::FLAG_PLAYER_TARGET_KILLS);
+                $this->report($player->pid, $message, self::FLAG_PLAYER_TARGET_KILLS, $severity);
             }
         }
 
@@ -173,7 +191,7 @@ class BattleSpy
         if ($awardCount > $this->maxAwards)
         {
             $message = "Player Award Count (%d) exceeds threshold of (%d)";
-            $this->report($player->pid, sprintf($message, $awardCount, $this->maxAwards), self::FLAG_PLAYER_AWARDS);
+            $this->report($player->pid, sprintf($message, $awardCount, $this->maxAwards), self::FLAG_PLAYER_AWARDS, 1);
         }
 
         /** Check weapon accuracy */
@@ -185,13 +203,16 @@ class BattleSpy
      * @param int $playerId
      * @param string $message
      * @param int $flagCode
+     * @param int $severity The severity level of the offense, in a range of 1 to 3,
+     *  1 being low, and 3 being high.
      */
-    public function report($playerId, $message, $flagCode)
+    public function report($playerId, $message, $flagCode, $severity)
     {
         $this->notifications[] = [
             'pid' => $playerId,
-            'message' => $message,
-            'flag' => $flagCode
+            'flag' => $flagCode,
+            'severity' => min(abs($severity), 3),
+            'message' => $message
         ];
     }
 

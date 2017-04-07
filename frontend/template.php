@@ -84,8 +84,10 @@ function build_navigation()
 
         // BattleSpy
         $bsr = (int)$pdo->query("SELECT COUNT(`id`) FROM `battlespy_report`")->fetchColumn(0);
-        $title = 'BattleSpy Reports <span class="mws-nav-tooltip" title="Reports">'. $bsr .'</span>';
-        $group = new NavigationItem($title, "/ASP/battlespy", "icon-eye-open", $task == "battlespy");
+        $title = 'BattleSpy <span class="mws-nav-tooltip" title="Reports">'. $bsr .'</span>';
+        $group = new NavigationItem($title, "#", "icon-eye-open", $task == "battlespy");
+        $group->append('/ASP/battlespy', 'View Reports');
+        $group->append('/ASP/battlespy/config', 'Edit Configuration');
         $navigation->append($group);
 
         // Add Game Data Links

@@ -539,8 +539,9 @@ CREATE TABLE `battlespy_report` (
 CREATE TABLE `battlespy_message` (
   `id` INT UNSIGNED AUTO_INCREMENT,
   `reportid` INT UNSIGNED NOT NULL,      -- Report ID
-  `pid` INT UNSIGNED NOT NULL,                -- Player ID
+  `pid` INT UNSIGNED NOT NULL,           -- Player ID
   `flag` MEDIUMINT UNSIGNED NOT NULL,
+  `severity` TINYINT UNSIGNED NOT NULL,
   `message` VARCHAR(128),
   PRIMARY KEY(`id`),
   FOREIGN KEY(`reportid`) REFERENCES battlespy_report(`id`) ON DELETE CASCADE ON UPDATE CASCADE,

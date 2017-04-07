@@ -12,7 +12,7 @@
             <div class="mws-form-inline">
                 <fieldset>
                     <div class="mws-form-row">
-                        <div id="js_message" style="display: none;"></div>
+                        <div id="js_message" class="alert loading" style="display: none;"></div>
                         <p>
                             This area allows you to alter the configuration of the Battlefield 2 Private Statistics system.
                             This only alters the global settings defined on the "Gamespy" database server. To alter in-game

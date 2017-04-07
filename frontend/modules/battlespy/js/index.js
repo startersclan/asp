@@ -50,7 +50,7 @@
                                 text: "Confirm",
                                 class: "btn btn-danger",
                                 click: function () {
-                                    delete_reports([id]);
+                                    deleteReports([id]);
                                     $(this).dialog("close");
                                 }
                             },
@@ -90,7 +90,7 @@
                         text: "Confirm",
                         class: "btn btn-danger",
                         click: function () {
-                            delete_reports(reportIds);
+                            deleteReports(reportIds);
                             $(this).dialog("close");
                         }
                     },
@@ -119,15 +119,15 @@
             return false;
         });
 
-        function delete_reports(ids)
+        function deleteReports(ids)
         {
             // Push the request
-            $.post( "/ASP/battlespy/delete", { action: "delete", reports: ids })
+            $.post( "/ASP/battlespy/deleteReports", { action: "delete", reports: ids })
                 .done(function( data ) {
 
                     // Parse response
                     var result = jQuery.parseJSON(data);
-                    if (result.success == false) {
+                    if (result.success === false) {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)

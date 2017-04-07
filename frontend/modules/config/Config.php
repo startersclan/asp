@@ -98,7 +98,7 @@ class Config extends Controller
         if ($_POST['action'] == 'runtests')
         {
             $this->runTests();
-            die;
+            return;
         }
 
         // Set view variables
@@ -118,6 +118,9 @@ class Config extends Controller
      */
     public function postSave()
     {
+        // Require action
+        $this->requireAction('save_config');
+
         try
         {
             foreach ($_POST as $item => $val)
