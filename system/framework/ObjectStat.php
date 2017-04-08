@@ -52,7 +52,7 @@ class ObjectStat
     public $roadKills = 0;
 
     /**
-     * @var int The number of times thos object was deployed
+     * @var int The number of times this object was deployed
      */
     public $deployed = 0;
 }

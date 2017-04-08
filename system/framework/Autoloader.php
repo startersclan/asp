@@ -11,11 +11,9 @@ namespace System;
 
 /**
  * This class is an advanced autoloader for missing class references.
- * Able to register namespace specific paths, as well as prefix
- * specific paths.
  *
  * @author      Steven Wilson
- * @package     Core
+ * @package     System
  */
 class Autoloader
 {
@@ -33,7 +31,7 @@ class Autoloader
 
     /**
      * An array of registered namespace => path
-     * @var string[string[]]
+     * @var array
      */
     protected static $namespaces = array();
 
@@ -136,16 +134,16 @@ class Autoloader
     public static function LoadClass($class)
     {
         // Check for namespaced class
-        $nameparts = explode('\\', trim($class, '\\'));
-        $length = count($nameparts);
+        $parts = explode('\\', trim($class, '\\'));
+        $length = count($parts);
 
         // If the class name is namespaced, we will use the namespace to determine
         // the path to the class file.
         if ($length > 1)
         {
-            // Remove class name from nameparts, and store it here
-            $class = array_pop($nameparts);
-            $namespace = implode('\\', $nameparts);
+            // Remove class name from parts, and store it here
+            $class = array_pop($parts);
+            $namespace = implode('\\', $parts);
 
             /**
              * we will keep checking all namespaces, working up 1 level
@@ -175,8 +173,8 @@ class Autoloader
                 else
                 {
                     // Prepend the last namespace part to the class name, and try the parent namespace
-                    $class = array_pop($nameparts) . DIRECTORY_SEPARATOR . $class;
-                    $namespace = implode('\\', $nameparts);
+                    $class = array_pop($parts) . DIRECTORY_SEPARATOR . $class;
+                    $namespace = implode('\\', $parts);
                 }
             }
         }

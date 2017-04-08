@@ -15,6 +15,9 @@ use PDOException;
 
 class DataTables
 {
+    /**
+     * @var PDO
+     */
     protected static $connection;
 
     /**
@@ -40,13 +43,13 @@ class DataTables
         self::$connection = $conn;
 
         // Build the SQL query string from the request
-        $limit = self::limit($request, $columns);
-        $order = self::order($request, $columns);
-        $where = self::filter($request, $columns, $bindings, $customFilter);
+        $limit = self::Limit($request);
+        $order = self::Order($request, $columns);
+        $where = self::Filter($request, $columns, $bindings, $customFilter);
 
         // Main query to actually get the data
-        $data = self::executeSql($bindings,
-            "SELECT `" . implode("`, `", self::pluck($columns, 'db')) . "`
+        $data = self::ExecuteSql($bindings,
+            "SELECT `" . implode("`, `", self::Pluck($columns, 'db')) . "`
 			 FROM `$table`
 			 $where
 			 $order
@@ -54,25 +57,29 @@ class DataTables
         );
 
         // Data set length after filtering
-        $resFilterLength = self::executeSql($bindings, "SELECT COUNT(`{$primaryKey}`) FROM   `$table` $where");
+        /** @noinspection SqlResolve */
+        $resFilterLength = self::ExecuteSql($bindings, "SELECT COUNT(`{$primaryKey}`) FROM `{$table}` {$where}");
         $recordsFiltered = $resFilterLength[0][0];
 
         // Total data set length
         if (empty($customFilter))
-            $resTotalLength = self::executeSql($bindings, "SELECT COUNT(`{$primaryKey}`) FROM `$table`");
+        {
+            /** @noinspection SqlResolve */
+            $resTotalLength = self::ExecuteSql($bindings, "SELECT COUNT(`{$primaryKey}`) FROM `{$table}`");
+        }
         else
-            $resTotalLength = self::executeSql($bindings, "SELECT COUNT(`{$primaryKey}`) FROM `$table` WHERE ". $customFilter);
+        {
+            /** @noinspection SqlResolve */
+            $resTotalLength = self::ExecuteSql($bindings, "SELECT COUNT(`{$primaryKey}`) FROM `{$table}` WHERE " . $customFilter);
+        }
         $recordsTotal = $resTotalLength[0][0];
 
-        /*
-         * Output
-         */
-
+        // Output
         return array(
-            "draw" => isset ($request['draw']) ? intval($request['draw']) : 0,
+            "draw" => isset($request['draw']) ? intval($request['draw']) : 0,
             "recordsTotal" => intval($recordsTotal),
             "recordsFiltered" => intval($recordsFiltered),
-            "data" => self::data_output($columns, $data)
+            "data" => self::Format($columns, $data)
         );
     }
 
@@ -86,7 +93,7 @@ class DataTables
      *
      * @return array         Result from the query (all rows)
      */
-    protected static function executeSql($bindings, $sql = null)
+    protected static function ExecuteSql($bindings, $sql = null)
     {
         // Argument shifting
         if ($sql === null)
@@ -94,8 +101,8 @@ class DataTables
             $sql = $bindings;
         }
 
+        // Prepare statement
         $stmt = self::$connection->prepare($sql);
-        //echo $sql;
 
         // Bind parameters
         if (is_array($bindings))
@@ -114,7 +121,7 @@ class DataTables
         }
         catch (PDOException $e)
         {
-            self::fatal("An SQL error occurred: " . $e->getMessage());
+            self::Fetal("An SQL error occurred: " . $e->getMessage());
         }
 
         // Return all
@@ -127,11 +134,10 @@ class DataTables
      * Construct the LIMIT clause for server-side processing SQL query
      *
      * @param  array $request Data sent to server by DataTables
-     * @param  array $columns Column information array
      *
      * @return string SQL limit clause
      */
-    static function limit($request, $columns)
+    private static function Limit($request)
     {
         $limit = '';
 
@@ -154,14 +160,14 @@ class DataTables
      *
      * @return string SQL order by clause
      */
-    static function order($request, $columns)
+    private static function Order($request, $columns)
     {
         $order = '';
 
         if (isset($request['order']) && count($request['order']))
         {
             $orderBy = array();
-            $dtColumns = self::pluck($columns, 'dt');
+            $dtColumns = self::Pluck($columns, 'dt');
 
             for ($i = 0, $ien = count($request['order']); $i < $ien; $i++)
             {
@@ -207,11 +213,11 @@ class DataTables
      *
      * @return string SQL where clause
      */
-    static function filter($request, $columns, &$bindings, $customFilter)
+    private static function Filter($request, $columns, &$bindings, $customFilter)
     {
         $globalSearch = array();
         $columnSearch = array();
-        $dtColumns = self::pluck($columns, 'dt');
+        $dtColumns = self::Pluck($columns, 'dt');
 
         if (isset($request['search']) && $request['search']['value'] != '')
         {
@@ -225,7 +231,7 @@ class DataTables
 
                 if ($requestColumn['searchable'] == 'true')
                 {
-                    $binding = self::bind($bindings, '%' . $str . '%', PDO::PARAM_STR);
+                    $binding = self::Bind($bindings, '%' . $str . '%', PDO::PARAM_STR);
                     $globalSearch[] = "`" . $column['db'] . "` LIKE " . $binding;
                 }
             }
@@ -246,7 +252,7 @@ class DataTables
                     $str != ''
                 )
                 {
-                    $binding = self::bind($bindings, '%' . $str . '%', PDO::PARAM_STR);
+                    $binding = self::Bind($bindings, '%' . $str . '%', PDO::PARAM_STR);
                     $columnSearch[] = "`" . $column['db'] . "` LIKE " . $binding;
                 }
             }
@@ -271,7 +277,7 @@ class DataTables
         {
             $where = 'WHERE ' . $where;
             if (!empty($customFilter))
-                $where .= ' AND '. $customFilter;
+                $where .= ' AND ' . $customFilter;
         }
         else if (!empty($customFilter))
         {
@@ -288,12 +294,12 @@ class DataTables
     /**
      * Create the data output array for the DataTables rows
      *
-     * @param  array $columns Column information array
-     * @param  array $data Data from the SQL get
+     * @param array $columns Column information array
+     * @param array $data Data from the SQL get
      *
-     * @return array          Formatted data in a row based format
+     * @return array Formatted data in a row based format
      */
-    static function data_output($columns, $data)
+    private static function Format($columns, $data)
     {
         $out = array();
 
@@ -330,12 +336,9 @@ class DataTables
      *
      * @param  string $msg Message to send to the client
      */
-    static function fatal($msg)
+    private static function Fetal($msg)
     {
-        echo json_encode(array(
-            "error" => $msg
-        ));
-
+        echo json_encode(["error" => $msg]);
         exit(0);
     }
 
@@ -350,10 +353,9 @@ class DataTables
      * @return string       Bound key to be used in the SQL where this parameter
      *   would be used.
      */
-    static function bind(&$a, $val, $type)
+    static function Bind(&$a, $val, $type)
     {
         $key = ':binding_' . count($a);
-
         $a[] = array(
             'key' => $key,
             'val' => $val,
@@ -372,7 +374,7 @@ class DataTables
      *
      * @return array        Array of property values
      */
-    static function pluck($a, $prop)
+    static function Pluck($a, $prop)
     {
         $out = array();
 

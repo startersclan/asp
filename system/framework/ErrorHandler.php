@@ -186,8 +186,7 @@ class ErrorHandler
         if (ob_get_length() != 0) ob_clean();
 
         // Define variables
-        $s1 = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
-        $isAjax = (isset($_POST['ajax'])) || $s1;
+        $isAjax = Request::IsAjax();
         $isException = ($exception instanceof Exception);
         $level = ($isException) ? $code : self::ErrorLevelToText($code);
 
@@ -277,7 +276,7 @@ class ErrorHandler
                     $file = htmlspecialchars($file);
             }
 
-            // Check infos
+            // Check info
             $function = isset($level['function']) ? $level['function'] : '(unknown function)';
             if (isset($level['class']) and strlen($level['class']) > 0)
             {

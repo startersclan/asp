@@ -67,7 +67,7 @@ class Database
      * @param string $name Name or ID of the connection
      *
      * @return bool|\System\Database\DbConnection Returns a Database Driver Object,
-     *    or false of the connection $name doesn't exist
+     *    or false of the connection $name does'nt exist
      */
     public static function GetConnection($name = 'bf2stats')
     {

@@ -50,7 +50,7 @@ class AspResponse
     }
 
     /**
-     * Takes an indefinite amount of parameters. Each param passed
+     * Takes an infinite amount of parameters. Each param passed
      * is a new header variable, appended to the head tag.
      *
      * Each time this method is called, a new Head tag is created
@@ -61,7 +61,7 @@ class AspResponse
     }
 
     /**
-     * Takes an indefinite amount of parameters. Each param passed
+     * Takes an infinite amount of parameters. Each param passed
      * is a new data variable, appended to the data tag.
      *
      * Each time this method is called, a new data line is created
@@ -120,8 +120,8 @@ class AspResponse
     }
 
     /**
-     * This method is uesd to define whether this response is to be
-     * formmated with the "E" error header
+     * This method is used to define whether this response is to be
+     * formatted with the "E" error header
      *
      * @param $bool
      * @param int $code For bf2142 only... specifies the error code

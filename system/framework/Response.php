@@ -533,7 +533,7 @@ class Response
      */
     protected static function SendContentLength()
     {
-        // If we already have stuff in the buffer, append that lenght
+        // If we already have stuff in the buffer, append that length
         if (($len = ob_get_length()) != 0)
             self::$headers['Content-Length'] = $len + strlen(self::$body);
         else

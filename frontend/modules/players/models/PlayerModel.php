@@ -79,7 +79,7 @@ class PlayerModel
      * Updates the specified player fields in the player table. Data is not filtered.
      *
      * @param int $id The player id
-     * @param array $cols An array of [colname => newvalue] to set for the player
+     * @param array $cols An array of [name => value] to set for the player
      *
      * @return bool true on success, otherwise false
      */

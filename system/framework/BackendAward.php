@@ -70,8 +70,10 @@ class BackendAward
         // Loop through each criteria and see if we have met the criteria
         foreach ($this->awardCriteria as $criteria)
         {
-            // Build the query. We always use a count() or sum() to return a sortof bool.
+            // Build the where statement for backend medals
             $where = str_replace('###', $awardCount, $criteria->where);
+
+            /** @noinspection SqlResolve */
             $query = vsprintf("SELECT %s FROM `%s` WHERE `pid`=%d AND %s LIMIT 1", [
                 $criteria->field,
                 $criteria->table,

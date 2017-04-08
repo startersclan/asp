@@ -7,9 +7,7 @@
  * License:      GNU GPL v3
  *
  */
-
 namespace System;
-
 
 use ArgumentException;
 
@@ -23,7 +21,7 @@ class TimeSpan
     protected $seconds = 0;
 
     /**
-     * Contructor
+     * Constructor
      *
      * @param int $hours
      * @param int $mins
@@ -64,18 +62,12 @@ class TimeSpan
      */
     public function add(TimeSpan $span)
     {
-        if (!$span instanceof TimeSpan)
-        {
-            throw new ArgumentException('Given argument is not a TimeSpan: ' . gettype($span));
-        }
-
         $this->seconds += $span->seconds;
-
         return $this;
     }
 
     /**
-     * Substracts a TimeSpan from this current TimeSpan object
+     * Subtracts a TimeSpan from this current TimeSpan object
      *
      * @param TimeSpan $span
      *
@@ -83,20 +75,15 @@ class TimeSpan
      *
      * @throws ArgumentException
      */
-    public function substract(TimeSpan $span)
+    public function subtract(TimeSpan $span)
     {
-        if (!$span instanceof TimeSpan)
-        {
-            throw new ArgumentException('Given argument is not a TimeSpan: ' . gettype($span));
-        }
-
+        // Check for new negative value
         if ($span->seconds > $this->seconds)
         {
             throw new ArgumentException('Cannot subtract ' . $span->toString() . ' from ' . $this->toString());
         }
 
         $this->seconds -= $span->seconds;
-
         return $this;
     }
 
@@ -393,7 +380,8 @@ class TimeSpan
      * Indicates whether the timespan to compare equals this timespan
      *
      * @param TimeSpan $cmp
-     * @return bool true if timespans are equal
+     *
+     * @return bool true if the two timespan objects are equal
      */
     public function equals($cmp)
     {

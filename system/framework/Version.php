@@ -69,9 +69,9 @@ class Version
         {
             $major = (int)$ver_arr[0];
             $minor = (int)$ver_arr[1];
-            $revis = (int)$ver_arr[2];
+            $rev = (int)$ver_arr[2];
 
-            return new Version($major, $minor, $revis);
+            return new Version($major, $minor, $rev);
         }
         elseif ($size == 2)
         {

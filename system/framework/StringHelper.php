@@ -58,18 +58,28 @@ class StringHelper
 
     /**
      * Determines whether the end of a string matches the specified string
+     *
+     * @param string $string The string to search in (haystack)
+     * @param string $value The search text (needle)
+     *
+     * @return bool true if value matches the end of the string; otherwise false.
      */
-    public static function StringEndsWith( $string, $sub )
+    public static function StringEndsWith( $string, $value )
     {
-        $len = strlen( $sub );
-        return substr_compare( $string, $sub, -$len, $len ) === 0;
+        $len = strlen( $value );
+        return substr_compare( $string, $value, -$len, $len ) === 0;
     }
 
     /**
-     * Determines whether the beginning of a string matches a specified string
+     * Determines whether the beginning of a string matches the specified string.
+     *
+     * @param string $string The string to search in (haystack)
+     * @param string $value The search text (needle)
+     *
+     * @return bool true if value matches the beginning of the string; otherwise false.
      */
-    public static function StringStartsWith( $string, $sub )
+    public static function StringStartsWith( $string, $value )
     {
-        return substr_compare( $string, $sub, 0, strlen( $sub ) ) === 0;
+        return substr_compare( $string, $value, 0, strlen( $value ) ) === 0;
     }
 }
