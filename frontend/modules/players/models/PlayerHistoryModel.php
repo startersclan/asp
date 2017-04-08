@@ -113,7 +113,7 @@ SQL;
     }
 
     /**
-     * Fetches the nprevious round id that the specified player played in,
+     * Fetches the previous round id that the specified player played in,
      * before the specified round id
      *
      * @param int $pid The player id
@@ -223,7 +223,7 @@ SQL;
      */
     public function addAdvancedRoundInfo($pid, $round, View $view)
     {
-        // Attempt to find shapshot files
+        // Attempt to find snapshot files
         $time = new \DateTime("@{$round['round_end']}", new \DateTimeZone("UTC"));
         $format = $time->format('Ymd_His');
         $path = Path::Combine(SYSTEM_PATH, "snapshots", "processed");
@@ -288,7 +288,7 @@ SQL;
             }
         }
 
-        // If we havent found the snapshot, quit here
+        // If we haven't found the snapshot, quit here
         if (!$found) return false;
 
         // Wrap in a try-catch. We should not have any issues since this snapshot

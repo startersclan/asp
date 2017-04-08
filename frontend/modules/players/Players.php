@@ -70,27 +70,18 @@ class Players extends Controller
 
     /**
      * @protocol    ANY
-     * @request     /ASP/players/view/$id/$subpage/$subid
+     * @request     /ASP/players/view/$id
      * @output      html
      *
      * @param int $id The player ID
-     * @param string $subpage
-     * @param int $subid
      */
-    public function view($id, $subpage = '', $subid = 0)
+    public function view($id)
     {
         // Ensure correct format for ID
         $id = (int)$id;
         if ($id == 0)
         {
             Response::Redirect('players');
-            return;
-        }
-
-        // Are we loading a sub page?
-        if (!empty($subpage))
-        {
-            $this->showHistory($id, $subid);
             return;
         }
 
@@ -142,18 +133,24 @@ class Players extends Controller
 
     /**
      * @protocol    ANY
-     * @request     /ASP/players/view/$id/history/$subid
+     * @request     /ASP/players/history/$id/$subid
      * @output      html
      *
      * @param int $id The player ID
      * @param int $subid The round id, if any
      */
-    private function showHistory($id, $subid)
+    public function history($id, $subid = 0)
     {
-        // Cast round id to an integer
-        $rid = (int)$subid;
+        // Ensure correct format for ID
+        $id = (int)$id;
+        if ($id == 0)
+        {
+            Response::Redirect('players');
+            return;
+        }
 
         // Showing history list or specific round?
+        $rid = (int)$subid;
         if ($rid == 0)
         {
             // Load view
@@ -179,7 +176,7 @@ class Players extends Controller
             $round = $this->playerHistoryModel->fetchPlayerRound($id, $rid);
             if (empty($round))
             {
-                Response::Redirect('players/view/'. $id .'/history');
+                Response::Redirect('players/history/'. $id);
                 die;
             }
 
@@ -535,7 +532,7 @@ class Players extends Controller
                         break;
                     case UPLOAD_ERR_INI_SIZE:
                     case UPLOAD_ERR_FORM_SIZE:
-                        $this->sendJsonResponse(false, "Exceeded filesize limit.");
+                        $this->sendJsonResponse(false, "Exceeded file size limit.");
                         break;
                     default:
                         $this->sendJsonResponse(false, "Unknown Error.");

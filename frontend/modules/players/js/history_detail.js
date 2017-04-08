@@ -107,7 +107,7 @@
 
             if (action == 'go') {
                 $('button[id^="go-"]').prop('disabled', true);
-                window.location = "/ASP/players/view/" + playerId + "/history/" + id;
+                window.location = "/ASP/players/history/" + playerId + "/" + id;
             }
 
             // Just to be sure, older IE's needs this

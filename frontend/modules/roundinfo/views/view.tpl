@@ -152,7 +152,7 @@
                     <td>{name}</td>
                     <?php else: ?>
                     <td>
-                        <a href="/ASP/players/view/{pid}/history/{round.id}"
+                        <a href="/ASP/players/history/{pid}/{round.id}"
                            rel="tooltip"
                            data-placement="right"
                            title="Click to view Player Round Details">
@@ -201,7 +201,7 @@
                     <td>{name}</td>
                     <?php else: ?>
                     <td>
-                        <a href="/ASP/players/view/{pid}/history/{round.id}"
+                        <a href="/ASP/players/history/{pid}/{round.id}"
                            rel="tooltip"
                            data-placement="right"
                            title="Click to view Player Round Details">

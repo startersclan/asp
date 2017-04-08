@@ -13,7 +13,7 @@
                 <a id="unban-player" href="#" class="btn" <?php echo ({player.permban} == 1) ? '' : ' style="display: none"'; ?>>
                     <i class="icol-accept"></i> Un-Ban Player
                 </a>
-                <a href="/ASP/players/view/{id}/history" class="btn"><i class="icol-clock"></i> View Round History</a>
+                <a href="/ASP/players/history/{id}" class="btn"><i class="icol-clock"></i> View Round History</a>
                 <a id="dlDropDown" href="#" class="btn dropdown-toggle" data-toggle="dropdown">
                     <i class="icol-arrow-refresh"></i> Reset <span class="caret"></span>
                 </a>

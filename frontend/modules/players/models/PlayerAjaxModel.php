@@ -151,7 +151,7 @@ class PlayerAjaxModel
                     $rid = (int)$row['roundid'];
 
                     return '<span class="btn-group">
-                            <a href="/ASP/players/view/'. $id .'/history/'. $rid .'"  rel="tooltip" title="View Round Details" class="btn btn-small">
+                            <a href="/ASP/players/history/'. $id .'/'. $rid .'"  rel="tooltip" title="View Round Details" class="btn btn-small">
                                 <i class="icon-eye-open"></i>
                             </a>
                         </span>';
