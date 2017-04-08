@@ -236,24 +236,12 @@ class Snapshot extends GameResult
             $this->battleSpy = new BattleSpy($connection, $serverId, $roundId);
 
             // ********************************
-            // Process Players
+            // Check Player Integrity
             // ********************************
-
-            // Loop through each player, and process them
             foreach ($this->players as $player)
             {
-                // Player meets min round time or are we ignoring AI?
-                if ($player->roundTime < Config::Get('stats_min_player_game_time') || $player->isAi && Config::Get('stats_ignore_ai'))
-                    continue;
-
-                // Define some variables
-                $onWinningTeam = $player->team == $this->winningTeam;
-
-                // Write log
-                $this->logWriter->logNotice("Processing Player (". $player->pid .")");
-
                 // Check if player exists already
-                $sql = "SELECT lastip, country, rank, killstreak, deathstreak, rndscore, permban, bantime FROM player WHERE id=%d LIMIT 1";
+                $sql = "SELECT permban, bantime FROM player WHERE id=%d LIMIT 1";
                 $row = $connection->query(sprintf($sql, $player->pid))->fetch();
 
                 // If player does not exist, stop here!
@@ -277,96 +265,112 @@ class Snapshot extends GameResult
                     $this->logWriter->logError($message);
                     throw new Exception($message);
                 }
-                else if (((int)$row['permban']) != 0)
+                else
                 {
+                    $banned = (int)$row['permban'];
                     $bantime = (int)$row['bantime'];
 
                     // Check if the player was banned before the start of the round. Servers should be
                     // using the VerifyPlayer module to prevent this from happening
-                    if ($bantime < ($this->roundStartTime + 1))
+                    if ($banned && $bantime < ($this->roundStartTime + 1))
                     {
                         $message = sprintf("Banned Player Found in Snapshot: %s (%d)!", $player->name, $player->pid);
                         $this->logWriter->logError($message);
                         throw new Exception($message);
                     }
                 }
-                else
+            }
+
+            // ********************************
+            // Process Players
+            // ********************************
+            foreach ($this->players as $player)
+            {
+                // Player meets min round time or are we ignoring AI?
+                if ($player->roundTime < Config::Get('stats_min_player_game_time') || $player->isAi && Config::Get('stats_ignore_ai'))
+                    continue;
+
+                // Define some variables
+                $onWinningTeam = $player->team == $this->winningTeam;
+
+                // Write log
+                $this->logWriter->logNotice("Processing Player (%d)", $player->pid);
+
+                // Check if player exists already
+                $sql = "SELECT lastip, country, rank, killstreak, deathstreak, rndscore FROM player WHERE id=%d LIMIT 1";
+                $row = $connection->query(sprintf($sql, $player->pid))->fetch();
+
+                // Run player check through BattleSpy
+                $this->battleSpy->analyze($player);
+
+                // Prepare for player update / insertion
+                $query = new UpdateOrInsertQuery($connection, 'player');
+                $query->set('time', '+', $player->roundTime);
+                $query->set('rounds', '+', (int)$player->completedRound);
+                $query->set('lastip', '=', $player->ipAddress);
+                $query->set('score', '+', $player->roundScore);
+                $query->set('cmdscore', '+', $player->commandScore);
+                $query->set('skillscore', '+', $player->skillScore);
+                $query->set('teamscore', '+', $player->teamScore);
+                $query->set('kills', '+', $player->kills);
+                $query->set('deaths', '+', $player->deaths);
+                $query->set('captures', '+', $player->flagCaptures);
+                $query->set('captureassists', '+', $player->flagCaptureAssists);
+                $query->set('neutralizes', '+', $player->flagNeutralizes);
+                $query->set('neutralizeassists', '+', $player->flagNeutralizeAssists);
+                $query->set('defends', '+', $player->flagDefends);
+                $query->set('damageassists', '+', $player->damageAssists);
+                $query->set('heals', '+', $player->heals);
+                $query->set('revives', '+', $player->revives);
+                $query->set('ammos', '+', $player->resupplies);
+                $query->set('repairs', '+', $player->repairs);
+                $query->set('targetassists', '+', $player->targetAssists);
+                $query->set('driverspecials', '+', $player->driverSpecials);
+                $query->set('teamkills', '+', $player->teamKills);
+                $query->set('teamdamage', '+', $player->teamDamage);
+                $query->set('teamvehicledamage', '+', $player->teamVehicleDamage);
+                $query->set('suicides', '+', $player->suicides);
+                $query->set('rank', '=', $player->rank);
+                $query->set('banned', '+', $player->timesBanned);
+                $query->set('kicked', '+', $player->timesKicked);
+                $query->set('cmdtime', '+', $player->cmdTime);
+                $query->set('sqltime', '+', $player->sqlTime);
+                $query->set('sqmtime', '+', $player->sqmTime);
+                $query->set('lwtime', '+', $player->lwTime);
+                $query->set('timepara', '+', $player->timeParachute);
+                $query->set('lastonline', '=', $this->roundEndTime);
+                $query->set('mode0', '+', ($this->gameMode == 0));
+                $query->set('mode1', '+', ($this->gameMode == 1));
+                $query->set('mode2', '+', ($this->gameMode == 2));
+
+                // Set wins / losses
+                if (!$wasDrawRound)
                 {
-                    // Write log
-                    $this->logWriter->logNotice("Updating EXISTING Player (". $player->pid .")");
-
-                    // Run player check through BattleSpy
-                    $this->battleSpy->analyze($player);
-
-                    // Prepare for player update / insertion
-                    $query = new UpdateOrInsertQuery($connection, 'player');
-                    $query->set('time', '+', $player->roundTime);
-                    $query->set('rounds', '+', (int)$player->completedRound);
-                    $query->set('lastip', '=', $player->ipAddress);
-                    $query->set('score', '+', $player->roundScore);
-                    $query->set('cmdscore', '+', $player->commandScore);
-                    $query->set('skillscore', '+', $player->skillScore);
-                    $query->set('teamscore', '+', $player->teamScore);
-                    $query->set('kills', '+', $player->kills);
-                    $query->set('deaths', '+', $player->deaths);
-                    $query->set('captures', '+', $player->flagCaptures);
-                    $query->set('captureassists', '+', $player->flagCaptureAssists);
-                    $query->set('neutralizes', '+', $player->flagNeutralizes);
-                    $query->set('neutralizeassists', '+', $player->flagNeutralizeAssists);
-                    $query->set('defends', '+', $player->flagDefends);
-                    $query->set('damageassists', '+', $player->damageAssists);
-                    $query->set('heals', '+', $player->heals);
-                    $query->set('revives', '+', $player->revives);
-                    $query->set('ammos', '+', $player->resupplies);
-                    $query->set('repairs', '+', $player->repairs);
-                    $query->set('targetassists', '+', $player->targetAssists);
-                    $query->set('driverspecials', '+', $player->driverSpecials);
-                    $query->set('teamkills', '+', $player->teamKills);
-                    $query->set('teamdamage', '+', $player->teamDamage);
-                    $query->set('teamvehicledamage', '+', $player->teamVehicleDamage);
-                    $query->set('suicides', '+', $player->suicides);
-                    $query->set('rank', '=', $player->rank);
-                    $query->set('banned', '+', $player->timesBanned);
-                    $query->set('kicked', '+', $player->timesKicked);
-                    $query->set('cmdtime', '+', $player->cmdTime);
-                    $query->set('sqltime', '+', $player->sqlTime);
-                    $query->set('sqmtime', '+', $player->sqmTime);
-                    $query->set('lwtime', '+', $player->lwTime);
-                    $query->set('timepara', '+', $player->timeParachute);
-                    $query->set('lastonline', '=', $this->roundEndTime);
-                    $query->set('mode0', '+', ($this->gameMode == 0));
-                    $query->set('mode1', '+', ($this->gameMode == 1));
-                    $query->set('mode2', '+', ($this->gameMode == 2));
-
-                    // Set wins / losses
-                    if (!$wasDrawRound)
-                    {
-                        $query->set('wins', '+', $onWinningTeam);
-                        $query->set('losses', '+', (!$onWinningTeam));
-                    }
-
-                    // Correct rank if needed
-                    $rank = (int)$row['rank'];
-                    if ($rank > $player->rank && $rank != 11 && $rank != 21)
-                    {
-                        $player->rank = $rank;
-                        $this->logWriter->logNotice("Rank correction ({$player->pid}), Using database rank ({$rank})");
-                    }
-
-                    // Calculate best killstreak/deathstreak
-                    if ($player->killStreak > (int)$row['killstreak'])
-                        $query->set('killstreak', '=', $player->killStreak);
-
-                    if ($player->deathStreak > (int)$row['deathstreak'])
-                        $query->set('deathstreak', '=', $player->deathStreak);
-
-                    if ($player->roundScore > (int)$row['rndscore'])
-                        $query->set('rndscore', '=', $player->roundScore);
-
-                    // Execute the update
-                    $query->where('id', '=', $player->pid);
-                    $query->executeUpdate();
+                    $query->set('wins', '+', $onWinningTeam);
+                    $query->set('losses', '+', (!$onWinningTeam));
                 }
+
+                // Correct rank if needed
+                $rank = (int)$row['rank'];
+                if ($rank > $player->rank && $rank != 11 && $rank != 21)
+                {
+                    $player->rank = $rank;
+                    $this->logWriter->logNotice("Rank correction ({$player->pid}), Using database rank ({$rank})");
+                }
+
+                // Calculate best killstreak/deathstreak
+                if ($player->killStreak > (int)$row['killstreak'])
+                    $query->set('killstreak', '=', $player->killStreak);
+
+                if ($player->deathStreak > (int)$row['deathstreak'])
+                    $query->set('deathstreak', '=', $player->deathStreak);
+
+                if ($player->roundScore > (int)$row['rndscore'])
+                    $query->set('rndscore', '=', $player->roundScore);
+
+                // Execute the update
+                $query->where('id', '=', $player->pid);
+                $query->executeUpdate();
 
                 // ********************************
                 // Insert Player history.

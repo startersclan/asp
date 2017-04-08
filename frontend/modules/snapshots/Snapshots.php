@@ -7,14 +7,10 @@
  * License:      GNU GPL v3
  *
  */
-use System\Collections\Dictionary;
 use System\Controller;
-use System\Database;
-use System\Database\UpdateOrInsertQuery;
 use System\IO\Directory;
 use System\IO\File;
 use System\IO\Path;
-use System\Snapshot;
 use System\View;
 
 /**
@@ -75,14 +71,14 @@ class Snapshots extends Controller
         // Ensure we have a backup selected
         if (!isset($_POST['snapshot']))
         {
-            echo json_encode(['success' => false, 'message' => 'No snapshots specified!']);
+            $this->sendJsonResponse(false, 'No snapshots specified!');
             return;
         }
 
         $file = Path::Combine(SYSTEM_PATH, "snapshots", "unauthorized", $_POST['snapshot'] . '.json');
         if (!File::Exists($file))
         {
-            echo json_encode(['success' => false, 'message' => 'No snapshots with the filename exists: ' . $_POST['snapshot']]);
+            $this->sendJsonResponse(false, 'No snapshots with the filename exists: ' . $_POST['snapshot']);
             return;
         }
 
@@ -91,7 +87,7 @@ class Snapshots extends Controller
         $path2 = Path::Combine(SYSTEM_PATH, "snapshots", "failed");
         if (!Directory::IsWritable($path1) || !Directory::IsWritable($path2))
         {
-            echo json_encode(['success' => false, 'message' => 'Not all snapshot directories are writable. Please Test your system configuration.']);
+            $this->sendJsonResponse(false, 'Not all snapshot directories are writable. Please Test your system configuration.');
             return;
         }
 
@@ -106,15 +102,17 @@ class Snapshots extends Controller
         }
         catch (IOException $e)
         {
-            $message = sprintf("Failed to process snapshot (%s)!\n\n%s", $file, $e->getMessage());
+            $fileName = Path::GetFilename($file);
+            $message = sprintf("Failed to process snapshot (%s)!\n\n%s", $fileName, $e->getMessage());
             $this->sendJsonResponse(false, $message);
         }
         catch (Exception $e)
         {
+            $fileName = Path::GetFilename($file);
             try
             {
                 // Move snapshot to failed
-                $newPath = Path::Combine(SYSTEM_PATH, "snapshots", "failed", Path::GetFilename($file));
+                $newPath = Path::Combine(SYSTEM_PATH, "snapshots", "failed", $fileName);
                 File::Move($file, $newPath);
             }
             catch (Exception $ex)
@@ -123,7 +121,7 @@ class Snapshots extends Controller
             }
 
             // Output message
-            $message = sprintf("Failed to process snapshot (%s)!\n\n%s", $file, $e->getMessage());
+            $message = sprintf("Failed to process snapshot (%s)!\n\n%s", $fileName, $e->getMessage());
             $this->sendJsonResponse(false, $message);
         }
     }

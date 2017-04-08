@@ -552,6 +552,9 @@ class Players extends Controller
                     return;
                 }
 
+                // Attach Model
+                $this->loadModel('PlayerModel', 'players');
+
                 try
                 {
                     // Move the uploaded file to the config folder

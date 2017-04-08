@@ -7,22 +7,36 @@
  * License:      GNU GPL v3
  *
  */
-
 namespace System\Cache\Drivers;
 
 use System\Cache\CacheItem;
 use System\Cache\ICacheDriver;
 use System\Collections\Dictionary;
+use System\IO\Directory;
 use System\IO\File;
 use System\IO\FileStream;
 use System\IO\Path;
 
+/**
+ * A Cache driver that uses files to store and retrieve items
+ *
+ * @package System\Cache\Drivers
+ */
 class FileCache implements ICacheDriver
 {
+    /**
+     * @var string Indicates the cache folder path
+     */
     protected $dir = SYSTEM_PATH . DS . "cache";
 
+    /**
+     * @var string Indicates the cache file extension
+     */
     protected $extension = "cache";
 
+    /**
+     * @var Dictionary Contains the cached items
+     */
     protected static $Cache;
 
     /**
@@ -112,7 +126,7 @@ class FileCache implements ICacheDriver
 
         // Create the full file name and contents array
         $fileName = Path::Combine($this->dir, $item->getEncodedKey() . '.' . $this->extension);
-        $contents = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK);
+        $contents = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         // Save contents
         $file = new FileStream($fileName, 'w+');
@@ -149,5 +163,39 @@ class FileCache implements ICacheDriver
         $item = new CacheItem($key, $this);
         $fileName = Path::Combine($this->dir, $item->getEncodedKey() . '.' . $this->extension);
         File::Delete($fileName);
+    }
+
+    /**
+     * Sets the directory where cache files will be stored
+     *
+     * @param string $dir
+     *
+     * @throws \DirectoryNotFoundException thrown if the directory does not exist
+     * @throws \SecurityException thrown if the directory is not writable
+     */
+    public function setCacheDirectory($dir)
+    {
+        // Correct directory separator
+        $dir = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $dir);
+
+        // Ensure directory exists
+        if (!Directory::Exists($dir))
+            throw new \DirectoryNotFoundException('Directory ('. $dir .') does not exist!');
+
+        // Ensure directory is writable
+        if (!Directory::IsWritable($dir))
+            throw new \SecurityException('Directory ('. $dir .') is not writable.');
+
+        $this->dir = $dir;
+    }
+
+    /**
+     * Gets the directory where cache files are stored
+     *
+     * @return string
+     */
+    public function getCacheDirectory()
+    {
+        return $this->dir;
     }
 }
