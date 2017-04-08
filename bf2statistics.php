@@ -66,21 +66,22 @@ namespace System
     include SYSTEM_PATH . DS . "framework" . DS . "Autoloader.php";
     Autoloader::Register();
 
-    // Initiate the log writer
+    // Log incoming snapshot
     try
     {
+        // Set timezone for logging timestamps
+        date_default_timezone_set(Config::Get('admin_timezone'));
+
+        // Create log writer
         $LogWriter = new LogWriter(Path::Combine(SYSTEM_PATH, 'logs', 'stats_debug.log'), 'stats_debug');
         $LogWriter->setLogLevel(Config::Get('debug_lvl'));
 
         // Log this access
         $LogWriter->logNotice("Incoming snapshot data from (%s): ", Request::ClientIp());
-
-        // Set timezone for logging timestamps
-        date_default_timezone_set(Config::Get('admin_timezone'));
     }
     catch (Exception $e)
     {
-        error_log($e->getMessage(), 1);
+        error_log($e->getMessage());
         die(_ERR_RESPONSE . "Internal Server Error");
     }
 

@@ -298,7 +298,7 @@ class Servers extends Controller
 
         try
         {
-            // Delete servers
+            // Authorize servers
             $mode = ($_POST['action'] == 'auth');
             $this->serverModel->authorizeServers($mode, $_POST['servers']);
             $this->sendJsonResponse(true, $_POST['servers']);
@@ -331,7 +331,7 @@ class Servers extends Controller
 
         try
         {
-            // Delete servers
+            // Set Plasma mode on servers
             $mode = ($_POST['action'] == 'auth');
             $this->serverModel->plasmaServers($mode, $_POST['servers']);
             $this->sendJsonResponse(true, $_POST['servers']);
@@ -346,4 +346,3 @@ class Servers extends Controller
         }
     }
 }
-
