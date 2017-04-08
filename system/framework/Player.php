@@ -7,7 +7,6 @@
  * License:      GNU GPL v3
  *
  */
-
 namespace System;
 
 use System\Collections\Dictionary;
@@ -317,16 +316,4 @@ class Player
             $this->victims[$player['id']] = (int)$player['count'];
         }
     }
-}
-
-class ObjectStat
-{
-    public $id = 0;
-    public $time = 0;
-    public $kills = 0;
-    public $deaths = 0;
-    public $fired = 0;
-    public $hits = 0;
-    public $roadKills = 0;
-    public $deployed = 0;
 }

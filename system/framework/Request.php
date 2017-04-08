@@ -10,100 +10,85 @@
 namespace System;
 
 /**
- * This class provides information for the current Request. Such information
- * like all the Post and GET data, the URI string, the Remote IP, Referer,
+ * This class provides information for the current Request, such as
+ * all the Post and GET data, the URI string, the Remote IP, Referrer,
  * the base URL, website root, and more.
  *
  * @author      Steven Wilson
- * @package     Core
+ * @package     System
  */
 class Request
 {
     /**
-     * HTTP protocol method
-     * @var string
+     * @var string HTTP protocol method
      */
     const PROTOCOL_HTTP = 'http';
 
     /**
-     * HTTPS protocol method
-     * @var string
+     * @var string HTTPS protocol method
      */
     const PROTOCOL_HTTPS = 'https';
 
     /**
-     * FTP protocol method
-     * @var string
+     * @var string FTP protocol method
      */
     const PROTOCOL_FTP = 'ftp';
 
     /**
-     * SSL protocol method
-     * @var string
+     * @var string SSL protocol method
      */
     const PROTOCOL_SSL = 'ssl';
 
     /**
-     * POST method
-     * @var string
+     * @var string POST method
      */
     const METHOD_POST = 'POST';
 
     /**
-     * GET method
-     * @var string
+     * @var string GET method
      */
     const METHOD_GET = 'GET';
 
     /**
-     * PUT method
-     * @var string
+     * @var string PUT method
      */
     const METHOD_PUT = 'PUT';
 
     /**
-     * DELETE method
-     * @var string
+     * @var string DELETE method
      */
     const METHOD_DELETE = 'DELETE';
 
     /**
-     * Current protocol
-     * @var string
+     * @var string Current protocol
      */
     protected static $protocol = 'http';
 
     /**
-     * the site's base url (the root of the website)
-     * @var string
+     * @var string The site's base url (the root of the website)
      */
     protected static $baseurl;
 
     /**
-     * Http domain name (no trailing paths after the .com)
-     * @var string
+     * @var string Http domain name (no trailing paths after the .com)
      */
     protected static $domain;
 
     /**
-     * The web root is the trailing path after the domain name.
-     * The base url is the Domain name, plus the webroot
-     * @var string
+     *
+     * @var string The trailing path after the domain name.
      */
     protected static $webroot;
 
     /**
-     * The query string passed with the request
-     * @var string
+     * @var string The query string passed with the request
      */
     protected static $queryString;
 
     /**
-     * The remote IP address connected to this request
-     * @var string
+     * @var string The remote IP address connected to this request
      */
     protected static $clientIp;
-
 
     /**
      * Class Constructor (called automatically)
@@ -161,17 +146,17 @@ class Request
     }
 
     /**
-     * Returns the reffering website url
+     * Returns the referring website url
      *
      * @return string
      */
-    public static function Referer()
+    public static function Referrer()
     {
         $ref = null;
         if (isset($_SERVER['HTTP_X_FORWARDED_HOST']))
             $ref = $_SERVER['HTTP_X_FORWARDED_HOST'];
-        elseif (isset($_SERVER['HTTP_REFERER']))
-            $ref = $_SERVER['HTTP_REFERER'];
+        elseif (isset($_SERVER['HTTP_REFERRER']))
+            $ref = $_SERVER['HTTP_REFERRER'];
 
         return $ref;
     }
@@ -180,10 +165,10 @@ class Request
      * Returns the url query string
      *
      * @param string $key The GET array id to return. Leave null to return all GET data
-     * @param mixed $default The default return value if the GET array key doesnt
+     * @param mixed $default The default return value if the GET array key doesn't
      *    exist. Default is null.
      *
-     * @return string|string[]|mixed Returns $default if the GET key doesnt exist. Returns a
+     * @return string|string[]|mixed Returns $default if the GET key doesn't exist. Returns a
      *   string[] if no $key is provided, or the value of $key if the array key exists
      */
     public static function Query($key = null, $default = null)
@@ -198,10 +183,10 @@ class Request
      * Returns the POST var specified, or all POST data
      *
      * @param string $key The POST array id to return. Leave null to return all POST data
-     * @param mixed $default The default return value if the POST array key doesnt
+     * @param mixed $default The default return value if the POST array key doesn't
      *    exist. Default is null.
      *
-     * @return string|string[]|mixed Returns $default if the POST key doesnt exist. Returns a
+     * @return string|string[]|mixed Returns $default if the POST key doesn't exist. Returns a
      *   string[] if no $key is provided, or the value of $key if the array key exists.
      */
     public static function Post($key = null, $default = null)
@@ -216,10 +201,10 @@ class Request
      * Returns the Cookie name specified, or all Cookie data
      *
      * @param string $key The cookie name to return. Leave null to return all cookie data
-     * @param mixed $default The default return value if the Cookie name doesnt
+     * @param mixed $default The default return value if the Cookie name doesn't
      *    exist. Default is null.
      *
-     * @return string|string[]|mixed Returns $default if the Cookie name doesnt exist. Returns a
+     * @return string|string[]|mixed Returns $default if the Cookie name doesn't exist. Returns a
      *   string[] if no $key is provided, or the value of $key if the cookie exists.
      */
     public static function Cookie($key = null, $default = null)
@@ -250,8 +235,8 @@ class Request
      *    true or false based on whehter the client accepts the language
      *
      * @return string|string[]|bool Returns the language, or an array of
-     * languages the client accpets. If $lang is set, then this method returns
-     * a bool based on whehter the client accepts the language
+     * languages the client accepts. If $lang is set, then this method returns
+     * a bool based on whether the client accepts the language
      */
     public static function AcceptsLanguage($lang = null)
     {
@@ -297,11 +282,12 @@ class Request
     /**
      * Returns the whether the request is an ajax request
      *
-     * @return bool If the requeset is an ajax request (HTTP_X_REQUESTED_WITH => xmlhttprequest)
+     * @return bool If the request is an ajax request
      */
     public static function IsAjax()
     {
-        return (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
+        $s1 = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
+        return (isset($_POST['ajax'])) || $s1;
     }
 
     /**
@@ -309,7 +295,7 @@ class Request
      *
      * @param string $name The header name to be returned
      *
-     * @return string|bool Returns false if the header isnt set
+     * @return string|bool Returns false if the header isn't set
      */
     public static function Header($name)
     {

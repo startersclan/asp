@@ -78,7 +78,7 @@ class Snapshots extends Controller
         $file = Path::Combine(SYSTEM_PATH, "snapshots", "unauthorized", $_POST['snapshot'] . '.json');
         if (!File::Exists($file))
         {
-            $this->sendJsonResponse(false, 'No snapshots with the filename exists: ' . $_POST['snapshot']);
+            $this->sendJsonResponse(false, 'No unauthorized snapshots with the filename exists: '. Path::GetFilename($file));
             return;
         }
 

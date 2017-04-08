@@ -9,83 +9,75 @@
  */
 namespace System;
 
+use OutputSentException;
+
 /**
- * This class is used to send a proper formated reponse to the client.
+ * This class is used to send a proper formatted response to the client.
  * You can set headers, cookies, status codes, and protocol within
  * this class.
  *
  * @author      Steven Wilson
- * @package     Core
+ * @package     System
  */
 class Response
 {
     /**
-     * HTTP protocol 1.0
+     * @var string HTTP protocol 1.0
      */
     const HTTP_10 = 'HTTP/1.0';
 
     /**
-     * HTTP protocol 1.1
+     * @var string HTTP protocol 1.1
      */
     const HTTP_11 = 'HTTP/1.1';
 
     /**
-     * Status code to be returned in the response
-     * @var int
+     * @var int The status code to be returned in the response
      */
     protected static $status = 200;
 
     /**
-     * Response Protocol (HTTP/1.0 | 1.1)
-     * @var string
+     * @var string The Response Protocol (HTTP/1.0 | 1.1)
      */
     protected static $protocol = self::HTTP_11;
 
     /**
-     * Content encoding
-     * @var string
+     * @var string The Content encoding for this response
      */
     protected static $charset = 'UTF-8';
 
     /**
-     * Content Mime Type
-     * @var string
+     * @var string The Content Mime Type for this response
      */
     protected static $contentType = 'text/html';
 
     /**
-     * Array of headers to be sent with the response
-     * @var string[]
+     * @var string[] An array of headers to be sent with the response
      */
     protected static $headers = array();
 
     /**
-     * Array of cookies to be sent with the response
-     * @var string[]
+     * @var array An array of cookies to be sent with the response
      */
     protected static $cookies = array();
 
     /**
-     * The response body (contents)
-     * @var string
+     * @var string The response body (contents)
      */
     protected static $body = null;
 
     /**
-     * Array of cahce directives to be sent with the response
-     * @var string[]
+     * @var string[] An array of cache directives to be sent with the response
      */
     protected static $cacheDirectives = array();
 
     /**
-     * Used to determine if output / headers have been sent already
-     * @var bool
+     * @var bool Indicates whether the output and headers have been sent already
      */
     protected static $outputSent = false;
 
     /**
-     * Array of $statusCode => $description
-     * @var string[]
+     * @var string[] An array of $statusCode => $description
      */
     protected static $statusCodes = array(
         // Informational 1xx
@@ -143,14 +135,19 @@ class Response
     /**
      * This method takes all the response headers, cookies, and current
      * buffered contents, and sends them back to the client. After this
-     * methid is called, any output will most likely cause a content length
+     * method is called, any output will most likely cause a content length
      * error for our client.
      *
      * @return void
+     *
+     * @throws OutputSentException thrown if the headers have been sent already.
      */
     public static function Send()
     {
-        // Make sure that if we are redirecting, we set the corrent code!
+        // Make sure the headers are not sent already
+        self::CheckOutputSent();
+
+        // Make sure that if we are redirecting, we set the correct code!
         if (isset(self::$headers['Location']) && self::$status == 200)
             self::$status = 302;
 
@@ -176,112 +173,124 @@ class Response
     }
 
     /**
-     * Sets or returns the body of the response, based on
-     * if a variable is passed setting the contents or not.
+     * Sets the body of the response
      *
-     * @param string $content The body contents. Leave null if retrieving
-     *   the current set contents.
+     * @param string $contents
      *
-     * @return string|void If $content is left null, the current
-     *   contents are returned
+     * @return void
+     *
+     * @throws OutputSentException thrown if the headers have been sent already.
      */
-    public static function Body($content = null)
+    public static function SetBody($contents)
     {
-        // Are we setting or retrieving?
-        if (empty($content))
-            return self::$status;
+        // Make sure the headers are not sent already
+        self::CheckOutputSent();
+        self::$body = (string)$contents;
+    }
 
-        // Make sure the data wasnt sent already
-        if (self::$outputSent)
-            throw new OutputSentException('Cannot set body contents because the response headers have already been sent.');
-
-        self::$body = (string)$content;
+    /**
+     * Returns the current body contents of the response
+     *
+     * @return string
+     */
+    public static function GetBody()
+    {
+        return self::$body;
     }
 
     /**
      * Appends data to the current body
      *
-     * @param string $content The body contents to append.
+     * @param string $contents The body contents to append.
      *
      * @return void
      */
-    public static function AppendBody($content)
+    public static function AppendBody($contents)
     {
-        // Make sure the data wasnt sent already
-        if (self::$outputSent)
-            throw new OutputSentException('Cannot append body contents because the response headers have already been sent.');
-
-        self::$body .= (string)$content;
+        // Make sure the headers are not sent already
+        self::CheckOutputSent();
+        self::$body .= (string)$contents;
     }
 
     /**
-     * Sets or returns the status code
+     * Sets or returns the status code.
      *
      * @param int $code The status code to be set
      *
-     * @return int|void If $code is left null, the current status
-     *   code is returned
+     * @return void
+     *
+     * @throws \ArgumentOutOfRangeException thrown if an invalid status code is passed.
+     * @throws OutputSentException thrown if the headers have been sent already.
      */
-    public static function StatusCode($code = null)
+    public static function SetStatusCode($code)
     {
         // Are we setting or retrieving?
-        if (empty($code))
-        {
-            return self::$status;
-        }
-        elseif (is_numeric($code) && array_key_exists($code, self::$statusCodes))
-        {
-            // Make sure the data wasnt sent already
-            if (self::$outputSent)
-                throw new OutputSentException('Cannot set body contents because the response headers have already been sent.');
+        $code = (int)$code;
+        if (!array_key_exists($code, self::$statusCodes))
+            throw new \ArgumentOutOfRangeException('Invalid HTTP status code: '. $code);
 
-            self::$status = $code;
-
-            return true;
-        }
-        else
-            return false;
+        // Make sure the headers are not sent already
+        self::CheckOutputSent();
+        self::$status = $code;
     }
 
     /**
-     * Sets or returns the content type
+     * Returns the current status code of the response
+     *
+     * @return int
+     */
+    public static function GetStatusCode()
+    {
+        return self::$status;
+    }
+
+    /**
+     * Sets the content type of the response body
      *
      * @param string $val The content type to be set
      *
-     * @return string|void If $val is left null, the current content
-     *   type is returned
+     * @return void
+     *
+     * @throws OutputSentException thrown if the headers have been sent already.
      */
-    public static function ContentType($val = null)
+    public static function SetContentType($val)
     {
-        // Are we setting or retrieving?
-        if ($val == null)
-            return self::$contentType;
+        // Make sure the headers are not sent already
+        self::CheckOutputSent();
 
-        // Make sure the data wasnt sent already
-        if (self::$outputSent)
-            throw new OutputSentException('Cannot set content type because the response headers have already been sent.');
-
-        self::$contentType = $val;
+        // Check for included encoding
+        if (preg_match('/^(.*);\w*charset\w*=\w*(.*)/i', $val, $matches))
+        {
+            self::$contentType = $matches[1];
+            self::$charset = $matches[2];
+        }
+        else
+            self::$contentType = (string)$val;
     }
 
     /**
-     * Sets or returns the content encoding
+     * Returns the content type of the response body
+     *
+     * @return string
+     */
+    public static function GetContentType()
+    {
+        return self::$contentType;
+    }
+
+    /**
+     * Sets the content encoding of the response body
      *
      * @param string $val The content encoding to be set
      *
-     * @return string|void If $val is left null, the current content
-     *   encoding is returned
+     * @return void
+     *
+     * @throws OutputSentException thrown if the headers have been sent already.
      */
-    public static function Encoding($val = null)
+    public static function SetEncoding($val)
     {
-        // Are we setting or retrieving?
-        if ($val == null)
-            return self::$charset;
-
-        // Make sure the data wasnt sent already
-        if (self::$outputSent)
-            throw new OutputSentException('Cannot set content encoding because the response headers have already been sent.');
-
+        // Make sure the headers are not sent already
+        self::CheckOutputSent();
         self::$charset = $val;
     }
 
@@ -292,23 +301,18 @@ class Response
      * @param string $value The header key's or name's value to be set
      *
      * @return void
+     *
+     * @throws OutputSentException thrown if the headers have been sent already
      */
     public static function SetHeader($key, $value)
     {
-        // Make sure the data wasnt sent already
-        if (self::$outputSent)
-            throw new OutputSentException('Cannot set header because the response headers have already been sent.');
+        // Make sure the headers are not sent already
+        self::CheckOutputSent();
 
-        $key = str_replace('_', '-', $key);
-        if ($key == 'Content-Type')
+        $key = str_replace('_', '-', trim($key));
+        if (strtolower($key) == 'content-type')
         {
-            if (preg_match('/^(.*);\w*charset\w*=\w*(.*)/', $value, $matches))
-            {
-                self::$contentType = $matches[1];
-                self::$charset = $matches[2];
-            }
-            else
-                self::$contentType = $value;
+            self::SetContentType($key);
         }
         else
             self::$headers[$key] = $value;
@@ -323,13 +327,13 @@ class Response
      * @param string $path The cookie path
      *
      * @return void
+     *
+     * @throws OutputSentException thrown if the headers have been sent already
      */
     public static function SetCookie($name, $value, $expires, $path = '/')
     {
-        // Make sure the data wasnt sent already
-        if (self::$outputSent)
-            throw new OutputSentException('Cannot set cookie because the response headers have already been sent.');
-
+        /// Make sure the headers are not sent already
+        self::CheckOutputSent();
         self::$cookies[$name] = array(
             'value' => $value,
             'expires' => $expires,
@@ -342,31 +346,38 @@ class Response
      *
      * @param string $code The protocol to use (HTTP_10 | HTTP_11)
      *
-     * @return string|void If $code is null, the current protocol
-     *   is returned
+     * @return void
+     *
+     * @throws \ArgumentException thrown if an invalid protocol is passed.
+     * @throws OutputSentException thrown if the headers have been sent already
      */
-    public static function Protocol($code = null)
+    public static function SetProtocol($code)
     {
-        // Are we setting or retrieving?
-        if (empty($code))
-            return self::$protocol;
-
-        // Make sure the data wasnt sent already
-        if (self::$outputSent)
-            throw new OutputSentException('Cannot set protocol because the response headers have already been sent.');
+        // Make sure the data was not sent already
+        self::CheckOutputSent();
 
         // Make sure the protocol is valid!
         $code = strtoupper(trim($code));
         if ($code !== self::HTTP_10 || $code !== self::HTTP_11)
-            return false;
+            throw new \ArgumentException('Invalid HTTP protocol');
 
         self::$protocol = $code;
     }
 
     /**
+     * Returns the HTTP protocol that is currently set
+     *
+     * @return string
+     */
+    public static function GetProtocol()
+    {
+        return self::$protocol;
+    }
+
+    /**
      * This method sets a redirect header, and status code. When this
-     * method is called, if the $wait param is greater then 1, headers
-     * will be sent.
+     * method is called, if the $wait param is zero, headers
+     * will be sent immediately.
      *
      * @param string $location The redirect URL. If a relative path
      *   is passed here, the site's URL will be appended
@@ -378,13 +389,12 @@ class Response
      *
      * @return void
      *
-     * @throws OutputSentException
+     * @throws OutputSentException thrown if the headers have been sent already
      */
     public static function Redirect($location, $wait = 0, $status = 301)
     {
-        // Make sure the data wasnt sent already
-        if (self::$outputSent)
-            throw new OutputSentException('Cannot set protocol because the response headers have already been sent.');
+        // Make sure the data was not sent already
+        self::CheckOutputSent();
 
         // If we have a relative path, append the site url
         $location = trim($location);
@@ -479,16 +489,8 @@ class Response
         return self::$outputSent;
     }
 
-
-    /*
-    | ---------------------------------------------------------------
-    | Internal Methods
-    | ---------------------------------------------------------------
-    |
-    */
-
     /**
-     * Sends all cookies
+     * Sends all cookies to the client
      *
      * @return void
      */
@@ -501,16 +503,16 @@ class Response
     }
 
     /**
-     * Sends a header
+     * Sends a header to the client
      *
      * @param string $name The name of the header
      * @param string $value The value of the header
      *
-     * @return void
+     * @return bool
      */
     protected static function SendHeader($name, $value = null)
     {
-        // Make sure the headers havent been sent!
+        // Make sure the headers haven't been sent!
         if (!headers_sent())
         {
             if (is_null($value))
@@ -525,7 +527,7 @@ class Response
     }
 
     /**
-     * Sends the contents length
+     * Sends the contents length to the client
      *
      * @return void
      */
@@ -539,7 +541,7 @@ class Response
     }
 
     /**
-     * Sends the content type
+     * Sends the content type to the client
      *
      * @return void
      */
@@ -556,7 +558,7 @@ class Response
     }
 
     /**
-     * Echo's out the body contents
+     * Echo's out the body contents to the client
      *
      * @return void
      */
@@ -564,14 +566,13 @@ class Response
     {
         echo self::$body;
     }
-}
 
-/**
- * Output Sent Exception, Thrown when headers have already been set, and a Repsonse method is called
- * @package     Core
- * @subpackage  Exceptions
- * @file        Asp/Core/Response.php
- */
-class OutputSentException extends \Exception
-{
+    /**
+     * @throws OutputSentException thrown if the output has been sent already
+     */
+    private static function CheckOutputSent()
+    {
+        if (self::$outputSent)
+            throw new OutputSentException('Response headers have already been sent.');
+    }
 }
