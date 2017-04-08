@@ -8,6 +8,8 @@
  *
  */
 use GameQ\GameQ;
+use System\Net\IPAddress;
+use System\Player;
 use System\TimeHelper;
 
 /**
@@ -21,7 +23,7 @@ class ServerModel
     /**
      * @var \System\Database\DbConnection The stats database connection
      */
-    protected $pdo;
+    public $pdo;
 
     /**
      * ServerModel constructor.
@@ -30,6 +32,167 @@ class ServerModel
     {
         // Fetch database connection
         $this->pdo = System\Database::GetConnection('stats');
+    }
+
+    /**
+     * Fetches a list of all the servers from the server table, including the
+     * number of snapshots they have submitted.
+     *
+     * @return array
+     */
+    public function fetchServers()
+    {
+        $servers = $this->pdo->query("SELECT * FROM `server` ORDER BY id ASC")->fetchAll();
+        if (empty($servers))
+            return [];
+
+        // Select counts of snapshots received by each server
+        $counts = [];
+        $query = "SELECT `serverid`, COUNT(*) AS `count` FROM `round_history` GROUP BY `serverid`";
+        $res = $this->pdo->query($query)->fetchAll();
+        foreach ($res as $row)
+        {
+            $key = (int)$row['serverid'];
+            $counts[$key] = (int)$row['count'];
+        }
+
+        for ($i = 0; $i < count($servers); $i++)
+        {
+            $key = (int)$servers[$i]['id'];
+            $servers[$i]['snapshots'] = (!isset($counts[$key])) ? 0 : $counts[$key];
+        }
+
+        return $servers;
+    }
+
+    /**
+     * Fetches a server record from the database by id
+     *
+     * @param int $id The server id
+     *
+     * @return bool|array false if the server id does not exist, otherwise
+     *  the server row is returned
+     */
+    public function fetchServerById($id)
+    {
+        $id = (int)$id;
+        return $this->pdo->query("SELECT * FROM server WHERE id={$id}")->fetch();
+    }
+
+    /**
+     * Adds a new server record in the server table
+     *
+     * @param string $name The server name, no longer than 100 characters.
+     * @param string $prefix The server's prefix
+     * @param string $ip The server's ip address
+     * @param int $port The game port
+     * @param int $queryPort The gamespy port
+     * @param bool $authorized true if the server is authorized to post snapshots,
+     *  false otherwise
+     *
+     * @return int the server id, or 0 on error
+     *
+     * @throws ArgumentException
+     */
+    public function addServer($name, $prefix, $ip, $port, $queryPort, $authorized = false)
+    {
+        /**
+         * Check for valid IP address
+         * @var \System\Net\iIPAddress $address
+         */
+        if (!IPAddress::TryParse(trim($ip), $address))
+            throw new ArgumentException('Invalid IpAddress passed.', 'ip');
+
+        // Check length of server name
+        $name = preg_replace("/[^". Player::NAME_REGEX ."]/", '', trim($name));
+        if (empty($name))
+            throw new ArgumentException('Empty or illegal server name passed', 'name');
+
+        // Name Length check
+        if (strlen($name) > 100)
+            throw new ArgumentException('Server name cannot be longer than 100 characters!', 'name');
+
+        // Sanitize Prefix
+        $prefix = preg_replace('/[^a-zA-Z0-9_.-]/', '', $prefix);
+
+        // Sanitize port number
+        $port = abs((int)$port);
+        if ($port > 65535)
+            throw new ArgumentException('Port number is Invalid!', 'port');
+
+        // Sanitize Query Port
+        $queryPort = abs((int)$queryPort);
+        if ($queryPort > 65535)
+            throw new ArgumentException('Port number is Invalid!', 'queryPort');
+
+        // Prepare statement
+        $this->pdo->insert('server', [
+            'prefix' => $prefix,
+            'name' => $name,
+            'ip' => $address->toString(),
+            'port' => $port,
+            'queryport' => $queryPort,
+            'authorized' => $authorized ? 1 : 0
+        ]);
+        return $this->pdo->lastInsertId('id');
+    }
+
+    /**
+     * updates a server record in the server table
+     *
+     * @param int $id The server id
+     * @param string $name The server name, no longer than 100 characters.
+     * @param string $prefix The server's prefix
+     * @param string $ip The server's ip address
+     * @param int $port The game port
+     * @param int $queryPort The gamespy port
+     * @param bool $authorized true if the server is authorized to post snapshots,
+     *  false otherwise
+     *
+     * @return bool true on success, false otherwise
+     *
+     * @throws ArgumentException
+     */
+    public function updateServerById($id, $name, $prefix, $ip, $port, $queryPort, $authorized = false)
+    {
+        /**
+         * Check for valid IP address
+         * @var \System\Net\iIPAddress $address
+         */
+        if (!IPAddress::TryParse(trim($ip), $address))
+            throw new ArgumentException('Invalid IpAddress passed.', 'ip');
+
+        // Check length of server name
+        $name = preg_replace("/[^". Player::NAME_REGEX ."]/", '', trim($name));
+        if (empty($name))
+            throw new ArgumentException('Empty or illegal server name passed', 'name');
+
+        // Name Length check
+        if (strlen($name) > 100)
+            throw new ArgumentException('Server name cannot be longer than 100 characters!', 'name');
+
+        // Sanitize Prefix
+        $prefix = preg_replace('/[^a-zA-Z0-9_.-]/', '', $prefix);
+
+        // Sanitize port number
+        $port = abs((int)$port);
+        if ($port > 65535)
+            throw new ArgumentException('Port number is Invalid!', 'port');
+
+        // Sanitize Query Port
+        $queryPort = abs((int)$queryPort);
+        if ($queryPort > 65535)
+            throw new ArgumentException('Port number is Invalid!', 'queryPort');
+
+        // Prepare statement
+        return $this->pdo->update('server', [
+            'prefix' => $prefix,
+            'name' => $name,
+            'ip' => $address->toString(),
+            'port' => $port,
+            'queryport' => $queryPort,
+            'authorized' => $authorized ? 1 : 0
+        ], ['id' => (int)$id]);
     }
 
     /**
@@ -213,6 +376,8 @@ class ServerModel
                     if (!isset($player['team']))
                         continue;
 
+                    // Add player Rank
+                    $this->addPlayerRank($player);
                     $return['team'. $player['team']][] = $player;
                 }
             }
@@ -373,40 +538,30 @@ class ServerModel
     /**
      * Adds the players rank to each player from a server response
      *
-     * @param PDO $pdo
-     * @param array $players
+     * @param array $player
      *
-     * @return array
+     * @return void
      */
-    public function addPlayerRanks(PDO $pdo, $players)
+    protected function addPlayerRank(&$player)
     {
-        $return = [];
-
-        foreach ($players as $player)
+        $id = (int)$player['pid'];
+        if ($id == 0)
         {
-            $id = (int)$player['pid'];
-            if ($id == 0)
+            $player['rank'] = 0;
+        }
+        else
+        {
+            $rows = $this->pdo->query("SELECT name, rank FROM player WHERE id={$id} LIMIT 1");
+            if ($row = $rows->fetch())
             {
-                $player['rank'] = 0;
+                $sn = strtolower(trim($player['player']));
+                $dn = strtolower(trim($row['name']));
+                $player['rank'] = ($dn == $sn) ? (int)$row['rank'] : 0;
             }
             else
             {
-                $rows = $pdo->query("SELECT name, rank FROM player WHERE id={$id} LIMIT 1");
-                if ($row = $rows->fetch())
-                {
-                    $sn = strtolower(trim($player['player']));
-                    $dn = strtolower(trim($row['name']));
-                    $player['rank'] = ($dn == $sn) ? (int)$row['rank'] : 0;
-                }
-                else
-                {
-                    $player['rank'] = 0;
-                }
+                $player['rank'] = 0;
             }
-
-            $return[] = $player;
         }
-
-        return $return;
     }
 }

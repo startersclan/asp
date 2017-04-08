@@ -7,6 +7,7 @@
  * License:      GNU GPL v3
  *
  */
+
 namespace System\Net;
 
 class IPv6Address implements iIPAddress
@@ -29,39 +30,64 @@ class IPv6Address implements iIPAddress
      */
     protected $isLocal;
 
-    public function __construct($IpAddress)
+    /**
+     * IPv6Address constructor.
+     *
+     * @param string $address An IPv6 address.
+     */
+    public function __construct($address)
     {
         // Make sure IP is valid!
-        if(!filter_var($IpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6))
+        if (!filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6))
             throw new \InvalidArgumentException("IPv6 Address is invalid!");
 
-        $this->ipAddress = $IpAddress;
-        $this->fullIpAddress = IPAddress::ExpandIPv6Notation($IpAddress, true);
-        $this->isLocal = (
-            $this->fullIpAddress == "0000:0000:0000:0000:0000:0000:0000:0001" || // IPv6 LocalLoopBack
-            $this->fullIpAddress == "0000:0000:0000:0000:0000:ffff:7f00:0001" || // 127.0.0.1 converted to IPv6
-            !filter_var($IpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE)
-        );
+        $flags = FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
+        $this->ipAddress = $address;
+        $this->fullIpAddress = IPAddress::ExpandIPv6Notation($address, true);
+        $this->isLocal = !filter_var($address, FILTER_VALIDATE_IP, $flags);
     }
 
+    /**
+     * Indicates whether the specified IP address is the loopback address.
+     *
+     * @return bool
+     */
     public function isLoopback()
     {
         return $this->isLocal;
     }
 
+    /**
+     * Compares the current IPAddress instance with the comparing parameter and returns true
+     *  if the two instances contain the same IP address.
+     *
+     * @param string|iIPAddress $Ip The IP address to compare with
+     *
+     * @return bool
+     */
     public function equals($Ip)
     {
-        if($Ip instanceof IPv6Address)
+        if ($Ip instanceof IPv6Address)
             return $Ip->equals($this->fullIpAddress);
         else
             return ($this->fullIpAddress == IPAddress::ExpandIPv6Notation($Ip));
     }
 
+    /**
+     * Returns the IP address type (@see IPAddress::IP_VERSION_*)
+     *
+     * @return int
+     */
     public function getType()
     {
         return IPAddress::IP_VERSION_6;
     }
 
+    /**
+     * Returns the IPv6 colon-hexadecimal notation.
+     *
+     * @return string
+     */
     public function toString()
     {
         return $this->ipAddress;

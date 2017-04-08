@@ -200,11 +200,13 @@ class BattleSpy
     /**
      * Adds a report message to the list of reports
      *
-     * @param int $playerId
-     * @param string $message
-     * @param int $flagCode
+     * @param int $playerId The offending player ID
+     * @param string $message The message that describes the player offense
+     * @param int $flagCode The constant flag code of the offense
      * @param int $severity The severity level of the offense, in a range of 1 to 3,
      *  1 being low, and 3 being high.
+     *
+     * @return void
      */
     public function report($playerId, $message, $flagCode, $severity)
     {
@@ -217,8 +219,9 @@ class BattleSpy
     }
 
     /**
-     * finalizes and saves the reported messages for
-     * an admin to see.
+     * Finalizes and saves the reported messages for
+     * an admin to see. If this method is not called,
+     * this report will be disposed.
      */
     public function finalize()
     {

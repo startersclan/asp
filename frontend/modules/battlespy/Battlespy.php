@@ -55,11 +55,11 @@ class Battlespy extends \System\Controller
     }
 
     /**
-     * @protocol    GET
+     * @protocol    ANY
      * @request     /ASP/battlespy/config
      * @output      html
      */
-    public function getConfig()
+    public function config()
     {
         // Load view
         $view = new View('config', 'battlespy');
@@ -76,25 +76,6 @@ class Battlespy extends \System\Controller
 
         // Send output
         $view->render();
-    }
-
-    /**
-     * @protocol    POST
-     * @request     /ASP/battlespy/config
-     * @output      html
-     */
-    public function postConfig()
-    {
-        // Require proper action or redirect
-        if ($_POST['action'] != 'save')
-        {
-            if (isset($_POST['ajax']))
-                $this->sendJsonResponse(false, 'Invalid Action!');
-            else
-                $this->getConfig();
-
-            return;
-        }
     }
 
     /**

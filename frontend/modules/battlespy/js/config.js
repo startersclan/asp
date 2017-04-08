@@ -2,12 +2,28 @@
 
     $(document).ready(function () {
 
-        $form = $("#configForm").validate({
+        $("#configForm").validate({
             ignoreTitle: true,
             rules: {
                 cfg__battlespy_max_spm: {
                     required: true,
-                    digits: true
+                    digits: true,
+                    min: 1
+                },
+                cfg__battlespy_max_kpm: {
+                    required: true,
+                    digits: true,
+                    min: 1
+                },
+                cfg__battlespy_max_target_kills: {
+                    required: true,
+                    digits: true,
+                    min: 1
+                },
+                cfg__battlespy_max_awards: {
+                    required: true,
+                    digits: true,
+                    min: 1
                 }
             },
             invalidHandler: function (form, validator) {

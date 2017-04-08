@@ -36,12 +36,14 @@ interface iIPAddress
 
     /**
      * Returns the IP address type (@see IPAddress::IP_VERSION_*)
+     *
      * @return int
      */
     public function getType();
 
     /**
      * Returns either IPv4 dotted-quad or IPv6 colon-hexadecimal notation.
+     *
      * @return string
      */
     public function toString();

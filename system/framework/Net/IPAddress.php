@@ -7,8 +7,8 @@
  * License:      GNU GPL v3
  *
  */
-namespace System\Net;
 
+namespace System\Net;
 
 class IPAddress
 {
@@ -18,24 +18,24 @@ class IPAddress
     /**
      * Determines whether a string is a valid IP address
      *
-     * @param string $IpAddress THe string representation of the IP to validate
-     * @param iIPAddress $Out [Reference Variable] The IPAddress Object for the
+     * @param string $input THe string representation of the IP to validate
+     * @param iIPAddress $out [Reference Variable] The IPAddress Object for the
      * provided IP address version.
      *
      * @return bool True if the ipString is a valid IP address; otherwise, false.
      */
-    public static function TryParse($IpAddress, &$Out)
+    public static function TryParse($input, &$out)
     {
-        if(filter_var($IpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4))
+        if (filter_var($input, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4))
         {
             // Valid IPv4
-            $Out = new IPv4Address($IpAddress);
+            $out = new IPv4Address($input);
             return true;
         }
-        elseif(filter_var($IpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6))
+        elseif (filter_var($input, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6))
         {
             // Valid IPv6
-            $Out = new IPv6Address($IpAddress);
+            $out = new IPv6Address($input);
             return true;
         }
         else
@@ -50,7 +50,7 @@ class IPAddress
      *
      * @param IPv4Address $Address
      *
-     * @return IPv6Address
+     * @return bool|IPv6Address
      */
     public static function IPv4To6(IPv4Address $Address)
     {
@@ -68,7 +68,7 @@ class IPAddress
 
         // Strip IPv4 Compatibility notation
         if ($IPv6 && $IPv4)
-            $Ip = substr($Ip, strrpos($Ip, ':')+1);
+            $Ip = substr($Ip, strrpos($Ip, ':') + 1);
 
         // Seems to be IPv6 already?
         elseif (!$IPv4)
@@ -87,6 +87,7 @@ class IPAddress
         // Convert ipv4 parts to ipv6
         $Part7 = base_convert(($Ip[0] * 256) + $Ip[1], 10, 16);
         $Part8 = base_convert(($Ip[2] * 256) + $Ip[3], 10, 16);
+
         return new IPv6Address($Mask . $Part7 . ':' . $Part8);
     }
 
@@ -102,14 +103,14 @@ class IPAddress
     public static function ExpandIPv6Notation($Ip, $pad = false)
     {
         if (strpos($Ip, '::') !== false)
-            $Ip = str_replace('::', str_repeat(':0', 8 - substr_count($Ip, ':')).':', $Ip);
+            $Ip = str_replace('::', str_repeat(':0', 8 - substr_count($Ip, ':')) . ':', $Ip);
         if (strpos($Ip, ':') === 0)
-            $Ip = '0'.$Ip;
-        elseif($Ip[strlen($Ip) -1] == ":")
+            $Ip = '0' . $Ip;
+        elseif ($Ip[strlen($Ip) - 1] == ":")
             $Ip .= "0";
 
         // Pad 0's ?
-        if($pad)
+        if ($pad)
         {
             $ipparts = explode('::', $Ip, 2);
 
@@ -126,7 +127,7 @@ class IPAddress
                 $tailparts = explode(':', $tail);
                 $midparts = 8 - count($headparts) - count($tailparts);
 
-                for ($i=0; $i < $midparts; $i++)
+                for ($i = 0; $i < $midparts; $i++)
                     $ippad[] = '0000';
 
                 foreach ($tailparts as $val)
@@ -146,7 +147,7 @@ class IPAddress
      */
     public static function CollapseIPv6Notation($Ip)
     {
-        $best_pos   = $zeros_pos = false;
+        $best_pos = $zeros_pos = false;
         $best_count = $zeros_count = 0;
 
         // If already compacted

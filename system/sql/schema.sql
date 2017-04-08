@@ -7,7 +7,6 @@
 -- Delete Tables/Views/Triggers First
 -- --------------------------------------------------------
 
-DROP TRIGGER IF EXISTS `_version_inserttime`;
 DROP TRIGGER IF EXISTS `_version_insert_time`;
 DROP TRIGGER IF EXISTS `player_joined`;
 DROP TRIGGER IF EXISTS `player_rank_change`;
