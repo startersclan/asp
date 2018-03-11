@@ -93,16 +93,15 @@ namespace System
     // Connect to the database
     try
     {
-        Database::Connect('stats',
-            array(
-                'driver' => 'mysql',
-                'host' => Config::Get('db_host'),
-                'port' => Config::Get('db_port'),
-                'database' => Config::Get('db_name'),
-                'username' => Config::Get('db_user'),
-                'password' => Config::Get('db_pass')
-            )
-        );
+        // Create connection using the MySQL connection builder
+        $builder = new Database\MySqlConnectionStringBuilder();
+        $builder->host = Config::Get('db_host');
+        $builder->port = Config::Get('db_port');
+        $builder->user = Config::Get('db_user');
+        $builder->password = Config::Get('db_pass');
+        $builder->database = Config::Get('db_name');
+
+        Database::CreateConnection('stats', $builder);
     }
     catch (Exception $e)
     {
@@ -118,7 +117,7 @@ namespace System
 
     // Read snapshot data from input
     $rawdata = file_get_contents('php://input');
-    if (!$rawdata)
+    if (empty($rawdata))
     {
         $errmsg = "SNAPSHOT Data NOT found!";
         $LogWriter->logError($errmsg);
@@ -204,7 +203,7 @@ namespace System
     {
         try
         {
-            // Move unprocessed file to the unauthorised folder
+            // Move unprocessed file to the unauthorized folder
             File::Move(SNAPSHOT_TEMP_PATH . DS . $fileName, SNAPSHOT_AUTH_PATH . DS . $fileName);
         }
         catch (Exception $e)

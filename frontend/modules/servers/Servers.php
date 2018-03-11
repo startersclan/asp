@@ -321,7 +321,7 @@ class Servers extends Controller
     public function postPlasma()
     {
         // Require specific actions
-        $this->requireAction('auth', 'unauth');
+        $this->requireAction('plasma', 'unplasma');
 
         // Require database connection
         $this->requireDatabase(true);
@@ -332,7 +332,7 @@ class Servers extends Controller
         try
         {
             // Set Plasma mode on servers
-            $mode = ($_POST['action'] == 'auth');
+            $mode = ($_POST['action'] == 'plasma');
             $this->serverModel->plasmaServers($mode, $_POST['servers']);
             $this->sendJsonResponse(true, $_POST['servers']);
         }

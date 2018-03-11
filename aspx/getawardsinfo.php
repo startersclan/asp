@@ -50,12 +50,12 @@ else
 
     // We will not use a view this time, performance is key
     $query = <<<SQL
-SELECT a.id AS `id`, a.pid AS `pid`, MAX(r.round_end) AS `earned`, MIN(r.round_end) AS `first`, COUNT(`level`) AS `level`
+SELECT a.award_id AS `id`, a.player_id AS `pid`, MAX(r.time_end) AS `earned`, MIN(r.time_end) AS `first`, COUNT(`level`) AS `level`
 FROM player_award AS a
-  LEFT JOIN round_history AS r ON a.roundid = r.id
-WHERE `pid`=$pid
-GROUP BY a.pid, a.id
-ORDER BY a.id;
+  LEFT JOIN round AS r ON a.round_id = r.id
+WHERE a.player_id=$pid
+GROUP BY a.player_id, a.award_id
+ORDER BY a.player_id;
 SQL;
 
 

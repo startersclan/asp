@@ -44,7 +44,7 @@ else
     $connection = Database::GetConnection("stats");
 
     // Check if unlock is already selected first!
-    $query = "SELECT * FROM `player_unlock` WHERE `pid` = $pid AND `unlockid` = $id LIMIT 1";
+    $query = "SELECT * FROM `player_unlock` WHERE `player_id` = $pid AND `unlock_id` = $id LIMIT 1";
     $result = $connection->query($query)->fetch();
     if (empty($result))
     {
@@ -68,7 +68,7 @@ else
         $unlocks += getBonusUnlocks($pid, $rank, $connection);
 
         // Check Used Unlocks
-        $query = "SELECT COUNT(`pid`) AS `count` FROM `player_unlock` WHERE `pid` = {$pid}";
+        $query = "SELECT COUNT(`player_id`) AS `count` FROM `player_unlock` WHERE `player_id` = {$pid}";
         $used = (int)$connection->query($query)->fetchColumn(0);
 
         // Determine available unlocks count
@@ -175,11 +175,11 @@ function getBonusUnlocks($pid, $rank, $connection)
     // Count number of kit badges obtained
     $checkawds = implode(",", $kitbadges);
     $query = <<<SQL
-SELECT COUNT(`id`) AS `count` 
+SELECT COUNT(`award_id`) AS `count` 
 FROM `player_award` 
-WHERE `pid` = $pid 
+WHERE `player_id` = $pid 
   AND (
-    `id` IN ($checkawds) 
+    `award_id` IN ($checkawds) 
       AND `level` >= $level
   );
 SQL;

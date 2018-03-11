@@ -131,7 +131,7 @@
 
             $("#mws-jui-dialog").dialog({
                 autoOpen: false,
-                title: "Confirm Delete Award",
+                title: "Confirm Delete Player",
                 modal: true,
                 width: "640",
                 resizable: false
@@ -164,7 +164,7 @@
                 // Show dialog form
                 $("#add-player-form").dialog("option", {
                     modal: true,
-                    title: "Create New Award"
+                    title: "Create New Player"
                 }).dialog("open");
 
                 // Just to be sure, older IE's needs this

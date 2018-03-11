@@ -24,6 +24,7 @@ DROP TABLE IF EXISTS `risingstar`;
 DROP TABLE IF EXISTS `player_weapon`;
 DROP TABLE IF EXISTS `player_unlock`;
 DROP TABLE IF EXISTS `player_vehicle`;
+DROP TABLE IF EXISTS `player_rank_history`;
 DROP TABLE IF EXISTS `player_history`;
 DROP TABLE IF EXISTS `player_map`;
 DROP TABLE IF EXISTS `player_kill`;
@@ -35,8 +36,10 @@ DROP TABLE IF EXISTS `weapon`;
 DROP TABLE IF EXISTS `vehicle`;
 DROP TABLE IF EXISTS `unlock`;
 DROP TABLE IF EXISTS `round_history`;
+DROP TABLE IF EXISTS `round`;
 DROP TABLE IF EXISTS `server`;
 DROP TABLE IF EXISTS `mapinfo`;
+DROP TABLE IF EXISTS `map`;
 DROP TABLE IF EXISTS `kit`;
 DROP TABLE IF EXISTS `award`;
 DROP TABLE IF EXISTS `army`;
@@ -53,7 +56,7 @@ DROP TABLE IF EXISTS `_version`;
 CREATE TABLE `_version` (
   `updateid` INT UNSIGNED,
   `version` VARCHAR(10) NOT NULL,
-  `time` INT DEFAULT 0,
+  `time` INT UNSIGNED DEFAULT 0,
   PRIMARY KEY(`updateid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -94,10 +97,10 @@ CREATE TABLE `kit` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Table structure for table `mapinfo`
+-- Table structure for table `map`
 --
 
-CREATE TABLE `mapinfo` (
+CREATE TABLE `map` (
   `id` SMALLINT UNSIGNED,
   `name` VARCHAR(48) UNIQUE NOT NULL,
   `score` INT UNSIGNED NOT NULL DEFAULT 0,
@@ -129,15 +132,15 @@ CREATE TABLE `server` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Table structure for table `round_history`
+-- Table structure for table `round`
 --
 
-CREATE TABLE `round_history` (
+CREATE TABLE `round` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `mapid` SMALLINT UNSIGNED NOT NULL,
-  `serverid` SMALLINT UNSIGNED NOT NULL,
-  `round_start` INT UNSIGNED NOT NULL,
-  `round_end` INT UNSIGNED NOT NULL,
+  `map_id` SMALLINT UNSIGNED NOT NULL,
+  `server_id` SMALLINT UNSIGNED NOT NULL,
+  `time_start` INT UNSIGNED NOT NULL,
+  `time_end` INT UNSIGNED NOT NULL,
   `imported` INT UNSIGNED NOT NULL,
   `gamemode` TINYINT UNSIGNED NOT NULL,
   `mod` VARCHAR(20) NOT NULL,
@@ -151,8 +154,8 @@ CREATE TABLE `round_history` (
   `pids2` SMALLINT UNSIGNED NOT NULL,     -- Players starting on team2
   `pids2_end` SMALLINT UNSIGNED NOT NULL, -- Players ending on team2
   PRIMARY KEY(`id`),
-  FOREIGN KEY(`mapid`) REFERENCES mapinfo(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  FOREIGN KEY(`serverid`) REFERENCES server(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY(`map_id`) REFERENCES map(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY(`server_id`) REFERENCES server(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   FOREIGN KEY(`team1`) REFERENCES army(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   FOREIGN KEY(`team2`) REFERENCES army(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -163,11 +166,11 @@ CREATE TABLE `round_history` (
 
 CREATE TABLE `unlock` (
   `id` SMALLINT UNSIGNED,
-  `kit` TINYINT UNSIGNED NOT NULL,
+  `kit_id` TINYINT UNSIGNED NOT NULL,
   `name` VARCHAR(32) NOT NULL,
   `desc` VARCHAR(64) NOT NULL,
   PRIMARY KEY (`id`),
-  FOREIGN KEY(`kit`) REFERENCES kit(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  FOREIGN KEY(`kit_id`) REFERENCES kit(`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -305,8 +308,8 @@ delimiter ;
 --
 
 CREATE TABLE `player_army` (
-  `id` TINYINT UNSIGNED NOT NULL,
-  `pid` INT UNSIGNED NOT NULL,
+  `player_id` INT UNSIGNED NOT NULL,
+  `army_id` TINYINT UNSIGNED NOT NULL,
   `time` INT UNSIGNED NOT NULL DEFAULT 0,
   `wins` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `losses` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
@@ -314,9 +317,9 @@ CREATE TABLE `player_army` (
   `best` SMALLINT NOT NULL DEFAULT 0,   -- Best Round Score
   `worst` SMALLINT NOT NULL DEFAULT 0,  -- Worst Round Score
   `brnd` SMALLINT NOT NULL DEFAULT 0,   -- Number of times as Best round Player
-  PRIMARY KEY(`pid`,`id`),
-  FOREIGN KEY(`id`) REFERENCES army(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  PRIMARY KEY(`player_id`,`army_id`),
+  FOREIGN KEY(`army_id`) REFERENCES army(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -324,17 +327,17 @@ CREATE TABLE `player_army` (
 --
 
 CREATE TABLE `player_award` (
-  `id` MEDIUMINT UNSIGNED NOT NULL,   -- Award ID
-  `pid` INT UNSIGNED NOT NULL,        -- Player ID
-  `roundid` INT UNSIGNED NOT NULL,    -- The round this award was earned in
+  `player_id` INT UNSIGNED NOT NULL,        -- Player ID
+  `award_id` MEDIUMINT UNSIGNED NOT NULL,   -- Award ID
+  `round_id` INT UNSIGNED NOT NULL,         -- The round this award was earned in
   `level` TINYINT UNSIGNED NOT NULL DEFAULT 1, -- Badges ONLY, 1 = bronze, 2 = silver, 3 = gold
-  PRIMARY KEY(`pid`, `id`, `roundid`, `level`),
-  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY(`id`) REFERENCES award(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  FOREIGN KEY(`roundid`) REFERENCES round_history(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+  PRIMARY KEY(`player_id`, `award_id`, `round_id`, `level`),
+  FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`award_id`) REFERENCES award(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY(`round_id`) REFERENCES round(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE INDEX `idx_player_awards` ON player_award(`pid`, `id`);
+CREATE INDEX `idx_player_awards` ON player_award(`player_id`, `award_id`);
 
 --
 -- Table structure for table `player_kill`
@@ -354,16 +357,16 @@ CREATE TABLE `player_kill` (
 --
 
 CREATE TABLE `player_map` (
-  `pid` INT UNSIGNED NOT NULL,
-  `mapid` SMALLINT UNSIGNED NOT NULL,
+  `player_id` INT UNSIGNED NOT NULL,
+  `map_id` SMALLINT UNSIGNED NOT NULL,
   `time` INT UNSIGNED NOT NULL DEFAULT 0,
   `wins` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `losses` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `bestscore` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `worstscore` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-  PRIMARY KEY(`pid`,`mapid`),
-  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY(`mapid`) REFERENCES mapinfo(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+  PRIMARY KEY(`player_id`,`map_id`),
+  FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`map_id`) REFERENCES map(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -371,28 +374,28 @@ CREATE TABLE `player_map` (
 --
 
 CREATE TABLE `player_kit` (
-  `id` TINYINT UNSIGNED NOT NULL,
-  `pid` INT UNSIGNED NOT NULL,
+  `player_id` INT UNSIGNED NOT NULL,
+  `kit_id` TINYINT UNSIGNED NOT NULL,
   `time` INT UNSIGNED NOT NULL DEFAULT 0,
   `kills` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `deaths` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
-  PRIMARY KEY(`pid`,`id`),
-  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY(`id`) REFERENCES kit(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+  PRIMARY KEY(`player_id`,`kit_id`),
+  FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`kit_id`) REFERENCES kit(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Add index for the GetLeaderboard.aspx
 --
-CREATE INDEX `idx_player_kit_id_kills_time` ON player_kit(`id`, `kills`, `time`);
+CREATE INDEX `idx_player_kit_id_kills_time` ON player_kit(`kit_id`, `kills`, `time`);
 
 --
 -- Table structure for table `player_history`
 --
 
 CREATE TABLE `player_history` (
-  `pid` INT UNSIGNED NOT NULL,
-  `roundid` INT UNSIGNED NOT NULL,
+  `player_id` INT UNSIGNED NOT NULL,
+  `round_id` INT UNSIGNED NOT NULL,
   `team` TINYINT UNSIGNED NOT NULL,
   `timestamp` INT UNSIGNED NOT NULL,
   `time` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
@@ -403,25 +406,25 @@ CREATE TABLE `player_history` (
   `kills` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `deaths` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `rank` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
-  PRIMARY KEY(`pid`,`roundid`),
-  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY(`roundid`) REFERENCES round_history(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  PRIMARY KEY(`player_id`,`round_id`),
+  FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`round_id`) REFERENCES round(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   FOREIGN KEY(`team`) REFERENCES army(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE INDEX `idx_player_history_timestamp_score_pid` ON player_history(`timestamp`, `score`, `pid`);
+CREATE INDEX `idx_player_history_timestamp_score_pid` ON player_history(`timestamp`, `score`, `player_id`);
 
 --
 -- Table structure for table `player_rank_history`
 --
 
 CREATE TABLE `player_rank_history` (
-  `pid` INT UNSIGNED NOT NULL,
+  `player_id` INT UNSIGNED NOT NULL,
   `to_rank` SMALLINT UNSIGNED NOT NULL,
   `from_rank` SMALLINT UNSIGNED NOT NULL,
   `timestamp` INT UNSIGNED NOT NULL,
-  PRIMARY KEY(`pid`,`timestamp`),
-  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  PRIMARY KEY(`player_id`,`timestamp`),
+  FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET utf8;
 
 --
@@ -429,11 +432,11 @@ CREATE TABLE `player_rank_history` (
 --
 
 CREATE TABLE `player_unlock` (
-  `pid` INT UNSIGNED NOT NULL,
-  `unlockid` SMALLINT UNSIGNED NOT NULL,
-  PRIMARY KEY(`pid`,`unlockid`),
-  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY(`unlockid`) REFERENCES `unlock`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  `player_id` INT UNSIGNED NOT NULL,
+  `unlock_id` SMALLINT UNSIGNED NOT NULL,
+  PRIMARY KEY(`player_id`,`unlock_id`),
+  FOREIGN KEY(`player_id`) REFERENCES `player`(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`unlock_id`) REFERENCES `unlock`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET utf8;
 
 --
@@ -441,55 +444,55 @@ CREATE TABLE `player_unlock` (
 --
 
 CREATE TABLE `player_vehicle` (
-  `id` TINYINT UNSIGNED NOT NULL,
-  `pid` INT UNSIGNED NOT NULL,
+  `player_id` INT UNSIGNED NOT NULL,
+  `vehicle_id` TINYINT UNSIGNED NOT NULL,
   `time` INT UNSIGNED NOT NULL DEFAULT 0,
   `kills` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `deaths` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `roadkills` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
-  PRIMARY KEY(`pid`,`id`),
-  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY(`id`) REFERENCES vehicle(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+  PRIMARY KEY(`player_id`,`vehicle_id`),
+  FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`vehicle_id`) REFERENCES vehicle(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Add index for the GetLeaderboard.aspx
 --
-CREATE INDEX `idx_player_vehicle_id_kills_time` ON player_vehicle(`id`, `kills`, `time`);
+CREATE INDEX `idx_player_vehicle_id_kills_time` ON player_vehicle(`vehicle_id`, `kills`, `time`);
 
 --
 -- Table structure for table `weapons`
 --
 
 CREATE TABLE `player_weapon` (
-  `id` TINYINT UNSIGNED NOT NULL,
-  `pid` INT UNSIGNED NOT NULL,
+  `player_id` INT UNSIGNED NOT NULL,
+  `weapon_id` TINYINT UNSIGNED NOT NULL,
   `time` INT UNSIGNED NOT NULL DEFAULT 0,
   `kills` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `deaths` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `fired` INT UNSIGNED NOT NULL DEFAULT 0,
   `hits` INT UNSIGNED NOT NULL DEFAULT 0,
-  PRIMARY KEY(`pid`,`id`),
-  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY(`id`) REFERENCES weapon(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+  PRIMARY KEY(`player_id`,`weapon_id`),
+  FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`weapon_id`) REFERENCES weapon(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Add index for the GetLeaderboard.aspx
 --
-CREATE INDEX `idx_player_weapon_id_kills_time` ON player_weapon(`id`, `kills`, `time`);
+CREATE INDEX `idx_player_weapon_id_kills_time` ON player_weapon(`weapon_id`, `kills`, `time`);
 
 --
 -- Table structure for table `risingstar`
 --
 CREATE TABLE `risingstar` (
   `pos` INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-  `pid` INT UNSIGNED NOT NULL,
+  `player_id` INT UNSIGNED NOT NULL,
   `weeklyscore` INT UNSIGNED NOT NULL,
-  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE INDEX `idx_risingstar_pid` ON risingstar(`pid`);
+CREATE INDEX `idx_risingstar_pid` ON risingstar(`player_id`);
 
 --
 -- Table structure for table `ip2nation`
@@ -524,11 +527,11 @@ CREATE TABLE `ip2nationcountries` (
 
 CREATE TABLE `battlespy_report` (
   `id` INT UNSIGNED AUTO_INCREMENT,
-  `serverid` SMALLINT UNSIGNED NOT NULL,
-  `roundid` INT UNSIGNED NOT NULL,
+  `server_id` SMALLINT UNSIGNED NOT NULL,
+  `round_id` INT UNSIGNED NOT NULL,
   PRIMARY KEY(`id`),
-  FOREIGN KEY(`serverid`) REFERENCES server(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY(`roundid`) REFERENCES round_history(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  FOREIGN KEY(`server_id`) REFERENCES server(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`round_id`) REFERENCES round(`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -537,14 +540,14 @@ CREATE TABLE `battlespy_report` (
 
 CREATE TABLE `battlespy_message` (
   `id` INT UNSIGNED AUTO_INCREMENT,
-  `reportid` INT UNSIGNED NOT NULL,      -- Report ID
-  `pid` INT UNSIGNED NOT NULL,           -- Player ID
+  `report_id` INT UNSIGNED NOT NULL,      -- Report ID
+  `player_id` INT UNSIGNED NOT NULL,           -- Player ID
   `flag` MEDIUMINT UNSIGNED NOT NULL,
   `severity` TINYINT UNSIGNED NOT NULL,
   `message` VARCHAR(128),
   PRIMARY KEY(`id`),
-  FOREIGN KEY(`reportid`) REFERENCES battlespy_report(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY(`pid`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  FOREIGN KEY(`report_id`) REFERENCES battlespy_report(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -553,28 +556,28 @@ CREATE TABLE `battlespy_message` (
 -- --------------------------------------------------------
 
 CREATE OR REPLACE VIEW `player_weapon_view` AS
-  SELECT `id`, `pid`, `time`, `kills`, `deaths`, `fired`, `hits`, COALESCE((`hits` * 1.0) / `fired`, 0) AS `accuracy`
+  SELECT `weapon_id`, `player_id`, `time`, `kills`, `deaths`, `fired`, `hits`, COALESCE((`hits` * 1.0) / `fired`, 0) AS `accuracy`
   FROM `player_weapon`;
 
 CREATE OR REPLACE VIEW `player_awards_view` AS
-  SELECT a.id AS `id`, a.pid AS `pid`, MAX(r.round_end) AS `earned`, MIN(r.round_end) AS `first`, COUNT(`level`) AS `level`
+  SELECT a.award_id AS `id`, a.player_id AS `pid`, MAX(r.time_end) AS `earned`, MIN(r.time_end) AS `first`, COUNT(`level`) AS `level`
   FROM player_award AS a
-    LEFT JOIN round_history AS r ON a.roundid = r.id
-  GROUP BY a.pid, a.id;
+    LEFT JOIN round AS r ON a.round_id = r.id
+  GROUP BY a.player_id, a.award_id;
 
 CREATE OR REPLACE VIEW `round_history_view` AS
-  SELECT h.id AS `id`, mi.name AS `map`, h.round_end AS `round_end`, h.team1 AS `team1`, h.team2 AS `team2`, h.winner AS `winner`,
+  SELECT h.id AS `id`, mi.name AS `map`, h.time_end AS `round_end`, h.team1 AS `team1`, h.team2 AS `team2`, h.winner AS `winner`,
     h.pids1 + h.pids2 AS `players`, GREATEST(h.tickets1, h.tickets2) AS `tickets`, s.name AS `server`
-  FROM `round_history` AS h
-    LEFT JOIN `mapinfo` AS mi ON h.mapid = mi.id
-    LEFT JOIN `server` AS s ON h.serverid = s.id;
+  FROM `round` AS h
+    LEFT JOIN map AS mi ON h.map_id = mi.id
+    LEFT JOIN `server` AS s ON h.server_id = s.id;
 
 CREATE OR REPLACE VIEW `player_history_view` AS
   SELECT ph.*, mi.name AS mapname, server.name AS name, rh.pids1_end + rh.pids2_end AS `playerCount`
   FROM player_history AS ph
-    LEFT JOIN round_history AS rh ON ph.roundid = rh.id
-    LEFT JOIN server ON rh.serverid = server.id
-    LEFT JOIN mapinfo AS mi ON rh.mapid = mi.id;
+    LEFT JOIN round AS rh ON ph.round_id = rh.id
+    LEFT JOIN server ON rh.server_id = server.id
+    LEFT JOIN map AS mi ON rh.map_id = mi.id;
 
 -- --------------------------------------------------------
 -- Create Procedures
@@ -605,11 +608,11 @@ CREATE PROCEDURE `generate_rising_star`()
     ALTER TABLE `risingstar` AUTO_INCREMENT = 1;
 
     -- Fill Rising Star Table
-    INSERT INTO `risingstar`(pid, weeklyscore)
-      SELECT pid, sum(h.score) AS weeklyscore
+    INSERT INTO `risingstar`(player_id, weeklyscore)
+      SELECT player_id, sum(h.score) AS weeklyscore
       FROM player_history AS h
       WHERE timestamp >= lastweek AND score > 0
-      GROUP BY pid
+      GROUP BY player_id
       ORDER BY weeklyscore DESC;
   END $$
 

@@ -22,7 +22,7 @@ class Install extends \System\Controller
 {
     /**
      * @protocol    GET
-     * @request     /ASP/install/[?:index]
+     * @request     /ASP/install
      * @output      html
      */
     public function getIndex()
@@ -59,7 +59,7 @@ class Install extends \System\Controller
 
     /**
      * @protocol    POST
-     * @request     /ASP/install/[?:index]
+     * @request     /ASP/install
      * @output      json
      */
     public function postIndex()
@@ -90,16 +90,14 @@ class Install extends \System\Controller
         // Try to connect to the database with new settings
         try
         {
-            $DB = Database::Connect('stats',
-                array(
-                    'driver' => 'mysql',
-                    'host' => Config::Get('db_host'),
-                    'port' => Config::Get('db_port'),
-                    'database' => Config::Get('db_name'),
-                    'username' => Config::Get('db_user'),
-                    'password' => Config::Get('db_pass')
-                )
-            );
+            // Create connection using the MySQL connection builder
+            $builder = new Database\MySqlConnectionStringBuilder();
+            $builder->host = Config::Get('db_host');
+            $builder->port = Config::Get('db_port');
+            $builder->user = Config::Get('db_user');
+            $builder->password = Config::Get('db_pass');
+            $builder->database = Config::Get('db_name');
+            $connection = new Database\DbConnection($builder);
         }
         catch (Exception $e)
         {
@@ -111,7 +109,8 @@ class Install extends \System\Controller
         // Fetch tables version
         try
         {
-            $stmt = $DB->query("SELECT `version` FROM `_version`;");
+            $col = $connection->quoteIdentifier('version');
+            $stmt = $connection->query("SELECT {$col} FROM _version;");
             $versions = $stmt->fetchAll();
             if (!empty($versions))
             {
@@ -119,7 +118,11 @@ class Install extends \System\Controller
                 die;
             }
         }
-        catch (Exception $e) {}
+        catch (Exception $e)
+        {
+            //$this->sendJsonResponse(true, '', ['tablesExist' => false]);
+            //die;
+        }
 
         // Successful connection
         $this->sendJsonResponse(true, '', ['tablesExist' => false]);
@@ -140,8 +143,24 @@ class Install extends \System\Controller
             die;
         }
 
-        $pdo = Database::GetConnection('stats');
-        $current = '';
+        // Try to connect to the database with new settings
+        try
+        {
+            // Create connection using the MySQL connection builder
+            $builder = new Database\MySqlConnectionStringBuilder();
+            $builder->host = Config::Get('db_host');
+            $builder->port = Config::Get('db_port');
+            $builder->user = Config::Get('db_user');
+            $builder->password = Config::Get('db_pass');
+            $builder->database = Config::Get('db_name');
+            $pdo = new Database\DbConnection($builder);
+        }
+        catch (Exception $e)
+        {
+            $message = 'Failed to establish connection to (' . Config::Get('db_host') . '): ' . $e->getMessage();
+            $this->sendJsonResponse(false, $message);
+            die;
+        }
 
         // Fetch tables version
         try
@@ -151,10 +170,26 @@ class Install extends \System\Controller
             // Create parser
             $parser = new SqlFileParser(SYSTEM_PATH . DS . 'sql' . DS . 'schema.sql');
             $queries = $parser->getStatements();
+            $current = '';
 
-            // Read file contents
-            foreach ($queries as $query)
-                $pdo->exec($query);
+            try
+            {
+                // Read file contents
+                foreach ($queries as $query)
+                {
+                    $current = $query;
+                    $pdo->exec($query);
+                }
+            }
+            catch (Exception $e)
+            {
+                $logWriter = new LogWriter(SYSTEM_PATH . DS . 'logs' . DS . 'php_errors.log');
+                $logWriter->logDebug('Query Failed: ' . $current);
+
+                // Send Error Results
+                $this->sendJsonResponse(false, 'Failed to install database tables! ' . $e->getMessage());
+                die;
+            }
 
             // Commit changes
             $pdo->commit();
@@ -165,13 +200,11 @@ class Install extends \System\Controller
         }
         catch (Exception $e)
         {
-            if ($pdo instanceof PDO)
-            {
-                $pdo->rollBack();
-            }
+            // Undo changes
+            $pdo->rollBack();
 
             $logWriter = new LogWriter(SYSTEM_PATH . DS . 'logs' . DS . 'php_errors.log');
-            $logWriter->logDebug('Query Failed: ' . $current);
+            $logWriter->logDebug('Failed to create database tables: ' . $e);
 
             // Send Error Results
             $this->sendJsonResponse(false, 'Failed to install database tables! ' . $e->getMessage());

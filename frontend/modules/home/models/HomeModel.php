@@ -75,7 +75,7 @@ class HomeModel
      */
     public function getNumGamesProcessed()
     {
-        return (int)$this->pdo->query('SELECT COUNT(id) FROM round_history')->fetchColumn(0);
+        return (int)$this->pdo->query('SELECT COUNT(id) FROM round')->fetchColumn(0);
     }
 
     /**
@@ -161,7 +161,7 @@ class HomeModel
             $temp[$key] = 0;
         }
 
-        $query = "SELECT `imported` FROM round_history WHERE `imported` > $timestamp";
+        $query = "SELECT `imported` FROM round WHERE `imported` > $timestamp";
         $result = $this->pdo->query($query);
         while ($row = $result->fetch())
         {
@@ -210,7 +210,7 @@ class HomeModel
         $i = 0;
         foreach ($timeArrays as $start => $finish)
         {
-            $query = "SELECT COUNT(*) FROM round_history WHERE `imported` BETWEEN $start AND $finish";
+            $query = "SELECT COUNT(*) FROM round WHERE `imported` BETWEEN $start AND $finish";
             $result = (int)$this->pdo->query($query)->fetchColumn(0);
 
             $output['month']['y'][] = array($i, $result);
@@ -250,7 +250,7 @@ class HomeModel
         $i = 0;
         foreach ($timeArrays as $start => $finish)
         {
-            $query = "SELECT COUNT(*) FROM round_history WHERE `imported` BETWEEN $start AND $finish";
+            $query = "SELECT COUNT(*) FROM round WHERE `imported` BETWEEN $start AND $finish";
             $result = (int)$this->pdo->query($query)->fetchColumn(0);
 
             $output['year']['y'][] = array($i, $result);

@@ -147,13 +147,13 @@ class BattleSpy
         if ($spm > $this->maxSPM)
         {
             // Determine severity
-            $plus50p = $this->maxSPM + ($this->maxSPM / 2);
+            $plus50p = $this->maxSPM * 1.5;
             $double = $this->maxSPM * 2;
 
             // Report player for having too high of a SPM
-            $severity = ($spm > $double) ? 3 : ($spm > $plus50p) ? 2 : 1;
+            $severity = ($spm > $double) ? 3 : (($spm > $plus50p) ? 2 : 1);
             $message = sprintf("Player Score per Min (%.3f) exceeds threshold of (%.3f)", $spm, $this->maxSPM);
-            $this->report($player->pid, $message, self::FLAG_PLAYER_SPM, $severity);
+            $this->report($player->id, $message, self::FLAG_PLAYER_SPM, $severity);
         }
 
         /** Check kills per minute */
@@ -161,17 +161,17 @@ class BattleSpy
         if ($kpm > $this->maxKPM)
         {
             // Determine severity
-            $plus50p = $this->maxKPM + ($this->maxKPM / 2);
+            $plus50p = $this->maxKPM * 1.5;
             $double = $this->maxKPM * 2;
 
             // Report player for having too high of a KPM
-            $severity = ($spm > $double) ? 3 : ($spm > $plus50p) ? 2 : 1;
+            $severity = ($spm > $double) ? 3 : (($spm > $plus50p) ? 2 : 1);
             $message = sprintf("Player Kills per Min (%.3f) exceeds threshold of (%.3f)", $kpm, $this->maxKPM);
-            $this->report($player->pid, $message, self::FLAG_PLAYER_KILLS, $severity);
+            $this->report($player->id, $message, self::FLAG_PLAYER_KILLS, $severity);
         }
 
         // Set severity limits
-        $plus50p = $this->maxTargetKills + ($this->maxTargetKills / 2);
+        $plus50p = $this->maxTargetKills * 1.5;
         $double = $this->maxTargetKills * 2;
 
         /** Check target kills */
@@ -180,9 +180,9 @@ class BattleSpy
             if ($count > $this->maxTargetKills)
             {
                 // Report player for having too many kills on a single player
-                $severity = ($count > $double) ? 3 : ($count > $plus50p) ? 2 : 1;
+                $severity = ($count > $double) ? 3 : (($count > $plus50p) ? 2 : 1);
                 $message = sprintf("Player Kills on Player (%d) exceeds threshold of (%d)", $pid, $this->maxTargetKills);
-                $this->report($player->pid, $message, self::FLAG_PLAYER_TARGET_KILLS, $severity);
+                $this->report($player->id, $message, self::FLAG_PLAYER_TARGET_KILLS, $severity);
             }
         }
 
@@ -191,7 +191,7 @@ class BattleSpy
         if ($awardCount > $this->maxAwards)
         {
             $message = "Player Award Count (%d) exceeds threshold of (%d)";
-            $this->report($player->pid, sprintf($message, $awardCount, $this->maxAwards), self::FLAG_PLAYER_AWARDS, 1);
+            $this->report($player->id, sprintf($message, $awardCount, $this->maxAwards), self::FLAG_PLAYER_AWARDS, 1);
         }
 
         /** Check weapon accuracy */
@@ -211,7 +211,7 @@ class BattleSpy
     public function report($playerId, $message, $flagCode, $severity)
     {
         $this->notifications[] = [
-            'pid' => $playerId,
+            'player_id' => $playerId,
             'flag' => $flagCode,
             'severity' => min(abs($severity), 3),
             'message' => $message
@@ -230,8 +230,8 @@ class BattleSpy
         {
             // Create report record for the database
             $query = new UpdateOrInsertQuery($this->pdo, 'battlespy_report');
-            $query->set('serverid', '=', $this->serverId);
-            $query->set('roundid', '=', $this->roundId);
+            $query->set('server_id', '=', $this->serverId);
+            $query->set('round_id', '=', $this->roundId);
             $query->executeInsert();
 
             // Grab report ID
@@ -239,7 +239,7 @@ class BattleSpy
 
             // Insert report messages
             $query = new UpdateOrInsertQuery($this->pdo, 'battlespy_message');
-            $query->set('reportid', '=', $reportId);
+            $query->set('report_id', '=', $reportId);
 
             // Insert messages
             foreach ($this->notifications as $report)

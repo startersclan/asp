@@ -230,7 +230,7 @@ SQL;
     {
         // Cast id to an integer, to be safe
         $id = (int)$id;
-        return $this->pdo->exec("DELETE FROM player_award WHERE pid={$id}");
+        return $this->pdo->exec("DELETE FROM player_award WHERE player_id={$id}");
     }
 
     /**
@@ -244,7 +244,7 @@ SQL;
     {
         // Cast id to an integer, to be safe
         $id = (int)$id;
-        return $this->pdo->exec("DELETE FROM player_unlock WHERE pid={$id}");
+        return $this->pdo->exec("DELETE FROM player_unlock WHERE player_id={$id}");
     }
 
     /**
@@ -298,7 +298,7 @@ SQL;
         ];
 
         // fetch player kit data
-        $query = "SELECT * FROM `player_army` AS pk JOIN army ON pk.id = army.id WHERE `pid`=".$id;
+        $query = "SELECT * FROM `player_army` AS pk JOIN army ON pk.army_id = army.id WHERE `player_id`=".$id;
         $result = $this->pdo->query($query);
 
         // iterate through the results
@@ -388,7 +388,7 @@ SQL;
         ];
 
         // fetch player kit data
-        $query = "SELECT * FROM `player_kit` AS pk JOIN kit ON pk.id = kit.id WHERE `pid`=".$id;
+        $query = "SELECT * FROM `player_kit` AS pk JOIN kit ON pk.kit_id = kit.id WHERE `player_id`=".$id;
         $result = $this->pdo->query($query);
 
         // iterate through the results
@@ -474,7 +474,7 @@ SQL;
         ];
 
         // fetch player kit data
-        $query = "SELECT * FROM `player_vehicle` AS pk JOIN vehicle ON pk.id = vehicle.id WHERE `pid`=".$id;
+        $query = "SELECT * FROM `player_vehicle` AS pk JOIN vehicle ON pk.vehicle_id = vehicle.id WHERE `player_id`=".$id;
         $result = $this->pdo->query($query);
 
         // iterate through the results
@@ -571,7 +571,7 @@ SQL;
         ];
 
         // fetch player kit data
-        $query = "SELECT * FROM `player_weapon_view` AS pk JOIN weapon ON pk.id = weapon.id WHERE `pid`=".$id;
+        $query = "SELECT * FROM `player_weapon_view` AS pk JOIN weapon ON pk.weapon_id = weapon.id WHERE `player_id`=".$id;
         $result = $this->pdo->query($query);
 
         // iterate through the results
@@ -687,7 +687,10 @@ SQL;
                     $time = (int)$value;
                     $span = TimeSpan::FromSeconds($time);
                     $data['time'] = $time;
-                    $data['timeplayed'] = $span->format("%d Days, %y Hours, %j Mins");
+                    if ($time < 86400)
+                        $data['timeplayed'] = $span->format("%y Hours, %j Mins, %s Seconds");
+                    else
+                        $data['timeplayed'] = $span->format("%d Days, %y Hours, %j Mins");
                     break;
                 case 'joined':
                     $value = (int)$value;

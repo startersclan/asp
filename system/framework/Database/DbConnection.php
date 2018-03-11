@@ -10,12 +10,13 @@
 namespace System\Database;
 
 use PDO;
+use System\Database\QueryBuilder\SelectQuery;
 
 /**
  * Class DbConnection, PDO extension driver
  *
  * @author      Steven Wilson
- * @package     Asp
+ * @package     System
  * @subpackage  Database
  */
 class DbConnection extends PDO
@@ -26,24 +27,67 @@ class DbConnection extends PDO
     public $lastQuery;
 
     /**
+     * @var DbConnectionStringBuilder
+     */
+    protected $builder;
+
+    /**
      * Constructor
      *
-     * @param string $server The database server ip
-     * @param int $port The database server port
-     * @param string $dbname The database name to connect to
-     * @param string $username A database user with privileges
-     * @param string $password The database user's password
+     * @param DbConnectionStringBuilder $builder
      */
-    public function __construct($server, $port, $dbname, $username, $password)
+    public function __construct(DbConnectionStringBuilder $builder)
     {
         // Connect using the PDO Constructor
-        $dsn = "mysql:host={$server};port={$port};dbname={$dbname};charset=UTF8";
-        $opt = [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::MYSQL_ATTR_LOCAL_INFILE => true
-        ];
-        parent::__construct($dsn, $username, $password, $opt);
+        parent::__construct(
+            $builder->getConnectionString(),
+            $builder->user,
+            $builder->password,
+            $builder->getConnectAttributes()
+        );
+
+        // Store the connection string builder
+        $this->builder = $builder;
+    }
+
+    /**
+     * Begins a new SelectQuery
+     *
+     * @param string $table
+     *
+     * @return SelectQuery
+     */
+    public function from($table)
+    {
+        return new SelectQuery($this, $table);
+    }
+
+    public function deleteFrom($table)
+    {
+
+    }
+
+    public function insertInto($table)
+    {
+
+    }
+
+    /**
+     * Quotes an SQL identifier using the current driver's quoting strategy
+     *
+     * @param string $identifier The identifier name
+     *
+     * @return string The identifier wrapped in driver specific quotes
+     */
+    public function quoteIdentifier($identifier)
+    {
+        // Ignore star identifiers and identifiers with a dot
+        if ($identifier == '*' || strpos($identifier, '.')) return $identifier;
+
+        // Perform escape
+        $char = $this->builder->identifierEscapeChar;
+        $identifier = str_replace($char, "{$char}{$char}", $identifier);
+        return "{$char}{$identifier}{$char}";
     }
 
     /**
@@ -62,14 +106,17 @@ class DbConnection extends PDO
         {
             $sql = null;
             foreach ($where as $col => $value)
-                $sql .= "`{$col}`='{$value}' AND ";
+            {
+                $val = (!is_int($value)) ? $this->quote($value) : $value;
+                $sql .= "{$this->quoteIdentifier($col)}={$val} AND ";
+            }
 
             $where = substr($sql, 0, -5);
         }
 
         // Return TRUE or FALSE
+        $table = $this->quoteIdentifier($table);
         $this->lastQuery = 'DELETE FROM ' . $table . ($where != '' ? ' WHERE ' . $where : '');
-
         return $this->exec($this->lastQuery) > 0;
     }
 
@@ -83,19 +130,22 @@ class DbConnection extends PDO
      */
     public function insert($table, $data)
     {
+        $pairs = [];
+
         // Escape values for the query
         foreach ($data as $key => $value)
         {
-            if (!is_int($value))
-                $data[$key] = $this->quote($value);
+            $col = $this->quoteIdentifier($key);
+            $pairs[$col] = (!is_int($value)) ? $this->quote($value) : $value;
         }
 
         // enclose the column names in grave accents
-        $columns = implode('`, `', array_keys($data));
-        $values = implode(', ', array_values($data));
+        $columns = implode(', ', array_keys($pairs));
+        $values = implode(', ', array_values($pairs));
 
         // Run the query
-        $this->lastQuery = "INSERT INTO `{$table}`(`{$columns}`) VALUES ({$values})";
+        $table = $this->quoteIdentifier($table);
+        $this->lastQuery = "INSERT INTO {$table}({$columns}) VALUES ({$values})";
 
         return $this->exec($this->lastQuery);
     }
@@ -113,7 +163,8 @@ class DbConnection extends PDO
     public function update($table, $data, $where)
     {
         // Our string of columns
-        $query = "UPDATE `{$table}` SET ";
+        $table = $this->quoteIdentifier($table);
+        $query = "UPDATE {$table} SET ";
 
         // start creating the SQL string and enclose field names in `
         $first = true;
@@ -125,8 +176,9 @@ class DbConnection extends PDO
             }
 
             $first = false;
+            $col = $this->quoteIdentifier($key);
             $val = (is_int($value)) ? $value : $this->quote($value);
-            $query .= "`{$key}`={$val}";
+            $query .= "{$col}={$val}";
         }
 
         // Parse where clause
@@ -137,8 +189,9 @@ class DbConnection extends PDO
                 $sql = ' WHERE ';
                 foreach ($where as $col => $value)
                 {
+                    $col = $this->quoteIdentifier($col);
                     $val = (is_int($value)) ? $value : $this->quote($value);
-                    $sql .= "`{$col}`={$val} AND ";
+                    $sql .= "{$col}={$val} AND ";
                 }
 
                 $query .= substr($sql, 0, -5);

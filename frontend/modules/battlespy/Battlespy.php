@@ -104,6 +104,7 @@ class Battlespy extends \System\Controller
         // Load view
         $view = new View('report', 'battlespy');
         $view->set('report', $report['report']);
+        $view->set('round', $report['round']);
         $view->set('messages', $report['messages']);
 
         // Attach needed scripts for the form
@@ -112,6 +113,7 @@ class Battlespy extends \System\Controller
 
         // Attach needed stylesheets
         $view->attachStylesheet("/ASP/frontend/css/icons/icol16.css");
+        $view->attachStylesheet("/ASP/frontend/modules/roundinfo/css/view.css");
 
         // Send output
         $view->render();

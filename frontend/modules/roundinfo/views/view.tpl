@@ -148,11 +148,11 @@
             {players1}
                 <tr>
                     <td><img src="/ASP/frontend/images/ranks/rank_{rank}.gif"/></td>
-                    <?php if ({pid} == 0): ?>
+                    <?php if ({player_id} == 0): ?>
                     <td>{name}</td>
                     <?php else: ?>
                     <td>
-                        <a href="/ASP/players/history/{pid}/{round.id}"
+                        <a href="/ASP/players/history/{player_id}/{round.id}"
                            rel="tooltip"
                            data-placement="right"
                            title="Click to view Player Round Details">
@@ -197,11 +197,11 @@
             {players2}
                 <tr>
                     <td><img src="/ASP/frontend/images/ranks/rank_{rank}.gif"/></td>
-                    <?php if ({pid} == 0): ?>
+                    <?php if ({player_id} == 0): ?>
                     <td>{name}</td>
                     <?php else: ?>
                     <td>
-                        <a href="/ASP/players/history/{pid}/{round.id}"
+                        <a href="/ASP/players/history/{player_id}/{round.id}"
                            rel="tooltip"
                            data-placement="right"
                            title="Click to view Player Round Details">

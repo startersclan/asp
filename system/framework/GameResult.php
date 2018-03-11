@@ -213,7 +213,7 @@ abstract class GameResult
     {
         foreach ($this->players as $player)
         {
-            if ($player->pid == $pid)
+            if ($player->id == $pid)
                 return $player;
         }
 
@@ -238,7 +238,7 @@ abstract class GameResult
                 {
                     $return[$name] = [
                         'id' => $data->id,
-                        'pid' => $player->pid,
+                        'pid' => $player->id,
                         'name' => $player->name,
                         'rank' => $player->rank,
                         'team' => $player->armyId,
@@ -273,7 +273,7 @@ abstract class GameResult
                 {
                     $return[$name] = [
                         'id' => $data->id,
-                        'pid' => $player->pid,
+                        'pid' => $player->id,
                         'name' => $player->name,
                         'rank' => $player->rank,
                         'team' => $player->armyId,
@@ -323,7 +323,7 @@ abstract class GameResult
                 if ($value > $values['value'])
                 {
                     $categories[$key] = [
-                        'id' => $player->pid,
+                        'id' => $player->id,
                         'name' => $player->name,
                         'rank' => $player->rank,
                         'team' => $player->armyId,
@@ -349,7 +349,7 @@ abstract class GameResult
             if ($player->cmdTime > 0)
             {
                 $commanders[] = [
-                    'id' => $player->pid,
+                    'id' => $player->id,
                     'name' => $player->name,
                     'rank' => $player->rank,
                     'time' => $player->cmdTime,

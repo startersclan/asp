@@ -101,7 +101,7 @@ class Snapshot extends GameResult
         // Check for unknown map id
         if ($this->mapId == 99)
         {
-            $stmt = $connection->prepare("SELECT id FROM mapinfo WHERE name = :name");
+            $stmt = $connection->prepare("SELECT id FROM map WHERE name = :name");
             $stmt->bindValue(':name', $this->mapName, \PDO::PARAM_STR);
             if ($stmt->execute() && ($id = $stmt->fetchColumn(0)) !== false)
             {
@@ -112,15 +112,15 @@ class Snapshot extends GameResult
         }
         else
         {
-            $result = $connection->query("SELECT COUNT(id) FROM mapinfo WHERE id = ". $this->mapId);
+            $result = $connection->query("SELECT COUNT(id) FROM map WHERE id = ". $this->mapId);
             if (($id = (int)$result->fetchColumn(0)) == 0)
             {
-                $connection->insert('mapinfo', ['id' => $this->mapId, 'name' => $this->mapName]);
+                $connection->insert('map', ['id' => $this->mapId, 'name' => $this->mapName]);
             }
         }
 
         // Check for processed snapshot
-        $query = "SELECT COUNT(id) FROM round_history WHERE mapid=%d AND round_end=%d AND round_start=%d";
+        $query = "SELECT COUNT(id) FROM round WHERE map_id=%d AND time_end=%d AND time_start=%d";
         $result = $connection->query(sprintf($query, $this->mapId, $this->roundEndTime, $this->roundStartTime));
         $this->isProcessed = ((int)$result->fetchColumn(0)) > 0;
     }
@@ -209,11 +209,11 @@ class Snapshot extends GameResult
             // ********************************
             // Process RoundInfo
             // ********************************
-            $query = new UpdateOrInsertQuery($connection, 'round_history');
-            $query->set('mapid', '=', $this->mapId);
-            $query->set('serverid', '=', $serverId);
-            $query->set('round_start', '=', $this->roundStartTime);
-            $query->set('round_end', '=', $this->roundEndTime);
+            $query = new UpdateOrInsertQuery($connection, 'round');
+            $query->set('map_id', '=', $this->mapId);
+            $query->set('server_id', '=', $serverId);
+            $query->set('time_start', '=', $this->roundStartTime);
+            $query->set('time_end', '=', $this->roundEndTime);
             $query->set('imported', '=', time());
             $query->set('gamemode', '=', $this->gameMode);
             $query->set('mod', '=', $this->mod);
@@ -242,7 +242,7 @@ class Snapshot extends GameResult
             {
                 // Check if player exists already
                 $sql = "SELECT permban, bantime FROM player WHERE id=%d LIMIT 1";
-                $row = $connection->query(sprintf($sql, $player->pid))->fetch();
+                $row = $connection->query(sprintf($sql, $player->id))->fetch();
 
                 // If player does not exist, stop here!
                 if (!$row)
@@ -253,12 +253,12 @@ class Snapshot extends GameResult
                         $message = sprintf(
                             "Player Not Found! Cross Service Exploitation found on player (%s) with pid (%d)",
                             $player->name,
-                            $player->pid
+                            $player->id
                         );
                     }
                     else
                     {
-                        $message = sprintf("Unauthorized Bot/Offline player found: %s (%d)!", $player->name, $player->pid);
+                        $message = sprintf("Unauthorized Bot/Offline player found: %s (%d)!", $player->name, $player->id);
                     }
 
                     // Write log
@@ -274,7 +274,7 @@ class Snapshot extends GameResult
                     // using the VerifyPlayer module to prevent this from happening
                     if ($banned && $bantime < ($this->roundStartTime + 1))
                     {
-                        $message = sprintf("Banned Player Found in Snapshot: %s (%d)!", $player->name, $player->pid);
+                        $message = sprintf("Banned Player Found in Snapshot: %s (%d)!", $player->name, $player->id);
                         $this->logWriter->logError($message);
                         throw new Exception($message);
                     }
@@ -294,11 +294,11 @@ class Snapshot extends GameResult
                 $onWinningTeam = $player->team == $this->winningTeam;
 
                 // Write log
-                $this->logWriter->logNotice("Processing Player (%d)", $player->pid);
+                $this->logWriter->logNotice("Processing Player (%d)", $player->id);
 
                 // Check if player exists already
                 $sql = "SELECT lastip, country, rank, killstreak, deathstreak, rndscore FROM player WHERE id=%d LIMIT 1";
-                $row = $connection->query(sprintf($sql, $player->pid))->fetch();
+                $row = $connection->query(sprintf($sql, $player->id))->fetch();
 
                 // Run player check through BattleSpy
                 $this->battleSpy->analyze($player);
@@ -355,7 +355,7 @@ class Snapshot extends GameResult
                 if ($rank > $player->rank && $rank != 11 && $rank != 21)
                 {
                     $player->rank = $rank;
-                    $this->logWriter->logNotice("Rank correction ({$player->pid}), Using database rank ({$rank})");
+                    $this->logWriter->logNotice("Rank correction ({$player->id}), Using database rank ({$rank})");
                 }
 
                 // Calculate best killstreak/deathstreak
@@ -369,16 +369,16 @@ class Snapshot extends GameResult
                     $query->set('rndscore', '=', $player->roundScore);
 
                 // Execute the update
-                $query->where('id', '=', $player->pid);
+                $query->where('id', '=', $player->id);
                 $query->executeUpdate();
 
                 // ********************************
                 // Insert Player history.
                 // ********************************
-                $this->logWriter->logDebug("Processing Player History Data (%d)", $player->pid);
+                $this->logWriter->logDebug("Processing Player History Data (%d)", $player->id);
                 $query = new UpdateOrInsertQuery($connection, 'player_history');
-                $query->set('pid', '=', $player->pid);
-                $query->set('roundid', '=', $roundId);
+                $query->set('player_id', '=', $player->id);
+                $query->set('round_id', '=', $roundId);
                 $query->set('team', '=', $player->armyId);
                 $query->set('timestamp', '=', $this->roundEndTime);
                 $query->set('time', '=', $player->roundTime);
@@ -394,7 +394,7 @@ class Snapshot extends GameResult
                 // ********************************
                 // Process Player Army Data
                 // ********************************
-                $this->logWriter->logDebug("Processing Army Data (%d)", $player->pid);
+                $this->logWriter->logDebug("Processing Army Data (%d)", $player->id);
                 foreach ($player->timeAsArmy as $id => $time)
                 {
                     // Skip un-played armies
@@ -402,8 +402,8 @@ class Snapshot extends GameResult
                         continue;
 
                     $query = new UpdateOrInsertQuery($connection, 'player_army');
-                    $query->where('id', '=', $id);
-                    $query->where('pid', '=', $player->pid);
+                    $query->where('player_id', '=', $player->id);
+                    $query->where('army_id', '=', $id);
                     $query->set('time', '+', $time);
 
                     // If the player ended the game as this army, update with round info
@@ -421,9 +421,9 @@ class Snapshot extends GameResult
                 // ********************************
                 // Process Player Kills
                 // ********************************
-                $this->logWriter->logDebug("Processing Kill Data (%d)", $player->pid);
+                $this->logWriter->logDebug("Processing Kill Data (%d)", $player->id);
                 $query = new UpdateOrInsertQuery($connection, 'player_kill');
-                $query->where('attacker', '=', $player->pid);
+                $query->where('attacker', '=', $player->id);
                 foreach ($player->victims as $pid => $count)
                 {
                     $query->where('victim', '=', $pid);
@@ -434,54 +434,54 @@ class Snapshot extends GameResult
                 // ********************************
                 // Process Player Kit Data
                 // ********************************
-                $this->logWriter->logDebug("Processing Kit Data (%d)", $player->pid);
+                $this->logWriter->logDebug("Processing Kit Data (%d)", $player->id);
                 $query = new UpdateOrInsertQuery($connection, 'player_kit');
-                $query->where('pid', '=', $player->pid);
+                $query->where('player_id', '=', $player->id);
                 foreach ($player->kitData as $object)
                 {
                     $query->set('time', '+', $object->time);
                     $query->set('kills', '+', $object->kills);
                     $query->set('deaths', '+', $object->deaths);
-                    $query->where('id', '=', $object->id);
+                    $query->where('kit_id', '=', $object->id);
                     $query->execute();
                 }
 
                 // ********************************
                 // Process Player Map Data
                 // ********************************
-                $this->logWriter->logDebug("Processing Map Data (%d)", $player->pid);
+                $this->logWriter->logDebug("Processing Map Data (%d)", $player->id);
                 $query = new UpdateOrInsertQuery($connection, 'player_map');
                 $query->set('time', '+', $player->roundTime);
                 $query->set('wins', '+', $onWinningTeam ? 1 : 0);
                 $query->set('losses', '+', $onWinningTeam ? 0 : 1);
                 $query->set('bestscore', 'g', $player->roundScore);
                 $query->set('worstscore', 'l', $player->roundScore);
-                $query->where('pid', '=', $player->pid);
-                $query->where('mapid', '=', $this->mapId);
+                $query->where('player_id', '=', $player->id);
+                $query->where('map_id', '=', $this->mapId);
                 $query->execute();
 
                 // ********************************
                 // Process Player Vehicle Data
                 // ********************************
-                $this->logWriter->logDebug("Processing Vehicle Data (%d)", $player->pid);
+                $this->logWriter->logDebug("Processing Vehicle Data (%d)", $player->id);
                 $query = new UpdateOrInsertQuery($connection, 'player_vehicle');
-                $query->where('pid', '=', $player->pid);
+                $query->where('player_id', '=', $player->id);
                 foreach ($player->vehicleData as $object)
                 {
                     $query->set('time', '+', $object->time);
                     $query->set('kills', '+', $object->kills);
                     $query->set('deaths', '+', $object->deaths);
                     $query->set('roadkills', '+', $object->roadKills);
-                    $query->where('id', '=', $object->id);
+                    $query->where('vehicle_id', '=', $object->id);
                     $query->execute();
                 }
 
                 // ********************************
                 // Process Player Weapon Data
                 // ********************************
-                $this->logWriter->logDebug("Processing Weapon Data (%d)", $player->pid);
+                $this->logWriter->logDebug("Processing Weapon Data (%d)", $player->id);
                 $query = new UpdateOrInsertQuery($connection, 'player_weapon');
-                $query->where('pid', '=', $player->pid);
+                $query->where('player_id', '=', $player->id);
                 foreach ($player->weaponData as $object)
                 {
                     $query->set('time', '+', $object->time);
@@ -489,14 +489,14 @@ class Snapshot extends GameResult
                     $query->set('deaths', '+', $object->deaths);
                     $query->set('fired', '+', $object->fired);
                     $query->set('hits', '+', $object->hits);
-                    $query->where('id', '=', $object->id);
+                    $query->where('weapon_id', '=', $object->id);
                     $query->execute();
                 }
 
                 // ********************************
                 // Process Player Awards Data
                 // ********************************
-                $this->logWriter->logDebug("Processing Award Data (%d)", $player->pid);
+                $this->logWriter->logDebug("Processing Award Data (%d)", $player->id);
                 if ($player->completedRound || !Config::Get('stats_awds_complete'))
                 {
                     // Add Backend awards to player
@@ -507,7 +507,7 @@ class Snapshot extends GameResult
                     }
 
                     // Log
-                    $this->logWriter->logDebug("Player (%d) Earned %d Awards...", [$player->pid, count($player->earnedAwards)]);
+                    $this->logWriter->logDebug("Player (%d) Earned %d Awards...", [$player->id, count($player->earnedAwards)]);
 
                     foreach ($player->earnedAwards as $key => $value)
                     {
@@ -516,12 +516,12 @@ class Snapshot extends GameResult
                         $isBadge = ($key < 2000000);
 
                         // Check is player has this award already
-                        $query = "SELECT COUNT(*) FROM player_award WHERE pid=%d AND id=%d";
+                        $query = "SELECT COUNT(*) FROM player_award WHERE player_id=%d AND award_id=%d";
                         if ($isBadge)
                             $query .= " AND level=". (int)$value;
 
                         // Check for prior awarding of award
-                        $result = $connection->query( sprintf($query, $player->pid, $key) . ' LIMIT 1');
+                        $result = $connection->query( sprintf($query, $player->id, $key) . ' LIMIT 1');
                         if (($count = (int)$result->fetchColumn(0)) == 0)
                         {
                             // Need to do extra work for Badges as more than one badge level may have been awarded.
@@ -532,15 +532,15 @@ class Snapshot extends GameResult
                                 // Check all prior badge levels, and make sure the player has them
                                 for ($j = 1; $j < $value; $j++)
                                 {
-                                    $query = "SELECT COUNT(*) FROM player_award WHERE pid=%d AND id=%d AND level=%d LIMIT 1";
-                                    $result = $connection->query( sprintf($query, $player->pid, $key, $j) );
+                                    $query = "SELECT COUNT(*) FROM player_award WHERE player_id=%d AND award_id=%d AND level=%d LIMIT 1";
+                                    $result = $connection->query( sprintf($query, $player->id, $key, $j) );
                                     if (($count = (int)$result->fetchColumn(0)) == 0)
                                     {
                                         // Prepare Query
                                         $query = new UpdateOrInsertQuery($connection, 'player_award');
-                                        $query->set('pid', '=', $player->pid);
-                                        $query->set('id', '=', $key);
-                                        $query->set('roundid', '=', $roundId);
+                                        $query->set('player_id', '=', $player->id);
+                                        $query->set('award_id', '=', $key);
+                                        $query->set('round_id', '=', $roundId);
                                         $query->set('level', '=', $j);
                                         $query->executeInsert();
                                     }
@@ -549,18 +549,18 @@ class Snapshot extends GameResult
 
                             // Add player award
                             $query = new UpdateOrInsertQuery($connection, 'player_award');
-                            $query->set('pid', '=', $player->pid);
-                            $query->set('id', '=', $key);
-                            $query->set('roundid', '=', $roundId);
+                            $query->set('player_id', '=', $player->id);
+                            $query->set('award_id', '=', $key);
+                            $query->set('round_id', '=', $roundId);
                             $query->set('level', '=', $value);
                             $query->executeInsert();
                         }
                         else if ($isMedal) // === Player has received this award prior === //
                         {
                             $query = new UpdateOrInsertQuery($connection, 'player_award');
-                            $query->where('pid', '=', $player->pid);
-                            $query->where('id', '=', $key);
-                            $query->set('roundid', '=', $roundId);
+                            $query->where('player_id', '=', $player->id);
+                            $query->where('award_id', '=', $key);
+                            $query->set('round_id', '=', $roundId);
                             $query->set('level', '=', 1);
                             $query->executeInsert();
                         }
@@ -569,8 +569,8 @@ class Snapshot extends GameResult
                         if ($key == 2051907)
                         {
                             $query = new UpdateOrInsertQuery($connection, 'player_army');
-                            $query->where('pid', '=', $player->pid);
-                            $query->where('id', '=', $player->armyId);
+                            $query->where('player_id', '=', $player->id);
+                            $query->where('army_id', '=', $player->armyId);
                             $query->set('brnd', '+', 1);
                             $query->execute();
                         }
@@ -581,6 +581,7 @@ class Snapshot extends GameResult
             // ********************************
             // Process ServerInfo
             // ********************************
+            $this->logWriter->logDebug("Saving server updated information");
             $query = new UpdateOrInsertQuery($connection, 'server');
             $query->set('name', '=', StringHelper::SubStrWords($this->serverName, 100));
             $query->set('queryport', '=', $this->queryPort);
@@ -591,7 +592,8 @@ class Snapshot extends GameResult
             // ********************************
             // Process MapInfo
             // ********************************
-            $query = new UpdateOrInsertQuery($connection, 'mapinfo');
+            $this->logWriter->logDebug("Updating map information");
+            $query = new UpdateOrInsertQuery($connection, 'map');
             $query->set('time', '+', $this->roundTime);
             $query->set('score', '+', $this->mapScore);
             $query->set('times', '+', 1);

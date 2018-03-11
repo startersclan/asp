@@ -68,7 +68,7 @@ else
                 $unlocks += getBonusUnlocks($pid, $rank, $connection);
 
                 // Check Used Unlocks
-                $query = "SELECT COUNT(`pid`) AS `count` FROM `player_unlock` WHERE `pid` = {$pid}";
+                $query = "SELECT COUNT(`player_id`) AS `count` FROM `player_unlock` WHERE `player_id` = {$pid}";
                 $used = (int)$connection->query($query)->fetchColumn(0);
 
                 // Determine available unlocks count
@@ -82,10 +82,10 @@ else
                 $Response->writeHeaderLine("id", "state");
 
                 // Get players current unlocks
-                $query = "SELECT unlockid FROM `player_unlock` WHERE `pid`={$pid} ORDER BY `unlockid` ASC";
+                $query = "SELECT unlock_id FROM `player_unlock` WHERE `player_id`={$pid} ORDER BY `unlock_id` ASC";
                 $result = $connection->query($query);
                 while ($row = $result->fetch())
-                    $Response->writeDataLine($row['unlockid'], 's');
+                    $Response->writeDataLine($row['unlock_id'], 's');
 
                 // Send response
                 $Response->send();
@@ -222,11 +222,11 @@ function getBonusUnlocks($pid, $rank, $connection)
     // Count number of kit badges obtained
     $checkawds = implode(",", $kitbadges);
     $query = <<<SQL
-SELECT COUNT(`id`) AS `count` 
+SELECT COUNT(`award_id`) AS `count` 
 FROM `player_award` 
-WHERE `pid` = $pid 
+WHERE `player_id` = $pid 
   AND (
-    `id` IN ($checkawds) 
+    `award_id` IN ($checkawds) 
       AND `level` >= $level
   );
 SQL;

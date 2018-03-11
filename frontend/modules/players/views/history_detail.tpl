@@ -25,7 +25,7 @@
                 <div class="btn-toolbar">
                     <div class="btn-group" style="margin-right: 20px">
                         <button id="go-{prevRoundId}" type="button" class="btn"{pBtnStyle}>Previous</button>
-                        <a href="/ASP/roundinfo/view/{round.roundid}" class="btn" target="_blank">View</a>
+                        <a href="/ASP/roundinfo/view/{round.round_id}" class="btn" target="_blank">View</a>
                         <button id="go-{nextRoundId}" type="button" class="btn"{nBtnStyle}>Next</button>
                     </div>
                 </div>
@@ -44,12 +44,12 @@
         <ul class="mws-summary clearfix">
             <li>
                 <!-- Hidden fields for JavaScript -->
-                <span id="playerId" style="display: none">{round.pid}</span>
+                <span id="playerId" style="display: none">{round.player_id}</span>
                 <!-- End Hidden fields for JavaScript -->
                 <span class="key"><i class="icon-user"></i> Player Name</span>
                 <span class="val">
 					<span class="text-nowrap">
-                        <a href="/ASP/players/view/{round.pid}">{round.name}</a>
+                        <a href="/ASP/players/view/{round.player_id}">{round.name}</a>
                     </span>
 				</span>
             </li>
@@ -158,7 +158,7 @@
                 <span class="key"><i class="icon-monitor"></i> Server Name</span>
                 <span class="val">
 					<span class="text-nowrap">
-                        <a href="/ASP/servers/view/{round.serverid}">{round.server}</a>
+                        <a href="/ASP/servers/view/{round.server_id}">{round.server}</a>
                     </span>
 				</span>
             </li>

@@ -9,6 +9,7 @@
  */
 use System\Controller;
 use System\IO\Directory;
+use System\IO\File;
 use System\IO\Path;
 use System\View;
 
@@ -39,7 +40,7 @@ class Database extends Controller
 
         // A list of tables we care about
         $tables = [
-            'mapinfo', 'server', 'round_history', 'player', 'player_army', 'player_award', 'player_weapon',
+            'mapinfo', 'server', 'round', 'player', 'player_army', 'player_award', 'player_weapon',
             'player_kit', 'player_kill', 'player_map', 'player_history', 'player_rank_history',
             'player_vehicle', 'player_unlock'
         ];
@@ -129,7 +130,26 @@ class Database extends Controller
         // Set vars
         $dirs = Directory::GetDirectories(Path::Combine(SYSTEM_PATH, 'backups'));
         for ($i = 0; $i < count($dirs); $i++)
-            $dirs[$i] = Path::GetFileName($dirs[$i]);
+        {
+            // Declare full path to the meta file
+            $fullPath = Path::Combine($dirs[$i], 'backup.json');
+
+            // Ensure that the meta file exists
+            if (!File::Exists($fullPath))
+                continue;
+
+            // Open and decode meta file
+            $contents = File::ReadAllText($fullPath);
+            $meta = json_decode($contents, true);
+
+            // Ensure database version matches!
+            if ($meta['dbver'] != DB_VER)
+                continue;
+
+            // Add backup to the list of backups we can restore from
+            $val = ['id' => Path::GetFileName($dirs[$i]), 'date' => date("F jS, Y @ g:i A T", $meta['timestamp'])];
+            $dirs[$i] = $val;
+        }
 
         $view->set('backups', array_reverse($dirs));
 

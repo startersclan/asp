@@ -137,6 +137,12 @@ else
             addWeaponData($Output, $pid);
 
             // Define our KD ratio callback
+            /**
+             * @param $val
+             * @param $row
+             *
+             * @return string
+             */
             $kdRatio = function($val, $row)
             {
                 $kills = (int)$row["kills"];
@@ -249,7 +255,7 @@ SQL;
             $Output['de-8'] = 0;
         }
 
-        $result = $connection->query("SELECT * FROM `player_weapon` WHERE `pid` = {$pid}");
+        $result = $connection->query("SELECT * FROM `player_weapon` WHERE `player_id` = {$pid}");
         while ($roww = $result->fetch())
         {
             $i = (int)$roww['id'];
@@ -289,7 +295,7 @@ SQL;
             $Output["kkl-$i"] = 0; // Kills
         }
 
-        $result = $connection->query("SELECT * FROM `player_kit` WHERE `pid` = {$pid}");
+        $result = $connection->query("SELECT * FROM `player_kit` WHERE `player_id` = {$pid}");
         while ($rowk = $result->fetch())
         {
             $i = $rowk["id"];
@@ -305,7 +311,7 @@ SQL;
             $Output["vac-{$i}"] = 0; // Vehicle accuracy? Always zero
         }
 
-        $result = $connection->query("SELECT * FROM `player_vehicle` WHERE `pid` = {$pid}");
+        $result = $connection->query("SELECT * FROM `player_vehicle` WHERE `player_id` = {$pid}");
         while ($rowv = $result->fetch())
         {
             $i = $rowv["id"];
@@ -321,7 +327,7 @@ SQL;
             $Output["awn-{$i}"] = 0;
         }
 
-        $result = $connection->query("SELECT * FROM `player_army` WHERE pid = {$pid}");
+        $result = $connection->query("SELECT * FROM `player_army` WHERE player_id = {$pid}");
         while ($rowa = $result->fetch())
         {
             $i = $rowa["id"];
@@ -362,22 +368,22 @@ SQL;
         $Response->writeHeaderLine("pid", "nick", "ktm-{$kit}", "vtm-{$vehicle}", "wtm-{$weapon}", "mtm-{$map}");
 
         // Kits
-        $query = "SELECT `time` FROM `player_kit` WHERE `pid`={$pid} AND `id`={$kit}";
+        $query = "SELECT `time` FROM `player_kit` WHERE `player_id`={$pid} AND `kit_id`={$kit}";
         $result = $connection->query($query);
 		$kitt = (int)$result->fetchColumn();
 
         // Vehicles
-        $query = "SELECT `time` FROM `player_vehicle` WHERE `pid` = {$pid} AND `id`={$vehicle}";
+        $query = "SELECT `time` FROM `player_vehicle` WHERE `player_id` = {$pid} AND `vehicle_id`={$vehicle}";
         $result = $connection->query($query);
 		$vehiclet = (int)$result->fetchColumn();
 
         // Weapons
-        $query = "SELECT `time` FROM `player_weapon` WHERE `pid` = {$pid} AND `id`={$weapon}";
+        $query = "SELECT `time` FROM `player_weapon` WHERE `player_id` = {$pid} AND `weapon_id`={$weapon}";
         $result = $connection->query($query);
         $weapont = (int)$result->fetchColumn();
 
         // Maps
-        $query = "SELECT `time` FROM `player_map` WHERE (`pid` = {$pid}) AND (`mapid` = {$map})";
+        $query = "SELECT `time` FROM `player_map` WHERE (`player_id` = {$pid}) AND (`map_id` = {$map})";
         $result = $connection->query($query);
 		$mapt = (int)$result->fetchColumn();
 
@@ -464,14 +470,14 @@ SQL;
 
         // Prepare where statement
         $where = (strpos($info, "cmap-") !== false)
-            ? "`pid` = {$pid}"
-            : "`pid` = {$pid} AND `mapid` < 700";
+            ? "`player_id` = {$pid}"
+            : "`player_id` = {$pid} AND `map_id` < 700";
 
         // Fetch map data from DB
         $result = $connection->query("SELECT * FROM `player_map` WHERE {$where}");
         while ($row = $result->fetch())
         {
-            $i = (int)$row['mapid'];
+            $i = (int)$row['map_id'];
             $mtm[$i] = $row['time'];
             $mwn[$i] = $row['wins'];
             $mls[$i] = $row['losses'];
@@ -576,11 +582,12 @@ function addData(&$Output, $pid, $table, $limit, $favKey, $keyvals)
     $connection = Database::GetConnection("stats");
     $favTime = 0;
     $addFav = !empty($favKey);
+    $idcol = str_replace('player_', '', $table) . "_id";
 
-    $result = $connection->query("SELECT * FROM {$table} WHERE pid = {$pid} AND id < {$limit} ORDER BY id");
+    $result = $connection->query("SELECT * FROM {$table} WHERE player_id = {$pid} AND {$idcol} < {$limit} ORDER BY {$idcol}");
     while ($row = $result->fetch())
     {
-        $i = (int)$row['id'];
+        $i = (int)$row[$idcol];
         foreach ($keyvals as $key => $value)
         {
             $val = (isset($value['col'])) ? $row[$value['col']] : 0;
@@ -639,10 +646,10 @@ function addWeaponData(&$Output, $pid)
     addHeaderRange($Output, 0, $limit, ['wtm' => 0, 'wkl' => 0, 'wdt' => 0, 'wac' => 0, 'wkd' => '0:0']);
 
     // Weapons
-    $result = $connection->query("SELECT * FROM player_weapon WHERE pid = {$pid} ORDER BY id");
+    $result = $connection->query("SELECT * FROM player_weapon WHERE player_id = {$pid} ORDER BY weapon_id");
     while ($row = $result->fetch())
     {
-        $i = (int)$row['id'];
+        $i = (int)$row['weapon_id'];
 
         // Exclude Tactical weapons
         if ($i < NUM_WEAPONS)
@@ -719,10 +726,10 @@ function addTacticalData(&$Output, $pid)
         $Output["de-$i"] = 0;
 
     // Weapons
-    $result = $connection->query("SELECT * FROM player_weapon WHERE pid = {$pid} AND id BETWEEN 16 AND 18");
+    $result = $connection->query("SELECT * FROM player_weapon WHERE player_id = {$pid} AND weapon_id BETWEEN 16 AND 18");
     while ($row = $result->fetch())
     {
-        $i = ((int)$row['id']) - 10;
+        $i = ((int)$row['weapon_id']) - 10;
         $Output["de-$i"] = (int)$row['fired'];
     }
 }
@@ -786,7 +793,7 @@ function getFavMap($pid)
     $connection = Database::GetConnection("stats");
 
     // Fetch Fav Victim
-    $query = "SELECT mapid FROM player_map WHERE pid={$pid} AND mapid < 700 ORDER BY `time` DESC LIMIT 1";
+    $query = "SELECT map_id FROM player_map WHERE player_id={$pid} AND map_id < 700 ORDER BY `time` DESC LIMIT 1";
     $result = $connection->query($query)->fetchColumn(0);
     return ($result !== false) ? (int)$result : 0;
 }

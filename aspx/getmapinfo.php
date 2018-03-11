@@ -42,8 +42,8 @@ $maplimit = ($limit == 1) ? ' AND id >= 700' : '';
 if ($pid > 0)
 {
     // Build our query
-    $query = "SELECT m.*, mi.name AS mapname FROM player_map AS m JOIN mapinfo AS mi ON m.mapid = mi.id " .
-        "WHERE m.pid = {$pid} ORDER BY mapid";
+    $query = "SELECT m.*, mi.name AS mapname FROM player_map AS m JOIN map AS mi ON m.map_id = mi.id " .
+        "WHERE m.player_id = {$pid} ORDER BY map_id";
     $result = $connection->query($query);
     if ($row = $result->fetch())
     {
@@ -51,7 +51,7 @@ if ($pid > 0)
         do
         {
             $Response->writeDataLine(
-                $row['mapid'],
+                $row['map_id'],
                 $row['mapname'],
                 $row['time'],
                 $row['wins'],
@@ -71,7 +71,7 @@ if ($pid > 0)
 else
 {
     // Prepare the SQL query
-    $query = "SELECT id, name, score, time, times, kills, deaths FROM mapinfo ";
+    $query = "SELECT id, name, score, `time`, times, kills, deaths FROM map ";
     $binds = [];
 
     // Finish query based on url parameters

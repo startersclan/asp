@@ -77,18 +77,17 @@ class Asp
         }
 
         // Connect to the stats database
+        $connection = null;
         try
         {
-            Database::Connect('stats',
-                array(
-                    'driver' => 'mysql',
-                    'host' => Config::Get('db_host'),
-                    'port' => Config::Get('db_port'),
-                    'database' => Config::Get('db_name'),
-                    'username' => Config::Get('db_user'),
-                    'password' => Config::Get('db_pass')
-                )
-            );
+            // Create connection using the MySQL connection builder
+            $builder = new Database\MySqlConnectionStringBuilder();
+            $builder->host = Config::Get('db_host');
+            $builder->port = Config::Get('db_port');
+            $builder->user = Config::Get('db_user');
+            $builder->password = Config::Get('db_pass');
+            $builder->database = Config::Get('db_name');
+            $connection = Database::CreateConnection('stats', $builder);
         }
         catch (Exception $e)
         {
@@ -96,7 +95,7 @@ class Asp
         }
 
         // Sometimes an exception isn't thrown by PDO
-        if (!(Database::GetConnection('stats') instanceof PDO))
+        if (!($connection instanceof PDO))
         {
             DatabaseOffline:
             {
@@ -209,19 +208,20 @@ class Asp
         // Connect to the stats database
         try
         {
-            $DB = Database::Connect('stats',
-                array(
-                    'driver' => 'mysql',
-                    'host' => Config::Get('db_host'),
-                    'port' => Config::Get('db_port'),
-                    'database' => Config::Get('db_name'),
-                    'username' => Config::Get('db_user'),
-                    'password' => Config::Get('db_pass')
-                )
-            );
+            // Create connection using the MySQL connection builder
+            $builder = new Database\MySqlConnectionStringBuilder();
+            $builder->host = Config::Get('db_host');
+            $builder->port = Config::Get('db_port');
+            $builder->user = Config::Get('db_user');
+            $builder->password = Config::Get('db_pass');
+            $builder->database = Config::Get('db_name');
+            $builder->setAttribute(PDO::MYSQL_ATTR_LOCAL_INFILE, true);
+            $DB = Database::CreateConnection('stats', $builder);
 
+            // Fetch database version
             $stmt = $DB->query("SELECT `version` FROM `_version` ORDER BY `updateid` DESC LIMIT 1;");
             $result = $stmt->fetchColumn(0);
+
             define('DB_VER', ($result === false) ? '0.0.0' : $result);
         }
         catch (Exception $e)
@@ -231,11 +231,11 @@ class Asp
         }
 
         // Parse version strings
-        $dVer = Version::Parse(DB_VER);
-        $cVer = Version::Parse(Config::Get('db_expected_ver'));
+        $currVer = Version::Parse(DB_VER);
+        $expectedVer = Version::Parse(Config::Get('db_expected_ver'));
 
         // Make sure config expected DB version is up to date
-        if (Version::GreaterThan($dVer, $cVer))
+        if (Version::GreaterThan($currVer, $expectedVer))
         {
             Config::Set('db_expected_ver', DB_VER);
             Config::Save();
@@ -261,6 +261,7 @@ class Asp
      * @param array $params The parameters to be passed to the controller's action method.
      *
      * @return void
+     * @throws ReflectionException
      */
     public static function LoadModule($name, $action, $params)
     {

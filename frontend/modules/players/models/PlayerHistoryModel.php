@@ -82,11 +82,11 @@ class PlayerHistoryModel
 SELECT ph.*, h.*, p.name, mi.name AS `mapname`, s.name AS `server`, s.ip AS `ip`, s.port AS `port`,
   h.pids1_end + h.pids2_end AS `playerCount`
 FROM player_history AS ph 
-  LEFT JOIN player AS p ON ph.pid = p.id
-  LEFT JOIN round_history AS h ON ph.roundid = h.id
-  LEFT JOIN mapinfo AS mi ON h.mapid = mi.id 
-  LEFT JOIN server AS s ON h.serverid = s.id
-WHERE pid={$pid} AND roundid={$rid}
+  LEFT JOIN player AS p ON ph.player_id = p.id
+  LEFT JOIN round AS h ON ph.round_id = h.id
+  LEFT JOIN map AS mi ON h.map_id = mi.id 
+  LEFT JOIN server AS s ON h.server_id = s.id
+WHERE player_id={$pid} AND round_id={$rid}
 SQL;
         return $this->pdo->query($query)->fetch();
     }
@@ -108,7 +108,7 @@ SQL;
         $rid = (int)$roundid;
 
         // Get next round ID
-        $query = "SELECT MIN(`roundid`) FROM player_history WHERE pid={$pid} AND roundid > ". $rid;
+        $query = "SELECT MIN(round_id) FROM player_history WHERE player_id={$pid} AND round_id > ". $rid;
         return (int)$this->pdo->query($query)->fetchColumn(0);
     }
 
@@ -129,7 +129,7 @@ SQL;
         $rid = (int)$roundid;
 
         // Get next round ID
-        $query = "SELECT MAX(`roundid`) FROM player_history WHERE pid={$pid} AND roundid < ". $rid;
+        $query = "SELECT MAX(round_id) FROM player_history WHERE player_id={$pid} AND round_id < ". $rid;
         return (int)$this->pdo->query($query)->fetchColumn(0);
     }
 
@@ -177,7 +177,7 @@ SQL;
                 case 'team':
                     $val = (int)$value;
                     $data[$key] = $val;
-                    $data['teamName'] = $this->pdo->query("SELECT name FROM army WHERE id=". $val)->fetchColumn(0);
+                    $data['teamName'] = $this->pdo->query("SELECT a.name FROM army a WHERE a.id=". $val)->fetchColumn(0);
                     break;
                 default:
                     $data[$key] = $value;
@@ -197,14 +197,14 @@ SQL;
         $data['ratioColor'] = ($data['ratio2'] > 0.99) ? "green" : "red";
 
         // Set date formats
-        $data['round_start_date'] = date('F jS, Y g:i A T', (int)$round['round_start']);
-        $data['round_end_date'] = date('F jS, Y g:i A T', (int)$round['round_end']);
+        $data['round_start_date'] = date('F jS, Y g:i A T', (int)$round['time_start']);
+        $data['round_end_date'] = date('F jS, Y g:i A T', (int)$round['time_end']);
 
         // Set rank name
         $data['rankName'] = Battlefield2::GetRankName((int)$round['rank']);
 
         // Set round time
-        $span = TimeSpan::FromSeconds((int)$round['round_end'] - (int)$round['round_start']);
+        $span = TimeSpan::FromSeconds((int)$round['time_end'] - (int)$round['time_start']);
         $data['roundTime'] = $span->format("%j minutes, %w seconds");
 
         // Calculate SPM
@@ -220,11 +220,14 @@ SQL;
      * @param View $view The view to attach advanced info into
      *
      * @return bool true if the snapshot was loaded, otherwise false
+     *
+     * @throws DirectoryNotFoundException
+     * @throws SecurityException
      */
     public function addAdvancedRoundInfo($pid, $round, View $view)
     {
         // Attempt to find snapshot files
-        $time = new \DateTime("@{$round['round_end']}", new \DateTimeZone("UTC"));
+        $time = new \DateTime("@{$round['time_end']}", new \DateTimeZone("UTC"));
         $format = $time->format('Ymd_His');
         $path = Path::Combine(SYSTEM_PATH, "snapshots", "processed");
         $files = Directory::GetFiles($path, '.*'. $round['mapname'] .'_'. $format .'\.json');
@@ -260,7 +263,7 @@ SQL;
                 if ($data == null) continue;
 
                 // compare map start times, as this could be the fastest way to determine
-                if ($round['round_start'] == $data['mapStart'])
+                if ($round['time_start'] == $data['mapStart'])
                 {
                     $potentials[] = $data;
                 }
@@ -670,16 +673,16 @@ SQL;
         foreach ($snapshot->players as $p)
         {
             // Skip our player
-            if ($player->pid == $p->pid)
+            if ($player->id == $p->id)
                 continue;
 
             foreach ($p->victims as $pid => $count)
             {
-                if ($pid == $player->pid)
+                if ($pid == $player->id)
                 {
                     if ($count > $data['count'])
                     {
-                        $data['id'] = $p->pid;
+                        $data['id'] = $p->id;
                         $data['name'] = $p->name;
                         $data['rank'] = $p->rank;
                         $data['count'] = $count;
@@ -732,6 +735,10 @@ SQL;
      * @param string $file
      *
      * @return array
+     *
+     * @throws FileNotFoundException if the file cannot be located
+     * @throws IOException if there is an error opening the file
+     * @throws ObjectDisposedException never
      */
     private function loadSnapshotData($file)
     {

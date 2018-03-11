@@ -9,6 +9,9 @@
             This does not restore the database schema, just the data. Before you restore the data, please ensure you
             have loaded the relevant database schema. As part of this process, ALL existing data will be lost!
             <br /><br />
+            <span style="color: black; "><b>Note:</b></span>
+            Only backups that were made using the <b><u>current database version</b></u> will show in this list.
+            <br /><br />
             <span style="color: red; "><b>Warning:</b></span>
             Running this script will CLEAR ALL data from your existing database, please ensure you have a proper backup BEFORE proceeding.
             <br /><br />
@@ -20,7 +23,7 @@
                         <div class="mws-form-item">
                             <select id="backup" name="backup" class="large required" title="">
                             {backups}
-                                <option value="{value}">{value}</option>
+                                <option value="{id}">{date}</option>
                             {/backups}
                             </select>
                         </div>

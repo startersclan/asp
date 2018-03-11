@@ -52,10 +52,10 @@ $Response->writeDataLine("0.1", time());
 $Response->writeHeaderLine("id", "kit", "name", "descr");
 
 // fetch all unlocks from the database
-$stmt = $connection->query("SELECT `id`, `kit`, `name`, `desc` FROM `unlock` ORDER BY `id`");
+$stmt = $connection->query("SELECT `id`, `kit_id`, `name`, `desc` FROM `unlock` ORDER BY `id`");
 while ($row = $stmt->fetch())
 {
-    $Response->writeDataLine($row['id'], $row['kit'], $row['name'], $row['desc']);
+    $Response->writeDataLine($row['id'], $row['kit_id'], $row['name'], $row['desc']);
 }
 
 $Response->send(false, $item);

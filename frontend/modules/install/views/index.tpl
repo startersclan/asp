@@ -129,7 +129,7 @@
                     </div>
                     <div id="fail-message" style="font-size: 120%; margin-top: 20px"></div>
                     <br /><br />
-                    <input type="button" id="button-to-home" class="btn btn-danger" value="Start Over" data-target="/ASP/install">
+                    <input type="button" id="button-to-start-over" class="btn btn-danger" value="Start Over" data-target="/ASP/install">
                 </div>
             </fieldset>
         </form>

@@ -109,8 +109,8 @@ class PlayerAjaxModel
     public function fetchPlayerRoundHistory($id, $data)
     {
         $columns = [
-            ['db' => 'pid', 'dt' => 'id'],
-            ['db' => 'roundid', 'dt' => 'rid'],
+            ['db' => 'player_id', 'dt' => 'id'],
+            ['db' => 'round_id', 'dt' => 'rid'],
             ['db' => 'name', 'dt' => 'server'],
             ['db' => 'mapname', 'dt' => 'map'],
             ['db' => 'score', 'dt' => 'score',
@@ -147,8 +147,8 @@ class PlayerAjaxModel
             ],
             ['db' => 'rank', 'dt' => 'actions',
                 'formatter' => function( $d, $row ) {
-                    $id = (int)$row['pid'];
-                    $rid = (int)$row['roundid'];
+                    $id = (int)$row['player_id'];
+                    $rid = (int)$row['round_id'];
 
                     return '<span class="btn-group">
                             <a href="/ASP/players/history/'. $id .'/'. $rid .'"  rel="tooltip" title="View Round Details" class="btn btn-small">
@@ -160,7 +160,7 @@ class PlayerAjaxModel
         ];
 
         // Fetch data
-        $filter = "`pid` = ". $id;
-        return DataTables::FetchData($data, $this->pdo, 'player_history_view', 'pid', $columns, $filter);
+        $filter = "`player_id` = ". $id;
+        return DataTables::FetchData($data, $this->pdo, 'player_history_view', 'player_id', $columns, $filter);
     }
 }

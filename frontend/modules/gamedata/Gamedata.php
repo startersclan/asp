@@ -101,11 +101,11 @@ class Gamedata extends Controller
 
         // Fetch awards, then get thier awarding counts
         $awards = $pdo->query("SELECT * FROM `award` ORDER BY `type`, `backend`")->fetchAll();
-        $counts = $pdo->query("SELECT id, COUNT(*) AS `count`FROM player_award GROUP BY id")->fetchAll();
+        $counts = $pdo->query("SELECT award_id, COUNT(*) AS `count`FROM player_award GROUP BY award_id")->fetchAll();
 
         $awardCount = [];
         foreach ($counts as $award)
-            $awardCount[$award['id']] = $award['count'];
+            $awardCount[$award['award_id']] = $award['count'];
 
         // Apply formatting
         for ($i = 0; $i < count($awards); $i++)
@@ -159,7 +159,7 @@ class Gamedata extends Controller
 
         // Load data
         $pdo = Database::GetConnection('stats');
-        $unlocks = $pdo->query("SELECT u.*, k.name AS `kitname` FROM `unlock` AS u INNER JOIN `kit` AS k ON k.id = u.kit ORDER BY `id`")->fetchAll();
+        $unlocks = $pdo->query("SELECT u.*, k.name AS `kitname` FROM `unlock` AS u INNER JOIN `kit` AS k ON k.id = u.kit_id ORDER BY `id`")->fetchAll();
         $kits = $pdo->query("SELECT `id`, `name` FROM `kit` ORDER BY `id`")->fetchAll();
 
         // Load view
@@ -187,7 +187,13 @@ class Gamedata extends Controller
      */
     public function postAdd()
     {
+        // Require action
+        $this->requireAction('add', 'edit');
+
+        // Require database connection
+        $this->requireDatabase(true);
         $pdo = Database::GetConnection('stats');
+
         try
         {
             // Use a dictionary here to gain an exception on missing array item
@@ -202,11 +208,13 @@ class Gamedata extends Controller
             switch ($_POST['action'])
             {
                 case 'add':
+                    $qType = $pdo->quoteIdentifier($type);
+
                     /** @noinspection SqlResolve */
-                    $max = (int)$pdo->query("SELECT COALESCE(max(`id`), -1) FROM $type")->fetchColumn(0);
+                    $max = (int)$pdo->query("SELECT COALESCE(max(id), -1) FROM $qType")->fetchColumn(0);
                     $pdo->insert($type, [
-                        'id' => ++$max,
-                        'name' => $name,
+                        "id" => ++$max,
+                        "name" => $name,
                     ]);
 
                     // Get insert ID
@@ -216,14 +224,11 @@ class Gamedata extends Controller
                     $pdo->update($type, ['name' => $name], ['id' => $id]);
                     echo json_encode(['success' => true, 'itemId' => $id, 'itemName' => $name, 'itemType' => $type]);
                     break;
-                default:
-                    echo json_encode(array('success' => false, 'message' => 'Invalid Action'));
-                    die;
             }
         }
         catch (Exception $e)
         {
-            echo json_encode( array('success' => false, 'message' => 'Query Failed! '. $e->getMessage(), 'lastQuery' => $pdo->lastQuery) );
+            $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage(), ['lastQuery' => $pdo->lastQuery]);
             die;
         }
     }
@@ -235,20 +240,12 @@ class Gamedata extends Controller
      */
     public function postDelete()
     {
-        // Form post?
-        if ($_POST['action'] != 'delete')
-        {
-            echo json_encode( array('success' => false, 'message' => 'Invalid Action') );
-            die;
-        }
+        // Require action
+        $this->requireAction('delete');
 
-        // Grab database connection
+        // Require database connection
+        $this->requireDatabase(true);
         $pdo = Database::GetConnection('stats');
-        if ($pdo === false)
-        {
-            echo json_encode( array('success' => false, 'message' => 'Unable to connect to database!') );
-            die;
-        }
 
         // Prepared statement!
         try
@@ -260,24 +257,29 @@ class Gamedata extends Controller
             $itemId = (int)$items['itemId'];
             $type = preg_replace("/[^A-Za-z]/", '', $items['itemType']);
 
+            // Perform identifier escapes
+            $qType = $pdo->quoteIdentifier($type);
+            $table = $pdo->quoteIdentifier("player_{$type}");
+            $col = $pdo->quoteIdentifier("{$type}_id");
+
             // Prepare statement
             /** @noinspection SqlResolve */
-            $stmt = $pdo->prepare("DELETE FROM `player_{$type}` WHERE `id`=:id");
+            $stmt = $pdo->prepare("DELETE FROM {$table} WHERE {$col}=:id");
             $stmt->bindValue(':id', $itemId, PDO::PARAM_INT);
             $stmt->execute();
 
             // Prepare statement
             /** @noinspection SqlResolve */
-            $stmt = $pdo->prepare("DELETE FROM `{$type}` WHERE `id`=:id");
+            $stmt = $pdo->prepare("DELETE FROM {$qType} WHERE `id`=:id");
             $stmt->bindValue(':id', $itemId, PDO::PARAM_INT);
             $stmt->execute();
 
             // Echo success
-            echo json_encode( array('success' => true, 'itemId' => $itemId, 'itemType' => $type) );
+            $this->sendJsonResponse(true, '', ['itemId' => $itemId, 'itemType' => $type] );
         }
         catch (Exception $e)
         {
-            echo json_encode( array('success' => false, 'message' => 'Query Failed! '. $e->getMessage()) );
+            $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage());
             die;
         }
     }
@@ -289,13 +291,12 @@ class Gamedata extends Controller
      */
     public function postAddAward()
     {
-        // Grab database connection
+        // Require action
+        $this->requireAction('add', 'edit');
+
+        // Require database connection
+        $this->requireDatabase(true);
         $pdo = Database::GetConnection('stats');
-        if ($pdo === false)
-        {
-            echo json_encode( array('success' => false, 'message' => 'Unable to connect to database!') );
-            die;
-        }
 
         try
         {
@@ -327,14 +328,11 @@ class Gamedata extends Controller
                     $data['mode'] = 'edit';
                     echo json_encode($data);
                     break;
-                default:
-                    echo json_encode(['success' => false, 'message' => 'Invalid Action']);
-                    die;
             }
         }
         catch (Exception $e)
         {
-            echo json_encode(['success' => false, 'message' => 'Query Failed! '. $e->getMessage(), 'lastQuery' => $pdo->lastQuery]);
+            $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage(), ['lastQuery' => $pdo->lastQuery]);
             die;
         }
     }
@@ -346,46 +344,36 @@ class Gamedata extends Controller
      */
     public function postDeleteAward()
     {
-        // Form post?
-        if ($_POST['action'] != 'delete')
-        {
-            echo json_encode( array('success' => false, 'message' => 'Invalid Action') );
-            die;
-        }
+        // Require action
+        $this->requireAction('delete');
 
-        // Grab database connection
+        // Require database connection
+        $this->requireDatabase(true);
         $pdo = Database::GetConnection('stats');
-        if ($pdo === false)
-        {
-            echo json_encode( array('success' => false, 'message' => 'Unable to connect to database!') );
-            die;
-        }
 
         // Prepared statement!
         try
         {
             // Use a dictionary here to gain an exception on missing array item
             $items = new Dictionary(false, $_POST);
-
-            // Get award id
             $awardId = (int)$items['awardId'];
 
             // Prepare statement
-            $stmt = $pdo->prepare("DELETE FROM `player_award` WHERE `id`=:id");
+            $stmt = $pdo->prepare("DELETE FROM player_award WHERE award_id=:id");
             $stmt->bindValue(':id', $awardId, PDO::PARAM_INT);
             $stmt->execute();
 
             // Prepare statement
-            $stmt = $pdo->prepare("DELETE FROM `award` WHERE `id`=:id");
+            $stmt = $pdo->prepare("DELETE FROM award WHERE id=:id");
             $stmt->bindValue(':id', $awardId, PDO::PARAM_INT);
             $stmt->execute();
 
             // Echo success
-            echo json_encode( ['success' => true, 'awardId' => $awardId] );
+            $this->sendJsonResponse(true, '', ['awardId' => $awardId]);
         }
         catch (Exception $e)
         {
-            echo json_encode( ['success' => false, 'message' => 'Query Failed! '. $e->getMessage()] );
+            $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage());
             die;
         }
     }
@@ -397,13 +385,12 @@ class Gamedata extends Controller
      */
     public function postAddUnlock()
     {
-        // Grab database connection
+        // Require action
+        $this->requireAction('add', 'edit');
+
+        // Require database connection
+        $this->requireDatabase(true);
         $pdo = Database::GetConnection('stats');
-        if ($pdo === false)
-        {
-            echo json_encode( array('success' => false, 'message' => 'Unable to connect to database!') );
-            die;
-        }
 
         try
         {
@@ -415,6 +402,7 @@ class Gamedata extends Controller
                 'desc' => preg_replace('/[^A-Za-z0-9_\-\s\t\/\.&\(\)]/', '', $items['unlockDesc']),
                 'kit' => (int)$items['unlockKit']
             ];
+            $name = $pdo->quoteIdentifier('name');
 
             // Switch on our action base
             switch ($_POST['action'])
@@ -423,7 +411,7 @@ class Gamedata extends Controller
                     $pdo->insert('unlock', $data);
 
                     // Get kit name
-                    $data['kit'] = $pdo->query("SELECT `name` FROM `kit` WHERE `id`=". $data['kit'])->fetchColumn(0);
+                    $data['kit'] = $pdo->query("SELECT {$name} FROM kit WHERE id=". $data['kit'])->fetchColumn(0);
                     $data['success'] = true;
                     $data['mode'] = 'add';
                     echo json_encode($data);
@@ -432,19 +420,16 @@ class Gamedata extends Controller
                     $pdo->update('unlock', $data, ['id' => (int)$items['originalId']]);
 
                     // Get kit name
-                    $data['kit'] = $pdo->query("SELECT `name` FROM `kit` WHERE `id`=". $data['kit'])->fetchColumn(0);
+                    $data['kit'] = $pdo->query("SELECT {$name} FROM kit WHERE id=". $data['kit'])->fetchColumn(0);
                     $data['success'] = true;
                     $data['mode'] = 'edit';
                     echo json_encode($data);
                     break;
-                default:
-                    echo json_encode(['success' => false, 'message' => 'Invalid Action']);
-                    die;
             }
         }
         catch (Exception $e)
         {
-            echo json_encode(['success' => false, 'message' => 'Query Failed! '. $e->getMessage(), 'lastQuery' => $pdo->lastQuery]);
+            $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage(), ['lastQuery' => $pdo->lastQuery]);
             die;
         }
     }
@@ -456,46 +441,39 @@ class Gamedata extends Controller
      */
     public function postDeleteUnlock()
     {
-        // Form post?
-        if ($_POST['action'] != 'delete')
-        {
-            echo json_encode( array('success' => false, 'message' => 'Invalid Action') );
-            die;
-        }
+        // Require action
+        $this->requireAction('delete');
 
-        // Grab database connection
+        // Require database connection
+        $this->requireDatabase(true);
         $pdo = Database::GetConnection('stats');
-        if ($pdo === false)
-        {
-            echo json_encode( array('success' => false, 'message' => 'Unable to connect to database!') );
-            die;
-        }
 
         // Prepared statement!
         try
         {
             // Use a dictionary here to gain an exception on missing array item
             $items = new Dictionary(false, $_POST);
-
-            // Get unlock id
             $uId = (int)$items['unlockId'];
 
+            // Perform identifier escapes
+            $table = $pdo->quoteIdentifier("unlock");
+
             // Prepare statement
-            $stmt = $pdo->prepare("DELETE FROM `player_unlock` WHERE `unlockid`=:id");
+            $stmt = $pdo->prepare("DELETE FROM player_unlock WHERE unlock_id=:id");
             $stmt->bindValue(':id', $uId, PDO::PARAM_INT);
             $stmt->execute();
 
             // Prepare statement
-            $stmt = $pdo->prepare("DELETE FROM `unlock` WHERE `id`=:id");
+            $stmt = $pdo->prepare("DELETE FROM {$table} WHERE id=:id");
             $stmt->bindValue(':id', $uId, PDO::PARAM_INT);
             $stmt->execute();
 
             // Echo success
-            echo json_encode( ['success' => true, 'unlockId' => $uId] );
+            $this->sendJsonResponse(true, '', ['unlockId' => $uId]);
         }
         catch (Exception $e)
         {
-            echo json_encode( ['success' => false, 'message' => 'Query Failed! '. $e->getMessage()] );
+            $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage());
             die;
         }
     }

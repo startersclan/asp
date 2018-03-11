@@ -30,9 +30,10 @@ class Mapinfo extends Controller
 
         // Fetch server list!
         $pdo = Database::GetConnection('stats');
-        $result = $pdo->query("SELECT * FROM `mapinfo` ORDER BY id ASC");
-        $maps = $result->fetchAll() or [];
+        $maps = $pdo->query("SELECT * FROM map ORDER BY id ASC")->fetchAll();
+        if ($maps === false) $maps = [];
 
+        // Convert map time to a human readable format
         $maps = array_map(function ($values)
         {
             $time = (int)$values['time'];

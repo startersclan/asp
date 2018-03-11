@@ -49,9 +49,9 @@ class RoundInfoModel
         // Fetch round
         $query = <<<SQL
 SELECT h.*, mi.name AS `name`, s.name AS `server`, s.ip AS `ip`, s.port AS `port`
-FROM round_history AS h 
-  LEFT JOIN mapinfo AS mi ON h.mapid = mi.id 
-  LEFT JOIN server AS s ON h.serverid = s.id
+FROM round AS h 
+  LEFT JOIN map AS mi ON h.map_id = mi.id 
+  LEFT JOIN server AS s ON h.server_id = s.id
 WHERE h.id={$id}
 SQL;
         $round = $this->pdo->query($query)->fetch();
@@ -59,8 +59,8 @@ SQL;
             return false;
 
         // Assign custom round values and attach to view
-        $round['round_start_date'] = date('F jS, Y g:i A T', (int)$round['round_start']);
-        $round['round_end_date'] = date('F jS, Y g:i A T', (int)$round['round_end']);
+        $round['round_start_date'] = date('F jS, Y g:i A T', (int)$round['time_start']);
+        $round['round_end_date'] = date('F jS, Y g:i A T', (int)$round['time_end']);
         $round['gamemode'] = Battlefield2::GetGameModeString($round['gamemode']);
         $round['team1name'] = $this->pdo->query("SELECT `name` FROM army WHERE id=". $round['team1'])->fetchColumn(0);
         $round['team2name'] = $this->pdo->query("SELECT `name` FROM army WHERE id=". $round['team2'])->fetchColumn(0);
@@ -83,10 +83,10 @@ SQL;
         $players1 = [];
         $players2 = [];
         $query = <<<SQL
-SELECT h.pid, h.team, h.score, h.kills, h.deaths, h.rank, h.cmdscore, h.skillscore, h.teamscore, p.name
+SELECT h.player_id, h.team, h.score, h.kills, h.deaths, h.rank, h.cmdscore, h.skillscore, h.teamscore, p.name
 FROM player_history AS h 
-  LEFT JOIN player AS p ON h.pid = p.id
-WHERE roundid={$id}
+  LEFT JOIN player AS p ON h.player_id = p.id
+WHERE round_id={$id}
 SQL;
         $result = $this->pdo->query($query);
         while ($row = $result->fetch())
@@ -108,11 +108,17 @@ SQL;
      * @param View $view The view to attach advanced info into
      *
      * @return bool true if the snapshot was loaded, otherwise false
+     *
+     * @throws DirectoryNotFoundException
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws ObjectDisposedException
+     * @throws SecurityException
      */
     public function addAdvancedRoundInfo(array $round, View $view)
     {
         // Attempt to find shapshot files
-        $time = new \DateTime("@{$round['round_end']}", new \DateTimeZone("UTC"));
+        $time = new \DateTime("@{$round['time_end']}", new \DateTimeZone("UTC"));
         $format = $time->format('Ymd_His');
         $path = Path::Combine(SYSTEM_PATH, "snapshots", "processed");
         $files = Directory::GetFiles($path, '.*'. $round['name'] .'_'. $format .'\.json');
@@ -148,7 +154,7 @@ SQL;
                 if ($data == null) continue;
 
                 // compare map start times, as this could be the fastest way to determine
-                if ($round['round_start'] == $data['mapStart'])
+                if ($round['time_start'] == $data['mapStart'])
                 {
                     $potentials[] = $data;
                 }
@@ -220,13 +226,13 @@ SQL;
     {
         // Load awards
         $query = <<<SQL
-SELECT pa.id AS `id`, pa.level AS `level`, a.type AS `type`, p.name AS `player_name`, a.name AS `name`, 
-  h.team AS `team`, pa.roundid AS `rid`, h.rank AS `rank`
+SELECT pa.award_id AS `id`, pa.level AS `level`, a.type AS `type`, p.name AS `player_name`, a.name AS `name`, 
+  h.team AS `team`, pa.round_id AS `rid`, h.rank AS `rank`
 FROM player_award AS pa 
-  LEFT JOIN player AS p ON pa.pid = p.id
-  LEFT JOIN award AS a ON pa.id = a.id
-  LEFT JOIN player_history AS h ON pa.pid = h.pid AND pa.roundid = h.roundid
-WHERE pa.roundid = $id ORDER BY pa.id
+  LEFT JOIN player AS p ON pa.player_id = p.id
+  LEFT JOIN award AS a ON pa.award_id = a.id
+  LEFT JOIN player_history AS h ON pa.player_id = h.player_id AND pa.round_id = h.round_id
+WHERE pa.round_id = $id ORDER BY pa.award_id
 SQL;
 
         // Fetch the round awards
@@ -268,6 +274,10 @@ SQL;
      * @param string $file
      *
      * @return array
+     *
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws ObjectDisposedException
      */
     protected function loadSnapshotData($file)
     {

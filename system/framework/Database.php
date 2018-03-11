@@ -10,6 +10,7 @@
 namespace System;
 
 use System\Database\DbConnection;
+use System\Database\DbConnectionStringBuilder;
 
 /**
  * Database Factory Class
@@ -29,35 +30,21 @@ class Database
      * Initiates a new database connection.
      *
      * @param string $name Name or ID of the connection
-     * @param array $i The database connection information
-     *     array(
-     *       'driver'
-     *       'host'
-     *       'port'
-     *       'database'
-     *       'username'
-     *       'password')
+     * @param DbConnectionStringBuilder $builder
      * @param bool $new If connection already exists, setting to true
      *    will overwrite the old connection ID with the new connection
      *
      * @throws \Exception
      * @return \System\Database\DbConnection Returns a Database Driver Object
      */
-    public static function Connect($name, $i, $new = false)
+    public static function CreateConnection($name, DbConnectionStringBuilder $builder, $new = false)
     {
         // If the connection already exists, and $new is false, return existing
         if (isset(self::$connections[$name]) && !$new)
             return self::$connections[$name];
 
         // Connect using the PDO Constructor
-        self::$connections[$name] = new DbConnection(
-            $i['host'],
-            $i['port'],
-            $i['database'],
-            $i['username'],
-            $i['password']
-        );
-
+        self::$connections[$name] = new DbConnection($builder);
         return self::$connections[$name];
     }
 
@@ -69,7 +56,7 @@ class Database
      * @return bool|\System\Database\DbConnection Returns a Database Driver Object,
      *    or false of the connection $name does'nt exist
      */
-    public static function GetConnection($name = 'bf2stats')
+    public static function GetConnection($name = 'stats')
     {
         if (isset(self::$connections[$name]))
             return self::$connections[$name];

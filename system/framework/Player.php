@@ -21,7 +21,7 @@ class Player
     /**
      * @var int The players PID
      */
-    public $pid = 0;
+    public $id = 0;
 
     /**
      * @var string The players name
@@ -187,7 +187,7 @@ class Player
          * thrown if a key does not exist! Helpful for debugging and
          * validating that there are no missing array keys from the snapshot
          */
-        $this->pid = (int)$playerData['pID'];
+        $this->id = (int)$playerData['pID'];
         $this->name = preg_replace("/[^". Player::NAME_REGEX ."]/", '', trim($playerData['name']));
         $this->rank = (int)$playerData['rank'];
         $this->roundScore = (int)$playerData['rs'];

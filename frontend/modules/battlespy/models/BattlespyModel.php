@@ -8,18 +8,25 @@
  *
  */
 
+use System\Response;
+
 /**
  * Battlespy Model
  *
  * @package Models
  * @subpackage Battlepspy
  */
-class BattlespyModel
+class BattlespyModel extends System\Controller
 {
     /**
      * @var \System\Database\DbConnection The stats database connection
      */
     protected $pdo;
+
+    /**
+     * @var RoundInfoModel
+     */
+    protected $roundInfoModel;
 
     /**
      * BattlespyModel constructor.
@@ -39,12 +46,12 @@ class BattlespyModel
     {
         // Fetch reports
         $query = <<<SQL
-SELECT r.*, rh.mapid, rh.round_end AS `timestamp`, s.name AS `server`, mi.name AS `mapname`,
-  (SELECT COUNT(id) FROM battlespy_message WHERE `reportid` = r.id) AS `count`
+SELECT r.*, rh.map_id, rh.time_end AS `timestamp`, s.name AS `server`, mi.name AS `mapname`,
+  (SELECT COUNT(id) FROM battlespy_message WHERE `report_id` = r.id) AS `count`
 FROM battlespy_report AS r
-  LEFT JOIN round_history AS rh ON r.roundid = rh.id
-  LEFT JOIN server AS s ON r.serverid = s.id
-  LEFT JOIN mapinfo AS mi ON rh.mapid = mi.id
+  LEFT JOIN round AS rh ON r.round_id = rh.id
+  LEFT JOIN server AS s ON r.server_id = s.id
+  LEFT JOIN map AS mi ON rh.map_id = mi.id
 SQL;
         $result = $this->pdo->query($query);
         $reports = [];
@@ -72,11 +79,11 @@ SQL;
     {
         // Fetch report
         $query = <<<SQL
-SELECT r.*, rh.mapid, rh.round_end AS `timestamp`, s.name AS `server`, mi.name AS `mapname`,
+SELECT r.*, rh.map_id, rh.time_end AS `timestamp`, s.name AS `server_name`, mi.name AS `mapname`
 FROM battlespy_report AS r
-  LEFT JOIN round_history AS rh ON r.roundid = rh.id
-  LEFT JOIN server AS s ON r.serverid = s.id
-  LEFT JOIN mapinfo AS mi ON rh.mapid = mi.id
+  LEFT JOIN round AS rh ON r.round_id = rh.id
+  LEFT JOIN server AS s ON r.server_id = s.id
+  LEFT JOIN map AS mi ON rh.map_id = mi.id
 WHERE r.id = {$id} LIMIT 1
 SQL;
 
@@ -87,7 +94,7 @@ SQL;
 
         // Fetch report messages
         $messages = [];
-        $query = "SELECT m.*, p.name FROM battlespy_message AS m JOIN player AS p ON m.pid = p.id WHERE reportid=". $id;
+        $query = "SELECT m.*, p.name, p.rank FROM battlespy_message AS m JOIN player AS p ON m.player_id = p.id WHERE report_id=". $id;
         $results = $this->pdo->query($query);
 
         // Add css badge text
@@ -99,13 +106,13 @@ SQL;
             switch ($severity)
             {
                 case 3:
-                    $message['badge'] = 'important';
+                    $message['badge'] = 'Important';
                     break;
                 case 2:
-                    $message['badge'] = 'warning';
+                    $message['badge'] = 'Warning';
                     break;
                 default:
-                    $message['badge'] = 'info';
+                    $message['badge'] = 'Info';
                     break;
             }
 
@@ -113,8 +120,20 @@ SQL;
             $messages[] = $message;
         }
 
+        // Attach model
+        $this->loadModel('RoundInfoModel', 'roundinfo');
+
+        // Fetch round
+        $round = $this->roundInfoModel->fetchRoundInfoById($report['round_id']);
+        if (empty($round))
+        {
+            Response::Redirect('battlespy');
+            die;
+        }
+
         return [
             'report' => $report,
+            'round' => $round['round'],
             'messages' => $messages
         ];
     }

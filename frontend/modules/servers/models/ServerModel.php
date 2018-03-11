@@ -48,11 +48,11 @@ class ServerModel
 
         // Select counts of snapshots received by each server
         $counts = [];
-        $query = "SELECT `serverid`, COUNT(*) AS `count` FROM `round_history` GROUP BY `serverid`";
+        $query = "SELECT `server_id`, COUNT(*) AS `count` FROM `round` GROUP BY `server_id`";
         $res = $this->pdo->query($query)->fetchAll();
         foreach ($res as $row)
         {
-            $key = (int)$row['serverid'];
+            $key = (int)$row['server_id'];
             $counts[$key] = (int)$row['count'];
         }
 

@@ -10,7 +10,7 @@
 
 namespace System;
 
-use System\Database\DbConnection;
+use PDO;
 
 /**
  * This class represents a Backend Award with a series of criteria's that
@@ -49,18 +49,17 @@ class BackendAward
      * This method does properly allow multiple awarding of backend medals
      *
      * @param Player $player The player to run the criteria against
-     * @param DbConnection $connection Stats database connection
+     * @param PDO $connection Stats database connection
      * @param int $awardCount [Reference Variable] Returns the amount of times the Award has
      *  been awarded to the player.
      *
      * @return bool true if the player has met the criteria to earn this award, or false
      */
-    public function criteriaMet(Player $player, DbConnection $connection, &$awardCount)
+    public function criteriaMet(Player $player, PDO $connection, &$awardCount)
     {
         // Get the award count (or level for badges) for this award
-        $query = "SELECT COUNT(id) FROM player_award WHERE pid=%d AND id=%d";
-        $result = $connection->query(sprintf($query, $player->pid, $this->awardId));
-        $awardCount = (int) $result->fetchColumn();
+        $query = sprintf("SELECT COUNT(player_id) FROM player_award WHERE player_id=%d AND award_id=%d", $player->id, $this->awardId);
+        $awardCount = (int)$connection->query($query)->fetchColumn(0);
         $isRibbon = ($this->awardId > 3000000);
 
         // Can only receive ribbons once in a lifetime, so return false if we have it already
@@ -74,10 +73,10 @@ class BackendAward
             $where = str_replace('###', $awardCount, $criteria->where);
 
             /** @noinspection SqlResolve */
-            $query = vsprintf("SELECT %s FROM `%s` WHERE `pid`=%d AND %s LIMIT 1", [
+            $query = vsprintf("SELECT %s FROM `%s` WHERE player_id=%d AND %s LIMIT 1", [
                 $criteria->field,
                 $criteria->table,
-                $player->pid,
+                $player->id,
                 $where
             ]);
 

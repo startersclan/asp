@@ -253,7 +253,7 @@ else
         }
 
         // Grab total count
-        $query = "SELECT COUNT(pid) FROM risingstar";
+        $query = "SELECT COUNT(player_id) FROM risingstar";
         $total = (int)$connection->query($query)->fetchColumn(0);
         $Response->writeDataLine($total, time());
         $Response->writeHeaderLine("n", "pid", "nick", "weeklyscore", "totaltime", "date", "playerrank", "countrycode");
@@ -261,9 +261,9 @@ else
         if (!$pid)
         {
             $query = <<<SQL
-SELECT pos, pid, r.weeklyscore, p.name, p.rank, p.country, p.joined, p.time
+SELECT pos, player_id, weeklyscore, p.name, p.rank, p.country, p.joined, p.time
 FROM risingstar AS r 
-  INNER JOIN player AS p ON r.pid = p.id 
+  INNER JOIN player AS p ON player_id = p.id 
 WHERE pos BETWEEN $min AND $max
 SQL;
             $result = $connection->query($query);
@@ -271,7 +271,7 @@ SQL;
             {
                 $Response->writeDataLine(
                     $row['pos'],
-                    $row['pid'],
+                    $row['player_id'],
                     trim($row['name']),
                     $row['weeklyscore'],
                     $row['time'],
@@ -293,7 +293,7 @@ SQL;
             }
 
             // Get players position relative to everyone else
-            $query = "SELECT pos, weeklyscore FROM risingstar WHERE pid=%d";
+            $query = "SELECT pos, weeklyscore FROM risingstar WHERE player_id=%d";
             $result = $connection->query(sprintf($query, $pid))->fetch();
 
             // Fix empty result
@@ -321,7 +321,7 @@ SQL;
         $id = (int)$id;
 
         // Get the total number of results
-        $result = $connection->query("SELECT COUNT(id) FROM player_kit WHERE id={$id} AND kills > 0");
+        $result = $connection->query("SELECT COUNT(kit_id) FROM player_kit WHERE kit_id={$id} AND kills > 0");
         $Response->writeDataLine($result->fetchColumn(), time());
         $Response->writeHeaderLine("n", "pid", "nick", "killswith", "deathsby", "timeplayed", "playerrank", "countrycode");
 
@@ -329,10 +329,10 @@ SQL;
         if ($pid == 0)
         {
             $query = <<<SQL
-SELECT p.name, p.rank, p.country, k.pid, k.kills, k.deaths, k.time
+SELECT p.name, p.rank, p.country, k.player_id, k.kills, k.deaths, k.time
 FROM player_kit AS k
-  INNER JOIN player AS p ON k.pid = p.id
-WHERE k.id = $id AND k.kills > 0
+  INNER JOIN player AS p ON k.player_id = p.id
+WHERE k.kit_id = $id AND k.kills > 0
 ORDER BY kills DESC, time DESC
 LIMIT $min, $max
 SQL;
@@ -341,7 +341,7 @@ SQL;
             {
                 $Response->writeDataLine(
                     $pos++,
-                    $row['pid'],
+                    $row['player_id'],
                     trim($row['name']),
                     $row['kills'],
                     $row['deaths'],
@@ -363,7 +363,7 @@ SQL;
             }
 
             // Fetch players kit if he has one...
-            $query = "SELECT `kills`, `deaths`, `time` FROM player_kit WHERE pid={$pid} AND id={$id} LIMIT 1";
+            $query = "SELECT `kills`, `deaths`, `time` FROM player_kit WHERE player_id={$pid} AND kit_id={$id} LIMIT 1";
             $result = $connection->query($query);
             if ($row = $result->fetch())
             {
@@ -377,7 +377,7 @@ SQL;
             }
 
             // Get player position relative to everyone else
-            $query = "SELECT COUNT(id) FROM player_kit WHERE id=%d AND kills > %d AND time > %d";
+            $query = "SELECT COUNT(kit_id) FROM player_kit WHERE kit_id=%d AND kills > %d AND time > %d";
             $result = $connection->query(sprintf($query, $id, $player['kills'], $player['time']));
             $pos = ((int)$result->fetchColumn()) + 1;
 
@@ -399,7 +399,7 @@ SQL;
         // Cast to integer
         $id = (int)$id;
 
-        $result = $connection->query("SELECT COUNT(id) FROM player_vehicle WHERE id={$id} AND kills > 0");
+        $result = $connection->query("SELECT COUNT(vehicle_id) FROM player_vehicle WHERE vehicle_id={$id} AND kills > 0");
         $Response->writeDataLine($result->fetchColumn(), time());
         $Response->writeHeaderLine("n", "pid", "nick", "killswith", "deathsby", "timeused", "playerrank", "countrycode");
 
@@ -408,10 +408,10 @@ SQL;
             $query = <<<SQL
 SELECT 
   p.name AS name, p.rank AS rank, p.country AS country, 
-  k.pid AS pid, k.kills AS kills, k.deaths AS deaths, k.time AS `time`
+  k.player_id AS pid, k.kills AS kills, k.deaths AS deaths, k.time AS `time`
 FROM player_vehicle AS k
-  INNER JOIN player AS p ON k.pid = p.id
-WHERE k.id = $id AND k.kills > 0
+  INNER JOIN player AS p ON k.player_id = p.id
+WHERE k.vehicle_id = $id AND k.kills > 0
 ORDER BY kills DESC, time DESC
 LIMIT $min, $max
 SQL;
@@ -420,7 +420,7 @@ SQL;
             {
                 $Response->writeDataLine(
                     $pos++,
-                    $row['pid'],
+                    $row['player_id'],
                     trim($row['name']),
                     $row['kills'],
                     $row['deaths'],
@@ -442,7 +442,7 @@ SQL;
             }
 
             // Fetch players kit if he has one...
-            $query = "SELECT `kills`, `deaths`, `time` FROM player_vehicle WHERE pid={$pid} AND id={$id} LIMIT 1";
+            $query = "SELECT `kills`, `deaths`, `time` FROM player_vehicle WHERE player_id={$pid} AND id={$id} LIMIT 1";
             $row = $connection->query($query)->fetch();
             if (!empty($row))
             {
@@ -456,7 +456,7 @@ SQL;
             }
 
             // Get player position relative to everyone else
-            $query = "SELECT COUNT(id) FROM player_vehicle WHERE id=%d AND kills > %d AND time > %d";
+            $query = "SELECT COUNT(vehicle_id) FROM player_vehicle WHERE vehicle_id=%d AND kills > %d AND time > %d";
             $result = $connection->query(sprintf($query, $id, $player['kills'], $player['time']));
             $pos = ((int)$result->fetchColumn()) + 1;
 
@@ -478,7 +478,7 @@ SQL;
         // Cast to integer
         $id = (int)$id;
 
-        $result = $connection->query("SELECT COUNT(id) FROM player_weapon WHERE id={$id} AND kills > 0");
+        $result = $connection->query("SELECT COUNT(weapon_id) FROM player_weapon WHERE weapon_id={$id} AND kills > 0");
         $Response->writeDataLine($result->fetchColumn(), time());
         # NOTE: EA typo (deathsby=detahsby)
         $Response->writeHeaderLine("n", "pid", "nick", "killswith", "detahsby", "timeused", "accuracy", "playerrank", "countrycode");
@@ -488,10 +488,10 @@ SQL;
             $query = <<<SQL
 SELECT 
   p.name AS name, p.rank AS rank, p.country AS country, 
-  k.pid AS pid, k.kills AS kills, k.deaths AS deaths, k.time AS `time`, k.hits AS hits, k.fired AS fired
+  k.player_id AS pid, k.kills AS kills, k.deaths AS deaths, k.time AS `time`, k.hits AS hits, k.fired AS fired
 FROM player_weapon AS k
-  INNER JOIN player AS p ON k.pid = p.id
-WHERE k.id = $id AND k.kills > 0
+  INNER JOIN player AS p ON k.player_id = p.id
+WHERE k.weapon_id = $id AND k.kills > 0
 ORDER BY kills DESC, time DESC
 LIMIT $min, $max
 SQL;
@@ -503,7 +503,7 @@ SQL;
                 $hits = (int)$row['hits'];
                 $Response->writeDataLine(
                     $pos++,
-                    $row['pid'],
+                    $row['player_id'],
                     trim($row['name']),
                     $row['kills'],
                     $row['deaths'],
@@ -526,7 +526,7 @@ SQL;
             }
 
             // Fetch players kit if he has one...
-            $query = "SELECT `kills`, `deaths`, `time`, `hits`, `fired` FROM player_weapon WHERE pid=%d AND id=%d LIMIT 1";
+            $query = "SELECT `kills`, `deaths`, `time`, `hits`, `fired` FROM player_weapon WHERE player_id=%d AND weapon_id=%d LIMIT 1";
             $row = $connection->query(sprintf($query, $pid, $id))->fetch();
             if (!empty($row))
             {
@@ -544,7 +544,7 @@ SQL;
             }
 
             // Get player position relative to everyone else
-            $query = "SELECT COUNT(id) FROM player_weapon WHERE id=%d AND kills > %d AND time > %d";
+            $query = "SELECT COUNT(weapon_id) FROM player_weapon WHERE weapon_id=%d AND kills > %d AND time > %d";
             $result = $connection->query(sprintf($query, $id, $player['kills'], $player['time']));
             $pos = ((int)$result->fetchColumn()) + 1;
 
