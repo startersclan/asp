@@ -202,8 +202,8 @@ class Players extends Controller
 
             // Attach scripts
             $view->attachScript("/ASP/frontend/js/flot/jquery.flot.min.js");
-            $view->attachScript("/ASP/frontend/js/flot/plugins/jquery.flot.tooltip.js");
             $view->attachScript("/ASP/frontend/js/flot/plugins/jquery.flot.pie.min.js");
+            $view->attachScript("/ASP/frontend/js/flot/plugins/jquery.flot.tooltip.js");
             $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");
             $view->attachScript("/ASP/frontend/modules/players/js/history_detail.js");
 
@@ -484,8 +484,15 @@ class Players extends Controller
      * @request     /ASP/players/history
      * @output      json
      */
-    public function postHistory()
+    public function postHistory($id = 0, $subid = 0)
     {
+        // Make sure we aren't logging into this page
+        if (!isset($_POST['playerId']))
+        {
+            $this->history($id, $subid);
+            return;
+        }
+
         // Require a database connection
         $this->requireDatabase(true);
 

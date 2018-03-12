@@ -369,7 +369,7 @@ SQL;
      */
     public function attachKitData($id, View $view)
     {
-        // Insure $id is an integer
+        // ensure $id is an integer
         $id = (int)$id;
 
         // Prepare return data

@@ -46,16 +46,14 @@
                     show: false
                 },
                 grid: {
-                    hoverable: true,
-                    clickable: true
+                    hoverable: true
                 },
                 tooltip: true,
                 tooltipOpts: {
-                    content: function (label, xval, yval, flotItem) { // expects to pass these arguments
-                        return "%s : %y";
-                    },
+                    content: "Total %s: %n",
                     defaultTheme: false,
-                    cssClass: 'flotTip'
+                    cssClass: 'flotTip',
+                    show: true
                 }
             });
         }
@@ -85,9 +83,7 @@
                 },
                 tooltip: true,
                 tooltipOpts: {
-                    content: function (label, xval, yval, flotItem) { // expects to pass these arguments
-                        return "%s : %y";
-                    },
+                    content: "%s Time: %t",
                     defaultTheme: false,
                     cssClass: 'flotTip'
                 }

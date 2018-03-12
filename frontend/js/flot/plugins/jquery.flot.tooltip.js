@@ -370,7 +370,8 @@
         var xPatternWithoutPrecision = "%x";
         var yPatternWithoutPrecision = "%y";
         var customTextPattern = "%ct";
-	var nPiePattern = "%n";
+	    var nPiePattern = "%n";
+        var nPieTimePattern = "%t";
 
         var x, y, customText, p, n;
 
@@ -439,6 +440,7 @@
         }
         if (typeof n === 'number') {
             content = content.replace(nPiePattern, n);
+            content = this.applyTimeFormat(nPieTimePattern, content, n);
         }
 
         // series match
@@ -574,6 +576,20 @@
                 // only replace content if precision exists, in other case use thickformater
                 content = content.replace(pattern, value);
             }
+        }
+        return content;
+    };
+
+    FlotTooltip.prototype.applyTimeFormat = function (pattern, content, value) {
+
+        var matchResult = content.match(pattern);
+        if( matchResult !== null ) {
+            var date = new Date(null);
+            date.setSeconds(value); // specify value for SECONDS here
+            var results = date.toISOString().substr(11, 8);
+
+            // replace contents
+            content = content.replace(pattern, results);
         }
         return content;
     };
