@@ -115,10 +115,10 @@
                 <th class="checkbox-column">
                     <input id="select-all" type="checkbox">
                 </th>
+                <th style="width: 7%">Severity</th>
                 <th style="width: 5%">Rank</th>
                 <th>Player Name</th>
-                <th style="width: 33%">Message</th>
-                <th>Severity</th>
+                <th style="width: 60%">Message</th>
                 <th style="width: 7%">Actions</th>
             </tr>
             </thead>
@@ -128,10 +128,10 @@
                     <td class="checkbox-column">
                         <input id="report-{id}" type="checkbox">
                     </td>
+                    <td><span class="badge badge-{badge}">{severity_name}</span></td>
                     <td><img src="/ASP/frontend/images/ranks/rank_{rank}.gif"></td>
                     <td>{name}</td>
                     <td>{message}</td>
-                    <td>{badge}</td>
                     <td>
                         <span class="btn-group">
                             <a id="go-btn" href="/ASP/players/view/{player_id}" rel="tooltip" title="View Player" class="btn btn-small">

@@ -120,11 +120,16 @@ class Players extends Controller
         $view->attachScript("/ASP/frontend/js/validate/jquery.validate-min.js");
         $view->attachScript("/ASP/frontend/js/select2/select2.min.js");
         $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");
+
+        // Attach chart plotting scripts
+        $view->attachScript("/ASP/frontend/js/flot/jquery.flot.min.js");
+        $view->attachScript("/ASP/frontend/js/flot/plugins/jquery.flot.tooltip.js");
         $view->attachScript("/ASP/frontend/modules/players/js/view.js");
 
         // Attach needed stylesheets
         $view->attachStylesheet("/ASP/frontend/js/select2/select2.css");
         $view->attachStylesheet("/ASP/frontend/css/icons/icol16.css");
+        $view->attachStylesheet("/ASP/frontend/css/icons/icol32.css");
         $view->attachStylesheet("/ASP/frontend/modules/players/css/view.css");
 
         // Send output
@@ -584,5 +589,28 @@ class Players extends Controller
         {
             $this->sendJsonResponse(false, "No file received.");
         }
+    }
+
+    /**
+     * @protocol    GET
+     * @request     /ASP/players/timePlayed/{pid}
+     * @output      json
+     *
+     * @param int $id
+     */
+    public function getTimePlayed($id = 0)
+    {
+        // Hide errors. Specifically, Daylight Savings errors
+        ini_set("display_errors", "0");
+
+        // Require database connection
+        $this->requireDatabase(true);
+
+        // Load model
+        $this->loadModel('PlayerAjaxModel', 'players', 'ajaxModel');
+
+        // Use our model to do all the hard work
+        $data = $this->ajaxModel->getTimePlayedChartData($id);
+        echo json_encode($data);
     }
 }

@@ -70,7 +70,7 @@ function build_navigation()
         // Add Player Links
         $group = new NavigationItem("Player Manager", "#", "icon-users", in_array($task, $players));
         $group->append('/ASP/players', 'Manage Players');
-        $group->append('/ASP/players/merge', 'Merge Players');
+        $group->append('/ASP/players/special', 'Manage Special Ranks');
         $navigation->append($group);
 
         // Add Server Admin Links

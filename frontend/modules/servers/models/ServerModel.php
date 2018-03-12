@@ -26,12 +26,29 @@ class ServerModel
     public $pdo;
 
     /**
+     * @var int Time stamp of one week ago
+     */
+    private static $OneWeekAgo = 0;
+
+    /**
+     * @var int Time stamp of two weeks ago
+     */
+    private static $TwoWeekAgo = 0;
+
+    /**
      * ServerModel constructor.
      */
     public function __construct()
     {
         // Fetch database connection
         $this->pdo = System\Database::GetConnection('stats');
+
+        // Set static vars
+        if (self::$OneWeekAgo == 0)
+        {
+            self::$OneWeekAgo = time() - (86400 * 7);
+            self::$TwoWeekAgo = time() - (86400 * 14);
+        }
     }
 
     /**
@@ -563,5 +580,168 @@ class ServerModel
                 $player['rank'] = 0;
             }
         }
+    }
+
+    /**
+     * Fetches the chart data for the Home page
+     *
+     * @param int $serverId
+     *
+     * @return array
+     */
+    public function getServerChartData($serverId)
+    {
+        // sanitize
+        $serverId = (int)$serverId;
+
+        // prepare output
+        $output = array(
+            'week' => ['y' => ['server' => [], 'total' => []], 'x' => ['server' => [], 'total' => []]],
+            'month' => ['y' => ['server' => [], 'total' => []], 'x' => ['server' => [], 'total' => []]],
+            'year' => ['y' => ['server' => [], 'total' => []], 'x' => ['server' => [], 'total' => []]]
+        );
+
+        /* -------------------------------------------------------
+         * WEEK
+         * -------------------------------------------------------
+         */
+        $todayStart = new DateTime('6 days ago midnight');
+        $timestamp = $todayStart->getTimestamp();
+
+        // Build array
+        $serverCounts = [];
+        $totalCounts = [];
+        for ($iDay = 6; $iDay >= 0; $iDay--)
+        {
+            $key = date('l (m/d)', time() - ($iDay * 86400));
+            $serverCounts[$key] = 0;
+            $totalCounts[$key] = 0;
+        }
+
+        $query = "SELECT `imported`, `server_id` FROM round WHERE `imported` > $timestamp";
+        $result = $this->pdo->query($query);
+        while ($row = $result->fetch())
+        {
+            $key = date("l (m/d)", (int)$row['imported']);
+            $totalCounts[$key] += 1;
+
+            if ($row['server_id'] == $serverId)
+                $serverCounts[$key] += 1;
+        }
+
+        $i = 0;
+        foreach ($serverCounts as $key => $value)
+        {
+            $output['week']['y']['server'][] = array($i, $value);
+            $output['week']['x']['server'][] = array($i++, $key);
+        }
+
+        $i = 0;
+        foreach ($totalCounts as $key => $value)
+        {
+            $output['week']['y']['total'][] = array($i, $value);
+            $output['week']['x']['total'][] = array($i++, $key);
+        }
+
+        /* -------------------------------------------------------
+         * MONTH
+         * -------------------------------------------------------
+         */
+
+        $serverCounts = [];
+
+        $start = new DateTime('6 weeks ago');
+        $end = new DateTime('now');
+        $interval = DateInterval::createFromDateString('1 week');
+
+        $period = new DatePeriod($start, $interval, $end);
+        $prev = null;
+        $timeArrays = [];
+
+        foreach ($period as $p)
+        {
+            // Start
+            $p->modify('+1 minute');
+            $key1 = $p->format('M d');
+            $timestamp = $p->getTimestamp();
+
+            // End
+            $p->modify('+7 days');
+            $key2 = $p->format('M d');
+
+            // Append
+            $timeArrays[$timestamp] = $p->getTimestamp();
+            $serverCounts[] = $key1 . ' - ' . $key2;
+        }
+
+        $i = 0;
+        foreach ($timeArrays as $start => $finish)
+        {
+            // Server
+            $query = "SELECT COUNT(`imported`) FROM round WHERE server_id = $serverId AND `imported` BETWEEN $start AND $finish";
+            $result = (int)$this->pdo->query($query)->fetchColumn(0);
+
+            $output['month']['y']['server'][] = array($i, $result);
+            $output['month']['x']['server'][] = array($i, $serverCounts[$i]);
+
+            // Total
+            $query = "SELECT COUNT(`imported`) FROM round WHERE `imported` BETWEEN $start AND $finish";
+            $result = (int)$this->pdo->query($query)->fetchColumn(0);
+
+            $output['month']['y']['total'][] = array($i, $result);
+            $output['month']['x']['total'][] = array($i, $serverCounts[$i]);
+            $i++;
+        }
+
+        /* -------------------------------------------------------
+         * YEAR
+         * -------------------------------------------------------
+         */
+
+        $serverCounts = [];
+
+        // Yep, php DateTime using strings is BadAss!!
+        $start = new DateTime('first day of 11 months ago');
+        $end = new DateTime('last day of this month');
+        $interval = DateInterval::createFromDateString('1 month');
+
+        $period = new DatePeriod($start, $interval, $end);
+        $prev = null;
+        $timeArrays = [];
+
+        foreach ($period as $p)
+        {
+            // Start
+            $serverCounts[] = $p->format('M Y');
+            $timestamp = $p->getTimestamp();
+
+            // End
+            $p->modify('+1 month');
+
+            // Append
+            $timeArrays[$timestamp] = $p->getTimestamp();
+        }
+
+        $i = 0;
+        foreach ($timeArrays as $start => $finish)
+        {
+            // Server
+            $query = "SELECT COUNT(`imported`) FROM round WHERE server_id = $serverId AND `imported` BETWEEN $start AND $finish";
+            $result = (int)$this->pdo->query($query)->fetchColumn(0);
+
+            $output['year']['y']['server'][] = array($i, $result);
+            $output['year']['x']['server'][] = array($i, $serverCounts[$i]);
+
+            // Total
+            $query = "SELECT COUNT(`imported`) FROM round WHERE `imported` BETWEEN $start AND $finish";
+            $result = (int)$this->pdo->query($query)->fetchColumn(0);
+
+            $output['year']['y']['total'][] = array($i, $result);
+            $output['year']['x']['total'][] = array($i, $serverCounts[$i]);
+            $i++;
+        }
+
+        // return chart data
+        return $output;
     }
 }

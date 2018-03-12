@@ -97,6 +97,8 @@ class Servers extends Controller
         $view->set('server', $server);
 
         // Attach needed scripts for the form
+        $view->attachScript("/ASP/frontend/js/flot/jquery.flot.min.js");
+        $view->attachScript("/ASP/frontend/js/flot/plugins/jquery.flot.tooltip.js");
         $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");
         $view->attachScript("/ASP/frontend/modules/servers/js/view.js");
 
@@ -344,5 +346,26 @@ class Servers extends Controller
             // Tell the client that we have failed
             $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage());
         }
+    }
+
+    /**
+     * @protocol    GET
+     * @request     /ASP/servers/chartData/{id}
+     * @output      json
+     */
+    public function getChartData($id = 0)
+    {
+        // Hide errors. Specifically, Daylight Savings errors
+        ini_set("display_errors", "0");
+
+        // Require database connection
+        $this->requireDatabase(true);
+
+        // Load model
+        $this->loadModel('ServerModel', 'servers');
+
+        // Use our model to do all the hard work
+        $data = $this->serverModel->getServerChartData($id);
+        echo json_encode($data, JSON_PRETTY_PRINT, 10);
     }
 }

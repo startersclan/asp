@@ -26,12 +26,29 @@ class PlayerAjaxModel
     protected $pdo;
 
     /**
+     * @var int Time stamp of one week ago
+     */
+    private static $OneWeekAgo = 0;
+
+    /**
+     * @var int Time stamp of two weeks ago
+     */
+    private static $TwoWeekAgo = 0;
+
+    /**
      * PlayerAjaxModel constructor.
      */
     public function __construct()
     {
         // Fetch database connection
         $this->pdo = System\Database::GetConnection('stats');
+
+        // Set static vars
+        if (self::$OneWeekAgo == 0)
+        {
+            self::$OneWeekAgo = time() - (86400 * 7);
+            self::$TwoWeekAgo = time() - (86400 * 14);
+        }
     }
 
     /**
@@ -162,5 +179,140 @@ class PlayerAjaxModel
         // Fetch data
         $filter = "`player_id` = ". $id;
         return DataTables::FetchData($data, $this->pdo, 'player_history_view', 'player_id', $columns, $filter);
+    }
+
+    /**
+     * Fetches the chart data for the Home page
+     *
+     * @param int $playerId
+     *
+     * @return array
+     */
+    public function getTimePlayedChartData($playerId)
+    {
+        // sanitize
+        $playerId = (int)$playerId;
+
+        // prepare output
+        $output = array(
+            'week' => ['y' => [], 'x' => []],
+            'month' => ['y' => [], 'x' => []],
+            'year' => ['y' => [], 'x' => []]
+        );
+
+        /* -------------------------------------------------------
+         * WEEK
+         * -------------------------------------------------------
+         */
+        $todayStart = new DateTime('6 days ago midnight');
+        $timestamp = $todayStart->getTimestamp();
+
+        // Build array
+        $temp = [];
+        for ($iDay = 6; $iDay >= 0; $iDay--)
+        {
+            $key = date('l (m/d)', time() - ($iDay * 86400));
+            $temp[$key] = 0;
+        }
+
+        $query = "SELECT `imported` FROM player_history AS h LEFT JOIN round AS r ON h.round_id = r.id WHERE h.player_id = $playerId AND `imported` > $timestamp";
+        $result = $this->pdo->query($query);
+        while ($row = $result->fetch())
+        {
+            $key = date("l (m/d)", (int)$row['imported']);
+            $temp[$key] += 1;
+        }
+
+        $i = 0;
+        foreach ($temp as $key => $value)
+        {
+            $output['week']['y'][] = array($i, $value);
+            $output['week']['x'][] = array($i++, $key);
+        }
+
+        /* -------------------------------------------------------
+         * MONTH
+         * -------------------------------------------------------
+         */
+
+        $temp = [];
+
+        $start = new DateTime('6 weeks ago');
+        $end = new DateTime('now');
+        $interval = DateInterval::createFromDateString('1 week');
+
+        $period = new DatePeriod($start, $interval, $end);
+        $prev = null;
+        $timeArrays = [];
+
+        foreach ($period as $p)
+        {
+            // Start
+            $p->modify('+1 minute');
+            $key1 = $p->format('M d');
+            $timestamp = $p->getTimestamp();
+
+            // End
+            $p->modify('+7 days');
+            $key2 = $p->format('M d');
+
+            // Append
+            $timeArrays[$timestamp] = $p->getTimestamp();
+            $temp[] = $key1 . ' - ' . $key2;
+        }
+
+        $i = 0;
+        foreach ($timeArrays as $start => $finish)
+        {
+            $query = "SELECT COUNT(`player_id`) FROM player_history AS h LEFT JOIN round AS r ON h.round_id = r.id WHERE h.player_id = $playerId AND `imported` BETWEEN $start AND $finish";
+            $result = (int)$this->pdo->query($query)->fetchColumn(0);
+
+            $output['month']['y'][] = array($i, $result);
+            $output['month']['x'][] = array($i, $temp[$i]);
+            $i++;
+        }
+
+        /* -------------------------------------------------------
+         * YEAR
+         * -------------------------------------------------------
+         */
+
+        $temp = [];
+
+        // Yep, php DateTime using strings is BadAss!!
+        $start = new DateTime('first day of 11 months ago');
+        $end = new DateTime('last day of this month');
+        $interval = DateInterval::createFromDateString('1 month');
+
+        $period = new DatePeriod($start, $interval, $end);
+        $prev = null;
+        $timeArrays = [];
+
+        foreach ($period as $p)
+        {
+            // Start
+            $temp[] = $p->format('M Y');
+            $timestamp = $p->getTimestamp();
+
+            // End
+            $p->modify('+1 month');
+
+            // Append
+            $timeArrays[$timestamp] = $p->getTimestamp();
+        }
+
+        $i = 0;
+        foreach ($timeArrays as $start => $finish)
+        {
+            $query = "SELECT COUNT(`player_id`) FROM player_history AS h LEFT JOIN round AS r ON h.round_id = r.id WHERE h.player_id = $playerId AND `imported` BETWEEN $start AND $finish";
+            $result = (int)$this->pdo->query($query)->fetchColumn(0);
+
+            $output['year']['y'][] = array($i, $result);
+            $output['year']['x'][] = array($i, $temp[$i]);
+            $i++;
+        }
+
+        // return chart data
+        return $output;
     }
 }

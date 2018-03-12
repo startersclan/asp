@@ -225,8 +225,9 @@ class HomeModel
 
         $temp = [];
 
-        $start = new DateTime('12 months ago');
-        $end = new DateTime('now');
+        // Yep, php DateTime using strings is BadAss!!
+        $start = new DateTime('first day of 11 months ago');
+        $end = new DateTime('last day of this month');
         $interval = DateInterval::createFromDateString('1 month');
 
         $period = new DatePeriod($start, $interval, $end);

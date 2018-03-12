@@ -8,6 +8,10 @@
         // Query server online status
         queryServer();
 
+        if( $.fn.button ) {
+            $("#mws-ui-button-radio").buttonset();
+        }
+
         // Refresh Click
         $("#refresh").click(function(e) {
 
@@ -143,6 +147,145 @@
 
             // Just to be sure, older IE's needs this
             return false;
+        });
+
+        //////////////////////////////////////////////////////
+        // Charts
+        /////////////////////////////////////////////////////
+        if($.plot) {
+
+            var plot = $.plot($("#mws-line-chart"), [{
+                label: "Games Processed by this Server",
+                color: "#c75d7b"
+            }, {
+                label: "Total Games Processed",
+                color: "#c5d52b"
+            }], {
+                tooltip: true,
+                tooltipOpts: {
+                    content: function(label, xval, yval, flotItem){ // expects to pass these arguments
+                        return "%s : %y";
+                    },
+                    defaultTheme: false,
+                    cssClass: 'flotTip'
+                },
+                series: {
+                    lines: {
+                        show: true,
+                        fill: false
+                    },
+                    points: {
+                        show: true
+                    }
+                },
+                grid: {
+                    borderWidth: 0,
+                    hoverable: true,
+                    clickable: true
+                },
+                yaxis: {
+                    minTickSize: 1,
+                    tickDecimals: 0,
+                    min:0
+                }
+            });
+        }
+
+        var $result;
+        var $loaded = false;
+
+        // Load graph points
+        $.getJSON("/ASP/servers/chartData/" + serverId, function(result){
+            $result  = result;
+            $loaded = true;
+
+            //noinspection JSUnresolvedVariable
+            plot.setData([{
+                data: $result.week.y.server,
+                label: "Games Processed by this Server",
+                color: "#c75d7b"
+            }, {
+                data: $result.week.y.total,
+                label: "Total Games Processed",
+                color: "#c5d52b"
+            }]);
+
+            plot.getAxes().xaxis.options.min = 0;
+            //noinspection JSUnresolvedVariable
+            plot.getAxes().xaxis.options.max = $result.week.x.total.length - 1;
+            //noinspection JSUnresolvedVariable
+            plot.getAxes().xaxis.options.ticks = $result.week.x.total;
+            plot.setupGrid();
+            plot.draw();
+        });
+
+        $('#weekRadio').click(function() {
+            if ($loaded) {
+                //noinspection JSUnresolvedVariable
+                plot.setData([{
+                    data: $result.week.y.server,
+                    label: "Games Processed by this Server",
+                    color: "#c75d7b"
+                }, {
+                    data: $result.week.y.total,
+                    label: "Total Games Processed",
+                    color: "#c5d52b"
+                }]);
+
+                plot.getAxes().xaxis.options.min = 0;
+                //noinspection JSUnresolvedVariable
+                plot.getAxes().xaxis.options.max = $result.week.x.total.length - 1;
+                //noinspection JSUnresolvedVariable
+                plot.getAxes().xaxis.options.ticks = $result.week.x.total;
+                plot.setupGrid();
+                plot.draw();
+            }
+        });
+
+        $('#monthRadio').click(function() {
+            if ($loaded) {
+                //noinspection JSUnresolvedVariable
+                plot.setData([{
+                    data: $result.month.y.server,
+                    label: "Games Processed by this Server",
+                    color: "#c75d7b"
+                }, {
+                    data: $result.month.y.total,
+                    label: "Total Games Processed",
+                    color: "#c5d52b"
+                }]);
+
+                plot.getAxes().xaxis.options.min = 0;
+                //noinspection JSUnresolvedVariable
+                plot.getAxes().xaxis.options.max = $result.month.x.total.length - 1;
+                //noinspection JSUnresolvedVariable
+                plot.getAxes().xaxis.options.ticks = $result.month.x.total;
+                plot.setupGrid();
+                plot.draw();
+            }
+        });
+
+        $('#yearRadio').click(function() {
+            if ($loaded) {
+                //noinspection JSUnresolvedVariable
+                plot.setData([{
+                    data: $result.year.y.server,
+                    label: "Games Processed by this Server",
+                    color: "#c75d7b"
+                }, {
+                    data: $result.year.y.total,
+                    label: "Total Games Processed",
+                    color: "#c5d52b"
+                }]);
+
+                plot.getAxes().xaxis.options.min = 0;
+                //noinspection JSUnresolvedVariable
+                plot.getAxes().xaxis.options.max = $result.year.x.total.length - 1;
+                //noinspection JSUnresolvedVariable
+                plot.getAxes().xaxis.options.ticks = $result.year.x.total;
+                plot.setupGrid();
+                plot.draw();
+            }
         });
 
         /**

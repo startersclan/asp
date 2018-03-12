@@ -106,13 +106,16 @@ SQL;
             switch ($severity)
             {
                 case 3:
-                    $message['badge'] = 'Important';
+                    $message['badge'] = 'important';
+                    $message['severity_name'] = 'Major';
                     break;
                 case 2:
-                    $message['badge'] = 'Warning';
+                    $message['badge'] = 'warning';
+                    $message['severity_name'] = 'Moderate';
                     break;
                 default:
-                    $message['badge'] = 'Info';
+                    $message['badge'] = 'info';
+                    $message['severity_name'] = 'Low';
                     break;
             }
 

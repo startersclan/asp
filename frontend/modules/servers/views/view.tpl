@@ -86,3 +86,22 @@
     </div>
 </div>
 <div id="details"></div>
+<div class="mws-panel grid_8">
+    <div class="mws-panel-header">
+        <span><i class="icon-graph"></i> Games Processed</span>
+    </div>
+    <div class="mws-panel-body">
+        <div id="mws-line-chart" style="width:100%; height:360px; "></div>
+        <div class="mws-form-row">
+            <div style="text-align: center; margin-top: 15px">
+                <div class="mws-form-item">
+                    <div id="mws-ui-button-radio">
+                        <input type="radio" id="weekRadio" name="radio" checked="checked"><label for="weekRadio">Last Week</label>
+                        <input type="radio" id="monthRadio" name="radio"><label for="monthRadio">Last 6 Weeks</label>
+                        <input type="radio" id="yearRadio" name="radio"><label for="yearRadio">Last Year</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

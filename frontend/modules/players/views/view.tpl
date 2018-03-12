@@ -698,6 +698,26 @@
     </div>
 </div>
 
+<div class="mws-panel grid_8">
+    <div class="mws-panel-header">
+        <span><i class="icon-graph"></i> Games Played</span>
+    </div>
+    <div class="mws-panel-body">
+        <div id="mws-games-chart" style="height: 360px; margin: auto 20px;"></div>
+        <div class="mws-form-row">
+            <div style="text-align: center; margin-top: 15px">
+                <div class="mws-form-item">
+                    <div id="mws-ui-button-radio">
+                        <input type="radio" id="weekRadio" name="radio" checked="checked"><label for="weekRadio">Last Week</label>
+                        <input type="radio" id="monthRadio" name="radio"><label for="monthRadio">Last 6 Weeks</label>
+                        <input type="radio" id="yearRadio" name="radio"><label for="yearRadio">Last Year</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Add New Player Ajax Model -->
 <div id="edit-player-form">
     <form id="mws-validate" class="mws-form" method="post" action="/ASP/players/add">
