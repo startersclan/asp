@@ -377,7 +377,7 @@ SQL;
             'kills' => 0,
             'deaths' => 0,
             'time' => 0,
-            'ratio' => "-"
+            'ratio' => 0.00
         ];
         $averages = [
             'kills' => 0,
@@ -457,7 +457,7 @@ SQL;
             'time' => 0,
             'timePlayed' => "00:00:00",
             'roadKills' => 0,
-            'ratio' => "-"
+            'ratio' => 0.00
         ];
         $averages = [
             'kills' => 0,
@@ -544,7 +544,7 @@ SQL;
             'deaths' => 0,
             'time' => 0,
             'timePlayed' => "00:00:00",
-            'ratio' => "-",
+            'ratio' => 0.00,
             'accuracy' => 0.00,
             'fired' => 0,
             'hits' => 0

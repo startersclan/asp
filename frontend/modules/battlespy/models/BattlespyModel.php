@@ -94,7 +94,7 @@ SQL;
 
         // Fetch report messages
         $messages = [];
-        $query = "SELECT m.*, p.name, p.rank FROM battlespy_message AS m JOIN player AS p ON m.player_id = p.id WHERE report_id=". $id;
+        $query = 'SELECT m.*, p.name, p.rank FROM battlespy_message AS m JOIN player AS p ON m.player_id = p.id WHERE report_id='. $id .' ORDER BY `severity` DESC';
         $results = $this->pdo->query($query);
 
         // Add css badge text
