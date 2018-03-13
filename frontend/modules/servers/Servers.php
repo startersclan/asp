@@ -352,6 +352,10 @@ class Servers extends Controller
      * @protocol    GET
      * @request     /ASP/servers/chartData/{id}
      * @output      json
+     *
+     * @param int $id The server ID to fetch chart data for
+     *
+     * @throws Exception
      */
     public function getChartData($id = 0)
     {

@@ -103,7 +103,8 @@
     <div class="mws-panel-toolbar">
         <div class="btn-toolbar">
             <div class="btn-group">
-                <a id="delete-selected" href="#" class="btn"><i class="icol-cross"></i> Delete Selected</a>
+                <a id="delete-selected" href="#" class="btn"><i class="icol-cross"></i> Delete Selected Messages</a>
+                <a id="delete-report" href="#" class="btn"><i class="icol-delete"></i> Delete Full Report</a>
                 <a id="refresh" href="#" class="btn"><i class="icol-arrow-refresh"></i> Refresh</a>
             </div>
         </div>

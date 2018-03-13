@@ -122,7 +122,7 @@
         function deleteMessages(ids)
         {
             // Push the request
-            $.post( "/ASP/battlespy/deleteMessages", { action: "delete", messages: ids })
+            $.post( "/ASP/battlespy/deleteMessages", { ajax: true, action: "delete", messages: ids })
                 .done(function( data ) {
 
                     // Parse response

@@ -258,7 +258,7 @@ SQL;
         $result = $connection->query("SELECT * FROM `player_weapon` WHERE `player_id` = {$pid}");
         while ($roww = $result->fetch())
         {
-            $i = (int)$roww['id'];
+            $i = (int)$roww['weapon_id'];
 
             // Tactical weapons
             if ($i > 14 && $i < 18 && $includeTacticals)
@@ -298,7 +298,7 @@ SQL;
         $result = $connection->query("SELECT * FROM `player_kit` WHERE `player_id` = {$pid}");
         while ($rowk = $result->fetch())
         {
-            $i = $rowk["id"];
+            $i = $rowk["kit_id"];
             $Output["ktm-$i"] = $rowk["time"]; // Time
             $Output["kkl-$i"] = $rowk["kills"]; // Kills
         }
@@ -314,7 +314,7 @@ SQL;
         $result = $connection->query("SELECT * FROM `player_vehicle` WHERE `player_id` = {$pid}");
         while ($rowv = $result->fetch())
         {
-            $i = $rowv["id"];
+            $i = $rowv["vehicle_id"];
             $Output["vtm-$i"] = $rowv["time"]; // Time
             $Output["vkl-$i"] = $rowv["kills"]; // Kills
         }
@@ -330,7 +330,7 @@ SQL;
         $result = $connection->query("SELECT * FROM `player_army` WHERE player_id = {$pid}");
         while ($rowa = $result->fetch())
         {
-            $i = $rowa["id"];
+            $i = $rowa["army_id"];
             $Output["atm-{$i}"] = $rowa["time"];
             $Output["abr-{$i}"] = $rowa["best"];
             $Output["awn-{$i}"] = $rowa["wins"];
