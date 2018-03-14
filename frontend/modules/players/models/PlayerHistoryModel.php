@@ -80,7 +80,7 @@ class PlayerHistoryModel
         // Fetch round
         $query = <<<SQL
 SELECT ph.*, h.*, p.name, mi.name AS `mapname`, s.name AS `server`, s.ip AS `ip`, s.port AS `port`,
-  h.pids1_end + h.pids2_end AS `playerCount`
+  h.pids1_end + h.pids2_end AS `playerCount`, s.id AS `server_id`
 FROM player_history AS ph 
   LEFT JOIN player AS p ON ph.player_id = p.id
   LEFT JOIN round AS h ON ph.round_id = h.id
@@ -221,78 +221,20 @@ SQL;
      *
      * @return bool true if the snapshot was loaded, otherwise false
      *
-     * @throws DirectoryNotFoundException
-     * @throws SecurityException
      */
     public function addAdvancedRoundInfo($pid, $round, View $view)
     {
         // Attempt to find snapshot files
         $time = new \DateTime("@{$round['time_end']}", new \DateTimeZone("UTC"));
-        $format = $time->format('Ymd_His');
-        $path = Path::Combine(SYSTEM_PATH, "snapshots", "processed");
-        $files = Directory::GetFiles($path, '.*'. $round['mapname'] .'_'. $format .'\.json');
-        $length = count($files);
+        $file = "{$round['server_id']}-{$round['mapname']}_{$time->format('Ymd_His')}.json";
+        $file = Path::Combine(SYSTEM_PATH, "snapshots", "processed", $file);
 
         // Quit here if we have no snapshot files to load
-        if ($length == 0) return false;
+        if (!File::Exists($file)) return false;
 
         // Define our needed variables
-        $data = [];
-        $found = false;
-
-        // If we have just 1 file, then that is it!
-        if ($length == 1)
-        {
-            // Load snapshot into an array
-            $data = $this->loadSnapshotData($files[0]);
-            if ($data == null) return false;
-
-            $found = true;
-        }
-        else
-        {
-            /**
-             * We will have to search through each snapshot that was submitted the
-             * very timestamp as the round end time to determine which one matches this round ID.
-             */
-            $potentials = [];
-            foreach ($files as $file)
-            {
-                // Load snapshot into an array
-                $data = $this->loadSnapshotData($file);
-                if ($data == null) continue;
-
-                // compare map start times, as this could be the fastest way to determine
-                if ($round['time_start'] == $data['mapStart'])
-                {
-                    $potentials[] = $data;
-                }
-            }
-
-            // If we have one potential file, then that is the one!
-            if (count($potentials) == 1)
-            {
-                $found = true;
-                $data = $potentials[0];
-            }
-            else if (count($potentials) > 1)
-            {
-                // Try one last time to compare IP and game port
-                foreach ($potentials as $rnd)
-                {
-                    // Validate this snapshot against the round data we have
-                    if ($rnd['serverIp'] == $round['ip'] && $rnd['gamePort'] == $round['port'])
-                    {
-                        $found = true;
-                        $data = $rnd;
-                        break;
-                    }
-                }
-            }
-        }
-
-        // If we haven't found the snapshot, quit here
-        if (!$found) return false;
+        $data = $this->loadSnapshotData($file);
+        if ($data == null) return false;
 
         // Wrap in a try-catch. We should not have any issues since this snapshot
         // has been loaded before, but you never know...

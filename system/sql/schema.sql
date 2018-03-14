@@ -640,18 +640,6 @@ INSERT INTO `army` VALUES (9, 'European Union');
 INSERT INTO `army` VALUES (10, 'German Forces');
 INSERT INTO `army` VALUES (11, 'Ukrainian Forces');
 INSERT INTO `army` VALUES (12, 'United Nations');
-INSERT INTO `army` VALUES (13, 'Canadian Forces');
-INSERT INTO `army` VALUES (14, 'Blackwater');
-INSERT INTO `army` VALUES (15, 'Taliban');
-INSERT INTO `army` VALUES (16, 'Australian Forces');
-INSERT INTO `army` VALUES (17, 'Russian Forces');
-INSERT INTO `army` VALUES (18, 'British Forces');
-INSERT INTO `army` VALUES (19, 'NATO Forces');
-INSERT INTO `army` VALUES (20, 'ISIS');
-INSERT INTO `army` VALUES (21, 'Iraqi Forces');
-INSERT INTO `army` VALUES (22, 'U.S Marine Corps');
-INSERT INTO `army` VALUES (23, 'Somalian Forces');
-INSERT INTO `army` VALUES (24, 'U.S Army Rangers');
 
 --
 -- Dumping data for table `award`

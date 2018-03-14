@@ -43,6 +43,11 @@ class Snapshot extends GameResult
     public $serverIp = '';
 
     /**
+     * @var int The Server ID in the database if it exists
+     */
+    public $serverId = 0;
+
+    /**
      * Snapshot constructor.
      *
      * @param Dictionary $snapshotData snapshot as a JSON string
@@ -119,6 +124,14 @@ class Snapshot extends GameResult
             }
         }
 
+        // Load server
+        $ip = $connection->quote($this->serverIp);
+        $result = $connection->query("SELECT `id` FROM `server` WHERE `ip`={$ip} AND `port`={$this->serverPort} LIMIT 1");
+        if ($row = $result->fetch())
+        {
+            $this->serverId = (int)$row['id'];
+        }
+
         // Check for processed snapshot
         $query = "SELECT COUNT(id) FROM round WHERE map_id=%d AND time_end=%d AND time_start=%d";
         $result = $connection->query(sprintf($query, $this->mapId, $this->roundEndTime, $this->roundStartTime));
@@ -158,22 +171,17 @@ class Snapshot extends GameResult
         }
 
         // Ensure this is an authorized server
-        $ip = $connection->quote($this->serverIp);
-        $result = $connection->query("SELECT id, authorized FROM server WHERE `ip`={$ip} AND `port`={$this->serverPort} LIMIT 1");
+        $result = $connection->query("SELECT `authorized` FROM `server` WHERE `id`={$this->serverId}");
         if (!($row = $result->fetch()) || (int)$row['authorized'] == 0)
         {
             $this->logWriter->logSecurity("Unauthorised Game Server '{$this->serverIp}:{$this->serverPort}' attempted to send snapshot data!");
             throw new SecurityException("Unauthorised Game Server!", empty($row) ? 0 : 1);
         }
-        else
-        {
-            $serverId = (int)$row['id'];
-        }
 
         // Start logging information about this snapshot
         $playerCount = count($this->players);
         $message = ($this->isCustomMap) ? "Custom Map (%d)..." : "Standard Map (%d)...";
-        $this->logWriter->logNotice("Begin Processing (%s) From Server ID (%d)...", [$this->mapName, $serverId]);
+        $this->logWriter->logNotice("Begin Processing (%s) From Server ID (%d)...", [$this->mapName, $this->serverId]);
         $this->logWriter->logNotice($message, $this->mapId);
         $this->logWriter->logNotice("Found (%d) Player(s)...", $playerCount);
 
@@ -211,7 +219,7 @@ class Snapshot extends GameResult
             // ********************************
             $query = new UpdateOrInsertQuery($connection, 'round');
             $query->set('map_id', '=', $this->mapId);
-            $query->set('server_id', '=', $serverId);
+            $query->set('server_id', '=', $this->serverId);
             $query->set('time_start', '=', $this->roundStartTime);
             $query->set('time_end', '=', $this->roundEndTime);
             $query->set('imported', '=', time());
@@ -233,7 +241,7 @@ class Snapshot extends GameResult
             $wasDrawRound = ($this->winningArmyId == -1);
 
             // Init BattleSpy
-            $this->battleSpy = new BattleSpy($connection, $serverId, $roundId);
+            $this->battleSpy = new BattleSpy($connection, $this->serverId, $roundId);
 
             // ********************************
             // Check Player Integrity
@@ -586,7 +594,7 @@ class Snapshot extends GameResult
             $query->set('name', '=', StringHelper::SubStrWords($this->serverName, 100));
             $query->set('queryport', '=', $this->queryPort);
             $query->set('lastupdate', '=', time());
-            $query->where('id', '=', $serverId);
+            $query->where('id', '=', $this->serverId);
             $query->executeUpdate();
 
             // ********************************
@@ -637,11 +645,7 @@ class Snapshot extends GameResult
     {
         // Generate SNAPSHOT Filename
         $time = new \DateTime("@{$this->roundEndTime}", new \DateTimeZone("UTC"));
-        $prefix  = '';
-        if (!empty($this->serverPrefix))
-            $prefix = $this->serverPrefix . '-';
-
-        return $prefix . $this->mapName . '_' . $time->format('Ymd_His') . '.json';
+        return "{$this->serverId}-{$this->mapName}_{$time->format('Ymd_His')}.json";
     }
 
     /**

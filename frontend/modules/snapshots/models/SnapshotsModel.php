@@ -122,6 +122,7 @@ class SnapshotsModel
             $query->set('authorized', '=', 1);
             $query->set('lastupdate', '=', $snapshot->roundEndTime);
             $query->executeInsert();
+            $snapshot->serverId = $pdo->lastInsertId('id');
         }
         else
         {
@@ -129,6 +130,8 @@ class SnapshotsModel
             $authorized = ((int)$row['authorized']) == 1;
             if (!$authorized)
                 $pdo->exec("UPDATE `server` SET authorized=1 WHERE id={$serverId}");
+
+            $snapshot->serverId = $serverId;
         }
 
         // Ensure snapshot is not already processed from before!
