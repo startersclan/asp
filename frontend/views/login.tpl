@@ -54,7 +54,7 @@
                     </div>
                 </div>
                 <div class="mws-form-row">
-                    <input type="submit" value="Login" class="btn btn-success mws-login-button">
+                    <input type="submit" value="Login" class="btn btn-danger mws-login-button">
                 </div>
             </form>
         </div>

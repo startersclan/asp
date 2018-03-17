@@ -89,7 +89,20 @@ class PlayerAjaxModel
             ['db' => 'clantag', 'dt' => 'clan'],
             ['db' => 'permban', 'dt' => 'permban',
                 'formatter' => function( $d, $row ) {
-                    return $d == 0 ? '<span style="color: green; ">No</span>' : '<span style="color: red; ">Yes</span>';
+                    $id = $row['id'];
+                    $badge = (!$d) ? 'success' : 'important';
+                    $text = (!$d) ? 'Active' : 'Banned';
+                    $last = (int)$row['lastonline'];
+                    $time = time();
+                    $timestamp = 86400 * 30;
+
+                    if (($time - $last) > $timestamp)
+                    {
+                        $badge = 'inactive';
+                        $text = 'Inactive';
+                    }
+
+                    return '<span id="tr-status-'. $id .'" class="badge badge-'. $badge .'">'. $text .'</span>';
                 }
             ],
             ['db' => 'kicked', 'dt' => 'actions',

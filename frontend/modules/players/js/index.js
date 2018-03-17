@@ -1,5 +1,9 @@
 ;(function( $, window, document, undefined ) {
 
+    function tableOnReload() {
+        $('#jui-global-message').fadeOut('fast');
+    }
+
     $(document).ready(function() {
 
         var showBots = true;
@@ -279,9 +283,14 @@
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
 
+            $('#jui-global-message')
+                .attr('class', 'alert loading')
+                .html("Refreshing Table Contents")
+                .slideDown(500);
+
             // Reload page (temporary).
             // noinspection JSUnresolvedFunction
-            Table.ajax.reload();
+            Table.ajax.reload(tableOnReload);
 
             // Just to be sure, older IE's needs this
             return false;
@@ -460,7 +469,7 @@
                         }
                         else {
                             // Update html and button displays
-                            $('#unban-btn-' + id).closest('tr').find('td:eq(8)').html('<font color="green">No</font>');
+                            $('#tr-status-' + id).attr('class', 'badge badge-success').html('Active');
                             $('#unban-btn-' + id).hide();
                             $('#ban-btn-' + id).show();
                         }
@@ -482,7 +491,7 @@
                         }
                         else {
                             // Update html and button displays
-                            $('#unban-btn-' + id).closest('tr').find('td:eq(8)').html('<font color="red">Yes</font>');
+                            $('#tr-status-' + id).attr('class', 'badge badge-important').html('Banned');
                             $('#unban-btn-' + id).show();
                             $('#ban-btn-' + id).hide();
                         }

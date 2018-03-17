@@ -48,8 +48,8 @@
                 <td>{port}</td>
                 <td>{queryport}</td>
                 <td>{snapshots}</td>
-                <td><?php echo ({authorized} == 1) ? 'Yes' : 'No'; ?></td>
-                <td><?php echo ({plasma} == 1) ? 'Yes' : 'No'; ?></td>
+                <td><span id="tr-auth-{id}" class="badge badge-{auth_badge}">{auth_text}</span></td>
+                <td><span id="tr-plasma-{id}" class="badge badge-{plasma_badge}">{plasma_text}</span></td>
                 <td>
                     <span class="btn-group">
                         <a id="go-btn" href="/ASP/servers/view/{id}" rel="tooltip" title="View Server" class="btn btn-small"><i class="icon-eye-open"></i></a>

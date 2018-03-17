@@ -247,7 +247,7 @@
                         }
                         else {
                             // Update html and button displays
-                            $('#tr-server-' + id).find('td:eq(8)').html('No');
+                            $('#tr-auth-' + id).attr('class', 'badge badge-important').html('No');
                             $('#unauth-btn-' + id).hide();
                             $('#auth-btn-' + id).show();
                         }
@@ -269,7 +269,7 @@
                         }
                         else {
                             // Update html and button displays
-                            $('#tr-server-' + id).find('td:eq(8)').html('Yes');
+                            $('#tr-auth-' + id).attr('class', 'badge badge-success').html('Yes');
                             $('#auth-btn-' + id).hide();
                             $('#unauth-btn-' + id).show();
                         }
@@ -376,7 +376,7 @@
                         // Remove each row
                         $.each(checkValues, function (key, value) {
                             // Update html and button displays
-                            $('#tr-server-' + value).find('td:eq(8)').html('No');
+                            $('#tr-auth-' + value).attr('class', 'badge badge-important').html('No');
                             $('#auth-btn-' + value).show();
                             $('#unauth-btn-' + value).hide();
                         });
@@ -412,7 +412,7 @@
                         // Remove each row
                         $.each(checkValues, function (key, value) {
                             // Update html and button displays
-                            $('#tr-server-' + value).find('td:eq(8)').html('Yes');
+                            $('#tr-auth-' + value).attr('class', 'badge badge-success').html('Yes');
                             $('#unauth-btn-' + value).show();
                             $('#auth-btn-' + value).hide();
                         });
@@ -448,7 +448,7 @@
                         // Update each row
                         $.each(checkValues, function (key, value) {
                             // Update html and button displays
-                            $('#tr-server-' + value).find('td:eq(9)').html('Yes');
+                            $('#tr-plasma-' + value).attr('class', 'badge badge-success').html('Yes');
                         });
                     }
                 });
@@ -482,7 +482,7 @@
                         // Update each row
                         $.each(checkValues, function (key, value) {
                             // Update html and button displays
-                            $('#tr-server-' + value).find('td:eq(9)').html('No');
+                            $('#tr-plasma-' + value).attr('class', 'badge badge-inactive').html('No');
                         });
                     }
                 });

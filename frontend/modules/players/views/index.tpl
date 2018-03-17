@@ -27,7 +27,7 @@
                 <th>Join Date</th>
                 <th>Last Seen</th>
                 <th>Clan Tag</th>
-                <th>Banned</th>
+                <th>Status</th>
                 <th style="width: 7%">Actions</th>
             </tr>
             </thead>

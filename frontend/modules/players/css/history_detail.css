@@ -24,3 +24,11 @@
 .flotTip {
     z-index: 9999;
 }
+
+.mws-table a {
+    color: black;
+}
+
+.mws-table a:hover {
+    color: black;
+}

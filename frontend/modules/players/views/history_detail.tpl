@@ -620,4 +620,58 @@
         </ul>
     </div>
 </div>
+
+<div class="mws-panel grid_4 mws-collapsible clear">
+    <div class="mws-panel-header">
+        <span>Player Victims</span>
+    </div>
+    <div class="mws-panel-body no-padding">
+        <table id="victimData" class="mws-table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th style="width: 15%">Kills</th>
+            </tr>
+            </thead>
+            <tbody>
+            {victims}
+                <tr>
+                    <td>
+                        <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{rank}.gif"/>
+                        <a href="/ASP/players/history/{id}/{round.id}" rel="tooltip" title="View Player Round Info">{name}</a>
+                    </td>
+                    <td>{count}</td>
+                </tr>
+            {/victims}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mws-panel grid_4 mws-collapsible">
+    <div class="mws-panel-header">
+        <span>Deaths By</span>
+    </div>
+    <div class="mws-panel-body no-padding">
+        <table id="enemyData" class="mws-table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th style="width: 15%">Kills</th>
+            </tr>
+            </thead>
+            <tbody>
+            {enemies}
+                <tr>
+                    <td>
+                        <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{rank}.gif"/>
+                        <a href="/ASP/players/history/{id}/{round.id}" rel="tooltip" title="View Player Round Info">{name}</a>
+                    </td>
+                    <td>{count}</td>
+                </tr>
+            {/enemies}
+            </tbody>
+        </table>
+    </div>
+</div>
 <?php endif ?>

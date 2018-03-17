@@ -41,6 +41,15 @@ class Servers extends Controller
         // Fetch server list!
         $servers = $this->serverModel->fetchServers();
 
+        // Attach tags
+        for ($i = 0; $i < count($servers); $i++)
+        {
+            $servers[$i]['auth_badge'] = ($servers[$i]['authorized']) ? 'success' : 'important';
+            $servers[$i]['auth_text'] = ($servers[$i]['authorized']) ? 'Yes' : 'No';
+            $servers[$i]['plasma_badge'] = ($servers[$i]['plasma']) ? 'success' : 'inactive';
+            $servers[$i]['plasma_text'] = ($servers[$i]['plasma']) ? 'Yes' : 'No';
+        }
+
         // Load view
         $view = new View('index', 'servers');
         $view->set('servers', $servers);

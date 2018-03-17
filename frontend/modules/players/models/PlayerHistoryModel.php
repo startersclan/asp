@@ -582,6 +582,7 @@ SQL;
      */
     public function attachTopVictimAndOpp(Player $player, View $view, Snapshot $snapshot)
     {
+        $victims = [];
         $data = [
             'id' => 0,
             'name' => "N/A",
@@ -591,20 +592,30 @@ SQL;
 
         foreach ($player->victims as $pid => $count)
         {
+            $victim = $snapshot->getPlayerById($pid);
+
             if ($count > $data['count'])
             {
-                $victim = $snapshot->getPlayerById($pid);
                 $data['id'] = $pid;
                 $data['name'] = $victim->name;
                 $data['rank'] = $victim->rank;
                 $data['count'] = $count;
             }
+
+            $victims[] = [
+                'id' => $pid,
+                'name' => $victim->name,
+                'rank' => $victim->rank,
+                'count' => $count
+            ];
         }
 
         // Update view
         $view->set('favVictim', $data);
+        $view->set('victims', $victims);
 
         // Now fetch worst enemy
+        $victims = [];
         $data = [
             'id' => 0,
             'name' => "None",
@@ -629,12 +640,20 @@ SQL;
                         $data['rank'] = $p->rank;
                         $data['count'] = $count;
                     }
+
+                    $victims[] = [
+                        'id' => $p->id,
+                        'name' => $p->name,
+                        'rank' => $p->rank,
+                        'count' => $count
+                    ];
                 }
             }
         }
 
         // Update view
         $view->set('worstOp', $data);
+        $view->set('enemies', $victims);
     }
 
     /**

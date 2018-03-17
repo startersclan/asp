@@ -35,11 +35,11 @@ class UpdateOrInsertQuery
     public $whereSeparator = "AND";
 
     /**
-     * @var PDO
+     * @var DbConnection
      */
     protected $connection;
 
-    public function __construct(PDO $connection, $table)
+    public function __construct(DbConnection $connection, $table)
     {
         $this->connection = $connection;
         $this->table = $table;
@@ -115,7 +115,8 @@ class UpdateOrInsertQuery
         foreach ($this->where as $col => $values)
         {
             list($operator, $value) = $values;
-            $statements[] = "`{$col}`{$operator}" . $this->connection->quote($value);
+            $col = $this->connection->quoteIdentifier($col);
+            $statements[] = "{$col}{$operator}" . $this->connection->quote($value);
         }
 
         $where = implode(" {$this->whereSeparator} ", $statements);
@@ -136,31 +137,33 @@ class UpdateOrInsertQuery
         {
             list($operator, $value) = $values;
             $value = (is_int($value)) ? $value : $this->connection->quote($value);
+            $col = $this->connection->quoteIdentifier($col);
 
             switch ($operator)
             {
                 case "+":
                 case "+=":
-                    $statements[] = "`{$col}` = `{$col}` + {$value}";
+                    $statements[] = "{$col} = {$col} + {$value}";
                     break;
                 case "-":
                 case "-=":
-                    $statements[] = "`{$col}` = `{$col}` - {$value}";
+                    $statements[] = "{$col} = {$col} - {$value}";
                     break;
                 case "g":
-                    $statements[] = "`{$col}` = CASE WHEN {$value} > `{$col}` THEN {$value} ELSE `{$col}` END";
+                    $statements[] = "{$col} = CASE WHEN {$value} > {$col} THEN {$value} ELSE {$col} END";
                     break;
                 case "l":
-                    $statements[] = "`{$col}` = CASE WHEN {$value} < `{$col}` THEN {$value} ELSE `{$col}` END";
+                    $statements[] = "{$col} = CASE WHEN {$value} < {$col} THEN {$value} ELSE {$col} END";
                     break;
                 default:
-                    $statements[] = "`{$col}`{$operator}{$value}";
+                    $statements[] = "{$col}{$operator}{$value}";
             }
         }
         $cols = implode(", ", $statements);
 
         // Build our query
-        return $this->connection->exec("UPDATE `{$this->table}` SET {$cols}{$where}");
+        $table = $this->connection->quoteIdentifier($this->table);
+        return $this->connection->exec("UPDATE {$table} SET {$cols}{$where}");
     }
 
     /**
