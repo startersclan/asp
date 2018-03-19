@@ -71,7 +71,7 @@ class StatsData
 
             // Load kits
             $result = $pdo->query("SELECT name FROM kit")->fetchAll();
-            self::$NumKits= count($result);
+            self::$NumKits = count($result);
             for ($i = 0; $i < self::$NumKits; $i++)
                 self::$KitNames[] = $result[$i]['name'];
 

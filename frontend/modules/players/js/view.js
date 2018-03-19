@@ -8,6 +8,7 @@
         var playerName = $("#changeableName").html();
         var playerEmail = $("#playerCurrentEmail").html();
         var playerIso = $("#playerCurrentIso").html();
+        var labelStatus = $("#labelStatus").html();
 
         function getCountryName() {
             var element = $("#country").find("option[value='" + playerIso + "']");
@@ -196,7 +197,7 @@
                         $("#unban-player").show();
 
                         // Update account status
-                        $("#status").html("Banned").css('color', 'red');
+                        $("#status").html("Banned").attr('class', 'label label-important');
                     }
                 });
 
@@ -226,7 +227,12 @@
                         $("#unban-player").hide();
 
                         // Update account status
-                        $("#status").html("Active").css('color', 'green');
+                        if (labelStatus === 'success') {
+                            $("#status").html("Active").attr('class', 'label label-success');
+                        }
+                        else {
+                            $("#status").html("Inactive").attr('class', 'label label-inactive');
+                        }
                     }
                 });
 

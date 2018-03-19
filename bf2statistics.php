@@ -21,6 +21,7 @@ namespace System
 {
     use Exception;
     use SecurityException;
+    use System\Config;
     use System\Collections\Dictionary;
     use System\IO\File;
     use System\IO\FileStream;
@@ -218,7 +219,28 @@ namespace System
         File::Move(SNAPSHOT_TEMP_PATH . DS . $fileName, SNAPSHOT_FAIL_PATH . DS . $fileName);
     }
 
-    // Finally, move the file
-    if ($snapshot->isProcessed())
-        File::Move(SNAPSHOT_TEMP_PATH . DS . $fileName, SNAPSHOT_STORE_PATH . DS . $fileName);
+/*
+| ---------------------------------------------------------------
+| Cleanup SNAPSHOT File
+| ---------------------------------------------------------------
+*/
+    try
+    {
+        if ($snapshot->isProcessed())
+        {
+            if (Config::Get('stats_save_snapshot'))
+            {
+                // Finally, move the file
+                File::Move(SNAPSHOT_TEMP_PATH . DS . $fileName, SNAPSHOT_STORE_PATH . DS . $fileName);
+            }
+            else
+            {
+                File::Delete(SNAPSHOT_TEMP_PATH . DS . $fileName);
+            }
+        }
+    }
+    catch (Exception $e)
+    {
+        $LogWriter->logError("Unable to move or delete SNAPSHOT Data Logfile (%s): %s", [$fileName, $e->getMessage()]);
+    }
 }

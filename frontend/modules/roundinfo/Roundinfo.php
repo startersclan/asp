@@ -83,6 +83,9 @@ class Roundinfo extends Controller
             die;
         }
 
+        // Load stats data
+        \System\StatsData::Load();
+
         // Attach round information to view
         $view = new View('view', 'roundinfo');
         $view->set('round', $round['round']);
@@ -90,7 +93,7 @@ class Roundinfo extends Controller
         $view->set('players2', $round['players2']);
 
         // Can we add advanced information?
-        $result = $this->roundInfoModel->addAdvancedRoundInfo($round['round'], $view);
+        $result = $this->roundInfoModel->addAdvancedRoundInfo($round['players'], $id, $view);
         $view->set('advanced', $result);
 
         // Alert user if we could not load the snapshot

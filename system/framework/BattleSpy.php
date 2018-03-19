@@ -62,6 +62,11 @@ class BattleSpy
     const FLAG_PLAYER_AWARDS = 6;
 
     /**
+     * @var int Excessive Team Kills on a Player Flag
+     */
+    const FLAG_PLAYER_TEAMKILLS = 7;
+
+    /**
      * @var array
      */
     protected $notifications;
@@ -102,6 +107,11 @@ class BattleSpy
     protected $maxTargetKills = 0;
 
     /**
+     * @var int Gets or Sets the maximum team kills threshold
+     */
+    protected $maxTeamKills = 0;
+
+    /**
      * @var int Gets or Sets the maximum earned awards threshold (excludes backend awards)
      */
     protected $maxAwards = 0;
@@ -125,6 +135,7 @@ class BattleSpy
         $this->maxSPM = (float)Config::Get('battlespy_max_spm');
         $this->maxKPM = (float)Config::Get('battlespy_max_kpm');
         $this->maxTargetKills = (int)Config::Get('battlespy_max_target_kills');
+        $this->maxTeamKills = (int)Config::Get('battlespy_max_team_kills');
         $this->maxAwards = (int)Config::Get('battlespy_max_awards');
     }
 
@@ -143,55 +154,83 @@ class BattleSpy
         $mins = round($player->roundTime / 60, 3);
 
         /** Check score per minute */
-        $spm = ($mins == 0) ? 0 : round($player->roundScore / $mins, 3);
-        if ($spm > $this->maxSPM)
+        if ($this->maxSPM > 0)
         {
-            // Determine severity
-            $plus50p = $this->maxSPM * 1.5;
-            $double = $this->maxSPM * 2;
+            $spm = ($mins == 0) ? 0 : round($player->roundScore / $mins, 3);
+            if ($spm > $this->maxSPM)
+            {
+                // Determine severity
+                $plus50p = $this->maxSPM * 1.5;
+                $double = $this->maxSPM * 2;
 
-            // Report player for having too high of a SPM
-            $severity = ($spm > $double) ? 3 : (($spm > $plus50p) ? 2 : 1);
-            $message = sprintf("Player Score per Min (%.3f) exceeds threshold of (%.3f)", $spm, $this->maxSPM);
-            $this->report($player->id, $message, self::FLAG_PLAYER_SPM, $severity);
+                // Report player for having too high of a SPM
+                $severity = ($spm > $double) ? 3 : (($spm > $plus50p) ? 2 : 1);
+                $message = sprintf("Player Score per Min (%.3f) exceeds threshold of (%.3f)", $spm, $this->maxSPM);
+                $this->report($player->id, $message, self::FLAG_PLAYER_SPM, $severity);
+            }
         }
 
         /** Check kills per minute */
-        $kpm = ($mins == 0) ? 0 : round($player->kills / $mins, 3);
-        if ($kpm > $this->maxKPM)
+        if ($this->maxKPM > 0)
         {
-            // Determine severity
-            $plus50p = $this->maxKPM * 1.5;
-            $double = $this->maxKPM * 2;
+            $kpm = ($mins == 0) ? 0 : round($player->kills / $mins, 3);
+            if ($kpm > $this->maxKPM)
+            {
+                // Determine severity
+                $plus50p = $this->maxKPM * 1.5;
+                $double = $this->maxKPM * 2;
 
-            // Report player for having too high of a KPM
-            $severity = ($spm > $double) ? 3 : (($spm > $plus50p) ? 2 : 1);
-            $message = sprintf("Player Kills per Min (%.3f) exceeds threshold of (%.3f)", $kpm, $this->maxKPM);
-            $this->report($player->id, $message, self::FLAG_PLAYER_KILLS, $severity);
+                // Report player for having too high of a KPM
+                $severity = ($spm > $double) ? 3 : (($spm > $plus50p) ? 2 : 1);
+                $message = sprintf("Player Kills per Min (%.3f) exceeds threshold of (%.3f)", $kpm, $this->maxKPM);
+                $this->report($player->id, $message, self::FLAG_PLAYER_KILLS, $severity);
+            }
         }
 
-        // Set severity limits
-        $plus50p = $this->maxTargetKills * 1.5;
-        $double = $this->maxTargetKills * 2;
-
         /** Check target kills */
-        foreach ($player->victims as $pid => $count)
+        if ($this->maxTargetKills > 0)
         {
-            if ($count > $this->maxTargetKills)
+            // Set severity limits
+            $plus50p = $this->maxTargetKills * 1.5;
+            $double = $this->maxTargetKills * 2;
+
+            foreach ($player->victims as $pid => $count)
             {
-                // Report player for having too many kills on a single player
-                $severity = ($count > $double) ? 3 : (($count > $plus50p) ? 2 : 1);
-                $message = sprintf("Player Kills on Player (%d) exceeds threshold of (%d)", $pid, $this->maxTargetKills);
-                $this->report($player->id, $message, self::FLAG_PLAYER_TARGET_KILLS, $severity);
+                if ($count > $this->maxTargetKills)
+                {
+                    // Report player for having too many kills on a single player
+                    $severity = ($count > $double) ? 3 : (($count > $plus50p) ? 2 : 1);
+                    $message = sprintf("Player Kills on Player (%d) exceeds threshold of (%d)", $pid, $this->maxTargetKills);
+                    $this->report($player->id, $message, self::FLAG_PLAYER_TARGET_KILLS, $severity);
+                }
             }
         }
 
         /** Check awards */
-        $awardCount = count($player->earnedAwards);
-        if ($awardCount > $this->maxAwards)
+        if ($this->maxAwards > 0)
         {
-            $message = "Player Award Count (%d) exceeds threshold of (%d)";
-            $this->report($player->id, sprintf($message, $awardCount, $this->maxAwards), self::FLAG_PLAYER_AWARDS, 1);
+            $awardCount = count($player->earnedAwards);
+            if ($awardCount > $this->maxAwards)
+            {
+                $message = "Player Award Count (%d) exceeds threshold of (%d)";
+                $this->report($player->id, sprintf($message, $awardCount, $this->maxAwards), self::FLAG_PLAYER_AWARDS, 1);
+            }
+        }
+
+        /** Check teamkills */
+        if ($this->maxTeamKills > 0)
+        {
+            if ($player->teamKills > $this->maxTeamKills)
+            {
+                // Determine severity
+                $plus50p = $this->maxTeamKills * 1.5;
+                $double = $this->maxTeamKills * 2;
+
+                // Report player for having too many team kills
+                $severity = ($player->teamKills > $double) ? 3 : (($player->teamKills > $plus50p) ? 2 : 1);
+                $message = sprintf("Player Team Kills (%d) exceeds threshold of (%d)", $player->teamKills, $this->maxTeamKills);
+                $this->report($player->id, $message, self::FLAG_PLAYER_TEAMKILLS, $severity);
+            }
         }
 
         /** Check weapon accuracy */

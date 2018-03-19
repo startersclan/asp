@@ -305,7 +305,7 @@ class Snapshot extends GameResult
                 $this->logWriter->logNotice("Processing Player (%d)", $player->id);
 
                 // Check if player exists already
-                $sql = "SELECT lastip, country, rank, killstreak, deathstreak, rndscore FROM player WHERE id=%d LIMIT 1";
+                $sql = "SELECT lastip, country, rank, killstreak, deathstreak, bestscore FROM player WHERE id=%d LIMIT 1";
                 $row = $connection->query(sprintf($sql, $player->id))->fetch();
 
                 // Run player check through BattleSpy
@@ -330,7 +330,7 @@ class Snapshot extends GameResult
                 $query->set('damageassists', '+', $player->damageAssists);
                 $query->set('heals', '+', $player->heals);
                 $query->set('revives', '+', $player->revives);
-                $query->set('ammos', '+', $player->resupplies);
+                $query->set('resupplies', '+', $player->resupplies);
                 $query->set('repairs', '+', $player->repairs);
                 $query->set('targetassists', '+', $player->targetAssists);
                 $query->set('driverspecials', '+', $player->driverSpecials);
@@ -373,8 +373,8 @@ class Snapshot extends GameResult
                 if ($player->deathStreak > (int)$row['deathstreak'])
                     $query->set('deathstreak', '=', $player->deathStreak);
 
-                if ($player->roundScore > (int)$row['rndscore'])
-                    $query->set('rndscore', '=', $player->roundScore);
+                if ($player->roundScore > (int)$row['bestscore'])
+                    $query->set('bestscore', '=', $player->roundScore);
 
                 // Execute the update
                 $query->where('id', '=', $player->id);
@@ -384,19 +384,45 @@ class Snapshot extends GameResult
                 // Insert Player history.
                 // ********************************
                 $this->logWriter->logDebug("Processing Player History Data (%d)", $player->id);
-                $query = new UpdateOrInsertQuery($connection, 'player_history');
+                $query = new UpdateOrInsertQuery($connection, 'player_round_history');
                 $query->set('player_id', '=', $player->id);
                 $query->set('round_id', '=', $roundId);
                 $query->set('team', '=', $player->armyId);
-                $query->set('timestamp', '=', $this->roundEndTime);
                 $query->set('time', '=', $player->roundTime);
+                $query->set('rank', '=', $player->rank);
+                //$query->set('timestamp', '=', $this->roundEndTime);
                 $query->set('score', '=', $player->roundScore);
                 $query->set('cmdscore', '=', $player->commandScore);
                 $query->set('skillscore', '=', $player->skillScore);
                 $query->set('teamscore', '=', $player->teamScore);
                 $query->set('kills', '=', $player->kills);
                 $query->set('deaths', '=', $player->deaths);
-                $query->set('rank', '=', $player->rank);
+                $query->set('captures', '=', $player->flagCaptures);
+                $query->set('captureassists', '=', $player->flagCaptureAssists);
+                $query->set('neutralizes', '=', $player->flagNeutralizes);
+                $query->set('neutralizeassists', '=', $player->flagNeutralizeAssists);
+                $query->set('defends', '=', $player->flagDefends);
+                $query->set('heals', '=', $player->heals);
+                $query->set('revives', '=', $player->revives);
+                $query->set('resupplies', '=', $player->resupplies);
+                $query->set('repairs', '=', $player->repairs);
+                $query->set('damageassists', '=', $player->damageAssists);
+                $query->set('targetassists', '=', $player->targetAssists);
+                $query->set('driverspecials', '=', $player->driverSpecials);
+                $query->set('teamkills', '=', $player->teamKills);
+                $query->set('teamdamage', '=', $player->teamDamage);
+                $query->set('teamvehicledamage', '=', $player->teamVehicleDamage);
+                $query->set('suicides', '=', $player->suicides);
+                $query->set('killstreak', '=', $player->killStreak);
+                $query->set('deathstreak', '=', $player->deathStreak);
+                $query->set('cmdtime', '=', $player->cmdTime);
+                $query->set('sqltime', '=', $player->sqlTime);
+                $query->set('sqmtime', '=', $player->sqmTime);
+                $query->set('lwtime', '=', $player->lwTime);
+                $query->set('timepara', '=', $player->timeParachute);
+                $query->set('completed', '=', $player->completedRound);
+                $query->set('banned', '=', $player->timesBanned);
+                $query->set('kicked', '=', $player->timesKicked);
                 $query->executeInsert();
 
                 // ********************************
@@ -424,6 +450,15 @@ class Snapshot extends GameResult
                     }
 
                     $query->execute();
+
+                    // Add to History
+                    $query = new UpdateOrInsertQuery($connection, 'player_army_history');
+                    $query->set('player_id', '=', $player->id);
+                    $query->set('round_id', '=', $roundId);
+                    $query->set('army_id', '=', $id);
+                    $query->set('time', '=', $time);
+                    $query->executeInsert();
+
                 }
 
                 // ********************************
@@ -432,11 +467,20 @@ class Snapshot extends GameResult
                 $this->logWriter->logDebug("Processing Kill Data (%d)", $player->id);
                 $query = new UpdateOrInsertQuery($connection, 'player_kill');
                 $query->where('attacker', '=', $player->id);
+                $query2 = new UpdateOrInsertQuery($connection, 'player_kill_history');
+                $query2->set('attacker', '=', $player->id);
+                $query2->set('round_id', '=', $roundId);
                 foreach ($player->victims as $pid => $count)
                 {
+                    // Update main stats record
                     $query->where('victim', '=', $pid);
                     $query->set('count', '+', $count);
                     $query->execute();
+
+                    // Add to History
+                    $query2->set('victim', '=', $pid);
+                    $query2->set('count', '=', $count);
+                    $query2->executeInsert();
                 }
 
                 // ********************************
@@ -445,13 +489,24 @@ class Snapshot extends GameResult
                 $this->logWriter->logDebug("Processing Kit Data (%d)", $player->id);
                 $query = new UpdateOrInsertQuery($connection, 'player_kit');
                 $query->where('player_id', '=', $player->id);
+                $query2 = new UpdateOrInsertQuery($connection, 'player_kit_history');
+                $query2->set('player_id', '=', $player->id);
+                $query2->set('round_id', '=', $roundId);
                 foreach ($player->kitData as $object)
                 {
+                    // Update main stats record
                     $query->set('time', '+', $object->time);
                     $query->set('kills', '+', $object->kills);
                     $query->set('deaths', '+', $object->deaths);
                     $query->where('kit_id', '=', $object->id);
                     $query->execute();
+
+                    // Add to History
+                    $query2->set('kit_id', '=', $object->id);
+                    $query2->set('time', '=', $object->time);
+                    $query2->set('kills', '=', $object->kills);
+                    $query2->set('deaths', '=', $object->deaths);
+                    $query2->executeInsert();
                 }
 
                 // ********************************
@@ -474,14 +529,26 @@ class Snapshot extends GameResult
                 $this->logWriter->logDebug("Processing Vehicle Data (%d)", $player->id);
                 $query = new UpdateOrInsertQuery($connection, 'player_vehicle');
                 $query->where('player_id', '=', $player->id);
+                $query2 = new UpdateOrInsertQuery($connection, 'player_vehicle_history');
+                $query2->set('player_id', '=', $player->id);
+                $query2->set('round_id', '=', $roundId);
                 foreach ($player->vehicleData as $object)
                 {
+                    // Update main stats record
                     $query->set('time', '+', $object->time);
                     $query->set('kills', '+', $object->kills);
                     $query->set('deaths', '+', $object->deaths);
                     $query->set('roadkills', '+', $object->roadKills);
                     $query->where('vehicle_id', '=', $object->id);
                     $query->execute();
+
+                    // Add to History
+                    $query2->set('vehicle_id', '=', $object->id);
+                    $query2->set('time', '=', $object->time);
+                    $query2->set('kills', '=', $object->kills);
+                    $query2->set('deaths', '=', $object->deaths);
+                    $query2->set('roadkills', '=', $object->roadKills);
+                    $query2->executeInsert();
                 }
 
                 // ********************************
@@ -490,15 +557,29 @@ class Snapshot extends GameResult
                 $this->logWriter->logDebug("Processing Weapon Data (%d)", $player->id);
                 $query = new UpdateOrInsertQuery($connection, 'player_weapon');
                 $query->where('player_id', '=', $player->id);
+                $query2 = new UpdateOrInsertQuery($connection, 'player_weapon_history');
+                $query2->set('player_id', '=', $player->id);
+                $query2->set('round_id', '=', $roundId);
                 foreach ($player->weaponData as $object)
                 {
+                    // Update main stats record
                     $query->set('time', '+', $object->time);
                     $query->set('kills', '+', $object->kills);
                     $query->set('deaths', '+', $object->deaths);
                     $query->set('fired', '+', $object->fired);
                     $query->set('hits', '+', $object->hits);
+                    $query->set('deployed', '+', $object->deployed);
                     $query->where('weapon_id', '=', $object->id);
                     $query->execute();
+
+                    // Add to History
+                    $query2->set('weapon_id', '=', $object->id);
+                    $query2->set('time', '=', $object->time);
+                    $query2->set('kills', '=', $object->kills);
+                    $query2->set('fired', '=', $object->fired);
+                    $query2->set('hits', '=', $object->hits);
+                    $query2->set('deployed', '=', $object->deployed);
+                    $query2->executeInsert();
                 }
 
                 // ********************************

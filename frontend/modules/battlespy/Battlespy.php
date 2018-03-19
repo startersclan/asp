@@ -67,6 +67,7 @@ class Battlespy extends \System\Controller
         $view->set('battlespy_max_spm', Config::Get('battlespy_max_spm'));
         $view->set('battlespy_max_kpm', Config::Get('battlespy_max_kpm'));
         $view->set('battlespy_max_target_kills', Config::Get('battlespy_max_target_kills'));
+        $view->set('battlespy_max_team_kills', Config::Get('battlespy_max_team_kills'));
         $view->set('battlespy_max_awards', Config::Get('battlespy_max_awards'));
 
         // Attach needed scripts for the form

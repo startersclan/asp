@@ -129,10 +129,10 @@ class PlayerModel
         // Fetch player
         $query = <<<SQL
 SELECT `name`, `rank`, `email`, `joined`, `time`, `lastonline`, `score`, `skillscore`, `cmdscore`, `teamscore`, 
-  `kills`, `deaths`, `teamkills`, `kicked`, `banned`, `permban`, `heals`, `repairs`, `ammos`, `revives`,
+  `kills`, `deaths`, `teamkills`, `kicked`, `banned`, `permban`, `heals`, `repairs`, `resupplies`, `revives`,
   `captures`, `captureassists`, `defends`, `country`, `driverspecials`, `neutralizes`, `neutralizeassists`,
   `damageassists`, `rounds`, `wins`, `losses`, `cmdtime`, `sqmtime`, `sqltime`, `lwtime`, `suicides`, 
-  `teamdamage`, `teamvehicledamage`, `killstreak`, `rndscore`
+  `teamdamage`, `teamvehicledamage`, `killstreak`, `bestscore`
 FROM player
 WHERE `id`={$id}
 SQL;
@@ -186,7 +186,7 @@ SQL;
             $query->set('damageassists', '=', 0);
             $query->set('heals', '=', 0);
             $query->set('revives', '=', 0);
-            $query->set('ammos', '=', 0);
+            $query->set('resupplies', '=', 0);
             $query->set('repairs', '=', 0);
             $query->set('targetassists', '=', 0);
             $query->set('driverspecials', '=', 0);
@@ -203,7 +203,7 @@ SQL;
             $query->set('mode0', '=', 0);
             $query->set('mode1', '=', 0);
             $query->set('mode2', '=', 0);
-            $query->set('rndscore', '=', 0);
+            $query->set('bestscore', '=', 0);
             $query->set('deathstreak', '=', 0);
             $query->set('killstreak', '=', 0);
             $query->where('id', '=', $id);
@@ -688,7 +688,7 @@ SQL;
                     $span = TimeSpan::FromSeconds($time);
                     $data['time'] = $time;
                     if ($time < 86400)
-                        $data['timeplayed'] = $span->format("%y Hours, %j Mins, %s Seconds");
+                        $data['timeplayed'] = $span->format("%y Hours, %j Mins, %w Seconds");
                     else
                         $data['timeplayed'] = $span->format("%d Days, %y Hours, %j Mins");
                     break;
@@ -714,7 +714,7 @@ SQL;
                 case 'skillscore':
                 case 'heals':
                 case 'revives':
-                case 'ammos':
+                case 'resupplies':
                 case 'repairs':
                 case 'captures':
                 case 'captureassists':
@@ -728,7 +728,7 @@ SQL;
                 case 'teamvehicledamage':
                 case 'suicides':
                 case 'killstreak':
-                case 'rndscore':
+                case 'bestscore':
                     $data[$key] = number_format((int)$value);
                     break;
                 case 'wins':
@@ -742,6 +742,32 @@ SQL;
                 case 'score':
                     $score = (int)$value;
                     $data[$key] = number_format($score);
+                    break;
+                case 'permban':
+                    $banned = (int)$value;
+                    $banned = ($value == 1);
+                    $data[$key] = $value;
+
+                    if ($banned)
+                    {
+                        $data['statustext'] = 'Banned';
+                        $data['badge'] = 'important';
+                    }
+                    else
+                    {
+                        $lastSeen = (int)$player['lastonline'];
+                        $aMonthAgo = time() - (86400 * 30);
+                        if ($aMonthAgo > $lastSeen)
+                        {
+                            $data['statustext'] = 'Inactive';
+                            $data['badge'] = 'inactive';
+                        }
+                        else
+                        {
+                            $data['statustext'] = 'Active';
+                            $data['badge'] = 'success';
+                        }
+                    }
                     break;
                 default:
                     $data[$key] = $value;

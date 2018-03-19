@@ -40,13 +40,16 @@ class Database extends Controller
 
         // A list of tables we care about
         $tables = [
-            'mapinfo', 'server', 'round', 'player', 'player_army', 'player_award', 'player_weapon',
-            'player_kit', 'player_kill', 'player_map', 'player_history', 'player_rank_history',
-            'player_vehicle', 'player_unlock'
+            'mapinfo', 'server', 'round', 'player', 'player_army', 'player_army_history', 'player_award',
+            'player_weapon', 'player_weapon_history', 'player_kit', 'player_kit_history', 'player_kill',
+            'player_kill_history', 'player_map', 'player_round_history', 'player_rank_history',
+            'player_vehicle', 'player_vehicle_history', 'player_unlock', 'battlespy_report', 'battlespy_message'
         ];
 
         // Create view
         $view = new View('index', 'database');
+        $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");
+        $view->attachScript("/ASP/frontend/modules/database/js/index.js");
         $view->set('tables', $this->databaseModel->getTableStatus($tables));
         $view->render();
     }

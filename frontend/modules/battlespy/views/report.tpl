@@ -92,6 +92,14 @@
 					<span class="text-nowrap">{round.winningTeamName}</span>
 				</span>
             </li>
+            <li>
+                <span class="key">
+                    <img src="/ASP/frontend/images/icons/timer.png" style="height: 24px"/> Round Time
+                </span>
+                <span class="val">
+					<span class="text-nowrap">{report.roundTime}</i></span>
+				</span>
+            </li>
         </ul>
     </div>
 </div>

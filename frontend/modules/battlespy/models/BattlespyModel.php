@@ -9,6 +9,7 @@
  */
 
 use System\Response;
+use System\TimeSpan;
 
 /**
  * Battlespy Model
@@ -79,7 +80,7 @@ SQL;
     {
         // Fetch report
         $query = <<<SQL
-SELECT r.*, rh.map_id, rh.time_end AS `timestamp`, s.name AS `server_name`, mi.name AS `mapname`
+SELECT r.*, rh.map_id, rh.time_end AS `timestamp`, s.name AS `server_name`, mi.name AS `mapname`, rh.time_end - rh.time_start AS `time`
 FROM battlespy_report AS r
   LEFT JOIN round AS rh ON r.round_id = rh.id
   LEFT JOIN server AS s ON r.server_id = s.id
@@ -91,6 +92,11 @@ SQL;
         $report = $this->pdo->query($query)->fetch();
         if (empty($report))
             return false;
+
+        // Format round length
+        $time = (int)$report['time'];
+        $span = TimeSpan::FromSeconds($time);
+        $report['roundTime'] = $span->format("%y Hours, %j Mins, %w Seconds");
 
         // Fetch report messages
         $messages = [];
@@ -115,7 +121,7 @@ SQL;
                     break;
                 default:
                     $message['badge'] = 'info';
-                    $message['severity_name'] = 'Low';
+                    $message['severity_name'] = 'Minor';
                     break;
             }
 

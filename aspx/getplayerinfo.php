@@ -103,7 +103,7 @@ else
                 'dfcp' => $row['defends'],
                 'heal' => $row['heals'],
                 'rviv' => $row['revives'],
-                'rsup' => $row['ammos'],
+                'rsup' => $row['resupplies'],
                 'rpar' => $row['repairs'],
                 'tgte' => $row['targetassists'],
                 'dkas' => $row['driverassists'],
@@ -111,7 +111,7 @@ else
                 'cdsc' => $row['cmdscore'],
                 'rank' => $row['rank'],
                 'kick' => $row['kicked'],
-                'bbrs' => $row['rndscore'],
+                'bbrs' => $row['bestscore'],
                 'tcdr' => $row['cmdtime'],
                 'ban' => $row['banned'],
                 'lbtl' => $row['lastonline'],
@@ -191,7 +191,7 @@ else
     {
         // NOTE: xpack and bf2 have same return
         $query = <<<SQL
-SELECT id, name, score, rank, defends, repairs, heals, ammos, driverspecials, cmdscore, cmdtime, sqltime, 
+SELECT id, name, score, rank, defends, repairs, heals, resupplies, driverspecials, cmdscore, cmdtime, sqltime, 
   sqmtime, wins, losses, teamscore, killstreak, deathstreak, time, kills
 FROM `player` 
 WHERE `id` = {$pid}
@@ -219,7 +219,7 @@ SQL;
             'dfcp' => $row['defends'],
             'rpar' => $row['repairs'],
             'heal' => $row['heals'],
-            'rsup' => $row['ammos'],
+            'rsup' => $row['resupplies'],
             'dsab' => $row['driverspecials'],
             'cdsc' => $row['cmdscore'],
             'tcdr' => $row['cmdtime'],

@@ -35,6 +35,7 @@
                 <span id="playerCurrentRank" style="display: none">{player.rank}</span>
                 <span id="playerCurrentIso" style="display: none">{player.country}</span>
                 <span id="playerCurrentEmail" style="display: none">{player.email}</span>
+                <span id="labelStatus" style="display: none">{player.badge}</span>
                 <!-- End Hidden fields for JavaScript -->
                 <span class="key"><i class="icon-user"></i> Player Name</span>
                 <span class="val">
@@ -63,11 +64,7 @@
                 <span class="key"><i class="icon-check"></i> Account Status</span>
                 <span class="val">
 					<span class="text-nowrap">
-                        <?php if ({player.permban} == 1): ?>
-                        <span id="status" style="color: red">Banned</span>
-                        <?php else: ?>
-                        <span id="status" style="color: green">Active</span>
-                        <?php endif ?>
+                        <label id="status" class="label label-{player.badge}">{player.statustext}</label>
                     </span>
 				</span>
             </li>
@@ -184,7 +181,7 @@
             <li>
                 <span class="key"><i class="icon-ammo"></i> Resupplies</span>
                 <span class="val">
-					<span class="text-nowrap">{player.ammos}</span>
+					<span class="text-nowrap">{player.resupplies}</span>
 				</span>
             </li>
             <li>
@@ -356,7 +353,7 @@
             <li>
                 <span class="key"><i class="icon-trophy-2"></i> Best Round Score</span>
                 <span class="val">
-					<span class="text-nowrap">{player.rndscore}</span>
+					<span class="text-nowrap">{player.bestscore}</span>
 				</span>
             </li>
             <li>

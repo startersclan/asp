@@ -31,6 +31,12 @@ DROP TABLE IF EXISTS `player_kill`;
 DROP TABLE IF EXISTS `player_kit`;
 DROP TABLE IF EXISTS `player_army`;
 DROP TABLE IF EXISTS `player_award`;
+DROP TABLE IF EXISTS `player_kit_history`;
+DROP TABLE IF EXISTS `player_kill_history`;
+DROP TABLE IF EXISTS `player_vehicle_history`;
+DROP TABLE IF EXISTS `player_weapon_history`;
+DROP TABLE IF EXISTS `player_army_history`;
+DROP TABLE IF EXISTS `player_round_history`;
 DROP TABLE IF EXISTS `player`;
 DROP TABLE IF EXISTS `weapon`;
 DROP TABLE IF EXISTS `vehicle`;
@@ -190,6 +196,8 @@ CREATE TABLE `vehicle` (
 CREATE TABLE `weapon` (
   `id` TINYINT UNSIGNED,
   `name` VARCHAR(32) NOT NULL,
+  `is_explosive` TINYINT(1) NOT NULL DEFAULT 0,
+  `is_equipment` TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -237,12 +245,11 @@ CREATE TABLE `player` (
   `damageassists` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `heals` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `revives` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
-  `ammos` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `resupplies` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `repairs` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `targetassists` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `driverspecials` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
-  `driverassists` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
-  `passengerassists` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `driverassists` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,  -- Not actually used!
   `teamkills` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `teamdamage` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `teamvehicledamage` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
@@ -258,15 +265,14 @@ CREATE TABLE `player` (
   `timepara` MEDIUMINT NOT NULL DEFAULT 0,	-- Time in parachute
   `wins` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `losses` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-  `rndscore` SMALLINT UNSIGNED NOT NULL DEFAULT 0,  -- Best Round Score
-  `chng` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
-  `decr` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
-  `mode0` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-  `mode1` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-  `mode2` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `bestscore` SMALLINT UNSIGNED NOT NULL DEFAULT 0,  -- Best Round Score
+  `chng` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,  -- Rank changed flag
+  `decr` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,  -- Rank decreased flag
+  `mode0` SMALLINT UNSIGNED NOT NULL DEFAULT 0,  -- Games played in Conquest
+  `mode1` SMALLINT UNSIGNED NOT NULL DEFAULT 0,  -- Games played in Single Player
+  `mode2` SMALLINT UNSIGNED NOT NULL DEFAULT 0,  -- Games played in Coop
   `permban` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
   `bantime` INT UNSIGNED NOT NULL DEFAULT 0,    -- Banned Timestamp
-  `clantag` VARCHAR(20) NOT NULL DEFAULT '',
   `online` TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY(`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2900000 DEFAULT CHARSET=utf8;
@@ -337,8 +343,6 @@ CREATE TABLE `player_award` (
   FOREIGN KEY(`round_id`) REFERENCES round(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE INDEX `idx_player_awards` ON player_award(`player_id`, `award_id`);
-
 --
 -- Table structure for table `player_kill`
 --
@@ -390,29 +394,56 @@ CREATE TABLE `player_kit` (
 CREATE INDEX `idx_player_kit_id_kills_time` ON player_kit(`kit_id`, `kills`, `time`);
 
 --
--- Table structure for table `player_history`
+-- Table structure for table `player_round_history`
 --
 
-CREATE TABLE `player_history` (
+CREATE TABLE `player_round_history` (
   `player_id` INT UNSIGNED NOT NULL,
   `round_id` INT UNSIGNED NOT NULL,
   `team` TINYINT UNSIGNED NOT NULL,
-  `timestamp` INT UNSIGNED NOT NULL,
   `time` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-  `score` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-  `cmdscore` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-  `skillscore` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-  `teamscore` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `rank` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0, -- Rank at the end of the round, post ASP corrections!
+  `score` SMALLINT NOT NULL DEFAULT 0,
+  `cmdscore` SMALLINT NOT NULL DEFAULT 0,
+  `skillscore` SMALLINT NOT NULL DEFAULT 0,
+  `teamscore` SMALLINT NOT NULL DEFAULT 0,
   `kills` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `deaths` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-  `rank` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
-  PRIMARY KEY(`player_id`,`round_id`),
+  `captures` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `neutralizes` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `captureassists` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `neutralizeassists` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `defends` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `heals` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `revives` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `resupplies` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `repairs` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `damageassists` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `targetassists` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `driverspecials` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  -- `driverassists` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  -- `passengerassists` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `teamkills` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `teamdamage` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `teamvehicledamage` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `suicides` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  `killstreak` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  `deathstreak` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  `cmdtime` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `sqltime` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `sqmtime` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `lwtime` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `timepara` SMALLINT NOT NULL DEFAULT 0,	-- Time in parachute
+  `completed` TINYINT(1) NOT NULL DEFAULT 0, -- Completed round?
+  `banned` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  `kicked` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY(`player_id`, `round_id`),
   FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY(`round_id`) REFERENCES round(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY(`round_id`) REFERENCES round(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`team`) REFERENCES army(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE INDEX `idx_player_history_timestamp_score_pid` ON player_history(`timestamp`, `score`, `player_id`);
+-- CREATE INDEX `idx_player_history_timestamp_score_pid` ON player_round_history(`timestamp`, `score`, `player_id`);
 
 --
 -- Table structure for table `player_rank_history`
@@ -472,6 +503,7 @@ CREATE TABLE `player_weapon` (
   `deaths` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `fired` INT UNSIGNED NOT NULL DEFAULT 0,
   `hits` INT UNSIGNED NOT NULL DEFAULT 0,
+  `deployed` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`player_id`,`weapon_id`),
   FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`weapon_id`) REFERENCES weapon(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
@@ -481,6 +513,91 @@ CREATE TABLE `player_weapon` (
 -- Add index for the GetLeaderboard.aspx
 --
 CREATE INDEX `idx_player_weapon_id_kills_time` ON player_weapon(`weapon_id`, `kills`, `time`);
+
+--
+-- Table structure for table `player_army_history`
+--
+
+CREATE TABLE `player_army_history` (
+  `player_id` INT UNSIGNED NOT NULL,
+  `round_id` INT UNSIGNED NOT NULL,
+  `army_id` TINYINT UNSIGNED NOT NULL,
+  `time` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY(`player_id`,`round_id`,`army_id`),
+  FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`round_id`) REFERENCES round(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`army_id`) REFERENCES army(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `player_kit_history`
+--
+
+CREATE TABLE `player_kit_history` (
+  `player_id` INT UNSIGNED NOT NULL,
+  `round_id` INT UNSIGNED NOT NULL,
+  `kit_id` TINYINT UNSIGNED NOT NULL,
+  `time` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `kills` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `deaths` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY(`player_id`,`round_id`,`kit_id`),
+  FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`round_id`) REFERENCES round(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`kit_id`) REFERENCES kit(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `player_kit_history`
+--
+
+CREATE TABLE `player_kill_history` (
+  `round_id` INT UNSIGNED NOT NULL,
+  `attacker` INT UNSIGNED NOT NULL,
+  `victim` INT UNSIGNED NOT NULL,
+  `count` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY(`attacker`,`round_id`,`victim`),
+  FOREIGN KEY(`attacker`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`round_id`) REFERENCES round(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`victim`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `player_vehicle_history`
+--
+
+CREATE TABLE `player_vehicle_history` (
+  `player_id` INT UNSIGNED NOT NULL,
+  `round_id` INT UNSIGNED NOT NULL,
+  `vehicle_id` TINYINT UNSIGNED NOT NULL,
+  `time` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `kills` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `deaths` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `roadkills` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY(`player_id`,`round_id`,`vehicle_id`),
+  FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`round_id`) REFERENCES round(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`vehicle_id`) REFERENCES vehicle(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `player_weapon_history`
+--
+
+CREATE TABLE `player_weapon_history` (
+  `player_id` INT UNSIGNED NOT NULL,
+  `round_id` INT UNSIGNED NOT NULL,
+  `weapon_id` TINYINT UNSIGNED NOT NULL,
+  `time` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `kills` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `deaths` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `fired` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `hits` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `deployed` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY(`player_id`,`round_id`,`weapon_id`),
+  FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`round_id`) REFERENCES round(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`weapon_id`) REFERENCES weapon(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table structure for table `risingstar`
@@ -541,7 +658,7 @@ CREATE TABLE `battlespy_report` (
 CREATE TABLE `battlespy_message` (
   `id` INT UNSIGNED AUTO_INCREMENT,
   `report_id` INT UNSIGNED NOT NULL,      -- Report ID
-  `player_id` INT UNSIGNED NOT NULL,           -- Player ID
+  `player_id` INT UNSIGNED NOT NULL,      -- Player ID
   `flag` MEDIUMINT UNSIGNED NOT NULL,
   `severity` TINYINT UNSIGNED NOT NULL,
   `message` VARCHAR(128),
@@ -573,8 +690,8 @@ CREATE OR REPLACE VIEW `round_history_view` AS
     LEFT JOIN `server` AS s ON h.server_id = s.id;
 
 CREATE OR REPLACE VIEW `player_history_view` AS
-  SELECT ph.*, mi.name AS mapname, server.name AS name, rh.pids1_end + rh.pids2_end AS `playerCount`
-  FROM player_history AS ph
+  SELECT ph.*, mi.name AS mapname, server.name AS name, rh.time_end, rh.pids1_end + rh.pids2_end AS `playerCount`
+  FROM player_round_history AS ph
     LEFT JOIN round AS rh ON ph.round_id = rh.id
     LEFT JOIN server ON rh.server_id = server.id
     LEFT JOIN map AS mi ON rh.map_id = mi.id;
@@ -610,8 +727,9 @@ CREATE PROCEDURE `generate_rising_star`()
     -- Fill Rising Star Table
     INSERT INTO `risingstar`(player_id, weeklyscore)
       SELECT player_id, sum(h.score) AS weeklyscore
-      FROM player_history AS h
-      WHERE timestamp >= lastweek AND score > 0
+      FROM player_round_history AS h
+        JOIN round r ON h.round_id = r.id
+      WHERE r.time_end >= lastweek AND score > 0
       GROUP BY player_id
       ORDER BY weeklyscore DESC;
   END $$
@@ -786,24 +904,24 @@ INSERT INTO `vehicle` VALUES (6, 'Ground Defense');
 -- Dumping data for table `weapon`
 --
 
-INSERT INTO `weapon` VALUES (0, 'Assault Rifle');
-INSERT INTO `weapon` VALUES (1, 'Assault Grenade');
-INSERT INTO `weapon` VALUES (2, 'Carbine');
-INSERT INTO `weapon` VALUES (3, 'Light Machine Gun');
-INSERT INTO `weapon` VALUES (4, 'Sniper Rifle');
-INSERT INTO `weapon` VALUES (5, 'Pistol');
-INSERT INTO `weapon` VALUES (6, 'Anti-Tank / Anti-Air');
-INSERT INTO `weapon` VALUES (7, 'Sub Machine Gun');
-INSERT INTO `weapon` VALUES (8, 'Shotgun');
-INSERT INTO `weapon` VALUES (9, 'Knife');
-INSERT INTO `weapon` VALUES (10, 'Defibrillator');
-INSERT INTO `weapon` VALUES (11, 'C4');
-INSERT INTO `weapon` VALUES (12, 'Hand Grenade');
-INSERT INTO `weapon` VALUES (13, 'Claymore');
-INSERT INTO `weapon` VALUES (14, 'Anti-Tank Mine');
-INSERT INTO `weapon` VALUES (15, 'Grappling Hook');
-INSERT INTO `weapon` VALUES (16, 'Zipline');
-INSERT INTO `weapon` VALUES (17, 'Tactical');
+INSERT INTO `weapon` VALUES (0, 'Assault Rifle', 0, 0);
+INSERT INTO `weapon` VALUES (1, 'Assault Grenade', 0, 0);
+INSERT INTO `weapon` VALUES (2, 'Carbine', 0, 0);
+INSERT INTO `weapon` VALUES (3, 'Light Machine Gun', 0, 0);
+INSERT INTO `weapon` VALUES (4, 'Sniper Rifle', 0, 0);
+INSERT INTO `weapon` VALUES (5, 'Pistol', 0, 0);
+INSERT INTO `weapon` VALUES (6, 'Anti-Tank / Anti-Air', 0, 0);
+INSERT INTO `weapon` VALUES (7, 'Sub Machine Gun', 0, 0);
+INSERT INTO `weapon` VALUES (8, 'Shotgun', 0, 0);
+INSERT INTO `weapon` VALUES (9, 'Knife', 0, 1);
+INSERT INTO `weapon` VALUES (10, 'Defibrillator', 0, 1);
+INSERT INTO `weapon` VALUES (11, 'C4', 1, 1);
+INSERT INTO `weapon` VALUES (12, 'Hand Grenade', 0, 1);
+INSERT INTO `weapon` VALUES (13, 'Claymore', 1, 1);
+INSERT INTO `weapon` VALUES (14, 'Anti-Tank Mine', 1, 1);
+INSERT INTO `weapon` VALUES (15, 'Grappling Hook', 0, 1);
+INSERT INTO `weapon` VALUES (16, 'Zipline', 0, 1);
+INSERT INTO `weapon` VALUES (17, 'Tactical', 0, 1);
 
 --
 -- Dumping data for table `_version`

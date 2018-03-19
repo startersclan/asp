@@ -24,19 +24,27 @@ class DatabaseModel
      * @var array A list of tables we backup and restore from
      */
     protected static $BackupTables = [
-        'army', 'kit', 'vehicle', 'weapon', 'unlock', 'mapinfo', 'server', 'round_history',
+        'army', 'kit', 'vehicle', 'weapon', 'unlock', 'map', 'server', 'round',
         'player', 'player_army', 'player_award', 'player_weapon', 'player_kit', 'player_kill',
         'player_map', 'player_history', 'player_rank_history', 'player_vehicle', 'player_unlock',
+        'player_army_history', 'player_round_history', 'player_kill_history', 'player_kit_history',
+        'player_weapon_history', 'player_vehicle_history', 'battlespy_report', 'battlespy_message'
     ];
 
     /**
      * @var array A list of tables that we can clear. Reverse order is important here (foreign keys)!
      */
     protected static $ClearTables = [
-        'risingstar', 'player_unlock', 'player_vehicle', 'player_weapon', 'player_rank_history',
-        'player_history', 'player_map', 'player_kill', 'player_kit',  'player_award', 'player_army',
-        'player', 'round_history', 'server', 'mapinfo'
+        'battlespy_message', 'battlespy_report', 'player_army_history', 'player_round_history', 'player_kill_history',
+        'player_kit_history', 'player_weapon_history', 'player_vehicle_history', 'risingstar', 'player_unlock',
+        'player_vehicle', 'player_weapon', 'player_rank_history', 'player_map', 'player_kill',
+        'player_kit', 'player_award', 'player_army', 'player', 'round', 'server', 'map'
     ];
+
+    /**
+     * @var int The maximum rows to pull per query (used for backups)
+     */
+    const MAX_PAGE_SIZE = 1000;
 
     /**
      * Fetches the table status of the specified tables
@@ -95,6 +103,7 @@ class DatabaseModel
 
         // Grab database
         $pdo = Database::GetConnection('stats');
+        $pageSize = DatabaseModel::MAX_PAGE_SIZE;
 
         // Perform backups
         // Process each upgrade only if the version is newer
@@ -114,15 +123,15 @@ class DatabaseModel
                 {
                     // Table Exists, lets back it up
                     /** @noinspection SqlResolve */
-                    $query = "SELECT *  FROM `{$table}` LIMIT 5000 OFFSET $i;";
+                    $query = "SELECT *  FROM `{$table}` LIMIT {$pageSize} OFFSET $i;";
                     $result = $pdo->query($query);
                     while ($row = $result->fetch())
                     {
                         $file->writeCSVLine($row);
                     }
 
-                    $i += 5000;
-                    $count -= 5000;
+                    $i += $pageSize;
+                    $count -= $pageSize;
                 }
             }
 
@@ -176,7 +185,7 @@ class DatabaseModel
             // Reset auto increments
             $pdo->exec("ALTER TABLE `player` AUTO_INCREMENT = 2900000;");
             $pdo->exec("ALTER TABLE `server` AUTO_INCREMENT = 1;");
-            $pdo->exec("ALTER TABLE `round_history` AUTO_INCREMENT = 1;");
+            $pdo->exec("ALTER TABLE `round` AUTO_INCREMENT = 1;");
 
             // Process each upgrade only if the version is newer
             foreach (self::$BackupTables as $table)
@@ -227,7 +236,7 @@ class DatabaseModel
             // Reset auto increments
             $pdo->exec("ALTER TABLE `player` AUTO_INCREMENT = 29000000;");
             $pdo->exec("ALTER TABLE `server` AUTO_INCREMENT = 1;");
-            $pdo->exec("ALTER TABLE `round_history` AUTO_INCREMENT = 1;");
+            $pdo->exec("ALTER TABLE `round` AUTO_INCREMENT = 1;");
 
             // Commit changes
             $pdo->commit();

@@ -70,9 +70,9 @@
             <div style="text-align: center; margin-top: 15px">
                 <div class="mws-form-item">
                     <div id="mws-ui-button-radio">
-                        <input type="radio" id="radio1" name="radio" checked="checked"><label for="radio1">Week</label>
-                        <input type="radio" id="radio2" name="radio"><label for="radio2">Month</label>
-                        <input type="radio" id="radio3" name="radio"><label for="radio3">Year</label>
+                        <input type="radio" id="radio1" name="radio" checked="checked"><label for="radio1">Last Week</label>
+                        <input type="radio" id="radio2" name="radio"><label for="radio2">Last 6 Weeks</label>
+                        <input type="radio" id="radio3" name="radio"><label for="radio3">Last Year</label>
                     </div>
                 </div>
             </div>

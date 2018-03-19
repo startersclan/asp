@@ -229,7 +229,7 @@
             <li>
                 <span class="key"><i class="icon-ammo"></i> Resupplies</span>
                 <span class="val">
-					<span class="text-nowrap">{ammos}</span>
+					<span class="text-nowrap">{resupplies}</span>
 				</span>
             </li>
             <li>

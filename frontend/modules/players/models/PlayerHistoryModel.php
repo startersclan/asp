@@ -3,18 +3,11 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2018, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
 use System\Battlefield2;
-use System\Collections\Dictionary;
-use System\IO\Directory;
-use System\IO\File;
-use System\IO\Path;
-use System\Player;
-use System\Response;
-use System\Snapshot;
 use System\StatsData;
 use System\TimeHelper;
 use System\TimeSpan;
@@ -81,7 +74,7 @@ class PlayerHistoryModel
         $query = <<<SQL
 SELECT ph.*, h.*, p.name, mi.name AS `mapname`, s.name AS `server`, s.ip AS `ip`, s.port AS `port`,
   h.pids1_end + h.pids2_end AS `playerCount`, s.id AS `server_id`
-FROM player_history AS ph 
+FROM player_round_history AS ph 
   LEFT JOIN player AS p ON ph.player_id = p.id
   LEFT JOIN round AS h ON ph.round_id = h.id
   LEFT JOIN map AS mi ON h.map_id = mi.id 
@@ -108,7 +101,7 @@ SQL;
         $rid = (int)$roundid;
 
         // Get next round ID
-        $query = "SELECT MIN(round_id) FROM player_history WHERE player_id={$pid} AND round_id > ". $rid;
+        $query = "SELECT MIN(round_id) FROM player_round_history WHERE player_id=$pid AND round_id > ". $rid;
         return (int)$this->pdo->query($query)->fetchColumn(0);
     }
 
@@ -129,7 +122,7 @@ SQL;
         $rid = (int)$roundid;
 
         // Get next round ID
-        $query = "SELECT MAX(round_id) FROM player_history WHERE player_id={$pid} AND round_id < ". $rid;
+        $query = "SELECT MAX(round_id) FROM player_round_history WHERE player_id=$pid AND round_id < ". $rid;
         return (int)$this->pdo->query($query)->fetchColumn(0);
     }
 
@@ -177,7 +170,7 @@ SQL;
                 case 'team':
                     $val = (int)$value;
                     $data[$key] = $val;
-                    $data['teamName'] = $this->pdo->query("SELECT a.name FROM army a WHERE a.id=". $val)->fetchColumn(0);
+                    $data['teamName'] = $this->pdo->query("SELECT a.name FROM army AS a WHERE a.id=". $val)->fetchColumn(0);
                     break;
                 default:
                     $data[$key] = $value;
@@ -224,76 +217,61 @@ SQL;
      */
     public function addAdvancedRoundInfo($pid, $round, View $view)
     {
-        // Attempt to find snapshot files
-        $time = new \DateTime("@{$round['time_end']}", new \DateTimeZone("UTC"));
-        $file = "{$round['server_id']}-{$round['mapname']}_{$time->format('Ymd_His')}.json";
-        $file = Path::Combine(SYSTEM_PATH, "snapshots", "processed", $file);
-
-        // Quit here if we have no snapshot files to load
-        if (!File::Exists($file)) return false;
-
-        // Define our needed variables
-        $data = $this->loadSnapshotData($file);
-        if ($data == null) return false;
-
         // Wrap in a try-catch. We should not have any issues since this snapshot
         // has been loaded before, but you never know...
         try
         {
-            // Lets load our data into a snapshot object
-            $data = new Dictionary(false, $data);
-            $snapshot = new Snapshot($data);
+            $roundId = (int)$round['id'];
+            $query = "SELECT * FROM player_round_history WHERE player_id=$pid AND round_id=$roundId";
+            $player = $this->pdo->query($query)->fetch();
 
-            // Grab player, and ensure he is in the snapshot
-            $player = $snapshot->getPlayerById($pid);
-            if (!$player)
-            {
-                Response::Redirect('players/view/'. $pid .'/history');
-                die;
-            }
+            // If the round isnt found, then WTF
+            if (empty($player))
+                return false;
 
             // Load stats data
             StatsData::Load();
 
             // Add player team stats
-            $view->set('completed', ($player->completedRound) ? "Yes" : "No");
-            $view->set('kicked', $player->timesKicked);
-            $view->set('banned', $player->timesBanned);
-            $view->set('heals', $player->heals);
-            $view->set('revives', $player->revives);
-            $view->set('ammos', $player->resupplies);
-            $view->set('repairs', $player->repairs);
-            $view->set('captures', $player->flagCaptures);
-            $view->set('captureassists', $player->flagCaptureAssists);
-            $view->set('neutralizes', $player->flagNeutralizes);
-            $view->set('neutralizeassists', $player->flagNeutralizeAssists);
-            $view->set('defends', $player->flagDefends);
-            $view->set('driverspecials', $player->driverSpecials);
-            $view->set('damageassists', $player->damageAssists);
-            $view->set('targetassists', $player->targetAssists);
+            $completed = (int)$player['completed'];
+            $view->set('completed',  ($completed) ? "Yes" : "No");
+            $view->set('kicked', $player['kicked']);
+            $view->set('banned', $player['banned']);
+            $view->set('heals', $player['heals']);
+            $view->set('revives', $player['revives']);
+            $view->set('resupplies', $player['resupplies']);
+            $view->set('repairs', $player['repairs']);
+            $view->set('captures', $player['captures']);
+            $view->set('captureassists', $player['captureassists']);
+            $view->set('neutralizes', $player['neutralizes']);
+            $view->set('neutralizeassists', $player['neutralizeassists']);
+            $view->set('defends', $player['defends']);
+            $view->set('driverspecials', $player['driverspecials']);
+            $view->set('damageassists', $player['damageassists']);
+            $view->set('targetassists', $player['targetassists']);
 
             // Add player times
-            $view->set('cmdtime', TimeHelper::SecondsToHms($player->cmdTime));
-            $view->set('sqltime', TimeHelper::SecondsToHms($player->sqlTime));
-            $view->set('sqmtime', TimeHelper::SecondsToHms($player->sqmTime));
-            $view->set('lwtime', TimeHelper::SecondsToHms($player->lwTime));
+            $view->set('cmdtime', TimeHelper::SecondsToHms($player['cmdtime']));
+            $view->set('sqltime', TimeHelper::SecondsToHms($player['sqltime']));
+            $view->set('sqmtime', TimeHelper::SecondsToHms($player['sqmtime']));
+            $view->set('lwtime', TimeHelper::SecondsToHms($player['lwtime']));
 
             // Negative Stats
-            $view->set('teamkills', $player->teamKills);
-            $view->set('teamdamage', $player->teamDamage);
-            $view->set('teamvehicledamage', $player->teamVehicleDamage);
-            $view->set('suicides', $player->suicides);
+            $view->set('teamkills', $player['teamkills']);
+            $view->set('teamdamage', $player['teamdamage']);
+            $view->set('teamvehicledamage', $player['teamvehicledamage']);
+            $view->set('suicides', $player['suicides']);
 
             // Misc stats
-            $view->set('killstreak', $player->killStreak);
-            $view->set('deathstreak', $player->deathStreak);
-            $this->attachTopVictimAndOpp($player, $view, $snapshot);
+            $view->set('killstreak', $player['killstreak']);
+            $view->set('deathstreak', $player['deathstreak']);
+            $this->attachTopVictimAndOpp($pid, $roundId, $view);
 
             // Attach players round stats
-            $this->attachKitData($player, $view);
-            $this->attachVehicleData($player, $view);
-            $this->attachWeaponData($player, $view);
-            $this->attachAwardData($player, $view);
+            $this->attachKitData($pid, $roundId, $view);
+            $this->attachVehicleData($pid, $roundId, $view);
+            $this->attachWeaponData($pid, $roundId, $view);
+            $this->attachAwardData($pid, $roundId, $view);
 
             // Return
             return true;
@@ -308,10 +286,11 @@ SQL;
     /**
      * Appends Kit data to a view
      *
-     * @param Player $player
+     * @param int $playerId
+     * @param int $roundId
      * @param View $view
      */
-    public function attachKitData(Player $player, View $view)
+    public function attachKitData($playerId, $roundId, View $view)
     {
         // Prepare return data
         $data = [];
@@ -328,28 +307,38 @@ SQL;
             'ratio' => 0.00
         ];
 
+        // Sanitize
+        $playerId = (int)$playerId;
+        $roundId = (int)$roundId;
+
+        // Query
+        $query = "SELECT * FROM player_kit_history WHERE player_id=$playerId AND round_id=$roundId";
+        $kitData = $this->pdo->query($query)->fetchAll();
+
         // iterate through the results
-        foreach ($player->kitData as $obj)
+        foreach ($kitData as $row)
         {
+            $id = (int)$row['kit_id'];
+
             // Skip unknown objects
-            if ($obj->id >= StatsData::$NumKits) continue;
+            if ($id >= StatsData::$NumKits) continue;
 
             // Get K/D ratio
-            $ratio = ($obj->deaths > 0) ? round($obj->kills / $obj->deaths, 3) : (float)$obj->kills;
+            $ratio = ($row['deaths'] > 0) ? round($row['kills'] / $row['deaths'], 3) : (float)$row['kills'];
 
             // Add kit data
             $data[] = [
-                'name' => StatsData::$KitNames[$obj->id],
-                'kills' => $obj->kills,
-                'deaths' => $obj->deaths,
-                'time' => TimeHelper::SecondsToHms($obj->time),
+                'name' => StatsData::$KitNames[$id],
+                'kills' => $row['kills'],
+                'deaths' => $row['deaths'],
+                'time' => TimeHelper::SecondsToHms($row['time']),
                 'ratio' => number_format($ratio, 3)
             ];
 
             // Totals
-            $totals['kills'] += $obj->kills;
-            $totals['deaths'] += $obj->deaths;
-            $totals['time'] += $obj->time;
+            $totals['kills'] += $row['kills'];
+            $totals['deaths'] += $row['deaths'];
+            $totals['time'] += $row['time'];
             $totals['ratio'] += $ratio;
         }
 
@@ -386,10 +375,11 @@ SQL;
     /**
      * Appends Vehicle data to a view
      *
-     * @param Player $player
+     * @param int $playerId
+     * @param int $roundId
      * @param View $view
      */
-    public function attachVehicleData(Player $player, View $view)
+    public function attachVehicleData($playerId, $roundId, View $view)
     {
         // Prepare return data
         $data = [];
@@ -409,33 +399,42 @@ SQL;
             'ratio' => 0.00
         ];
 
+        // Sanitize
+        $playerId = (int)$playerId;
+        $roundId = (int)$roundId;
+
+        // Query
+        $query = "SELECT * FROM player_vehicle_history WHERE player_id=$playerId AND round_id=$roundId";
+        $rowData = $this->pdo->query($query)->fetchAll();
+
         // iterate through the results
-        foreach ($player->vehicleData as $obj)
+        foreach ($rowData as $row)
         {
+            $id = (int)$row['vehicle_id'];
+
             // Skip unknown objects
-            if ($obj->id >= StatsData::$NumVehicles) continue;
+            if ($id >= StatsData::$NumVehicles) continue;
 
             // Get K/D ratio
-            $ratio = ($obj->deaths > 0) ? round($obj->kills / $obj->deaths, 3) : (float)$obj->kills;
+            $ratio = ($row['deaths'] > 0) ? round($row['kills'] / $row['deaths'], 3) : (float)$row['kills'];
 
             // Add vehicle data
             $data[] = [
-                'name' => StatsData::$VehicleNames[$obj->id],
-                'kills' => $obj->kills,
-                'deaths' => $obj->deaths,
-                'roadKills' => $obj->roadKills,
-                'time' => TimeHelper::SecondsToHms($obj->time),
+                'name' => StatsData::$VehicleNames[$id],
+                'kills' => $row['kills'],
+                'deaths' => $row['deaths'],
+                'roadKills' => $row['roadkills'],
+                'time' => TimeHelper::SecondsToHms($row['time']),
                 'ratio' => number_format($ratio, 3)
             ];
 
             // Totals
-            $totals['kills'] += $obj->kills;
-            $totals['deaths'] += $obj->deaths;
-            $totals['time'] += $obj->time;
-            $totals['roadKills'] += $obj->roadKills;
+            $totals['kills'] += $row['kills'];
+            $totals['deaths'] += $row['deaths'];
+            $totals['time'] += $row['time'];
+            $totals['roadKills'] += $row['roadkills'];
             $totals['ratio'] += $ratio;
         }
-
 
         // Do averages
         $length = count($data);
@@ -474,10 +473,11 @@ SQL;
     /**
      * Appends Kit data to a view
      *
-     * @param Player $player
+     * @param int $playerId
+     * @param int $roundId
      * @param View $view
      */
-    public function attachWeaponData(Player $player, View $view)
+    public function attachWeaponData($playerId, $roundId, View $view)
     {
         // Prepare return data
         $data = [];
@@ -502,34 +502,44 @@ SQL;
             'hits' => 0
         ];
 
+        // Sanitize
+        $playerId = (int)$playerId;
+        $roundId = (int)$roundId;
+
+        // Query
+        $query = "SELECT * FROM player_weapon_history WHERE player_id=$playerId AND round_id=$roundId";
+        $rowData = $this->pdo->query($query)->fetchAll();
+
         // iterate through the results
-        foreach ($player->weaponData as $obj)
+        foreach ($rowData as $row)
         {
+            $id = (int)$row['weapon_id'];
+
             // Skip unknown objects
-            if ($obj->id >= StatsData::$NumWeapons) continue;
+            if ($id >= StatsData::$NumWeapons) continue;
 
-            // Get accuracy and K/D ratio
-            $acc = ($obj->fired > 0) ? (($obj->hits / $obj->fired) * 100) : 0;
-            $ratio = ($obj->deaths > 0) ? round($obj->kills / $obj->deaths, 3) : (float)$obj->kills;
+            // Get K/D ratio
+            $acc = ($row['fired'] > 0) ? (($row['hits'] / $row['fired']) * 100) : 0;
+            $ratio = ($row['deaths'] > 0) ? round($row['kills'] / $row['deaths'], 3) : (float)$row['kills'];
 
-            // Add kit data
+            // Add vehicle data
             $data[] = [
-                'name' => StatsData::$WeaponNames[$obj->id],
-                'kills' => $obj->kills,
-                'deaths' => $obj->deaths,
-                'hits' => $obj->hits,
-                'fired' => $obj->fired,
-                'time' => TimeHelper::SecondsToHms($obj->time),
+                'name' => StatsData::$WeaponNames[$id],
+                'kills' => $row['kills'],
+                'deaths' => $row['deaths'],
+                'hits' => $row['hits'],
+                'fired' => $row['fired'],
+                'time' => TimeHelper::SecondsToHms($row['time']),
                 'ratio' => number_format($ratio, 3),
                 'accuracy' => round($acc, 2)
             ];
 
             // Totals
-            $totals['kills'] += $obj->kills;
-            $totals['deaths'] += $obj->deaths;
-            $totals['time'] += $obj->time;
-            $totals['fired'] += $obj->fired;
-            $totals['hits'] += $obj->hits;
+            $totals['kills'] += $row['kills'];
+            $totals['deaths'] += $row['deaths'];
+            $totals['time'] += $row['time'];
+            $totals['fired'] += $row['fired'];
+            $totals['hits'] += $row['hits'];
             $totals['ratio'] += $ratio;
         }
 
@@ -576,102 +586,120 @@ SQL;
     /**
      * Adds the favorite victim and opponent data to the current output
      *
-     * @param Player $player
+     * @param int $playerId
+     * @param int $roundId
      * @param View $view
-     * @param Snapshot $snapshot
      */
-    public function attachTopVictimAndOpp(Player $player, View $view, Snapshot $snapshot)
+    public function attachTopVictimAndOpp($playerId, $roundId, View $view)
     {
         $victims = [];
-        $data = [
-            'id' => 0,
-            'name' => "N/A",
-            'rank' => 0,
-            'count' => 0
-        ];
+        $enemies = [];
+        $faVictim = ['id' => 0, 'name' => "N/A", 'rank' => 0, 'count' => 0];
+        $woEnemy = ['id' => 0, 'name' => "N/A", 'rank' => 0, 'count' => 0];
 
-        foreach ($player->victims as $pid => $count)
+        // Sanitize
+        $playerId = (int)$playerId;
+        $roundId = (int)$roundId;
+
+        // Query to fetch victims
+        $query = <<<SQL
+SELECT p.id, pkh.count, p.name, p.rank 
+FROM player_kill_history AS pkh 
+  LEFT JOIN player AS p ON pkh.victim = p.id
+WHERE attacker=$playerId AND round_id=$roundId
+SQL;
+        $rowData = $this->pdo->query($query)->fetchAll();
+
+        // Update Victims
+        foreach ($rowData as $row)
         {
-            $victim = $snapshot->getPlayerById($pid);
+            $pid = (int)$row['id'];
+            $count = (int)$row['count'];
 
-            if ($count > $data['count'])
+            // Favorite victim?
+            if ($count > $faVictim['count'])
             {
                 $data['id'] = $pid;
-                $data['name'] = $victim->name;
-                $data['rank'] = $victim->rank;
+                $data['name'] = $row['name'];
+                $data['rank'] = $row['rank'];
                 $data['count'] = $count;
             }
 
             $victims[] = [
                 'id' => $pid,
-                'name' => $victim->name,
-                'rank' => $victim->rank,
+                'name' => $row['name'],
+                'rank' => $row['rank'],
+                'count' => $count
+            ];
+        }
+
+        // Query to fetch enemies
+        $query = <<<SQL
+SELECT p.id, pkh.count, p.name, p.rank 
+FROM player_kill_history AS pkh 
+  LEFT JOIN player AS p ON pkh.attacker = p.id
+WHERE victim=$playerId AND round_id=$roundId
+SQL;
+        $rowData = $this->pdo->query($query)->fetchAll();
+
+        // Update Victims
+        foreach ($rowData as $row)
+        {
+            $pid = (int)$row['id'];
+            $count = (int)$row['count'];
+
+            // Favorite victim?
+            if ($count > $woEnemy['count'])
+            {
+                $data['id'] = $pid;
+                $data['name'] = $row['name'];
+                $data['rank'] = $row['rank'];
+                $data['count'] = $count;
+            }
+
+            $enemies[] = [
+                'id' => $pid,
+                'name' => $row['name'],
+                'rank' => $row['rank'],
                 'count' => $count
             ];
         }
 
         // Update view
-        $view->set('favVictim', $data);
+        $view->set('favVictim', $faVictim);
         $view->set('victims', $victims);
-
-        // Now fetch worst enemy
-        $victims = [];
-        $data = [
-            'id' => 0,
-            'name' => "None",
-            'rank' => 0,
-            'count' => 0
-        ];
-
-        foreach ($snapshot->players as $p)
-        {
-            // Skip our player
-            if ($player->id == $p->id)
-                continue;
-
-            foreach ($p->victims as $pid => $count)
-            {
-                if ($pid == $player->id)
-                {
-                    if ($count > $data['count'])
-                    {
-                        $data['id'] = $p->id;
-                        $data['name'] = $p->name;
-                        $data['rank'] = $p->rank;
-                        $data['count'] = $count;
-                    }
-
-                    $victims[] = [
-                        'id' => $p->id,
-                        'name' => $p->name,
-                        'rank' => $p->rank,
-                        'count' => $count
-                    ];
-                }
-            }
-        }
-
-        // Update view
-        $view->set('worstOp', $data);
-        $view->set('enemies', $victims);
+        $view->set('worstOp', $woEnemy);
+        $view->set('enemies', $enemies);
     }
 
     /**
      * Appends Award data to a view
      *
-     * @param Player $player
+     * @param int $playerId
+     * @param int $roundId
      * @param View $view
      */
-    public function attachAwardData(Player $player, View $view)
+    public function attachAwardData($playerId, $roundId, View $view)
     {
         $badges = [];
         $medals = [];
         $ribbons = [];
 
-        foreach ($player->earnedAwards as $id => $level)
+        $query = <<<SQL
+SELECT award_id, a.type, level 
+FROM player_award 
+  JOIN award a ON player_award.award_id = a.id 
+WHERE player_id=$playerId AND round_id=$roundId
+SQL;
+        $rowData = $this->pdo->query($query)->fetchAll();
+
+        foreach ($rowData as $award)
         {
-            $sid = (string)$id;
-            switch ((int)$sid[0])
+            $id = (int)$award['award_id'];
+            $type = (int)$award['type'];
+            $level = (int)$award['level'];
+
+            switch ($type)
             {
                 case 1:
                     $badges[] = ['id' => $id, 'prefix' => Battlefield2::GetBadgePrefix($level), 'level' => $level];
@@ -688,27 +716,5 @@ SQL;
         $view->set('medals', $medals);
         $view->set('badges', $badges);
         $view->set('ribbons', $ribbons);
-    }
-
-    /**
-     * Loads the snapshot data from a snapshot file, and returns the data array
-     *
-     * @param string $file
-     *
-     * @return array
-     *
-     * @throws FileNotFoundException if the file cannot be located
-     * @throws IOException if there is an error opening the file
-     * @throws ObjectDisposedException never
-     */
-    private function loadSnapshotData($file)
-    {
-        // Parse snapshot data
-        $stream = File::OpenRead($file);
-        $json = $stream->readToEnd();
-        $data = json_decode($json, true);
-        $stream->close();
-
-        return $data;
     }
 }

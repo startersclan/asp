@@ -136,7 +136,7 @@ else
                 if (!empty($row))
                 {
                     $query = "SELECT COUNT(id) FROM player WHERE cmdscore > %d";
-                    $stmt = $connection->query(vsprintf($query, [$row['cmdcore']]));
+                    $stmt = $connection->query(vsprintf($query, [$row['cmdscore']]));
                     $Response->writeDataLine(
                         ((int)$stmt->fetchColumn(0)) + 1,
                         $row['id'],
@@ -420,7 +420,7 @@ SQL;
             {
                 $Response->writeDataLine(
                     $pos++,
-                    $row['player_id'],
+                    $row['pid'],
                     trim($row['name']),
                     $row['kills'],
                     $row['deaths'],
@@ -442,7 +442,7 @@ SQL;
             }
 
             // Fetch players kit if he has one...
-            $query = "SELECT `kills`, `deaths`, `time` FROM player_vehicle WHERE player_id={$pid} AND id={$id} LIMIT 1";
+            $query = "SELECT `kills`, `deaths`, `time` FROM player_vehicle WHERE player_id={$pid} AND vehicle_id={$id} LIMIT 1";
             $row = $connection->query($query)->fetch();
             if (!empty($row))
             {
@@ -503,7 +503,7 @@ SQL;
                 $hits = (int)$row['hits'];
                 $Response->writeDataLine(
                     $pos++,
-                    $row['player_id'],
+                    $row['pid'],
                     trim($row['name']),
                     $row['kills'],
                     $row['deaths'],

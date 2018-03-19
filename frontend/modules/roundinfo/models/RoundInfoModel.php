@@ -8,11 +8,8 @@
  *
  */
 use System\Battlefield2;
-use System\Collections\Dictionary;
-use System\IO\Directory;
-use System\IO\File;
-use System\IO\Path;
-use System\Snapshot;
+use System\StatsData;
+use System\TimeHelper;
 use System\View;
 
 /**
@@ -80,82 +77,260 @@ SQL;
         }
 
         // Load players
+        $players = [];
         $players1 = [];
         $players2 = [];
-        $query = <<<SQL
-SELECT h.player_id, h.team, h.score, h.kills, h.deaths, h.rank, h.cmdscore, h.skillscore, h.teamscore, p.name
-FROM player_history AS h 
-  LEFT JOIN player AS p ON h.player_id = p.id
-WHERE round_id={$id}
-SQL;
+        $query = "SELECT * FROM player_round_history AS h LEFT JOIN player AS p ON h.player_id = p.id WHERE round_id={$id}";
+
         $result = $this->pdo->query($query);
         while ($row = $result->fetch())
         {
             $team = (int)$row['team'];
             if ($team == $round['team1'])
+            {
                 $players1[] = $row;
+            }
             else
+            {
                 $players2[] = $row;
+            }
+
+            $players[] = $row;
         }
 
-        return ['round' => $round, 'players1' => $players1, 'players2' => $players2];
+        return ['round' => $round, 'players1' => $players1, 'players2' => $players2, 'players' => $players];
     }
 
     /**
      * Attempts to attach advanced round info from the snapshot into the view
      *
-     * @param array $round The round info array from the round_history table
+     * @param array $players
+     * @param int $roundId
      * @param View $view The view to attach advanced info into
      *
      * @return bool true if the snapshot was loaded, otherwise false
      *
-     * @throws FileNotFoundException
-     * @throws IOException
-     * @throws ObjectDisposedException
      */
-    public function addAdvancedRoundInfo(array $round, View $view)
+    public function addAdvancedRoundInfo(array $players, $roundId, View $view)
     {
-        // Attempt to find snapshot files
-        $time = new \DateTime("@{$round['time_end']}", new \DateTimeZone("UTC"));
-        $file = "{$round['server_id']}-{$round['name']}_{$time->format('Ymd_His')}.json";
-        $file = Path::Combine(SYSTEM_PATH, "snapshots", "processed", $file);
-
-        // Quit here if we have no snapshot files to load
-        if (!File::Exists($file)) return false;
-
-        // Define our needed variables
-        $data = $this->loadSnapshotData($file);
-        if ($data == null) return false;
-
         // Wrap in a try-catch. We should not have any issues since this snapshot
         // has been loaded before, but you never know...
         try
         {
-            // Lets load our data into a snapshot object
-            $data = new Dictionary(false, $data);
-            $snapshot = new Snapshot($data);
+            $roundId = (int)$roundId;
+            //echo '<pre>' . var_export($this->getTopKitPlayers($roundId), true) . '</pre>'; die;
 
             // Skill Players
-            $players = [];
-            foreach ($snapshot->getTopSkillPlayers() as $key => $data)
-            {
-                // Split on capital character so we can insert a space
-                $catName = preg_split('/(?=[A-Z])/', ucfirst($key));
-                $data['category'] = implode(' ', $catName);
-                $players[] = $data;
-            }
-            $view->set('topSkillPlayers', $players);
-
-            // Add data
-            $view->set('topKitPlayers', $snapshot->getTopKitPlayers());
-            $view->set('topVehiclePlayers', $snapshot->getTopVehiclePlayers());
-            $view->set('commanders', $snapshot->getCommanders());
+            $view->set('topSkillPlayers', $this->getTopSkillPlayers($players));
+            $view->set('topKitPlayers', $this->getTopKitPlayers($roundId));
+            $view->set('topVehiclePlayers', $this->getTopVehiclePlayers($roundId));
+            $view->set('commanders', $this->getCommanders($players));
             return true;
         }
         catch (Exception $e)
         {
             return false;
         }
+    }
+
+    /**
+     * Fetches a list of specific score categories, and their respective top player.
+     *
+     * @param array $players
+     *
+     * @return array [ categoryName => [ 'id', 'name', 'rank', 'team', 'value' ] ]
+     */
+    protected function getTopSkillPlayers(array $players)
+    {
+        $categories = [
+            'score' => ['category' => 'Round Score', 'id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1, 'value' => 0],
+            'skillscore' => ['category' => 'Skill Score', 'id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'teamscore' => ['category' => 'Team Score', 'id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'cmdscore' => ['category' => 'Command Score', 'id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'heals' => ['category' => 'Heals', 'id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'revives' => ['category' => 'Revives', 'id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'resupplies' => ['category' => 'Resupplies', 'id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'repairs' => ['category' => 'Repairs', 'id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'captures' => ['category' => 'Flag Captures', 'id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'defends' => ['category' => 'Flag Defends', 'id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'killstreak' => ['category' => 'Kill Streak', 'id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'deathstreak' => ['category' => 'Death Streak', 'id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'damageassists' => ['category' => 'Damage Assists', 'id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'driverspecials' => ['category' => 'Driver Specials', 'id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'teamkills' => ['category' => 'Team Kills', 'id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0],
+            'teamdamage' => ['category' => 'Team Damage', 'id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1,'value' => 0]
+        ];
+
+        foreach ($players as $player)
+        {
+            foreach ($categories as $key => $values)
+            {
+                $value = $player[$key];
+                if ($value > $values['value'])
+                {
+                    $categories[$key]['id'] = $player['id'];
+                    $categories[$key]['name'] = $player['name'];
+                    $categories[$key]['rank'] = $player['rank'];
+                    $categories[$key]['team'] = $player['team'];
+                    $categories[$key]['value'] = $value;
+                }
+            }
+        }
+
+        return $categories;
+    }
+
+    /**
+     * Fetches a list of kits that were played this round, and their respective top player.
+     *
+     * @param int $roundId
+     *
+     * @return array [ kitName => [ 'id', 'pid', 'name', 'rank', 'team', 'kills', 'deaths', 'time' ] ]
+     */
+    protected function getTopKitPlayers($roundId)
+    {
+        $return = [];
+
+        $query = <<<SQL
+SELECT h.kills, h.deaths, h.time, h.kit_id, h.player_id, p.name, p.rank, r.team
+FROM player_kit_history AS h 
+  LEFT JOIN player AS p ON p.id = h.player_id
+  LEFT JOIN player_round_history AS r ON (r.round_id = h.round_id AND h.player_id = r.player_id)
+WHERE h.round_id=$roundId
+SQL;
+
+        $rows = $this->pdo->query($query)->fetchAll();
+        //echo '<pre>' . var_export($rows, true) . '</pre>'; die;
+        foreach ($rows as $data)
+        {
+            $id = (int)$data['kit_id'];
+            $name = StatsData::$KitNames[$id];
+            if (!isset($return[$name]) || $this->isPlayerBetter($data, $return[$name]))
+            {
+                $return[$name] = [
+                    'id' => $id,
+                    'pid' => $data['player_id'],
+                    'name' => $data['name'],
+                    'rank' => $data['rank'],
+                    'team' => $data['team'],
+                    'kills' => $data['kills'],
+                    'deaths' => $data['deaths'],
+                    'time' => $data['time'],
+                    'time_string' => TimeHelper::SecondsToHms($data['time'])
+                ];
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * Fetches a list of vehicles that were used this round, and their respective top player.
+     *
+     * @param $roundId
+     *
+     * @return array [ vehicleName => [ 'id', 'pid', 'name', 'rank', 'team', 'kills', 'deaths', 'time', 'roadKills' ] ]
+     */
+    public function getTopVehiclePlayers($roundId)
+    {
+        $return = [];
+
+        $query = <<<SQL
+SELECT h.kills, h.deaths, h.time, h.vehicle_id, h.player_id, h.roadkills, p.name, p.rank, r.team
+FROM player_vehicle_history AS h 
+  LEFT JOIN player AS p ON h.player_id = p.id 
+  LEFT JOIN player_round_history AS r ON (r.round_id = h.round_id AND h.player_id = r.player_id)
+WHERE h.round_id=$roundId
+SQL;
+
+        $rows = $this->pdo->query($query)->fetchAll();
+        foreach ($rows as $data)
+        {
+            $id = (int)$data['vehicle_id'];
+            $name = StatsData::$KitNames[$id];
+            if (!isset($return[$name]) || $this->isPlayerBetter($data, $return[$name]))
+            {
+                $return[$name] = [
+                    'id' => $id,
+                    'pid' => $data['player_id'],
+                    'name' => $data['name'],
+                    'rank' => $data['rank'],
+                    'team' => $data['team'],
+                    'kills' => $data['kills'],
+                    'deaths' => $data['deaths'],
+                    'time' => $data['time'],
+                    'time_string' => TimeHelper::SecondsToHms($data['time']),
+                    'roadkills' => $data['roadkills']
+                ];
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * Returns a list of commanders for this game, sorted by command score
+     *
+     * @param array $players
+     *
+     * @return array [ index => [ 'id', 'name', 'rank', 'time', 'score', 'team' ] ]
+     */
+    protected function getCommanders(array $players)
+    {
+        $commanders = [];
+        foreach ($players as $player)
+        {
+            if ($player['cmdtime'] > 0)
+            {
+                $commanders[] = [
+                    'id' => $player['id'],
+                    'name' => $player['name'],
+                    'rank' => $player['rank'],
+                    'time' => $player['cmdtime'],
+                    'time_string' => TimeHelper::SecondsToHms($player['cmdtime']),
+                    'score' => $player['cmdscore'],
+                    'team' => $player['team']
+                ];
+            }
+        }
+
+        usort($commanders, function($a, $b) { return $a['score'] - $b['score']; });
+        return $commanders;
+    }
+
+    /**
+     * Determines if a player ObjectStat is greater than the second
+     * set of object data by comparing the kills, deaths and time played in
+     * the object.
+     *
+     * @param array $data
+     * @param array $best
+     *
+     * @return bool
+     */
+    private function isPlayerBetter(array $data, array $best)
+    {
+        if ($data['kills'] > $best['kills'])
+            return true;
+        else if ($data['kills'] < $best['kills'])
+            return false;
+
+        /** Kills Match, try deaths */
+
+        if ($data['deaths'] < $best['deaths'])
+            return true;
+        else if ($data['deaths'] > $best['deaths'])
+            return false;
+
+        /** Deaths and Kills Match, try time played */
+
+        if ($data['time'] > $best['time'])
+            return true;
+        else if ($data['time'] < $best['time'])
+            return false;
+
+        /** It's a draw. Just say no */
+        return false;
     }
 
     /**
@@ -173,7 +348,7 @@ SELECT pa.award_id AS `id`, pa.level AS `level`, a.type AS `type`, p.name AS `pl
 FROM player_award AS pa 
   LEFT JOIN player AS p ON pa.player_id = p.id
   LEFT JOIN award AS a ON pa.award_id = a.id
-  LEFT JOIN player_history AS h ON pa.player_id = h.player_id AND pa.round_id = h.round_id
+  LEFT JOIN player_round_history AS h ON pa.player_id = h.player_id AND pa.round_id = h.round_id
 WHERE pa.round_id = $id ORDER BY pa.award_id
 SQL;
 
@@ -208,27 +383,5 @@ SQL;
 
         // Attach awards
         $view->set('awards', $awards);
-    }
-
-    /**
-     * Loads the snapshot data from a snapshot file, and returns the data array
-     *
-     * @param string $file
-     *
-     * @return array
-     *
-     * @throws FileNotFoundException
-     * @throws IOException
-     * @throws ObjectDisposedException
-     */
-    protected function loadSnapshotData($file)
-    {
-        // Parse snapshot data
-        $stream = File::OpenRead($file);
-        $json = $stream->readToEnd();
-        $data = json_decode($json, true);
-        $stream->close();
-
-        return $data;
     }
 }

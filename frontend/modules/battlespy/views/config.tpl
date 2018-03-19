@@ -17,6 +17,7 @@
                             the matter and decide what action to take (BattleSpy will never ban or suspend a player).
                             If there are no issues when a round is processed, no report will be generated.
                             <b>Hover over each field's label to get a description of each setting.</b>
+                            Set any value to 0 to disable that particular flag.
                         </p>
                     </div>
                 </fieldset>
@@ -96,6 +97,26 @@
                                        class="required mws-spinner"
                                        name="cfg__battlespy_max_target_kills"
                                        value="{battlespy_max_target_kills}"
+                                       title="">
+                                <label for="s3" class="error" generated="true" style="display:none"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mws-form-row">
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
+                               data-original-title="Max Team Kills"
+                               data-content="Sets the maximum team kills a player can achieve in a round without being flagged.">
+                            Max Team Kills:
+                        </label>
+                        <div class="mws-form-item">
+                            <div class="small">
+                                <input type="text" id="s3"
+                                       class="required mws-spinner"
+                                       name="cfg__battlespy_max_team_kills"
+                                       value="{battlespy_max_team_kills}"
                                        title="">
                                 <label for="s3" class="error" generated="true" style="display:none"></label>
                             </div>

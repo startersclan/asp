@@ -150,6 +150,22 @@
                             <input type="text" class="small required" name="cfg__stats_lan_override" value="{config.stats_lan_override}" title="">
                         </div>
                     </div>
+                    <div class="mws-form-row">
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
+                               data-original-title="Save Snapshots"
+                               data-content="Save a copy of the Game's Snapshot after game has successfully processed and saved into the database?">
+                            Save Snapshots:
+                        </label>
+                        <div class="mws-form-item">
+                            <select class="small" name="cfg__stats_save_snapshot" title="">
+                                <option value="1" <?php if('{config.stats_save_snapshot}' == '1') echo 'selected="selected"'; ?>>Enabled</option>
+                                <option value="0" <?php if('{config.stats_save_snapshot}' == '0') echo 'selected="selected"'; ?>>Disabled</option>
+                            </select>
+                        </div>
+                    </div>
                 </fieldset>
 
                 <!-- Global Config -->
