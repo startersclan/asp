@@ -163,7 +163,7 @@ SQL;
             ];
             foreach ($tables as $table)
             {
-                $this->pdo->exec("DELETE FROM {$table} WHERE pid={$id}");
+                $this->pdo->exec("DELETE FROM {$table} WHERE player_id={$id}");
             }
 
             // Reset all player stats
@@ -744,8 +744,7 @@ SQL;
                     $data[$key] = number_format($score);
                     break;
                 case 'permban':
-                    $banned = (int)$value;
-                    $banned = ($value == 1);
+                    $banned = ((int)$value == 1);
                     $data[$key] = $value;
 
                     if ($banned)
@@ -953,6 +952,82 @@ SQL;
             ];
             $view->set('worstOp', $data);
         }
+    }
+
+    /**
+     * Appends a players Map data to a view
+     *
+     * @param int $id
+     * @param View $view
+     */
+    public function attachMapData($id, View $view)
+    {
+        $return = [];
+        $totals = [
+            'wins' => 0,
+            'losses' => 0,
+            'time' => 0,
+            'ratio' => 0.00,
+            'best' => 0.00,
+        ];
+        $averages = [
+            'wins' => 0,
+            'losses' => 0,
+            'time' => '00:00:00',
+            'ratio' => 0.00,
+            'best' => 0.00,
+        ];
+
+        // Ensure pid is an int
+        $id = (int)$id;
+
+        // Grab all awards
+        $result = $this->pdo->query("SELECT pm.*, m.displayname FROM player_map AS pm LEFT JOIN map AS m ON m.id = pm.map_id WHERE player_id={$id} ORDER BY pm.time DESC LIMIT 20");
+        while ($map = $result->fetch())
+        {
+            // Format time
+            $time = (int)$map['time'];
+            $format = TimeHelper::SecondsToHms($time);
+
+            // Get player ratio
+            $wins = (int)$map['wins'];
+            $losses = (int)$map['losses'];
+            $ratio = ($losses == 0) ? 1.00 : round($wins / $losses, 2);
+
+            // Add to return list
+            $return[] = [
+                'id' => $map['map_id'],
+                'name' => $map['displayname'],
+                'time' => $format,
+                'wins' => $map['wins'],
+                'losses' => $map['losses'],
+                'ratio' => number_format($ratio, 2),
+                'best' => $map['bestscore']
+            ];
+
+            // Add to totals
+            $totals['wins'] += $wins;
+            $totals['losses'] += $losses;
+            $totals['best'] += $map['bestscore'];
+            $totals['time'] += $time;
+            $totals['ratio'] += $ratio;
+        }
+
+        $length = count($return);
+        if ($length > 0)
+        {
+            $averages['wins'] = number_format(round($totals['wins'] / $length, 0));
+            $averages['losses'] = number_format(round($totals['losses'] / $length, 0));
+            $averages['time'] = TimeHelper::SecondsToHms($totals['time']);
+            $averages['ratio'] = number_format(round($totals['ratio'] / $length, 2), 2);
+            $averages['best'] = number_format(round($totals['best'] / $length, 0));
+        }
+
+        $totals['time'] = TimeHelper::SecondsToHms($totals['time']);
+
+        $view->set('mapData', $return);
+        $view->set('mapTotals', $totals);
+        $view->set('mapAverage', $averages);
     }
 
     /**

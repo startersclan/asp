@@ -120,7 +120,7 @@ class Snapshot extends GameResult
             $result = $connection->query("SELECT COUNT(id) FROM map WHERE id = ". $this->mapId);
             if (($id = (int)$result->fetchColumn(0)) == 0)
             {
-                $connection->insert('map', ['id' => $this->mapId, 'name' => $this->mapName]);
+                $connection->insert('map', ['id' => $this->mapId, 'name' => $this->mapName, 'displayname' => $this->mapName]);
             }
         }
 

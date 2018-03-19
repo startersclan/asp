@@ -109,6 +109,7 @@ CREATE TABLE `kit` (
 CREATE TABLE `map` (
   `id` SMALLINT UNSIGNED,
   `name` VARCHAR(48) UNIQUE NOT NULL,
+  `displayname` VARCHAR(48) NOT NULL,
   `score` INT UNSIGNED NOT NULL DEFAULT 0,
   `time` INT UNSIGNED NOT NULL DEFAULT 0,
   `times` INT UNSIGNED NOT NULL DEFAULT 0,
@@ -153,8 +154,8 @@ CREATE TABLE `round` (
   `winner` TINYINT NOT NULL,              -- Winning team (0 for none)
   `team1` TINYINT UNSIGNED NOT NULL,      -- Team 1 Army ID
   `team2` TINYINT UNSIGNED NOT NULL,      -- Team 2 Army ID
-  `tickets1` SMALLINT UNSIGNED NOT NULL,  -- Remaining tickets
-  `tickets2` SMALLINT UNSIGNED NOT NULL,  -- Remaining tickets
+  `tickets1` SMALLINT UNSIGNED NOT NULL,  -- Remaining tickets on team1
+  `tickets2` SMALLINT UNSIGNED NOT NULL,  -- Remaining tickets on team2
   `pids1` SMALLINT UNSIGNED NOT NULL,     -- Players starting on team1
   `pids1_end` SMALLINT UNSIGNED NOT NULL, -- Players ending on team1
   `pids2` SMALLINT UNSIGNED NOT NULL,     -- Players starting on team2

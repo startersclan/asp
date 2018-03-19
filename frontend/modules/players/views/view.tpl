@@ -715,6 +715,56 @@
     </div>
 </div>
 
+<div class="mws-panel grid_4 mws-collapsible">
+    <div class="mws-panel-header">
+        <span>Top 20 Favorite Maps</span>
+    </div>
+    <div class="mws-panel-body no-padding">
+        <table id="mapData" class="mws-table">
+            <thead>
+            <tr>
+                <th>Map</th>
+                <th style="width: 15%">Time</th>
+                <th style="width: 15%">Wins</th>
+                <th style="width: 15%">Losses</th>
+                <th style="width: 15%">Ratio</th>
+                <th style="width: 15%">Best</th>
+            </tr>
+            </thead>
+            <tbody>
+            {mapData}
+                <tr>
+                    <td>{name}</td>
+                    <td>{time}</td>
+                    <td>{wins}</td>
+                    <td>{losses}</td>
+                    <td>{ratio}</td>
+                    <td>{best}</td>
+                </tr>
+            {/mapData}
+            </tbody>
+            <tfoot>
+            <tr>
+                <td>Totals</td>
+                <td>{mapTotals.time}</td>
+                <td>{mapTotals.wins}</td>
+                <td>{mapTotals.losses}</td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>Averages</td>
+                <td>{mapAverage.time}</td>
+                <td>{mapAverage.wins}</td>
+                <td>{mapAverage.losses}</td>
+                <td>{mapAverage.ratio}</td>
+                <td>{mapAverage.best}</td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
 <!-- Add New Player Ajax Model -->
 <div id="edit-player-form">
     <form id="mws-validate" class="mws-form" method="post" action="/ASP/players/add">

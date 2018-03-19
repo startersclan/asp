@@ -113,6 +113,7 @@ class Players extends Controller
         $this->playerModel->attachVehicleData($id, $view);
         $this->playerModel->attachWeaponData($id, $view);
         $this->playerModel->attachAwardData($id, $view);
+        $this->playerModel->attachMapData($id, $view);
         $this->playerModel->attachTopVictimAndOpp($id, $view);
 
         // Attach needed scripts for the form
