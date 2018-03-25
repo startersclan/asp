@@ -3,7 +3,7 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2018, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
@@ -247,7 +247,7 @@ SQL;
         foreach ($rows as $data)
         {
             $id = (int)$data['vehicle_id'];
-            $name = StatsData::$KitNames[$id];
+            $name = StatsData::$VehicleNames[$id];
             if (!isset($return[$name]) || $this->isPlayerBetter($data, $return[$name]))
             {
                 $return[$name] = [

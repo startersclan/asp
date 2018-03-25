@@ -3,7 +3,7 @@
  * BF2Statistics ASP Management
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2017, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2018, BF2statistics.com
  * License:      GNU GPL v3
  *
  */

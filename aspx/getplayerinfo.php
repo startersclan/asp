@@ -354,7 +354,7 @@ SQL;
         // Fetch Player, make sure he exists
         $query = "SELECT `name` FROM `player` WHERE `id` = {$pid}";
         $result = $connection->query($query);
-        if (!($name = $result->fetchColumn()))
+        if (!($name = $result->fetchColumn(0)))
         {
             $Response->responseError(true);
             $Response->writeHeaderLine("asof", "err");
@@ -370,22 +370,22 @@ SQL;
         // Kits
         $query = "SELECT `time` FROM `player_kit` WHERE `player_id`={$pid} AND `kit_id`={$kit}";
         $result = $connection->query($query);
-		$kitt = (int)$result->fetchColumn();
+		$kitt = (int)$result->fetchColumn(0);
 
         // Vehicles
         $query = "SELECT `time` FROM `player_vehicle` WHERE `player_id` = {$pid} AND `vehicle_id`={$vehicle}";
         $result = $connection->query($query);
-		$vehiclet = (int)$result->fetchColumn();
+		$vehiclet = (int)$result->fetchColumn(0);
 
         // Weapons
         $query = "SELECT `time` FROM `player_weapon` WHERE `player_id` = {$pid} AND `weapon_id`={$weapon}";
         $result = $connection->query($query);
-        $weapont = (int)$result->fetchColumn();
+        $weapont = (int)$result->fetchColumn(0);
 
         // Maps
         $query = "SELECT `time` FROM `player_map` WHERE (`player_id` = {$pid}) AND (`map_id` = {$map})";
         $result = $connection->query($query);
-		$mapt = (int)$result->fetchColumn();
+		$mapt = (int)$result->fetchColumn(0);
 
 		// Write and send response
         $Response->writeDataLine($pid, $name, $kitt, $vehiclet, $weapont, $mapt);
@@ -398,7 +398,7 @@ SQL;
         $query = "SELECT `name` FROM `player` WHERE `id` = {$pid}";
         $result = $connection->query($query);
         $name = null;
-        if (!($name = $result->fetchColumn()))
+        if (!($name = $result->fetchColumn(0)))
         {
             $Response->responseError(true);
             $Response->writeHeaderLine("asof", "err");

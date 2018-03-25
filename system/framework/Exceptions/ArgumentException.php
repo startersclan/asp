@@ -2,7 +2,7 @@
 /**
  * BF2Statistics ASP Framework
  *
- * @copyright   2013 - 2017, BF2Statistics.com
+ * @copyright   2013 - 2018, BF2Statistics.com
  * @license     GNU GPL v3
  */
 
