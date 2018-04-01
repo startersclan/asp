@@ -92,15 +92,8 @@ class Roundinfo extends Controller
         $view->set('players1', $round['players1']);
         $view->set('players2', $round['players2']);
 
-        // Can we add advanced information?
-        $result = $this->roundInfoModel->addAdvancedRoundInfo($round['players'], $id, $view);
-        $view->set('advanced', $result);
-
-        // Alert user if we could not load the snapshot
-        if (!$result)
-            $view->displayMessage('warning', 'Unable to locate snapshot for this round. Some round details could not be displayed.');
-
-        // Attach awards
+        // Add advanced information, and awards
+        $this->roundInfoModel->addAdvancedRoundInfo($round['players'], $id, $view);
         $this->roundInfoModel->attachAwards($id, $view);
 
         // Attach needed scripts for the form

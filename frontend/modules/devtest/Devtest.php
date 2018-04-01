@@ -15,8 +15,10 @@ class Devtest extends \System\Controller
 {
     public function index()
     {
-        $pdo = System\Database::GetConnection('stats');
-        $pdo->from('player_army')->select('army_id', 'player_id')->where('army_id')->between(1, 6);
+        //$pdo = System\Database::GetConnection('stats');
+        //$pdo->from('player_army')->select('army_id', 'player_id')->where('army_id')->between(1, 6);
+
+        echo PHP_INT_MAX;
 
         //throw new Exception('test');
     }

@@ -51,28 +51,6 @@ class DbConnection extends PDO
     }
 
     /**
-     * Begins a new SelectQuery
-     *
-     * @param string $table
-     *
-     * @return SelectQuery
-     */
-    public function from($table)
-    {
-        return new SelectQuery($this, $table);
-    }
-
-    public function deleteFrom($table)
-    {
-
-    }
-
-    public function insertInto($table)
-    {
-
-    }
-
-    /**
      * Quotes an SQL identifier using the current driver's quoting strategy
      *
      * @param string $identifier The identifier name

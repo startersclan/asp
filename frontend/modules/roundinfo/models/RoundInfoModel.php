@@ -343,7 +343,7 @@ SQL;
     {
         // Load awards
         $query = <<<SQL
-SELECT pa.award_id AS `id`, pa.level AS `level`, a.type AS `type`, p.name AS `player_name`, a.name AS `name`, 
+SELECT pa.award_id AS `id`, pa.level AS `level`, a.type AS `type`, p.name AS `player_name`, p.id AS `player_id`, a.name AS `name`, 
   h.team AS `team`, pa.round_id AS `rid`, h.rank AS `rank`
 FROM player_award AS pa 
   LEFT JOIN player AS p ON pa.player_id = p.id
@@ -363,19 +363,19 @@ SQL;
             if ($id == 2051907)
             {
                 $awards[$i]['type'] = 3; // for medal image
-                $data = ['name' => $award['player_name'], 'rank' => $award['rank'], 'team' => $award['team']];
+                $data = ['id' => $award['player_id'], 'name' => $award['player_name'], 'rank' => $award['rank'], 'team' => $award['team']];
                 $view->set('first_place', $data);
             }
             else if ($id == 2051919)
             {
                 $awards[$i]['type'] = 4; // for medal image
-                $data = ['name' => $award['player_name'], 'rank' => $award['rank'], 'team' => $award['team']];
+                $data = ['id' => $award['player_id'], 'name' => $award['player_name'], 'rank' => $award['rank'], 'team' => $award['team']];
                 $view->set('second_place', $data);
             }
             else if ($id == 2051902)
             {
                 $awards[$i]['type'] = 5; // for medal image
-                $data = ['name' => $award['player_name'], 'rank' => $award['rank'], 'team' => $award['team']];
+                $data = ['id' => $award['player_id'], 'name' => $award['player_name'], 'rank' => $award['rank'], 'team' => $award['team']];
                 $view->set('third_place', $data);
             }
             $i++;

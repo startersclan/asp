@@ -55,28 +55,16 @@ class Mapinfo extends Controller
 
     private function secondsToTime($seconds)
     {
-        // extract hours
-        $hours = floor($seconds / (60 * 60));
-
-        // extract minutes
-        $divisor_for_minutes = $seconds % (60 * 60);
-        $minutes = floor($divisor_for_minutes / 60);
-
-        // extract the remaining seconds
-        $divisor_for_seconds = $divisor_for_minutes % 60;
-        $seconds = ceil($divisor_for_seconds);
-
+        $span = \System\TimeSpan::FromSeconds($seconds);
+        $days = $span->getWholeDays();
         $obj = '';
 
-        if ($hours > 0)
-            $obj .= $hours ." Hrs, ";
+        if ($days > 0)
+        {
+            $days = number_format($days);
+            $obj = $days . " Days, ";
+        }
 
-        if ($minutes > 0)
-            $obj .= $minutes ." Mins, ";
-
-        if ($seconds > 0)
-            $obj .= $seconds ." Secs.";
-
-        return rtrim($obj, ", ");
+        return $obj . $span->format('%y Hours, %j Minutes');
     }
 }
