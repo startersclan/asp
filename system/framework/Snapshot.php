@@ -674,7 +674,7 @@ class Snapshot extends GameResult
             $query = new UpdateOrInsertQuery($connection, 'server');
             $query->set('name', '=', StringHelper::SubStrWords($this->serverName, 100));
             $query->set('queryport', '=', $this->queryPort);
-            $query->set('lastupdate', '=', time());
+            $query->set('lastupdate', 'g', time());
             $query->where('id', '=', $this->serverId);
             $query->executeUpdate();
 

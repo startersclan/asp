@@ -603,10 +603,11 @@ SQL;
 
         // Query to fetch victims
         $query = <<<SQL
-SELECT p.id, pkh.count, p.name, p.rank 
+SELECT p.id, pkh.count, p.name, rh.rank 
 FROM player_kill_history AS pkh 
+  LEFT JOIN player_round_history AS rh ON (pkh.victim = rh.player_id AND pkh.round_id = rh.round_id)
   LEFT JOIN player AS p ON pkh.victim = p.id
-WHERE attacker=$playerId AND round_id=$roundId
+WHERE attacker=$playerId AND pkh.round_id=$roundId
 SQL;
         $rowData = $this->pdo->query($query)->fetchAll();
 
@@ -635,10 +636,11 @@ SQL;
 
         // Query to fetch enemies
         $query = <<<SQL
-SELECT p.id, pkh.count, p.name, p.rank 
+SELECT p.id, pkh.count, p.name, rh.rank 
 FROM player_kill_history AS pkh 
+  LEFT JOIN player_round_history AS rh ON (pkh.attacker = rh.player_id AND pkh.round_id = rh.round_id)
   LEFT JOIN player AS p ON pkh.attacker = p.id
-WHERE victim=$playerId AND round_id=$roundId
+WHERE victim=$playerId AND pkh.round_id=$roundId
 SQL;
         $rowData = $this->pdo->query($query)->fetchAll();
 

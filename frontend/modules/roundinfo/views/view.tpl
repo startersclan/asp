@@ -16,7 +16,7 @@
                 <span class="key"><i class="icon-monitor"></i> Server Name</span>
                 <span class="val">
 					<span class="text-nowrap">
-                        <a href="/ASP/servers/view/{round.serverid}">{round.server}</a>
+                        <a href="/ASP/servers/view/{round.server_id}">{round.server}</a>
                     </span>
 				</span>
             </li>

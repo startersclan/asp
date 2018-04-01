@@ -49,7 +49,7 @@ class UpdateOrInsertQuery
      * Sets a column and value
      *
      * @param string $column The column name
-     * @param string $operator The comparison operator
+     * @param string $operator The comparison operator:
      * @param mixed $value The new value
      */
     public function set($column, $operator, $value)

@@ -26,7 +26,7 @@ class DatabaseModel
     protected static $BackupTables = [
         'army', 'kit', 'vehicle', 'weapon', 'unlock', 'map', 'server', 'round',
         'player', 'player_army', 'player_award', 'player_weapon', 'player_kit', 'player_kill',
-        'player_map', 'player_history', 'player_rank_history', 'player_vehicle', 'player_unlock',
+        'player_map', 'player_rank_history', 'player_vehicle', 'player_unlock',
         'player_army_history', 'player_round_history', 'player_kill_history', 'player_kit_history',
         'player_weapon_history', 'player_vehicle_history', 'battlespy_report', 'battlespy_message'
     ];

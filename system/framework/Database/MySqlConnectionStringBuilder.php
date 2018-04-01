@@ -9,8 +9,6 @@
  */
 namespace System\Database;
 
-use PDO;
-
 /**
  * Generates connection strings used to connect to MySQL databases.
  *

@@ -80,7 +80,7 @@ SQL;
         $players = [];
         $players1 = [];
         $players2 = [];
-        $query = "SELECT * FROM player_round_history AS h LEFT JOIN player AS p ON h.player_id = p.id WHERE round_id={$id}";
+        $query = "SELECT h.*, p.id, p.name FROM player_round_history AS h LEFT JOIN player AS p ON h.player_id = p.id WHERE round_id={$id}";
 
         $result = $this->pdo->query($query);
         while ($row = $result->fetch())
@@ -192,7 +192,7 @@ SQL;
         $return = [];
 
         $query = <<<SQL
-SELECT h.kills, h.deaths, h.time, h.kit_id, h.player_id, p.name, p.rank, r.team
+SELECT h.kills, h.deaths, h.time, h.kit_id, h.player_id, p.name, r.rank, r.team
 FROM player_kit_history AS h 
   LEFT JOIN player AS p ON p.id = h.player_id
   LEFT JOIN player_round_history AS r ON (r.round_id = h.round_id AND h.player_id = r.player_id)
@@ -236,7 +236,7 @@ SQL;
         $return = [];
 
         $query = <<<SQL
-SELECT h.kills, h.deaths, h.time, h.vehicle_id, h.player_id, h.roadkills, p.name, p.rank, r.team
+SELECT h.kills, h.deaths, h.time, h.vehicle_id, h.player_id, h.roadkills, p.name, r.rank, r.team
 FROM player_vehicle_history AS h 
   LEFT JOIN player AS p ON h.player_id = p.id 
   LEFT JOIN player_round_history AS r ON (r.round_id = h.round_id AND h.player_id = r.player_id)
