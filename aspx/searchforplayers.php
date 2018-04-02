@@ -26,6 +26,10 @@ defined("BF2_ADMIN") or die("No Direct Access");
 // Prepare output
 $Response = new AspResponse();
 
+// Set response format
+$format = (isset($_GET['format'])) ? min(2, abs((int)$_GET['format'])) : 0;
+$Response->setResponseFormat($format);
+
 // Fetch URL parameter values
 $nick = '';
 $where = (isset($_GET['where'])) ? $_GET['where'] : 'a';

@@ -33,13 +33,16 @@ defined("NUM_ARMIES") or include SYSTEM_PATH . DIRECTORY_SEPARATOR . "GameConsta
 // Prepare output
 $Response = new AspResponse();
 
+// Set response format
+$format = (isset($_GET['format'])) ? min(2, abs((int)$_GET['format'])) : 0;
+$Response->setResponseFormat($format);
+
 // Get database connection
 $connection = Database::GetConnection("stats");
 
 // Make sure we have the required Params and they are valid!
 $pid = (isset($_GET['pid'])) ? (int)$_GET['pid'] : 0;
 $info = (isset($_GET['info'])) ? $_GET['info'] : '';
-$transpose = (isset($_GET['transpose'])) ? (int)$_GET['transpose'] : 0;
 
 // Ensure we have the required url parameters
 if ($pid == 0 || empty($info))
@@ -183,7 +186,7 @@ else
 
             // Add data and spit out the response
             $Response->writeHeaderDataArray($Output);
-            $Response->send($transpose);
+            $Response->send();
         }
     }
     // Server Request
@@ -204,7 +207,7 @@ SQL;
             $Response->responseError(true);
             $Response->writeHeaderLine("asof", "err");
             $Response->writeDataLine(time(), "Player Not Found!");
-            $Response->send($transpose);
+            $Response->send();
         }
 
         // Load stats data
@@ -340,7 +343,7 @@ SQL;
         $Response->writeHeaderLine("asof");
         $Response->writeDataLine(time());
         $Response->writeHeaderDataArray($Output);
-        $Response->send($transpose);
+        $Response->send();
     }
     // Time info
     elseif ($info == 'ktm-,vtm-,wtm-,mtm-')
@@ -389,7 +392,7 @@ SQL;
 
 		// Write and send response
         $Response->writeDataLine($pid, $name, $kitt, $vehiclet, $weapont, $mapt);
-        $Response->send($transpose);
+        $Response->send();
     }
     // Map info (added support for mbs- & mws-)
     elseif (stringStartsWith($info, 'mtm-,mwn-,mls-'))
@@ -512,7 +515,7 @@ SQL;
 
         // Output map data
         $Response->writeHeaderDataArray($Output);
-        $Response->send($transpose);
+        $Response->send();
     }
     elseif ($info == 'rank')
     {
@@ -533,7 +536,7 @@ SQL;
 
             $Response->writeHeaderLine("pid", "nick", "rank", "chng", "decr");
             $Response->writeDataLine($row['id'], $row['name'], $row['rank'], $row['chng'], $row['decr']);
-            $Response->send($transpose);
+            $Response->send();
         }
     }
     else
@@ -541,7 +544,7 @@ SQL;
         $Response->responseError(true);
         $Response->writeHeaderLine("asof", "err");
         $Response->writeDataLine(time(), "Parameter Error!");
-        $Response->send($transpose);
+        $Response->send();
     }
 }
 

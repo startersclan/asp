@@ -286,8 +286,30 @@ class Request
      */
     public static function IsAjax()
     {
-        $s1 = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
-        return (isset($_POST['ajax'])) || $s1;
+        if (isset($_POST['ajax']))
+            return filter_var($_POST['ajax'], FILTER_VALIDATE_BOOLEAN);
+        else
+            return (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
+    }
+
+    /**
+     * Indicates whether the request method is a GET request
+     *
+     * @return bool
+     */
+    public static function IsGet()
+    {
+        return $_SERVER['REQUEST_METHOD'] == "GET";
+    }
+
+    /**
+     * Indicates whether the request method is a POST request
+     *
+     * @return bool
+     */
+    public static function IsPost()
+    {
+        return $_SERVER['REQUEST_METHOD'] == "POST";
     }
 
     /**
@@ -295,13 +317,12 @@ class Request
      *
      * @param string $name The header name to be returned
      *
-     * @return string|bool Returns false if the header isn't set
+     * @return string|null Returns false if the header isn't set
      */
     public static function Header($name)
     {
         $name = 'HTTP_' . strtoupper(str_replace('-', '_', $name));
-
-        return (!empty($_SERVER[$name])) ? $_SERVER[$name] : false;
+        return (!empty($_SERVER[$name])) ? $_SERVER[$name] : null;
     }
 
     /**

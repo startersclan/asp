@@ -45,7 +45,7 @@ class RoundInfoModel
     {
         // Fetch round
         $query = <<<SQL
-SELECT h.*, mi.name AS `name`, s.name AS `server`, s.ip AS `ip`, s.port AS `port`
+SELECT h.*, mi.name AS `name`, mi.displayname AS `map_display_name`, s.name AS `server`, s.ip AS `ip`, s.port AS `port`
 FROM round AS h 
   LEFT JOIN map AS mi ON h.map_id = mi.id 
   LEFT JOIN server AS s ON h.server_id = s.id
@@ -56,6 +56,7 @@ SQL;
             return false;
 
         // Assign custom round values and attach to view
+        $round['name'] = strtolower($round['name']);
         $round['round_start_date'] = date('F jS, Y g:i A T', (int)$round['time_start']);
         $round['round_end_date'] = date('F jS, Y g:i A T', (int)$round['time_end']);
         $round['gamemode'] = Battlefield2::GetGameModeString($round['gamemode']);

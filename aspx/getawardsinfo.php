@@ -26,9 +26,12 @@ defined("BF2_ADMIN") or die("No Direct Access");
 // Prepare output
 $Response = new AspResponse();
 
+// Set response format
+$format = (isset($_GET['format'])) ? min(2, abs((int)$_GET['format'])) : 0;
+$Response->setResponseFormat($format);
+
 // Make sure we have a valid PID. Casting to int will sanitize input
 $pid = (isset($_GET['pid'])) ? (int)$_GET['pid'] : 0;
-$transpose = (isset($_GET['transpose'])) ? (int)$_GET['transpose'] : 0;
 
 // Player id specified?
 if ($pid == 0)
@@ -69,5 +72,5 @@ SQL;
         $Response->writeDataLine($id, $award['level'], $award['earned'], $first);
     }
 
-    $Response->send($transpose);
+    $Response->send();
 }

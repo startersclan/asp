@@ -170,7 +170,7 @@ SQL;
                 case 'team':
                     $val = (int)$value;
                     $data[$key] = $val;
-                    $data['teamName'] = $this->pdo->query("SELECT a.name FROM army AS a WHERE a.id=". $val)->fetchColumn(0);
+                    $data['teamName'] = $this->pdo->query("SELECT `name` FROM army WHERE id=". $val)->fetchColumn(0);
                     break;
                 default:
                     $data[$key] = $value;

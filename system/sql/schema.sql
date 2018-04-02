@@ -110,12 +110,6 @@ CREATE TABLE `map` (
   `id` SMALLINT UNSIGNED,
   `name` VARCHAR(48) UNIQUE NOT NULL,
   `displayname` VARCHAR(48) NOT NULL,
-  `score` BIGINT UNSIGNED NOT NULL DEFAULT 0,
-  `time` BIGINT UNSIGNED NOT NULL DEFAULT 0,
-  `times` INT UNSIGNED NOT NULL DEFAULT 0,
-  `kills` INT UNSIGNED NOT NULL DEFAULT 0,
-  `deaths` INT UNSIGNED NOT NULL DEFAULT 0,
-  `custom` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -684,7 +678,7 @@ CREATE OR REPLACE VIEW `player_awards_view` AS
   GROUP BY a.player_id, a.award_id;
 
 CREATE OR REPLACE VIEW `round_history_view` AS
-  SELECT h.id AS `id`, mi.name AS `map`, h.time_end AS `round_end`, h.team1 AS `team1`, h.team2 AS `team2`, h.winner AS `winner`,
+  SELECT h.id AS `id`, mi.displayname AS `map`, h.time_end AS `round_end`, h.team1 AS `team1`, h.team2 AS `team2`, h.winner AS `winner`,
     h.pids1 + h.pids2 AS `players`, GREATEST(h.tickets1, h.tickets2) AS `tickets`, s.name AS `server`
   FROM `round` AS h
     LEFT JOIN map AS mi ON h.map_id = mi.id
@@ -927,7 +921,7 @@ INSERT INTO `weapon` VALUES (17, 'Tactical', 0, 1);
 --
 -- Dumping data for table `_version`
 --
-INSERT INTO `_version`(`updateid`, `version`) VALUES (30000, '3.0.0');
+INSERT INTO `_version`(`updateid`, `version`) VALUES (30000, '3.0.1');
 
 INSERT INTO `server`(`ip`, `prefix`, `name`, `port`, `queryport`) VALUES ('127.0.0.1', 'w212', 'Local Server 1', 16567, 29900);
 INSERT INTO `server`(`ip`, `prefix`, `name`, `port`, `queryport`) VALUES ('::1', 'w212', 'Local Server 2', 16567, 29900);

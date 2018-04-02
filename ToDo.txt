@@ -1,12 +1,10 @@
 Must Do's:
  - Remove delete player option (causes stats fragmentation)
  - Add player map data and top servers played in in the /players/view/ screen
- -
+ - Add a blacklist option for hiding servers in the server browser.
+ - Add a Game Mod management system, only allowing games playing admin whitelisted game mods to be saved to the database.
 
 Nice To Have's:
  - Undo and subtract player stats on rounds where cheating is caught (Undo Snapshot)
  - Create a system where a round played with too many BattleSpy flags will not be saved, but rather have to be
     sanctioned after review by the stats admin before being processed into the database.
-
-Thinking Abouts:
- - Ridding of processed snapshot files, and storing round specific data for each player in the database.

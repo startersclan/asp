@@ -679,19 +679,6 @@ class Snapshot extends GameResult
             $query->executeUpdate();
 
             // ********************************
-            // Process MapInfo
-            // ********************************
-            $this->logWriter->logDebug("Updating map information");
-            $query = new UpdateOrInsertQuery($connection, 'map');
-            $query->set('time', '+', $this->roundTime);
-            $query->set('score', '+', $this->mapScore);
-            $query->set('times', '+', 1);
-            $query->set('kills', '+', $this->mapKills);
-            $query->set('deaths', '+', $this->mapDeaths);
-            $query->where('id', '=', $this->mapId);
-            $query->executeUpdate();
-
-            // ********************************
             // Save BattleSpy Reports
             // ********************************
             $this->battleSpy->finalize();

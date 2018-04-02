@@ -21,6 +21,26 @@ use System\Cache\CacheItem;
  */
 class AspResponse
 {
+    /** @var int Standard Gamespy ASP response output. MUST BE USED for BF2 client! */
+    const FORMAT_GAMESPY = 0;
+
+    /**
+     * @var int Transposed output will print the data
+     * to the browser in a different format. All headers will be a new line,
+     * with the following data to the left of the header, separated by tabs
+     */
+    const FORMAT_TRANSPOSED = 1;
+
+    /**
+     * @var int JSON formatted response output
+     */
+    const FORMAT_JSON = 2;
+
+    /**
+     * @var int Gets or Sets the output format type
+     */
+    protected $responseFormat = AspResponse::FORMAT_GAMESPY;
+
     /**
      * Indicated whether this response starts with an E, or an O
      * @var bool
@@ -38,6 +58,32 @@ class AspResponse
      * @var string[]
      */
     protected $lines = array();
+
+    public function __construct($response_format = AspResponse::FORMAT_GAMESPY)
+    {
+
+    }
+
+    /**
+     * @param int $type Sets the response format
+     */
+    public function setResponseFormat($type)
+    {
+        $t = (int)$type;
+        switch ($t)
+        {
+            default:
+            case 0:
+                $this->responseFormat = AspResponse::FORMAT_GAMESPY;
+                break;
+            case 1:
+                $this->responseFormat = AspResponse::FORMAT_TRANSPOSED;
+                break;
+            case 2:
+                $this->responseFormat = AspResponse::FORMAT_JSON;
+                break;
+        }
+    }
 
     /**
      * Clears all current output lines
@@ -135,9 +181,6 @@ class AspResponse
     /**
      * Sends the formatted response to the browser
      *
-     * @param bool $transpose Enabling transpose will print the data
-     *  to the browser in a different format. All headers will be a new line,
-     *  with the following data to the left of the header, separated by tabs
      * @param CacheItem $item If this response is to be cached, provide the CacheItem
      *  object. otherwise, leave null
      * @param bool $killScript If set to true, the script
@@ -145,17 +188,17 @@ class AspResponse
      *
      * @return void
      */
-    public function send($transpose = false, CacheItem $item = null, $killScript = true)
+    public function send(CacheItem $item = null, $killScript = true)
     {
         // Do we cache this response?
         if (is_null($item))
         {
             // output the response
-            echo $this->getString($transpose);
+            echo $this->getString();
         }
         else
         {
-            $contents = $this->getString($transpose);
+            $contents = $this->getString();
             $item->set($contents);
             $item->save();
             echo $contents;
@@ -168,83 +211,89 @@ class AspResponse
     /**
      * Gets the current response as a string
      *
-     * @param bool $transpose Enabling transpose will print the data
-     *  to the browser in a different format. All headers will be a new line,
-     *  with the following data to the left of the header, separated by tabs
-     *
      * @return string
+     *
+     * @todo Finish the Json Format
      */
-    public function getString($transpose = false)
+    public function getString()
     {
         // Initial line
         $line = (($this->error) ? "E" : "O");
         if ($this->errorCode != 0)
             $line .= "\t" . $this->errorCode;
 
-        // Transpose output?
-        if ($transpose)
+        switch ($this->responseFormat)
         {
-            // Add response type
-            $lines = array($line);
+            default:
+            case AspResponse::FORMAT_GAMESPY:
+                // Create a new reference
+                $lines = $this->lines;
 
-            // Line counter
-            $i = 0;
-            foreach ($this->lines as $line)
-            {
-                // D's to print
-                $ds = 0;
+                // Prepend the response type
+                array_unshift($lines, $line);
 
-                // Only process new lines (headers)
-                if ($line[0] == "H")
+                // Output the data, adding the number of characters
+                $output = implode("\n", $lines);
+                $num = strlen(preg_replace('/[\t\n]/', '', $output));
+
+                return $output . "\n" . "$\t$num\t$";
+
+            case AspResponse::FORMAT_TRANSPOSED:
+                // Add response type
+                $lines = array($line);
+
+                // Line counter
+                $i = 0;
+                foreach ($this->lines as $line)
                 {
-                    // next line
-                    $j = $i + 1;
+                    // D's to print
+                    $ds = 0;
 
-                    // Convert all headers to separate lines
-                    $hLines = explode("\t", $line);
-
-                    // Foreach following data line, add to the current header line
-                    while (isset($this->lines[$j]) && $this->lines[$j][0] == "D")
+                    // Only process new lines (headers)
+                    if ($line[0] == "H")
                     {
-                        // Add each data value to the corresponding header line
-                        $data = explode("\t", $this->lines[$j]);
-                        for ($n = 0; $n < sizeof($hLines); $n++)
-                            $hLines[$n] .= "\t" . ((isset($data[$n])) ? $data[$n] : "");
+                        // next line
+                        $j = $i + 1;
 
-                        // Increment line counter, and Increment D's to print
-                        $j++;
-                        $ds++;
+                        // Convert all headers to separate lines
+                        $hLines = explode("\t", $line);
+
+                        // Foreach following data line, add to the current header line
+                        while (isset($this->lines[$j]) && $this->lines[$j][0] == "D")
+                        {
+                            // Add each data value to the corresponding header line
+                            $data = explode("\t", $this->lines[$j]);
+                            for ($n = 0; $n < sizeof($hLines); $n++)
+                                $hLines[$n] .= "\t" . ((isset($data[$n])) ? $data[$n] : "");
+
+                            // Increment line counter, and Increment D's to print
+                            $j++;
+                            $ds++;
+                        }
+
+                        // Add correct number of data columns
+                        $hLines[0] = "H" . str_repeat("\tD", $ds);
+
+                        // Add each header line to the lines array
+                        $lines = array_merge($lines, $hLines);
                     }
 
-                    // Add correct number of data columns
-                    $hLines[0] = "H" . str_repeat("\tD", $ds);
-
-                    // Add each header line to the lines array
-                    $lines = array_merge($lines, $hLines);
+                    $i++;
                 }
 
-                $i++;
-            }
+                // Output the data, adding the number of characters
+                $output = implode("\n", $lines);
+                $num = strlen(preg_replace('/[\t\n]/', '', $output));
 
-            // Output the data, adding the number of characters
-            $output = implode("\n", $lines);
-            $num = strlen(preg_replace('/[\t\n]/', '', $output));
+                return $output . "\n" . "$\t$num\t$";
 
-            return $output . "\n" . "$\t$num\t$";
-        }
-        else
-        {
-            // Create a new reference
-            $lines = $this->lines;
-
-            // Prepend the response type
-            array_unshift($lines, $line);
-
-            // Output the data, adding the number of characters
-            $output = implode("\n", $lines);
-            $num = strlen(preg_replace('/[\t\n]/', '', $output));
-
-            return $output . "\n" . "$\t$num\t$";
+            case AspResponse::FORMAT_JSON:
+                $response = [
+                    'error' => $this->error,
+                    'errorCode' => $this->errorCode,
+                    'data' => null
+                ];
+                return json_encode($response, JSON_PRETTY_PRINT);
         }
     }
 }

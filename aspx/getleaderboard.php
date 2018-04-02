@@ -27,6 +27,10 @@ defined("BF2_ADMIN") or die("No Direct Access");
 $Response = new AspResponse();
 $item = null;
 
+// Set response format
+$format = (isset($_GET['format'])) ? min(2, abs((int)$_GET['format'])) : 0;
+$Response->setResponseFormat($format);
+
 // Cast URL parameters
 $type = (isset($_GET['type'])) ? $_GET['type'] : '';
 $id = (isset($_GET['id'])) ? $_GET['id'] : '';
@@ -568,5 +572,5 @@ SQL;
     }
 
     // Send Output
-    $Response->send(false, $item);
+    $Response->send($item);
 }

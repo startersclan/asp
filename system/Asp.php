@@ -182,7 +182,7 @@ class Asp
         if (!Security::IsValidSession())
         {
             // Check for an ajax request, and answer accordingly
-            if (isset($_POST['ajax']) && filter_var($_POST['ajax'], FILTER_VALIDATE_BOOLEAN))
+            if (Request::IsAjax())
             {
                 // Respond in a commonly expected format for this admin panel
                 echo json_encode(['success' => false, 'message' => "Login session has expired! Please refresh the page and login again."]);

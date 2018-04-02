@@ -8,7 +8,7 @@
  *
  */
 use System\Controller;
-use System\Database;
+use System\Collections\Dictionary;
 use System\View;
 
 /**
@@ -18,6 +18,9 @@ use System\View;
  */
 class Mapinfo extends Controller
 {
+    /** @var MapinfoModel */
+    protected $model;
+
     /**
      * @protocol    ANY
      * @request     /ASP/mapinfo
@@ -29,17 +32,8 @@ class Mapinfo extends Controller
         $this->requireDatabase();
 
         // Fetch server list!
-        $pdo = Database::GetConnection('stats');
-        $maps = $pdo->query("SELECT * FROM map ORDER BY id ASC")->fetchAll();
-        if ($maps === false) $maps = [];
-
-        // Convert map time to a human readable format
-        $maps = array_map(function ($values)
-        {
-            $time = (int)$values['time'];
-            $values['time'] = $this->secondsToTime($time);
-            return $values;
-        }, $maps);
+        $this->loadModel('MapinfoModel', 'Mapinfo', 'model');
+        $maps = $this->model->getMapStatistics();
 
         // Load view
         $view = new View('index', 'mapinfo');
@@ -47,24 +41,46 @@ class Mapinfo extends Controller
 
         // Attach needed scripts for the form
         $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");
+        $view->attachScript("/ASP/frontend/js/jquery.form.js");
+        $view->attachScript("/ASP/frontend/js/validate/jquery.validate-min.js");
         $view->attachScript("/ASP/frontend/modules/mapinfo/js/index.js");
 
         // Send output
         $view->render();
     }
 
-    private function secondsToTime($seconds)
+    /**
+     * @protocol    POST
+     * @request     /ASP/mapinfo/edit
+     * @output      json
+     */
+    public function postEdit()
     {
-        $span = \System\TimeSpan::FromSeconds($seconds);
-        $days = $span->getWholeDays();
-        $obj = '';
+        // Require action
+        $this->requireAction('edit');
 
-        if ($days > 0)
+        // Require database connection
+        $this->requireDatabase(true);
+
+        // Load model
+        $this->loadModel('MapinfoModel', 'Mapinfo', 'model');
+
+        try
         {
-            $days = number_format($days);
-            $obj = $days . " Days, ";
-        }
+            // Use a dictionary here to gain an exception on missing array item
+            $items = new Dictionary(false, $_POST);
 
-        return $obj . $span->format('%y Hours, %j Minutes');
+            // Define server id
+            $this->model->setMapDisplayNameById($items['mapId'], $items['mapName']);
+
+            // Send response
+            $this->sendJsonResponse(true, 'Success', ['mapId' => $items['mapId'], 'displayName' => $items['mapName']]);
+        }
+        catch (Exception $e)
+        {
+            $pdo = System\Database::GetConnection('stats');
+            $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage(), ['lastQuery' => $pdo->lastQuery]);
+            die;
+        }
     }
 }

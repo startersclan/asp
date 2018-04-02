@@ -26,6 +26,10 @@ defined("BF2_ADMIN") or die("No Direct Access");
 // Prepare output
 $Response = new AspResponse();
 
+// Set response format
+$format = (isset($_GET['format'])) ? min(2, abs((int)$_GET['format'])) : 0;
+$Response->setResponseFormat($format);
+
 // Get database connection
 $connection = Database::GetConnection("stats");
 
@@ -34,7 +38,6 @@ $pid = (isset($_GET['pid'])) ? (int)$_GET['pid'] : 0;
 $mapid = (isset($_GET['mapid'])) ? (int)$_GET['mapid'] : 0;
 $mapname = (isset($_GET['mapname'])) ? $_GET['mapname'] : '';
 $limit = (isset($_GET['customonly'])) ? (int)$_GET['customonly'] : 0;
-$transpose = (isset($_GET['transpose'])) ? (int)$_GET['transpose'] : 0;
 
 // Limit results to custom maps ONLY
 $maplimit = ($limit == 1) ? ' AND id >= 700' : '';
@@ -120,4 +123,4 @@ else
 }
 
 // Output data
-$Response->send($transpose);
+$Response->send();

@@ -26,6 +26,10 @@ defined("BF2_ADMIN") or die("No Direct Access");
 // Prepare output
 $Response = new AspResponse();
 
+// Set response format
+$format = (isset($_GET['format'])) ? min(2, abs((int)$_GET['format'])) : 0;
+$Response->setResponseFormat($format);
+
 // Make sure we have a valid PID. Casting to int will sanitize input
 $pid = (isset($_GET['pid'])) ? (int)$_GET['pid'] : 0;
 

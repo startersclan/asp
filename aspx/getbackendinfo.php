@@ -58,4 +58,4 @@ while ($row = $stmt->fetch())
     $Response->writeDataLine($row['id'], $row['kit_id'], $row['name'], $row['desc']);
 }
 
-$Response->send(false, $item);
+$Response->send($item);

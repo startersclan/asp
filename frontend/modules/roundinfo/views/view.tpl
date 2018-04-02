@@ -3,7 +3,7 @@
         <span><i class="icon-map-marker"></i> {round.name}</span>
     </div>
     <div class="mws-panel-body no-padding" style="text-align: center">
-        <img src="/ASP/frontend/images/maps/<?php echo strtolower('{round.name}'); ?>.png">
+        <img src="/ASP/frontend/images/maps/{round.name}.png">
     </div>
 </div>
 <div class="mws-panel grid_3">
@@ -23,7 +23,7 @@
             <li>
                 <span class="key"><i class="icon-globe"></i>Map Name</span>
                 <span class="val">
-					<span class="text-nowrap">{round.name}</span>
+					<span class="text-nowrap">{round.map_display_name}</span>
 				</span>
             </li>
             <li>
