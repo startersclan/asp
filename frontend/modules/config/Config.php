@@ -88,7 +88,7 @@ class Config extends Controller
     public function test()
     {
         // Require database connection
-        if (DB_VER == '0.0.0')
+        if (DB_VERSION == '0.0.0')
         {
             Response::Redirect('install');
             die;
@@ -165,7 +165,7 @@ class Config extends Controller
             $out .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Database Connection (".Cfg::Get('db_host')."): ".__PASS;
 
             // Check Database Version
-            if (DB_VER != Cfg::Get('db_expected_ver'))
+            if (DB_VERSION != DB_EXPECTED_VERSION)
                 $out .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Database version (".Cfg::Get('db_expected_ver')."): ".__FAIL;
             else
                 $out .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Database version (".Cfg::Get('db_expected_ver')."): ".__PASS;
