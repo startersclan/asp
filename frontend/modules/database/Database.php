@@ -11,6 +11,7 @@ use System\Controller;
 use System\IO\Directory;
 use System\IO\File;
 use System\IO\Path;
+use System\Version;
 use System\View;
 
 /**
@@ -130,9 +131,13 @@ class Database extends Controller
         $view->attachScript("/ASP/frontend/js/jquery.form.js");
         $view->attachScript("/ASP/frontend/modules/database/js/restore.js");
 
-        // Set vars
+        // Grab our backups
+        $results = [];
         $dirs = Directory::GetDirectories(Path::Combine(SYSTEM_PATH, 'backups'));
-        for ($i = 0; $i < count($dirs); $i++)
+        $length = count($dirs) - 1;
+
+        // Add each backup to the list if it is valid.
+        for ($i = $length; $i >= 0; $i--)
         {
             // Declare full path to the meta file
             $fullPath = Path::Combine($dirs[$i], 'backup.json');
@@ -146,17 +151,18 @@ class Database extends Controller
             $meta = json_decode($contents, true);
 
             // Ensure database version matches!
-            if ($meta['dbver'] != DB_VER)
+            if ($meta['dbver'] != DB_VERSION)
                 continue;
 
             // Add backup to the list of backups we can restore from
-            $val = ['id' => Path::GetFileName($dirs[$i]), 'date' => date("F jS, Y @ g:i A T", $meta['timestamp'])];
-            $dirs[$i] = $val;
+            $results[] = [
+                'id' => Path::GetFileName($dirs[$i]),
+                'date' => date("F jS, Y @ g:i A T", $meta['timestamp'])
+            ];
         }
 
-        $view->set('backups', array_reverse($dirs));
-
         // Send the output
+        $view->set('backups', $results);
         $view->render();
     }
 
@@ -259,6 +265,79 @@ class Database extends Controller
 
             // Tell the client that we were successful
             $this->sendJsonResponse(true, 'Stats Data Cleared Successfully!');
+        }
+        catch (Exception $e)
+        {
+            // Log exception
+            System::LogException($e);
+
+            // Tell the client that we have failed
+            $this->sendJsonResponse(false, $e->getMessage());
+        }
+    }
+
+    /**
+     * @protocol    GET
+     * @request     /ASP/database/update
+     * @output      html
+     */
+    public function getUpdate()
+    {
+        $expected = Version::Parse(DB_EXPECTED_VERSION);
+        $version = Version::Parse(DB_VERSION);
+        $comparison = $version->compare($expected);
+
+        // Do we really need to migrate?
+        if ($comparison == 0) // Equal
+        {
+            // Create view
+            $view = new View('uptodate', 'database');
+            $view->render();
+        }
+        else if ($comparison == -1) // Less than expected
+        {
+            // Create view
+            $view = new View('update', 'database');
+            $view->attachScript("/ASP/frontend/modules/database/js/update.js");
+            $view->render();
+        }
+        else // Larger than expected
+        {
+            // Create view
+            $view = new View('update_error', 'database');
+            $view->render();
+        }
+    }
+
+    /**
+     * @protocol    POST
+     * @request     /ASP/database/update
+     * @output      json
+     */
+    public function postUpdate()
+    {
+        // Require proper action or redirect
+        if ($_POST['action'] != 'update')
+        {
+            if (isset($_POST['ajax']))
+                $this->sendJsonResponse(false, 'Invalid Action!');
+            else
+                $this->getUpdate();
+
+            return;
+        }
+
+        // We require a database!
+        $this->requireDatabase(true);
+
+        try
+        {
+            // Load model, and call method
+            $this->loadModel('DatabaseModel', 'database');
+            $this->databaseModel->migrateUp();
+
+            // Tell the client that we were successful
+            $this->sendJsonResponse(true, 'Database Upgraded to version: ');
         }
         catch (Exception $e)
         {

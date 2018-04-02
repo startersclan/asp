@@ -127,7 +127,7 @@ class ErrorHandler
      */
     public static function LogException(Exception $e)
     {
-        $log = LogWriter::Instance('System');
+        $log = LogWriter::Instance('Asp');
         if ($log instanceof LogWriter)
         {
             $log->logError('A Handled Exception was logged');
@@ -245,7 +245,9 @@ class ErrorHandler
         }
 
         // Set error header if the headers have yet to be sent
-        if (!headers_sent())
+        // jqXHR will not call .done() but rather .error() if
+        // we return an error header, so 200 status if Ajax!
+        if (!Request::IsAjax() && !headers_sent())
             header("HTTP/1.1 500 Internal Server Error");
 
         // Spit out the error message

@@ -7,9 +7,13 @@
  * License:      GNU GPL v3
  *
  */
+
+use System\Collections\Dictionary;
 use System\Database;
+use System\Database\SqlFileParser;
 use System\IO\Directory;
 use System\IO\File;
+use System\IO\Path;
 use System\Version;
 
 /**
@@ -246,6 +250,92 @@ class DatabaseModel
             $pdo->rollBack();
             throw $e;
         }
+    }
+
+    /**
+     * Migrates the current database version to the latest database schema
+     *
+     * @return bool true if the migration succeeded, false otherwise.
+     *
+     * @throws Exception if there is any errors moving the database schema up
+     */
+    public function migrateUp()
+    {
+        $expected = Version::Parse(DB_EXPECTED_VERSION);
+        $version = Version::Parse(DB_VERSION);
+
+        // Do we really need to migrate?
+        if ($version->compare($expected) >= 0)
+            return false;
+
+        // Grab database connection
+        $pdo = Database::GetConnection('stats');
+        $inTransaction = false;
+
+        // Get our migrations list
+        $migrations = include Path::Combine(SYSTEM_PATH, 'sql', 'migrations', 'migrations.php');
+        $migrations = new Dictionary(false, $migrations);
+
+        // Grab current database version
+        $stmt = $pdo->query("SELECT `version` FROM `_version` ORDER BY `updateid` DESC LIMIT 1;");
+        $result = $stmt->fetchColumn(0);
+        if ($result === false)
+            return false;
+
+        try
+        {
+            // Apply all migrations until we are current
+            do
+            {
+                // Get our next migration sql file
+                $currentMigration = $migrations[$result];
+                $nextVersion = $currentMigration['up'];
+
+                // Upgrade until we hit the end
+                if ($nextVersion == null)
+                    break;
+
+                // Create parser
+                $file = Path::Combine(SYSTEM_PATH, 'sql', 'migrations', 'up', $nextVersion . '.sql');
+                $parser = new SqlFileParser($file);
+                $queries = $parser->getStatements();
+
+                // Start transaction as we are moving A LOT of data around.
+                $pdo->beginTransaction();
+                $inTransaction = true;
+
+                // Read file contents
+                foreach ($queries as $query)
+                {
+                    $pdo->exec($query);
+                }
+
+                // Apply changes
+                $pdo->commit();
+                $inTransaction = false;
+
+                // Grab new current version
+                $stmt = $pdo->query("SELECT `version` FROM `_version` ORDER BY `updateid` DESC LIMIT 1;");
+                $newResult = $stmt->fetchColumn(0);
+
+                // Make sure we upgraded!
+                if ($result == $newResult)
+                {
+                    throw new Exception("Failed to migrate the database from {$result} to {$newResult}");
+                }
+
+                $result = $newResult;
+            } while (true);
+        }
+        catch (Exception $e)
+        {
+            if ($inTransaction)
+                $pdo->rollBack();
+
+            throw $e;
+        }
+
+        return true;
     }
 
     /**

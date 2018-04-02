@@ -51,12 +51,12 @@ class SqlFileParser
         $contents = File::ReadAllText($filePath);
 
         // Prepare query for comment extraction!
-        $this->length = strlen($contents) - 1;
+        $this->length = strlen($contents);
         $this->sql = $contents;
 
         // Remove comments
         $this->sql = $this->removeComments();
-        $this->length = strlen($this->sql) - 1;
+        $this->length = strlen($this->sql);
     }
 
     /**
@@ -131,6 +131,9 @@ class SqlFileParser
             $query .= $this->take();
         }
 
+        if (strlen($query) > 0)
+            $sqlList[] = trim($query);
+
         return $sqlList;
     }
 
@@ -201,8 +204,8 @@ class SqlFileParser
         }
 
 		// Remove last delimiter
-        if (strrpos($clean, ";") === strlen($clean) - 1)
-            $clean = substr($clean, 0, strlen($clean) - 1);
+        //if (strrpos($clean, ";") === strlen($clean) - 1)
+            //$clean = substr($clean, 0, strlen($clean) - 1);
 
         return $clean;
     }

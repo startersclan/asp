@@ -247,7 +247,7 @@ class System
             // Only allow the database, install, or config controllers at this point...
             if ($controller != 'database' && $controller != 'config' && $controller != 'install')
             {
-                \System\Response::Redirect('/database/upgrade');
+                \System\Response::Redirect('/database/update');
                 die;
             }
 

@@ -51,7 +51,7 @@ if (!function_exists('build_navigation'))
         else if (DB_VERSION != DB_EXPECTED_VERSION)
         {
             // If mis-matched database version, allow these 2 actions
-            $group->append('/ASP/database/upgrade', 'Upgrade Database Schema');
+            $group->append('/ASP/database/update', 'Upgrade Database Schema');
             $group->append('/ASP/database/backup', 'Backup Stats Database');
             $navigation->append($group);
         }
@@ -63,7 +63,7 @@ if (!function_exists('build_navigation'))
             // Append the rest of system links
             $group->append('/ASP/config/test', 'System Tests');
             $group->append('/ASP/database', 'Database Table Status');
-            $group->append('/ASP/database/upgrade', 'Update Database Schema');
+            $group->append('/ASP/database/update', 'Update Database Schema');
             $group->append('/ASP/database/clear', 'Clear Stats Database');
             $group->append('/ASP/database/backup', 'Backup Stats Database');
             $group->append('/ASP/database/restore', 'Restore Database');

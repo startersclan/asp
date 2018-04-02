@@ -90,8 +90,8 @@ class Version
      * @param string|Version $version The Version to compare to
      *
      * @return int Returns 0 if the versions are equal, -1 if the $version
-     *   variable is larger then this object version, or 1 if this version
-     *   object is greater then $version
+     *   variable is larger then this instance, or 1 if this instance is
+     *   greater then $version
      */
     public function compare($version)
     {
@@ -99,10 +99,15 @@ class Version
         if (!($version instanceof Version))
             $version = Version::Parse($version);
 
+        // Versions are equal
         if ($version->toInt() == $this->toInt())
             return 0;
+
+        // This version instance is less than the comparison
         elseif ($version->toInt() > $this->toInt())
             return -1;
+
+        // This version instance is larger than
         else
             return 1;
     }
@@ -122,6 +127,11 @@ class Version
         }
 
         return $this->intVal;
+    }
+
+    public function toString()
+    {
+        return "{$this->major}.{$this->minor}.{$this->revision}";
     }
 
     /**
