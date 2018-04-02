@@ -72,8 +72,8 @@ class PlayerHistoryModel
 
         // Fetch round
         $query = <<<SQL
-SELECT ph.*, h.*, p.name, mi.name AS `mapname`, s.name AS `server`, s.ip AS `ip`, s.port AS `port`,
-  h.pids1_end + h.pids2_end AS `playerCount`, s.id AS `server_id`
+SELECT ph.*, h.*, p.name, mi.name AS `mapname`, mi.displayname AS map_display_name, s.name AS `server`, 
+s.ip AS `ip`, s.port AS `port`, h.pids1_end + h.pids2_end AS `playerCount`, s.id AS `server_id`
 FROM player_round_history AS ph 
   LEFT JOIN player AS p ON ph.player_id = p.id
   LEFT JOIN round AS h ON ph.round_id = h.id
@@ -278,7 +278,7 @@ SQL;
         }
         catch (Exception $e)
         {
-            Asp::LogException($e);
+            System::LogException($e);
             return false;
         }
     }

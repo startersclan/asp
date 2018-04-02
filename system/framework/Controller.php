@@ -32,7 +32,7 @@ abstract class Controller
     protected function requireDatabase($isAjaxRequest = false)
     {
         // Require database connection
-        if (DB_VER == '0.0.0')
+        if (DB_VERSION == '0.0.0')
         {
             // Redirect if this is not an ajax request
             if (!$isAjaxRequest)

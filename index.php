@@ -13,8 +13,9 @@
  * linking of files, Also define ROOT and system paths
  */
 define('BF2_ADMIN', true);
-define('CODE_VER', '3.0.0');
-define('CODE_VER_DATE', '2018-03-24');
+define('CODE_VERSION', '3.0.0');
+define('CODE_VERSION_DATE', '2018-04-01');
+define('DB_EXPECTED_VERSION', '3.0.1');
 define('DS', DIRECTORY_SEPARATOR);
 define('ROOT', __DIR__);
 define('SYSTEM_PATH', ROOT . DS . 'system');
@@ -40,7 +41,7 @@ ini_set("display_errors", "1");
 
 // Require the needed scripts to launch the system
 require SYSTEM_PATH . DS . 'framework' . DS . 'Autoloader.php';
-require SYSTEM_PATH . DS . 'Asp.php';
+require SYSTEM_PATH . DS . 'System.php';
 
 // Load the controller, which in turn loads the current task
-Asp::Run();
+System::Run();

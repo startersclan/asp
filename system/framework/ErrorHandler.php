@@ -127,7 +127,7 @@ class ErrorHandler
      */
     public static function LogException(Exception $e)
     {
-        $log = LogWriter::Instance('Asp');
+        $log = LogWriter::Instance('System');
         if ($log instanceof LogWriter)
         {
             $log->logError('A Handled Exception was logged');

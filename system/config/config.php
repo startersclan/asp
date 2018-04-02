@@ -6,13 +6,12 @@
 * this file. Please use the Web Admin  *
 * to change values.                    *
 ***************************************/
-$db_expected_ver = '3.0.0';
 $admin_user = 'admin';
 $admin_pass = 'admin';
 $admin_hosts = array('127.0.0.1','::1');
 $admin_ignore_ai = 1;
-$admin_last_login = 1522625142;
-$admin_current_login = 1522633460;
+$admin_last_login = 1522637949;
+$admin_current_login = 1522642289;
 $admin_timezone = 'America/Los_Angeles';
 $debug_lvl = 4;
 $db_host = '127.0.0.1';

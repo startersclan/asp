@@ -25,7 +25,7 @@
         // noinspection JSJQueryEfficiency
         var validator = $("#mws-validate").validate({
             rules: {
-                itemName: {
+                mapName: {
                     required: true,
                     minlength: 3,
                     maxlength: 48

@@ -281,7 +281,7 @@ class Players extends Controller
         catch (Exception $e)
         {
             // Log exception
-            Asp::LogException($e);
+            System::LogException($e);
 
             // Tell the client that we have failed
             $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage());
@@ -323,7 +323,7 @@ class Players extends Controller
         catch (Exception $e)
         {
             // Log exception
-            Asp::LogException($e);
+            System::LogException($e);
 
             // Tell the client that we have failed
             $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage());
@@ -372,7 +372,7 @@ class Players extends Controller
         catch (Exception $e)
         {
             // Log exception
-            Asp::LogException($e);
+            System::LogException($e);
 
             // Tell the client that we have failed
             $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage());
@@ -451,7 +451,7 @@ class Players extends Controller
         catch (Exception $e)
         {
             // Log exception
-            Asp::LogException($e);
+            System::LogException($e);
 
             // Tell the client that we have failed
             $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage());
@@ -480,7 +480,7 @@ class Players extends Controller
         catch (Exception $e)
         {
             // Log Exception
-            Asp::LogException($e);
+            System::LogException($e);
 
             // Send error message to client
             echo json_encode(['error' => $e->getMessage()]);
@@ -517,7 +517,7 @@ class Players extends Controller
         catch (Exception $e)
         {
             // Log Exception
-            Asp::LogException($e);
+            System::LogException($e);
 
             // Send error message to client
             echo json_encode(['error' => $e->getMessage()]);
@@ -581,7 +581,7 @@ class Players extends Controller
                 catch (Exception $e)
                 {
                     // Log exception
-                    Asp::LogException($e);
+                    System::LogException($e);
 
                     // Tell the client that we have failed
                     $this->sendJsonResponse(false, $e->getMessage());

@@ -16,7 +16,6 @@ use System\IO\Path;
 use System\LogWriter;
 use System\Request;
 use System\Security;
-use System\Version;
 use System\View;
 
 /**
@@ -24,7 +23,7 @@ use System\View;
  *
  * Responsible for loading the frontend
  */
-class Asp
+class System
 {
     /**
      * Indicates whether the Asp is running
@@ -134,7 +133,7 @@ class Asp
             try
             {
                 new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "asp_debug.log"), "Asp");
-                Asp::LogException($e);
+                System::LogException($e);
             }
             catch (Exception $ex)
             {
@@ -222,23 +221,12 @@ class Asp
             $stmt = $DB->query("SELECT `version` FROM `_version` ORDER BY `updateid` DESC LIMIT 1;");
             $result = $stmt->fetchColumn(0);
 
-            define('DB_VER', ($result === false) ? '0.0.0' : $result);
+            define('DB_VERSION', ($result === false) ? '0.0.0' : $result);
         }
         catch (Exception $e)
         {
-            define('DB_VER', '0.0.0');
+            define('DB_VERSION', '0.0.0');
             $LogWriter->logDebug("Database connection failed: " . $e->getMessage());
-        }
-
-        // Parse version strings
-        $currVer = Version::Parse(DB_VER);
-        $expectedVer = Version::Parse(Config::Get('db_expected_ver'));
-
-        // Make sure config expected DB version is up to date
-        if (Version::GreaterThan($currVer, $expectedVer))
-        {
-            Config::Set('db_expected_ver', DB_VER);
-            Config::Save();
         }
 
         // Get our MVC route
@@ -248,6 +236,23 @@ class Asp
         $GLOBALS['controller'] = $controller = ($length > 0) ? $parts[0] : 'home';
         $action = ($length > 1 && !empty($parts[1])) ? $parts[1] : 'index';
         $params = array_slice($parts, 2);
+
+        // Process DB version messages
+        if (DB_VERSION == '0.0.0')
+        {
+            View::ShowGlobalMessage('Unable to establish a database connection. If you need to setup the ASP, <a href="/install">Click Here to begin Installation</a>');
+        }
+        else if (DB_VERSION != DB_EXPECTED_VERSION)
+        {
+            // Only allow the database, install, or config controllers at this point...
+            if ($controller != 'database' && $controller != 'config' && $controller != 'install')
+            {
+                \System\Response::Redirect('/database/upgrade');
+                die;
+            }
+
+            View::ShowGlobalMessage('Database is outdated! Please upgrade your database to the current version to prevent errors from occurring.');
+        }
 
         // Load task
         self::LoadModule($controller, $action, $params);

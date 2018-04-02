@@ -165,7 +165,7 @@
             <li>
                 <span class="key"><i class="icon-globe"></i>Map Name</span>
                 <span class="val">
-					<span class="text-nowrap">{round.mapname}</span>
+					<span class="text-nowrap">{round.map_display_name}</span>
 				</span>
             </li>
             <li>

@@ -55,7 +55,7 @@
         </div>
 
 		<div id="title">Private Stats Admin</div>
-		<div id="dbver">Code Version: <?php echo CODE_VER; ?> || Database Version: <?php echo DB_VER ?> </div>
+		<div id="dbver">Code Version: <?php echo CODE_VERSION; ?> || Database Version: <?php echo DB_VERSION ?> </div>
 
     </div>
     
@@ -83,16 +83,4 @@
 				<noscript>
 					<div class="alert global">Your browser does not have JavaScript enabled! The ASP will not function properly!</div>
 				</noscript>
-				<?php
-					// Process DB version messages
-					if(DB_VER == '0.0.0')
-					{
-						echo '<div class="alert global">Unable to establish a database connection. If you need to setup the ASP,
-						<a href="./install">Click Here to begin Installation</a></div>';
-					}
-					elseif(DB_VER !== CODE_VER)
-					{
-						echo '<div class="alert global">Database is outdated. Please <a href="./database/upgrade">Click Here</a> to upgrade your database to the corrent version</div>';
-					}
-				?>
             	{GLOBAL_MESSAGES}

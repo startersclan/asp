@@ -84,6 +84,18 @@ class View
     protected static $messages = array();
 
     /**
+     * Adds a message to be displayed in the Global Messages container of the layout
+     *
+     * @param string $message The string message to display to the client
+     *
+     * @return void
+     */
+    public static function ShowGlobalMessage($message)
+    {
+        self::$messages[] = array('global', $message);
+    }
+
+    /**
      * Constructor
      *
      * @param string $viewName The name of the view file, no extension

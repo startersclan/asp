@@ -43,12 +43,12 @@ if (!function_exists('build_navigation'))
         $group->append('/ASP/install', 'System Installation');
 
         // Adjust navigation items based on a few variables
-        if (DB_VER == '0.0.0')
+        if (DB_VERSION == '0.0.0')
         {
             // No database connection? Fine then... no navigation for you!
             $navigation->append($group);
         }
-        else if (DB_VER !== CODE_VER)
+        else if (DB_VERSION != DB_EXPECTED_VERSION)
         {
             // If mis-matched database version, allow these 2 actions
             $group->append('/ASP/database/upgrade', 'Upgrade Database Schema');

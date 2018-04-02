@@ -685,7 +685,7 @@ CREATE OR REPLACE VIEW `round_history_view` AS
     LEFT JOIN `server` AS s ON h.server_id = s.id;
 
 CREATE OR REPLACE VIEW `player_history_view` AS
-  SELECT ph.*, mi.name AS mapname, server.name AS name, rh.time_end, rh.pids1_end + rh.pids2_end AS `playerCount`
+  SELECT ph.*, mi.name AS mapname, mi.displayname AS map_display_name, server.name AS name, rh.time_end, rh.pids1_end + rh.pids2_end AS `playerCount`
   FROM player_round_history AS ph
     LEFT JOIN round AS rh ON ph.round_id = rh.id
     LEFT JOIN server ON rh.server_id = server.id
@@ -921,7 +921,7 @@ INSERT INTO `weapon` VALUES (17, 'Tactical', 0, 1);
 --
 -- Dumping data for table `_version`
 --
-INSERT INTO `_version`(`updateid`, `version`) VALUES (30000, '3.0.1');
+INSERT INTO `_version`(`updateid`, `version`) VALUES (30010, '3.0.1');
 
 INSERT INTO `server`(`ip`, `prefix`, `name`, `port`, `queryport`) VALUES ('127.0.0.1', 'w212', 'Local Server 1', 16567, 29900);
 INSERT INTO `server`(`ip`, `prefix`, `name`, `port`, `queryport`) VALUES ('::1', 'w212', 'Local Server 2', 16567, 29900);
