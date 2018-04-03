@@ -33,7 +33,7 @@
         <div id="update-failed" style="text-align: center; margin: 10px 0; display: none;">
             <img src="/ASP/frontend/modules/install/images/Cross.png" style="margin-top: 10px">
             <div style="font-size: 200%; font-weight: bold; margin-top: 20px">
-                System Installation Failed!
+                Database Schema Update Failed!
             </div>
             <div id="fail-message" style="font-size: 120%; margin-top: 20px"></div>
             <br /><br />

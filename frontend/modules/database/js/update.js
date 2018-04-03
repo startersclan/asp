@@ -44,6 +44,26 @@
                     // Close dialog
                     $("#ajax-dialog").dialog("close");
                 })
+                .fail(function( jqXHR ) {
+                    var result = jQuery.parseJSON(jqXHR.responseText);
+                    if (result != null)
+                    {
+                        $('#initial-message').hide();
+
+                        $('#update-failed').show();
+                        $('#fail-message').html(result.message);
+                    }
+                    else
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html("An Error Occurred. Please check the ASP error log for details.")
+                            .slideDown(500);
+                    }
+
+                    // Close dialog
+                    $("#ajax-dialog").dialog("close");
+                });
         });
 
         $('#button-to-home').on('click', function(event) {

@@ -139,6 +139,23 @@
                             Table.row( $('#tr-report-' + value) ).remove().draw();
                         });
                     }
+                })
+                .fail(function( jqXHR ) {
+                    var result = jQuery.parseJSON(jqXHR.responseText);
+                    if (result != null)
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500);
+                    }
+                    else
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html("An Error Occurred. Please check the ASP error log for details.")
+                            .slideDown(500);
+                    }
                 });
         }
 

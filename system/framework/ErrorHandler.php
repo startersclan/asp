@@ -196,7 +196,7 @@ class ErrorHandler
             $mode = ($exception == true) ? "Exception" : $level;
             $data = array(
                 'success' => false,
-                'message' => "A PHP {$mode} was thrown during this request.",
+                'message' => "A PHP {$mode} was thrown during this request",
                 'errorData' => array(
                     'exception' => $isException,
                     'level' => $level,
@@ -245,9 +245,7 @@ class ErrorHandler
         }
 
         // Set error header if the headers have yet to be sent
-        // jqXHR will not call .done() but rather .error() if
-        // we return an error header, so 200 status if Ajax!
-        if (!Request::IsAjax() && !headers_sent())
+        if (!headers_sent())
             header("HTTP/1.1 500 Internal Server Error");
 
         // Spit out the error message

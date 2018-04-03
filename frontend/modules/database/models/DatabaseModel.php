@@ -127,7 +127,7 @@ class DatabaseModel
                 {
                     // Table Exists, lets back it up
                     /** @noinspection SqlResolve */
-                    $query = "SELECT *  FROM `{$table}` LIMIT {$pageSize} OFFSET $i;";
+                    $query = "SELECT * FROM `{$table}` LIMIT {$pageSize} OFFSET $i;";
                     $result = $pdo->query($query);
                     while ($row = $result->fetch())
                     {
@@ -143,7 +143,7 @@ class DatabaseModel
         }
 
         // Create manifest
-        $json = json_encode(['dbver' => DB_VER, 'timestamp' => time()], JSON_PRETTY_PRINT);
+        $json = json_encode(['dbver' => DB_VERSION, 'timestamp' => time()], JSON_PRETTY_PRINT);
         $file = File::OpenWrite($path . DS . "backup.json");
         $file->write($json);
         $file->close();
@@ -168,7 +168,7 @@ class DatabaseModel
         $data = json_decode($file->readToEnd(), true);
 
         // Check that the DB version matches the backup table version
-        if (!isset($data['dbver']) || !Version::Equals($data['dbver'], DB_VER))
+        if (!isset($data['dbver']) || !Version::Equals($data['dbver'], DB_VERSION))
             throw new Exception('The backup database version does not match the table version!');
 
         try

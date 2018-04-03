@@ -292,6 +292,7 @@ class Database extends Controller
         {
             // Create view
             $view = new View('uptodate', 'database');
+            $view->attachScript("/ASP/frontend/modules/database/js/update.js");
             $view->render();
         }
         else if ($comparison == -1) // Less than expected
