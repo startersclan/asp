@@ -321,7 +321,7 @@ class DatabaseModel
                 // Make sure we upgraded!
                 if ($result == $newResult)
                 {
-                    throw new Exception("Failed to migrate the database from {$result} to {$newResult}");
+                    throw new Exception("Version was not updated between {$result} to {$currentMigration['up_string']}!");
                 }
 
                 $result = $newResult;
