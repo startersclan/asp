@@ -15,11 +15,8 @@
             return ( element.val() === undefined) ? "Unknown" : element.text();
         }
 
-        // Set country name
-        $("#fullCountryName").html(getCountryName());
-
-        // Data Tables
-        $(".mws-table").DataTable({
+        // DataTables options for the majority of tables here
+        var options = {
             bPaginate: false,
             bFilter: false,
             bInfo: false,
@@ -27,11 +24,57 @@
             columnDefs: [
                 { "orderable": false, "targets": 0 }
             ]
+        };
+
+        // Set country name
+        $("#fullCountryName").html(getCountryName());
+
+        // Vehicle Data Table
+        $("#vehicleData").DataTable(options).on( 'draw.dt', function () {
+            //noinspection JSUnresolvedVariable
+            $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
+        });
+
+        // Kit Data Table
+        $("#kitData").DataTable(options).on( 'draw.dt', function () {
+            //noinspection JSUnresolvedVariable
+            $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
+        });
+
+        // Weapon Data Table
+        $("#weaponData").DataTable(options).on( 'draw.dt', function () {
+            //noinspection JSUnresolvedVariable
+            $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
+        });
+
+        // Army Data Table
+        $("#armyData").DataTable(options).on( 'draw.dt', function () {
+            //noinspection JSUnresolvedVariable
+            $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
+        });
+
+        // Map Data Table
+        $("#mapData").DataTable(options).on( 'draw.dt', function () {
+            //noinspection JSUnresolvedVariable
+            $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
+        });
+
+        // Server Data Table
+        $("#serverData").DataTable({
+            bPaginate: false,
+            bFilter: false,
+            bInfo: false,
+            order: [[ 2, "desc" ]],
+            columnDefs: [
+                { "orderable": false, "targets": 0 },
+                { "orderable": false, "targets": 1 }
+            ]
         }).on( 'draw.dt', function () {
             //noinspection JSUnresolvedVariable
             $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
         });
 
+        // Buttonset
         if( $.fn.button ) {
             $("#mws-ui-button-radio").buttonset();
         }

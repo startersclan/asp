@@ -1,6 +1,4 @@
 Must Do's:
- - Remove delete player option (causes stats fragmentation)
- - Add player map data and top servers played in in the /players/view/ screen
  - Add a blacklist option for hiding servers in the server browser.
  - Add a Game Mod management system, only allowing games playing admin whitelisted game mods to be saved to the database.
 

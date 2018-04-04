@@ -95,7 +95,7 @@ class PlayerModel
      * @param int $id The player id
      *
      * @return int The number of rows affected by the last SQL statement
-     */
+
     public function deletePlayer($id)
     {
         // Prepare statement
@@ -104,6 +104,7 @@ class PlayerModel
         $stmt->execute();
         return $stmt->rowCount();
     }
+     */
 
     /**
      * Deletes all bot records from the player table, and all associated
@@ -114,7 +115,7 @@ class PlayerModel
     public function deleteBotPlayers()
     {
         // Prepare statement
-        return $this->pdo->exec("DELETE FROM player WHERE password=''");
+        return $this->pdo->exec("DELETE FROM player WHERE password='' AND `time`=0");
     }
 
     /**
@@ -981,7 +982,7 @@ SQL;
         // Ensure pid is an int
         $id = (int)$id;
 
-        // Grab all awards
+        // Grab top 20 maps
         $result = $this->pdo->query("SELECT pm.*, m.displayname FROM player_map AS pm LEFT JOIN map AS m ON m.id = pm.map_id WHERE player_id={$id} ORDER BY pm.time DESC LIMIT 20");
         while ($map = $result->fetch())
         {
@@ -1028,6 +1029,36 @@ SQL;
         $view->set('mapData', $return);
         $view->set('mapTotals', $totals);
         $view->set('mapAverage', $averages);
+    }
+
+    /**
+     * Appends a players top played servers to a view
+     *
+     * @param int $id
+     * @param View $view
+     */
+    public function attachTopPlayedServers($id, View $view)
+    {
+        // Grab top 20 servers
+        $query = <<<SQL
+SELECT s.id, s.name, COUNT(s.id) as `count` FROM player_round_history AS prh
+  LEFT JOIN round AS r ON prh.round_id = r.id
+  LEFT JOIN server AS s ON r.server_id = s.id
+WHERE prh.player_id = $id
+GROUP BY s.id
+ORDER BY `count` DESC, r.time_end DESC
+LIMIT 20
+SQL;
+
+        $return = [];
+        $result = $this->pdo->query($query);
+        while ($server = $result->fetch())
+        {
+            $server['count'] = number_format($server['count']);
+            $return[] = $server;
+        }
+
+        $view->set('serverData', $return);
     }
 
     /**

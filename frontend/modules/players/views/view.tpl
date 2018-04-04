@@ -495,7 +495,7 @@
         <span>Army Data</span>
     </div>
     <div class="mws-panel-body no-padding">
-        <table id="vehicleData" class="mws-table">
+        <table id="armyData" class="mws-table">
             <thead>
             <tr>
                 <th>Name</th>
@@ -761,6 +761,32 @@
                 <td>{mapAverage.best}</td>
             </tr>
             </tfoot>
+        </table>
+    </div>
+</div>
+
+<div class="mws-panel grid_4 mws-collapsible">
+    <div class="mws-panel-header">
+        <span>Top 20 Favorite Servers</span>
+    </div>
+    <div class="mws-panel-body no-padding">
+        <table id="serverData" class="mws-table">
+            <thead>
+            <tr>
+                <th style="width: 15%">Server Id</th>
+                <th>Server Name</th>
+                <th style="width: 20%">Games Played</th>
+            </tr>
+            </thead>
+            <tbody>
+            {serverData}
+                <tr>
+                    <td>{id}</td>
+                    <td><a href="/ASP/servers/view/{id}" class="black-link">{name}</a></td>
+                    <td>{count}</td>
+                </tr>
+            {/serverData}
+            </tbody>
         </table>
     </div>
 </div>

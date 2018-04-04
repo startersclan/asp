@@ -115,7 +115,6 @@ class PlayerAjaxModel
                             <a id="edit-btn-'. $id .'" href="#"  rel="tooltip" title="Edit Player" class="btn btn-small"><i class="icon-pencil"></i></a>
                             <a id="ban-btn-'. $id .'" href="#" rel="tooltip" title="Ban Player" class="btn btn-small"'. $nbanned .'><i class="icon-flag"></i></a>
                             <a id="unban-btn-'. $id .'" href="#" rel="tooltip" title="Unban Player" class="btn btn-small"'.$banned.'><i class="icon-ok"></i></a>
-                            <a id="delete-btn-'. $id .'" href="#" rel="tooltip" title="Delete Player" class="btn btn-small"><i class="icon-trash"></i></a>
                         </span>';
                 }
             ],
@@ -260,6 +259,7 @@ class PlayerAjaxModel
         foreach ($period as $p)
         {
             // Start
+            /* @var $p DateTime */
             $p->modify('+1 minute');
             $key1 = $p->format('M d');
             $timestamp = $p->getTimestamp();

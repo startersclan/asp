@@ -26,7 +26,7 @@
                 <th>Country</th>
                 <th>Join Date</th>
                 <th>Last Seen</th>
-                <th>Status</th>
+                <th style="width: 5%">Status</th>
                 <th style="width: 7%">Actions</th>
             </tr>
             </thead>

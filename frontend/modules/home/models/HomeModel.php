@@ -194,6 +194,7 @@ class HomeModel
         foreach ($period as $p)
         {
             // Start
+            /* @var $p DateTime */
             $p->modify('+1 minute');
             $key1 = $p->format('M d');
             $timestamp = $p->getTimestamp();

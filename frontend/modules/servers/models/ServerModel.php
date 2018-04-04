@@ -217,7 +217,8 @@ class ServerModel
      *
      * @param int[] $ids A list of server ids to perform the action on
      *
-     * @throws Exception thrown if there is an error in the SQL statement
+     * @throws Exception thrown if a server has a game processed,
+     *          or there is an error in the SQL statement
      */
     public function deleteServers($ids)
     {
@@ -236,6 +237,12 @@ class ServerModel
             {
                 // Ignore the all!
                 if ($serverId == 'all') continue;
+
+                // Ensure a game has not been played!
+                $query = "SELECT COUNT(`id`) FROM round WHERE server_id=". (int)$serverId;
+                $games = (int)$this->pdo->query($query)->fetchColumn(0);
+                if ($games > 0)
+                    throw new Exception("Cannot delete Server (ID: {$serverId}) because it has saved stats in the database");
 
                 // Bind value and run query
                 $stmt->bindValue(':id', (int)$serverId, PDO::PARAM_INT);
@@ -661,6 +668,7 @@ class ServerModel
         foreach ($period as $p)
         {
             // Start
+            /* @var $p DateTime */
             $p->modify('+1 minute');
             $key1 = $p->format('M d');
             $timestamp = $p->getTimestamp();

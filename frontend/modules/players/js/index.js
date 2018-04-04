@@ -356,7 +356,7 @@
 
             // Show dialog form
             $("#mws-jui-dialog")
-                .html('Are you sure you want to delete all player bots? This action will cause data fragmentation and cannot be undone!')
+                .html('This action will only remove the bots that have zero time played. Are you sure you want to delete player bots?')
                 .dialog("option", {
                     modal: true,
                     buttons: [{
@@ -494,48 +494,6 @@
                             $('#ban-btn-' + id).hide();
                         }
                     });
-            }
-            else if (action == 'delete') {
-                // Show dialog form
-                $("#mws-jui-dialog")
-                    .html('Are you sure you want to delete player "' + name + '"? This action cannot be undone.')
-                    .dialog("option", {
-                        modal: true,
-                        buttons: [
-                            {
-                                text: "Confirm",
-                                class: "btn btn-danger",
-                                click: function () {
-
-                                    $.post( "/ASP/players/delete", { ajax: true, action: "delete", playerId: id })
-                                        .done(function( data ) {
-                                            // Parse response
-                                            var result = jQuery.parseJSON(data);
-                                            if (result.success == false) {
-                                                $('#jui-global-message')
-                                                    .attr('class', 'alert error')
-                                                    .html(result.message)
-                                                    .slideDown(500)
-                                                    .delay(5000)
-                                                    .fadeOut('slow');
-                                            }
-                                            else {
-                                                // Update html and button displays
-                                                Table.row( tr ).remove().draw();
-                                            }
-                                        });
-
-                                    $(this).dialog("close");
-                                }
-                            },
-                            {
-                                text: "Cancel",
-                                click: function () {
-                                    $(this).dialog("close");
-                                }
-                            }
-                        ]
-                    }).dialog("open");
             }
 
             // Just to be sure, older IE's needs this

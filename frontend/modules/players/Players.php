@@ -115,6 +115,7 @@ class Players extends Controller
         $this->playerModel->attachAwardData($id, $view);
         $this->playerModel->attachMapData($id, $view);
         $this->playerModel->attachTopVictimAndOpp($id, $view);
+        $this->playerModel->attachTopPlayedServers($id, $view);
 
         // Attach needed scripts for the form
         $view->attachScript("/ASP/frontend/js/jquery.form.js");
@@ -338,7 +339,7 @@ class Players extends Controller
     public function postDelete()
     {
         // We only accept these POST actions
-        $this->requireAction("delete", "deleteBots");
+        $this->requireAction("deleteBots");
 
         // Grab database connection
         $this->requireDatabase(true);
@@ -348,26 +349,9 @@ class Players extends Controller
 
         try
         {
-            switch ($_POST['action'])
-            {
-                case "delete":
-                    // Ensure pid exists
-                    if (!isset($_POST['playerId']))
-                        throw new Exception('No Player ID Specified!');
-
-                    // Extract player ID
-                    $playerId = (int)$_POST['playerId'];
-
-                    // Delete player via the model
-                    $this->playerModel->deletePlayer($playerId);
-                    $this->sendJsonResponse(true, $_POST['playerId']);
-                    break;
-                case "deleteBots":
-                    // Delete bots via the model
-                    $result = $this->playerModel->deleteBotPlayers();
-                    $this->sendJsonResponse(true, $result);
-                    break;
-            }
+            // Delete bots via the model
+            $result = $this->playerModel->deleteBotPlayers();
+            $this->sendJsonResponse(true, $result);
         }
         catch (Exception $e)
         {
