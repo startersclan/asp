@@ -141,6 +141,26 @@
                                     tableRow.remove();
                                     disable_btns_for(currentType);
                                 }
+                            }).fail(function( jqXHR ) {
+                                var result = jQuery.parseJSON(jqXHR.responseText);
+                                if (result != null)
+                                {
+                                    $('#jui-message')
+                                        .attr('class', 'alert error')
+                                        .html(result.message)
+                                        .slideDown(500)
+                                        .delay(5000)
+                                        .fadeOut('slow');
+                                }
+                                else
+                                {
+                                    $('#jui-message')
+                                        .attr('class', 'alert error')
+                                        .html("An Error Occurred. Please check the ASP error log for details.")
+                                        .slideDown(500)
+                                        .delay(5000)
+                                        .fadeOut('slow');
+                                }
                             });
 
                             $(this).dialog("close");

@@ -242,6 +242,23 @@
                         // Update account status
                         $("#status").html("Banned").attr('class', 'label label-important');
                     }
+                })
+                .fail(function( jqXHR ) {
+                    var result = jQuery.parseJSON(jqXHR.responseText);
+                    if (result != null)
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500);
+                    }
+                    else
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html("An Error Occurred. Please check the ASP error log for details.")
+                            .slideDown(500);
+                    }
                 });
 
             // Just to be sure, older IE's needs this
@@ -276,6 +293,23 @@
                         else {
                             $("#status").html("Inactive").attr('class', 'label label-inactive');
                         }
+                    }
+                })
+                .fail(function( jqXHR ) {
+                    var result = jQuery.parseJSON(jqXHR.responseText);
+                    if (result != null)
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500);
+                    }
+                    else
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html("An Error Occurred. Please check the ASP error log for details.")
+                            .slideDown(500);
                     }
                 });
 
@@ -312,6 +346,23 @@
                                     else {
                                         // Reload window
                                         location.reload();
+                                    }
+                                })
+                                .fail(function( jqXHR ) {
+                                    var result = jQuery.parseJSON(jqXHR.responseText);
+                                    if (result != null)
+                                    {
+                                        $('#jui-global-message')
+                                            .attr('class', 'alert error')
+                                            .html(result.message)
+                                            .slideDown(500);
+                                    }
+                                    else
+                                    {
+                                        $('#jui-global-message')
+                                            .attr('class', 'alert error')
+                                            .html("An Error Occurred. Please check the ASP error log for details.")
+                                            .slideDown(500);
                                     }
                                 });
 
@@ -364,6 +415,23 @@
                                         // Reload window
                                         location.reload();
                                     }
+                                })
+                                .fail(function( jqXHR ) {
+                                    var result = jQuery.parseJSON(jqXHR.responseText);
+                                    if (result != null)
+                                    {
+                                        $('#jui-global-message')
+                                            .attr('class', 'alert error')
+                                            .html(result.message)
+                                            .slideDown(500);
+                                    }
+                                    else
+                                    {
+                                        $('#jui-global-message')
+                                            .attr('class', 'alert error')
+                                            .html("An Error Occurred. Please check the ASP error log for details.")
+                                            .slideDown(500);
+                                    }
                                 });
 
                             // Close dropdown menu
@@ -408,6 +476,26 @@
                         $('#jui-global-message')
                             .attr('class', 'alert success')
                             .html("Player unlocks were successfully reset.")
+                            .slideDown(500);
+                    }
+
+                    // Close dropdown menu
+                    $("#dlDropDown").dropdown("toggle");
+                })
+                .fail(function( jqXHR ) {
+                    var result = jQuery.parseJSON(jqXHR.responseText);
+                    if (result != null)
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500);
+                    }
+                    else
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html("An Error Occurred. Please check the ASP error log for details.")
                             .slideDown(500);
                     }
 

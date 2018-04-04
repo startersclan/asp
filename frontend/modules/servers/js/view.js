@@ -57,6 +57,27 @@
                         $("#auth-server").hide();
                         $("#unauth-server").show();
                     }
+                })
+                .fail(function( jqXHR ) {
+                    var result = jQuery.parseJSON(jqXHR.responseText);
+                    if (result != null)
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
+                    }
+                    else
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html("An Error Occurred. Please check the ASP error log for details.")
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
+                    }
                 });
 
             // Just to be sure, older IE's needs this
@@ -84,6 +105,27 @@
                     else {
                         $("#auth-server").show();
                         $("#unauth-server").hide();
+                    }
+                })
+                .fail(function( jqXHR ) {
+                    var result = jQuery.parseJSON(jqXHR.responseText);
+                    if (result != null)
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
+                    }
+                    else
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html("An Error Occurred. Please check the ASP error log for details.")
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
                     }
                 });
 
@@ -114,6 +156,27 @@
                         $("#plasma-server").hide();
                         $("#unplasma-server").show();
                     }
+                })
+                .fail(function( jqXHR ) {
+                    var result = jQuery.parseJSON(jqXHR.responseText);
+                    if (result != null)
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
+                    }
+                    else
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html("An Error Occurred. Please check the ASP error log for details.")
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
+                    }
                 });
 
             // Just to be sure, older IE's needs this
@@ -142,6 +205,27 @@
                         $("#plasma").html("No").css('color', 'black');
                         $("#unplasma-server").hide();
                         $("#plasma-server").show();
+                    }
+                })
+                .fail(function( jqXHR ) {
+                    var result = jQuery.parseJSON(jqXHR.responseText);
+                    if (result != null)
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
+                    }
+                    else
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html("An Error Occurred. Please check the ASP error log for details.")
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
                     }
                 });
 

@@ -378,6 +378,27 @@
                                         // Update Table
                                         Table.ajax.reload();
                                     }
+                                })
+                                .fail(function( jqXHR ) {
+                                    var result = jQuery.parseJSON(jqXHR.responseText);
+                                    if (result != null)
+                                    {
+                                        $('#jui-global-message')
+                                            .attr('class', 'alert error')
+                                            .html(result.message)
+                                            .slideDown(500)
+                                            .delay(5000)
+                                            .fadeOut('slow');
+                                    }
+                                    else
+                                    {
+                                        $('#jui-global-message')
+                                            .attr('class', 'alert error')
+                                            .html("An Error Occurred. Please check the ASP error log for details.")
+                                            .slideDown(500)
+                                            .delay(5000)
+                                            .fadeOut('slow');
+                                    }
                                 });
 
                             $(this).dialog("close");
@@ -471,6 +492,27 @@
                             $('#unban-btn-' + id).hide();
                             $('#ban-btn-' + id).show();
                         }
+                    })
+                    .fail(function( jqXHR ) {
+                        var result = jQuery.parseJSON(jqXHR.responseText);
+                        if (result != null)
+                        {
+                            $('#jui-global-message')
+                                .attr('class', 'alert error')
+                                .html(result.message)
+                                .slideDown(500)
+                                .delay(5000)
+                                .fadeOut('slow');
+                        }
+                        else
+                        {
+                            $('#jui-global-message')
+                                .attr('class', 'alert error')
+                                .html("An Error Occurred. Please check the ASP error log for details.")
+                                .slideDown(500)
+                                .delay(5000)
+                                .fadeOut('slow');
+                        }
                     });
             }
             else if (action == 'ban') {
@@ -492,6 +534,27 @@
                             $('#tr-status-' + id).attr('class', 'badge badge-important').html('Banned');
                             $('#unban-btn-' + id).show();
                             $('#ban-btn-' + id).hide();
+                        }
+                    })
+                    .fail(function( jqXHR ) {
+                        var result = jQuery.parseJSON(jqXHR.responseText);
+                        if (result != null)
+                        {
+                            $('#jui-global-message')
+                                .attr('class', 'alert error')
+                                .html(result.message)
+                                .slideDown(500)
+                                .delay(5000)
+                                .fadeOut('slow');
+                        }
+                        else
+                        {
+                            $('#jui-global-message')
+                                .attr('class', 'alert error')
+                                .html("An Error Occurred. Please check the ASP error log for details.")
+                                .slideDown(500)
+                                .delay(5000)
+                                .fadeOut('slow');
                         }
                     });
             }

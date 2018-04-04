@@ -251,6 +251,27 @@
                             $('#unauth-btn-' + id).hide();
                             $('#auth-btn-' + id).show();
                         }
+                    })
+                    .fail(function( jqXHR ) {
+                        var result = jQuery.parseJSON(jqXHR.responseText);
+                        if (result != null)
+                        {
+                            $('#jui-global-message')
+                                .attr('class', 'alert error')
+                                .html(result.message)
+                                .slideDown(500)
+                                .delay(5000)
+                                .fadeOut('slow');
+                        }
+                        else
+                        {
+                            $('#jui-global-message')
+                                .attr('class', 'alert error')
+                                .html("An Error Occurred. Please check the ASP error log for details.")
+                                .slideDown(500)
+                                .delay(5000)
+                                .fadeOut('slow');
+                        }
                     });
             }
             else if (action == 'auth') {
@@ -272,6 +293,27 @@
                             $('#tr-auth-' + id).attr('class', 'badge badge-success').html('Yes');
                             $('#auth-btn-' + id).hide();
                             $('#unauth-btn-' + id).show();
+                        }
+                    })
+                    .fail(function( jqXHR ) {
+                        var result = jQuery.parseJSON(jqXHR.responseText);
+                        if (result != null)
+                        {
+                            $('#jui-global-message')
+                                .attr('class', 'alert error')
+                                .html(result.message)
+                                .slideDown(500)
+                                .delay(5000)
+                                .fadeOut('slow');
+                        }
+                        else
+                        {
+                            $('#jui-global-message')
+                                .attr('class', 'alert error')
+                                .html("An Error Occurred. Please check the ASP error log for details.")
+                                .slideDown(500)
+                                .delay(5000)
+                                .fadeOut('slow');
                         }
                     });
             }
@@ -381,6 +423,27 @@
                             $('#unauth-btn-' + value).hide();
                         });
                     }
+                })
+                .fail(function( jqXHR ) {
+                    var result = jQuery.parseJSON(jqXHR.responseText);
+                    if (result != null)
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
+                    }
+                    else
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html("An Error Occurred. Please check the ASP error log for details.")
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
+                    }
                 });
 
             // Just to be sure, older IE's needs this
@@ -417,6 +480,27 @@
                             $('#auth-btn-' + value).hide();
                         });
                     }
+                })
+                .fail(function( jqXHR ) {
+                    var result = jQuery.parseJSON(jqXHR.responseText);
+                    if (result != null)
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
+                    }
+                    else
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html("An Error Occurred. Please check the ASP error log for details.")
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
+                    }
                 });
 
             // Just to be sure, older IE's needs this
@@ -451,6 +535,27 @@
                             $('#tr-plasma-' + value).attr('class', 'badge badge-success').html('Yes');
                         });
                     }
+                })
+                .fail(function( jqXHR ) {
+                    var result = jQuery.parseJSON(jqXHR.responseText);
+                    if (result != null)
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
+                    }
+                    else
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html("An Error Occurred. Please check the ASP error log for details.")
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
+                    }
                 });
 
             // Just to be sure, older IE's needs this
@@ -484,6 +589,27 @@
                             // Update html and button displays
                             $('#tr-plasma-' + value).attr('class', 'badge badge-inactive').html('No');
                         });
+                    }
+                })
+                .fail(function( jqXHR ) {
+                    var result = jQuery.parseJSON(jqXHR.responseText);
+                    if (result != null)
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
+                    }
+                    else
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html("An Error Occurred. Please check the ASP error log for details.")
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
                     }
                 });
 
@@ -523,6 +649,27 @@
                         $.each(ids, function (key, value) {
                             Table.row( $('#tr-server-' + value) ).remove().draw();
                         });
+                    }
+                })
+                .fail(function( jqXHR ) {
+                    var result = jQuery.parseJSON(jqXHR.responseText);
+                    if (result != null)
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
+                    }
+                    else
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html("An Error Occurred. Please check the ASP error log for details.")
+                            .slideDown(500)
+                            .delay(5000)
+                            .fadeOut('slow');
                     }
                 });
         }
