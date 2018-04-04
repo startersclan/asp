@@ -62,10 +62,21 @@ class Database extends Controller
      */
     public function getBackup()
     {
-        // Create view
-        $view = new View('backup', 'database');
-        $view->attachScript("/ASP/frontend/modules/database/js/backup.js");
-        $view->render();
+        $serverList = array('localhost', '127.0.0.1', '::1');
+        if (in_array(\System\Config::Get('db_host'), $serverList))
+        {
+            // Create view
+            $view = new View('backup', 'database');
+            $view->attachScript("/ASP/frontend/modules/database/js/backup.js");
+            $view->render();
+        }
+        else
+        {
+            // Create view
+            $view = new View('cannot_backup', 'database');
+            $view->attachScript("/ASP/frontend/modules/database/cannot_backup.js");
+            $view->render();
+        }
     }
 
     /**
