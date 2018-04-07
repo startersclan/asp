@@ -488,7 +488,7 @@
                         }
                         else {
                             // Update html and button displays
-                            $('#tr-status-' + id).attr('class', 'badge badge-success').html('Active');
+                            $('#tr-status-' + id).attr('class', 'badge badge-info').html('Active');
                             $('#unban-btn-' + id).hide();
                             $('#ban-btn-' + id).show();
                         }

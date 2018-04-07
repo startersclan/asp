@@ -58,6 +58,7 @@
                 <span class="val">
                     <img id="flag" style="margin: -3px 10px 0 0; height: 16px;" src="/ASP/frontend/images/flags/{player.country}.png"/>
 					<span id="fullCountryName" class="text-nowrap">{player.country}</span>
+                    (Last IP: {player.lastip})
 				</span>
             </li>
             <li>
@@ -75,7 +76,7 @@
 				</span>
             </li>
             <li>
-                <span class="key"><i class="icon-history-2"></i> Last Battle</span>
+                <span class="key"><i class="icon-history-2"></i> Last Seen</span>
                 <span class="val">
 					<span class="text-nowrap">{player.lastonline}</i></span>
 				</span>
@@ -394,6 +395,26 @@
     </div>
 </div>
 
+<div class="mws-panel grid_8">
+    <div class="mws-panel-header">
+        <span><i class="icon-graph"></i> Games Played</span>
+    </div>
+    <div class="mws-panel-body">
+        <div id="mws-games-chart" style="height: 320px; margin: auto 20px;"></div>
+        <div class="mws-form-row">
+            <div style="text-align: center; margin-top: 15px">
+                <div class="mws-form-item">
+                    <div id="mws-ui-button-radio">
+                        <input type="radio" id="weekRadio" name="radio" checked="checked"><label for="weekRadio">Last Week</label>
+                        <input type="radio" id="monthRadio" name="radio"><label for="monthRadio">Last 6 Weeks</label>
+                        <input type="radio" id="yearRadio" name="radio"><label for="yearRadio">Last Year</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="mws-panel grid_4 mws-collapsible clear">
     <div class="mws-panel-header">
         <span>Kit Data</span>
@@ -691,26 +712,6 @@
                     <?php endif ?>
                 {/ribbons}
             </ul>
-        </div>
-    </div>
-</div>
-
-<div class="mws-panel grid_8">
-    <div class="mws-panel-header">
-        <span><i class="icon-graph"></i> Games Played</span>
-    </div>
-    <div class="mws-panel-body">
-        <div id="mws-games-chart" style="height: 360px; margin: auto 20px;"></div>
-        <div class="mws-form-row">
-            <div style="text-align: center; margin-top: 15px">
-                <div class="mws-form-item">
-                    <div id="mws-ui-button-radio">
-                        <input type="radio" id="weekRadio" name="radio" checked="checked"><label for="weekRadio">Last Week</label>
-                        <input type="radio" id="monthRadio" name="radio"><label for="monthRadio">Last 6 Weeks</label>
-                        <input type="radio" id="yearRadio" name="radio"><label for="yearRadio">Last Year</label>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>

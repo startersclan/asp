@@ -103,6 +103,23 @@
                                             $('#fail-message').html(result.message);
                                         }
                                     });
+                                })
+                                .fail(function( jqXHR ) {
+                                    $.wait(500).then( function () {
+                                        var result = jQuery.parseJSON(jqXHR.responseText);
+                                        if (result != null)
+                                        {
+                                            $('#install-failed').show();
+                                            $('#install-success').hide();
+                                            $('#fail-message').html(result.message);
+                                        }
+                                        else
+                                        {
+                                            $('#install-failed').show();
+                                            $('#install-success').hide();
+                                            $('#fail-message').html("An Error Occurred. Please check the ASP error log for details.");
+                                        }
+                                    });
                                 });
                         }
                     },

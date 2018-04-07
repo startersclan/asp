@@ -288,7 +288,10 @@
 
                         // Update account status
                         if (labelStatus === 'success') {
-                            $("#status").html("Active").attr('class', 'label label-success');
+                            $("#status").html("Online").attr('class', 'label label-success');
+                        }
+                        else if (labelStatus === 'info') {
+                            $("#status").html("Active").attr('class', 'label label-info');
                         }
                         else {
                             $("#status").html("Inactive").attr('class', 'label label-inactive');
@@ -614,7 +617,7 @@
             if ($loaded) {
                 //noinspection JSUnresolvedVariable
                 plot.setData([{
-                    label: "Snapshots",
+                    label: "Games Played",
                     color: "#c75d7b",
                     data: $result.year.y
                 }]);

@@ -63,6 +63,7 @@ class PlayerAjaxModel
         $columns = [
             ['db' => 'id', 'dt' => 'id'],
             ['db' => 'name', 'dt' => 'name'],
+            ['db' => 'online', 'dt' => 'status'],
             ['db' => 'rank', 'dt' => 'rank',
                 'formatter' => function( $d, $row ) {
                     return "<img class='center' src=\"/ASP/frontend/images/ranks/rank_{$d}.gif\">";
@@ -89,8 +90,18 @@ class PlayerAjaxModel
             ['db' => 'permban', 'dt' => 'permban',
                 'formatter' => function( $d, $row ) {
                     $id = $row['id'];
-                    $badge = (!$d) ? 'success' : 'important';
-                    $text = (!$d) ? 'Active' : 'Banned';
+                    $online = (int)$row['online'];
+                    if ($online)
+                    {
+                        $badge = 'success';
+                        $text = 'Online';
+                    }
+                    else
+                    {
+                        $badge = (!$d) ? 'info' : 'important';
+                        $text = (!$d) ? 'Active' : 'Banned';
+                    }
+
                     $last = (int)$row['lastonline'];
                     $time = time();
                     $timestamp = 86400 * 30;
@@ -101,7 +112,8 @@ class PlayerAjaxModel
                         $text = 'Inactive';
                     }
 
-                    return '<span id="tr-status-'. $id .'" class="badge badge-'. $badge .'">'. $text .'</span>';
+                    $response = '<span id="tr-status-'. $id .'" class="badge badge-'. $badge .'">'. $text .'</span>';
+                    return $response;
                 }
             ],
             ['db' => 'kicked', 'dt' => 'actions',

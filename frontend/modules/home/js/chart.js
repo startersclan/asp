@@ -53,7 +53,7 @@
 
             //noinspection JSUnresolvedVariable
             plot.setData([{
-                label: "Snapshots",
+                label: "Games Played",
                 color: "#c75d7b",
                 data: result.week.y
             }]);

@@ -59,7 +59,7 @@ class View
      * Our parser loop limit to stop data holes
      * @var int
      */
-    protected $loop_limit = 5;
+    protected $iterations = 1;
 
     /**
      * Our current pages source
@@ -76,6 +76,11 @@ class View
      * @var null|string The module name this View belongs to
      */
     protected $moduleName;
+
+    /**
+     * @var bool Indicates whether to throw exceptions for parse errors
+     */
+    protected $throwParseErrors = false;
 
     /**
      * Array of template messages
@@ -106,6 +111,33 @@ class View
         $this->viewName = $viewName;
         $this->moduleName = $moduleName;
         $this->source = $this->loadView($viewName, $moduleName);
+    }
+
+    /**
+     * Sets the number of parse iterations to do on the final HTML
+     * output for PHP variables. Nested variables inside of other variables
+     * will require multiple iterations to parse.
+     *
+     * @param int $i The number of iterations
+     *
+     * @return void
+     */
+    public function setNumOfParseIterations($i)
+    {
+        $this->iterations = (int)$i;
+    }
+
+    /**
+     * Indicates whether to throw exceptions on parse errors,
+     * or to silently fail.
+     *
+     * @param bool $throwParseErrors if true, undefined variables during
+     *  parsing will result in an exception being thrown, otherwise the
+     *  undefined variables will be ignored.
+     */
+    public function throwParseErrors($throwParseErrors)
+    {
+        $this->throwParseErrors = $throwParseErrors;
     }
 
     /**
@@ -463,7 +495,7 @@ class View
 
             // Raise the counter
             ++$count;
-        } while ($count < 5);
+        } while ($count < $this->iterations);
 
         // Return the parsed source
         return $source;
@@ -491,11 +523,23 @@ class View
             for ($i = 0; $i < $count; $i++)
             {
                 if (!isset($array[$args[$i]]))
+                {
+                    // Are we throwing errors?
+                    if ($this->throwParseErrors)
+                    {
+                        throw new \Exception("Parser: Undefined array index ($i) in ($key)");
+                    }
+
                     return "_PARSER_false_";
+                }
                 elseif ($i == $count - 1)
+                {
                     return $array[$args[$i]];
+                }
                 else
+                {
                     $array = $array[$args[$i]];
+                }
             }
         }
 
@@ -579,5 +623,3 @@ class View
         return $final_out;
     }
 }
-
-?>

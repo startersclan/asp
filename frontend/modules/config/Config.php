@@ -157,8 +157,22 @@ class Config extends Controller
         $errors = false;
         $warns = false;
 
+        // Check Cache Folder Write Access
+        $out = " > Checking ASP URI...<br />";
+        $out .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- ASP folder is properly stored in www root. (www/ASP/): ";
+        if (isset($_SERVER['REQUEST_URI']) && substr( $_SERVER['REQUEST_URI'], 0, 5 ) == "/ASP/")
+        {
+
+            $out .= __PASS;
+        }
+        else
+        {
+            $errors = true;
+            $out .= __FAIL;
+        }
+
         // Check Database Access
-        $out = " > Checking Database...<br />";
+        $out .= " > Checking Database...<br />";
         $DB = Database::GetConnection('stats');
         if ($DB instanceof PDO)
         {
@@ -166,9 +180,9 @@ class Config extends Controller
 
             // Check Database Version
             if (DB_VERSION != DB_EXPECTED_VERSION)
-                $out .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Database version (".Cfg::Get('db_expected_ver')."): ".__FAIL;
+                $out .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Database version (". DB_EXPECTED_VERSION ."): ".__FAIL;
             else
-                $out .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Database version (".Cfg::Get('db_expected_ver')."): ".__PASS;
+                $out .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Database version (". DB_EXPECTED_VERSION ."): ".__PASS;
         }
         else
         {

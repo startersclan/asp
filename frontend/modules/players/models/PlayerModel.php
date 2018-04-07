@@ -133,7 +133,7 @@ SELECT `name`, `rank`, `email`, `joined`, `time`, `lastonline`, `score`, `skills
   `kills`, `deaths`, `teamkills`, `kicked`, `banned`, `permban`, `heals`, `repairs`, `resupplies`, `revives`,
   `captures`, `captureassists`, `defends`, `country`, `driverspecials`, `neutralizes`, `neutralizeassists`,
   `damageassists`, `rounds`, `wins`, `losses`, `cmdtime`, `sqmtime`, `sqltime`, `lwtime`, `suicides`, 
-  `teamdamage`, `teamvehicledamage`, `killstreak`, `bestscore`
+  `teamdamage`, `teamvehicledamage`, `killstreak`, `bestscore`, `online`, `lastip`
 FROM player
 WHERE `id`={$id}
 SQL;
@@ -755,17 +755,26 @@ SQL;
                     }
                     else
                     {
-                        $lastSeen = (int)$player['lastonline'];
-                        $aMonthAgo = time() - (86400 * 30);
-                        if ($aMonthAgo > $lastSeen)
+                        $online = (int)$player['online'];
+                        if ($online)
                         {
-                            $data['statustext'] = 'Inactive';
-                            $data['badge'] = 'inactive';
+                            $data['statustext'] = 'Online';
+                            $data['badge'] = 'success';
                         }
                         else
                         {
-                            $data['statustext'] = 'Active';
-                            $data['badge'] = 'success';
+                            $lastSeen = (int)$player['lastonline'];
+                            $aMonthAgo = time() - (86400 * 30);
+                            if ($aMonthAgo > $lastSeen)
+                            {
+                                $data['statustext'] = 'Inactive';
+                                $data['badge'] = 'inactive';
+                            }
+                            else
+                            {
+                                $data['statustext'] = 'Active';
+                                $data['badge'] = 'info';
+                            }
                         }
                     }
                     break;
