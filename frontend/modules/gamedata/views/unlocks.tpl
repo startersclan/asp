@@ -24,16 +24,16 @@
             </thead>
             <tody>
                 {unlocks}
-                <tr id="tr-award-{id}">
+                <tr id="tr-unlock-{id}">
                     <td>{id}</td>
                     <td>{name}</td>
                     <td>{desc}</td>
                     <td>{kitname}</td>
                     <td>
-                    <span class="btn-group">
-                        <a id="edit-{id}" href="#"  rel="tooltip" title="Edit Award" class="btn btn-small"><i class="icon-pencil"></i></a>
-                        <a id="delete-{id}" href="#" rel="tooltip" title="Delete Award" class="btn btn-small"><i class="icon-trash"></i></a>
-                    </span>
+                        <span class="btn-group">
+                            <a id="edit-{id}" href="#"  rel="tooltip" title="Edit Award" class="btn btn-small"><i class="icon-pencil"></i></a>
+                            <a id="delete-{id}" href="#" rel="tooltip" title="Delete Award" class="btn btn-small"><i class="icon-trash"></i></a>
+                        </span>
                     </td>
                 </tr>
                 {/unlocks}
@@ -42,7 +42,7 @@
     </div>
 </div>
 
-<!-- Add New Player Ajax Model -->
+<!-- Add New/Edit Ajax Model -->
 <div id="editor-form">
     <form id="mws-validate" class="mws-form" method="post" action="/ASP/gamedata/addUnlock">
         <input id="post-action" type="hidden" name="action" value="add">
@@ -83,7 +83,7 @@
     </form>
 </div>
 
-<!-- Delete Award Confirmation Model -->
+<!-- Delete Confirmation Model -->
 <div id="mws-jui-dialog">
     <div class="mws-dialog-inner"></div>
 </div>

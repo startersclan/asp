@@ -132,7 +132,7 @@ class Snapshot extends GameResult
             $this->serverId = (int)$row['id'];
         }
 
-        // Check for processed snapshot
+        // Check for processed snapshot. Server ports can change so do not check by server ID
         $query = "SELECT COUNT(id) FROM round WHERE map_id=%d AND time_end=%d AND time_start=%d";
         $result = $connection->query(sprintf($query, $this->mapId, $this->roundEndTime, $this->roundStartTime));
         $this->isProcessed = ((int)$result->fetchColumn(0)) > 0;
@@ -151,7 +151,8 @@ class Snapshot extends GameResult
     /**
      * Processes the snapshot data, inserted and updating player data in the gamespy database
      *
-     * @throws Exception
+     * @throws SecurityException if the server posting this snapshot is not authorized to post snapshots
+     * @throws Exception if an error occurs while processing data
      */
     public function processData()
     {
@@ -170,6 +171,7 @@ class Snapshot extends GameResult
             $this->logWriter->setLogLevel(Config::Get('debug_lvl'));
         }
 
+        // ---------------------------------------------------------------------
         // Ensure this is an authorized server
         $result = $connection->query("SELECT `authorized` FROM `server` WHERE `id`={$this->serverId}");
         if (!($row = $result->fetch()) || (int)$row['authorized'] == 0)
@@ -178,6 +180,21 @@ class Snapshot extends GameResult
             throw new SecurityException("Unauthorised Game Server!", empty($row) ? 0 : 1);
         }
 
+        // ---------------------------------------------------------------------
+        // Fetch mod ID and make sure its authorized
+        $modName = $connection->quote($this->mod);
+        $result = $connection->query("SELECT `id`, `authorized` FROM `game_mod` WHERE `name`={$modName}");
+        if (!($row = $result->fetch()) || (int)$row['authorized'] == 0)
+        {
+            $this->logWriter->logWarning("Unauthorised Game Mod '{$this->mod}' played in round.");
+            throw new Exception("Unauthorised Game Mod!", empty($row) ? 0 : 1);
+        }
+        else
+        {
+            $modId = (int)$row['id'];
+        }
+
+        // ---------------------------------------------------------------------
         // Start logging information about this snapshot
         $playerCount = count($this->players);
         $message = ($this->isCustomMap) ? "Custom Map (%d)..." : "Standard Map (%d)...";
@@ -192,6 +209,7 @@ class Snapshot extends GameResult
             throw new Exception("Minimum round Player count does not meet the ASP requirement");
         }
 
+        // ---------------------------------------------------------------------
         // Ensure the army IDs are not unknown
         if ($this->team1ArmyId >= StatsData::$NumArmies)
         {
@@ -202,6 +220,15 @@ class Snapshot extends GameResult
         else if ($this->team2ArmyId >= StatsData::$NumArmies)
         {
             $message = sprintf("Unknown ArmyId (%d) for team 2 found in Snapshot.. Aborting", $this->team2ArmyId);
+            $this->logWriter->logWarning($message);
+            throw new Exception($message);
+        }
+
+        // ---------------------------------------------------------------------
+        // Ensure the game mode is not unknown
+        if ($this->gameMode >= StatsData::$NumGamemodes)
+        {
+            $message = sprintf("Unknown GameMode id (%d) found in Snapshot.. Aborting", $this->gameMode);
             $this->logWriter->logWarning($message);
             throw new Exception($message);
         }
@@ -220,20 +247,16 @@ class Snapshot extends GameResult
             $query = new UpdateOrInsertQuery($connection, 'round');
             $query->set('map_id', '=', $this->mapId);
             $query->set('server_id', '=', $this->serverId);
+            $query->set('mod_id', '=', $modId);
+            $query->set('gamemode_id', '=', $this->gameMode);
+            $query->set('team1_army_id', '=', $this->team1ArmyId);
+            $query->set('team2_army_id', '=', $this->team2ArmyId);
             $query->set('time_start', '=', $this->roundStartTime);
             $query->set('time_end', '=', $this->roundEndTime);
-            $query->set('imported', '=', time());
-            $query->set('gamemode', '=', $this->gameMode);
-            $query->set('mod', '=', $this->mod);
+            $query->set('time_imported', '=', time());
             $query->set('winner', '=', $this->winningTeam);
-            $query->set('team1', '=', $this->team1ArmyId);
-            $query->set('team2', '=', $this->team2ArmyId);
             $query->set('tickets1', '=', $this->team1Tickets);
             $query->set('tickets2', '=', $this->team2Tickets);
-            $query->set('pids1', '=', $this->team1Players);
-            $query->set('pids1_end', '=', $this->team1PlayersEnd);
-            $query->set('pids2', '=', $this->team2Players);
-            $query->set('pids2_end', '=', $this->team2PlayersEnd);
             $query->executeInsert();
 
             // Grab round ID
@@ -305,7 +328,7 @@ class Snapshot extends GameResult
                 $this->logWriter->logNotice("Processing Player (%d)", $player->id);
 
                 // Check if player exists already
-                $sql = "SELECT lastip, country, rank, killstreak, deathstreak, bestscore FROM player WHERE id=%d LIMIT 1";
+                $sql = "SELECT lastip, country, rank_id, killstreak, deathstreak, bestscore FROM player WHERE id=%d LIMIT 1";
                 $row = $connection->query(sprintf($sql, $player->id))->fetch();
 
                 // Run player check through BattleSpy
@@ -316,6 +339,7 @@ class Snapshot extends GameResult
                 $query->set('time', '+', $player->roundTime);
                 $query->set('rounds', '+', (int)$player->completedRound);
                 $query->set('lastip', '=', $player->ipAddress);
+                $query->set('rank_id', '=', $player->rank);
                 $query->set('score', '+', $player->roundScore);
                 $query->set('cmdscore', '+', $player->commandScore);
                 $query->set('skillscore', '+', $player->skillScore);
@@ -338,7 +362,6 @@ class Snapshot extends GameResult
                 $query->set('teamdamage', '+', $player->teamDamage);
                 $query->set('teamvehicledamage', '+', $player->teamVehicleDamage);
                 $query->set('suicides', '+', $player->suicides);
-                $query->set('rank', '=', $player->rank);
                 $query->set('banned', '+', $player->timesBanned);
                 $query->set('kicked', '+', $player->timesKicked);
                 $query->set('cmdtime', '+', $player->cmdTime);
@@ -359,7 +382,7 @@ class Snapshot extends GameResult
                 }
 
                 // Correct rank if needed
-                $rank = (int)$row['rank'];
+                $rank = (int)$row['rank_id'];
                 if ($rank > $player->rank && $rank != 11 && $rank != 21)
                 {
                     $player->rank = $rank;
@@ -387,10 +410,9 @@ class Snapshot extends GameResult
                 $query = new UpdateOrInsertQuery($connection, 'player_round_history');
                 $query->set('player_id', '=', $player->id);
                 $query->set('round_id', '=', $roundId);
-                $query->set('team', '=', $player->armyId);
+                $query->set('army_id', '=', $player->armyId);
                 $query->set('time', '=', $player->roundTime);
-                $query->set('rank', '=', $player->rank);
-                //$query->set('timestamp', '=', $this->roundEndTime);
+                $query->set('rank_id', '=', $player->rank);
                 $query->set('score', '=', $player->roundScore);
                 $query->set('cmdscore', '=', $player->commandScore);
                 $query->set('skillscore', '=', $player->skillScore);

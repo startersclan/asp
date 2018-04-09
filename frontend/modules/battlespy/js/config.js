@@ -61,12 +61,18 @@
                 var result = jQuery.parseJSON(response);
                 if (result.success == true)
                 {
-                    // Display our Success message, and ReDraw the table so we imediatly see our action
-                    $('#js_message').attr('class', 'alert success').html('Success! Config saved successfully!');
+                    // Display our Success message, and ReDraw the table so we immediately see our action
+                    $('#js_message').attr('class', 'alert success')
+                        .html('Success! Config saved successfully!')
+                        .append('<span class="close-bt"></span>');
+                        // Already open!
                 }
                 else
                 {
-                    $('#js_message').attr('class', 'alert error').html('There was an error saving the configuration file. ' + result.message);
+                    $('#js_message').attr('class', 'alert error')
+                        .html('There was an error saving the configuration file. ' + result.message)
+                        .append('<span class="close-bt"></span>');
+                        // Already open!
                 }
             },
             error: function(request, status, error) {

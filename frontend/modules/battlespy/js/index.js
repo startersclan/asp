@@ -131,6 +131,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
                     else {
@@ -147,6 +148,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
                     else
@@ -154,6 +156,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html("An Error Occurred. Please check the ASP error log for details.")
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
                 });

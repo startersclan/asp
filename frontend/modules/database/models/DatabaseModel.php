@@ -26,9 +26,11 @@ class DatabaseModel
 {
     /**
      * @var array A list of tables we backup and restore from
+     *
+     * @remarks Order is important here (foreign keys)!
      */
     protected static $BackupTables = [
-        'army', 'kit', 'vehicle', 'weapon', 'unlock', 'map', 'server', 'round',
+        'army', 'kit', 'vehicle', 'weapon', 'unlock', 'map', 'server', 'game_mod', 'game_mode', 'round',
         'player', 'player_army', 'player_award', 'player_weapon', 'player_kit', 'player_kill',
         'player_map', 'player_rank_history', 'player_vehicle', 'player_unlock',
         'player_army_history', 'player_round_history', 'player_kill_history', 'player_kit_history',
@@ -36,7 +38,9 @@ class DatabaseModel
     ];
 
     /**
-     * @var array A list of tables that we can clear. Reverse order is important here (foreign keys)!
+     * @var array A list of tables that we can clear.
+     *
+     * @remarks Reverse order is important here (foreign keys)!
      */
     protected static $ClearTables = [
         'battlespy_message', 'battlespy_report', 'player_army_history', 'player_round_history', 'player_kill_history',

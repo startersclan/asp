@@ -45,10 +45,19 @@ class RoundInfoModel
     {
         // Fetch round
         $query = <<<SQL
-SELECT h.*, mi.name AS `name`, mi.displayname AS `map_display_name`, s.name AS `server`, s.ip AS `ip`, s.port AS `port`
+SELECT h.*, 
+  mi.name AS `name`, 
+  mi.displayname AS `map_display_name`, 
+  s.name AS `server`, 
+  s.ip AS `ip`, 
+  s.port AS `port`,
+  g.longname AS `modname`,
+  gm.name AS `gamemode`
 FROM round AS h 
   LEFT JOIN map AS mi ON h.map_id = mi.id 
   LEFT JOIN server AS s ON h.server_id = s.id
+  LEFT JOIN game_mod AS g on h.mod_id = g.id
+  LEFT JOIN game_mode AS gm on h.gamemode_id = gm.id
 WHERE h.id={$id}
 SQL;
         $round = $this->pdo->query($query)->fetch();
@@ -59,9 +68,8 @@ SQL;
         $round['name'] = strtolower($round['name']);
         $round['round_start_date'] = date('F jS, Y g:i A T', (int)$round['time_start']);
         $round['round_end_date'] = date('F jS, Y g:i A T', (int)$round['time_end']);
-        $round['gamemode'] = Battlefield2::GetGameModeString($round['gamemode']);
-        $round['team1name'] = $this->pdo->query("SELECT `name` FROM army WHERE id=". $round['team1'])->fetchColumn(0);
-        $round['team2name'] = $this->pdo->query("SELECT `name` FROM army WHERE id=". $round['team2'])->fetchColumn(0);
+        $round['team1name'] = $this->pdo->query("SELECT `name` FROM army WHERE id=". $round['team1_army_id'])->fetchColumn(0);
+        $round['team2name'] = $this->pdo->query("SELECT `name` FROM army WHERE id=". $round['team2_army_id'])->fetchColumn(0);
 
         // Set winning team name
         switch ((int)$round['winner'])
@@ -86,8 +94,8 @@ SQL;
         $result = $this->pdo->query($query);
         while ($row = $result->fetch())
         {
-            $team = (int)$row['team'];
-            if ($team == $round['team1'])
+            $armyId = (int)$row['army_id'];
+            if ($armyId == $round['team1_army_id'])
             {
                 $players1[] = $row;
             }
@@ -171,8 +179,8 @@ SQL;
                 {
                     $categories[$key]['id'] = $player['id'];
                     $categories[$key]['name'] = $player['name'];
-                    $categories[$key]['rank'] = $player['rank'];
-                    $categories[$key]['team'] = $player['team'];
+                    $categories[$key]['rank'] = $player['rank_id'];
+                    $categories[$key]['team'] = $player['army_id'];
                     $categories[$key]['value'] = $value;
                 }
             }
@@ -193,7 +201,7 @@ SQL;
         $return = [];
 
         $query = <<<SQL
-SELECT h.kills, h.deaths, h.time, h.kit_id, h.player_id, p.name, r.rank, r.team
+SELECT h.kills, h.deaths, h.time, h.kit_id, h.player_id, p.name, r.rank_id, r.army_id
 FROM player_kit_history AS h 
   LEFT JOIN player AS p ON p.id = h.player_id
   LEFT JOIN player_round_history AS r ON (r.round_id = h.round_id AND h.player_id = r.player_id)
@@ -212,8 +220,8 @@ SQL;
                     'id' => $id,
                     'pid' => $data['player_id'],
                     'name' => $data['name'],
-                    'rank' => $data['rank'],
-                    'team' => $data['team'],
+                    'rank' => $data['rank_id'],
+                    'team' => $data['army_id'],
                     'kills' => $data['kills'],
                     'deaths' => $data['deaths'],
                     'time' => $data['time'],
@@ -237,7 +245,7 @@ SQL;
         $return = [];
 
         $query = <<<SQL
-SELECT h.kills, h.deaths, h.time, h.vehicle_id, h.player_id, h.roadkills, p.name, r.rank, r.team
+SELECT h.kills, h.deaths, h.time, h.vehicle_id, h.player_id, h.roadkills, p.name, r.rank_id, r.army_id
 FROM player_vehicle_history AS h 
   LEFT JOIN player AS p ON h.player_id = p.id 
   LEFT JOIN player_round_history AS r ON (r.round_id = h.round_id AND h.player_id = r.player_id)
@@ -255,8 +263,8 @@ SQL;
                     'id' => $id,
                     'pid' => $data['player_id'],
                     'name' => $data['name'],
-                    'rank' => $data['rank'],
-                    'team' => $data['team'],
+                    'rank' => $data['rank_id'],
+                    'team' => $data['army_id'],
                     'kills' => $data['kills'],
                     'deaths' => $data['deaths'],
                     'time' => $data['time'],
@@ -286,11 +294,11 @@ SQL;
                 $commanders[] = [
                     'id' => $player['id'],
                     'name' => $player['name'],
-                    'rank' => $player['rank'],
+                    'rank' => $player['rank_id'],
                     'time' => $player['cmdtime'],
                     'time_string' => TimeHelper::SecondsToHms($player['cmdtime']),
                     'score' => $player['cmdscore'],
-                    'team' => $player['team']
+                    'team' => $player['army_id']
                 ];
             }
         }
@@ -345,7 +353,7 @@ SQL;
         // Load awards
         $query = <<<SQL
 SELECT pa.award_id AS `id`, pa.level AS `level`, a.type AS `type`, p.name AS `player_name`, p.id AS `player_id`, a.name AS `name`, 
-  h.team AS `team`, pa.round_id AS `rid`, h.rank AS `rank`
+  h.army_id AS `team`, pa.round_id AS `rid`, h.rank_id AS `rank`
 FROM player_award AS pa 
   LEFT JOIN player AS p ON pa.player_id = p.id
   LEFT JOIN award AS a ON pa.award_id = a.id

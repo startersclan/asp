@@ -73,12 +73,16 @@ class PlayerHistoryModel
         // Fetch round
         $query = <<<SQL
 SELECT ph.*, h.*, p.name, mi.name AS `mapname`, mi.displayname AS map_display_name, s.name AS `server`, 
-s.ip AS `ip`, s.port AS `port`, h.pids1_end + h.pids2_end AS `playerCount`, s.id AS `server_id`
+  s.ip AS `ip`, s.port AS `port`, s.id AS `server_id`, g.longname AS `modname`, gm.name AS `gamemode`, 
+  r2.name AS `rankName`, (SELECT COUNT(player_id) FROM player_round_history WHERE ph.round_id = {$rid}) AS `playerCount`
 FROM player_round_history AS ph 
   LEFT JOIN player AS p ON ph.player_id = p.id
   LEFT JOIN round AS h ON ph.round_id = h.id
   LEFT JOIN map AS mi ON h.map_id = mi.id 
   LEFT JOIN server AS s ON h.server_id = s.id
+  LEFT JOIN game_mod AS g on h.mod_id = g.id
+  LEFT JOIN game_mode AS gm on h.gamemode_id = gm.id
+  LEFT JOIN `rank` AS r2 on p.rank_id = r2.id
 WHERE player_id={$pid} AND round_id={$rid}
 SQL;
         return $this->pdo->query($query)->fetch();
@@ -164,10 +168,7 @@ SQL;
                     $score = (int)$value;
                     $data[$key] = number_format($score);
                     break;
-                case 'gamemode':
-                    $data[$key] = Battlefield2::GetGameModeString($value);
-                    break;
-                case 'team':
+                case 'army_id':
                     $val = (int)$value;
                     $data[$key] = $val;
                     $data['teamName'] = $this->pdo->query("SELECT `name` FROM army WHERE id=". $val)->fetchColumn(0);
@@ -192,9 +193,6 @@ SQL;
         // Set date formats
         $data['round_start_date'] = date('F jS, Y g:i A T', (int)$round['time_start']);
         $data['round_end_date'] = date('F jS, Y g:i A T', (int)$round['time_end']);
-
-        // Set rank name
-        $data['rankName'] = Battlefield2::GetRankName((int)$round['rank']);
 
         // Set round time
         $span = TimeSpan::FromSeconds((int)$round['time_end'] - (int)$round['time_start']);
@@ -603,7 +601,7 @@ SQL;
 
         // Query to fetch victims
         $query = <<<SQL
-SELECT p.id, pkh.count, p.name, rh.rank 
+SELECT p.id, pkh.count, p.name, rh.rank_id 
 FROM player_kill_history AS pkh 
   LEFT JOIN player_round_history AS rh ON (pkh.victim = rh.player_id AND pkh.round_id = rh.round_id)
   LEFT JOIN player AS p ON pkh.victim = p.id
@@ -622,21 +620,21 @@ SQL;
             {
                 $data['id'] = $pid;
                 $data['name'] = $row['name'];
-                $data['rank'] = $row['rank'];
+                $data['rank'] = $row['rank_id'];
                 $data['count'] = $count;
             }
 
             $victims[] = [
                 'id' => $pid,
                 'name' => $row['name'],
-                'rank' => $row['rank'],
+                'rank' => $row['rank_id'],
                 'count' => $count
             ];
         }
 
         // Query to fetch enemies
         $query = <<<SQL
-SELECT p.id, pkh.count, p.name, rh.rank 
+SELECT p.id, pkh.count, p.name, rh.rank_id
 FROM player_kill_history AS pkh 
   LEFT JOIN player_round_history AS rh ON (pkh.attacker = rh.player_id AND pkh.round_id = rh.round_id)
   LEFT JOIN player AS p ON pkh.attacker = p.id
@@ -655,14 +653,14 @@ SQL;
             {
                 $data['id'] = $pid;
                 $data['name'] = $row['name'];
-                $data['rank'] = $row['rank'];
+                $data['rank'] = $row['rank_id'];
                 $data['count'] = $count;
             }
 
             $enemies[] = [
                 'id' => $pid,
                 'name' => $row['name'],
-                'rank' => $row['rank'],
+                'rank' => $row['rank_id'],
                 'count' => $count
             ];
         }

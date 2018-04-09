@@ -120,6 +120,9 @@ class Snapshots extends Controller
                 // ignore
             }
 
+            // Log Exception!
+            System::LogException($e);
+
             // Output message
             $message = sprintf("Failed to process snapshot (%s)!\n\n%s", $fileName, $e->getMessage());
             $this->sendJsonResponse(false, $message);

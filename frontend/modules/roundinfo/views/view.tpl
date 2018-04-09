@@ -1,6 +1,6 @@
 <div class="mws-panel grid_2">
     <div class="mws-panel-header">
-        <span><i class="icon-map-marker"></i> {round.name}</span>
+        <span><i class="icon-map-marker"></i> {round.map_display_name}</span>
     </div>
     <div class="mws-panel-body no-padding" style="text-align: center">
         <img src="/ASP/frontend/images/maps/{round.name}.png">
@@ -29,7 +29,7 @@
             <li>
                 <span class="key"><i class="icon-folder-closed"></i> Game Mod</span>
                 <span class="val">
-					<span class="text-nowrap">{round.mod}</i></span>
+					<span class="text-nowrap">{round.modname}</i></span>
 				</span>
             </li>
             <li>
@@ -60,7 +60,7 @@
     <div class="mws-panel-body">
         <div class="table-container">
             <div class="left">
-                <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team1}.png"/>
+                <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team1_army_id}.png"/>
                 <br />
                 {round.team1name}
             </div>
@@ -68,7 +68,7 @@
                 <span style="font-weight: 900; font-size: 32px;">{round.tickets1} : {round.tickets2}</span>
             </div>
             <div class="right">
-                <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team2}.png"/>
+                <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team2_army_id}.png"/>
                 <br />
                 {round.team2name}
             </div>
@@ -126,7 +126,7 @@
 <div class="mws-panel grid_4 mws-collapsible clear">
     <div class="mws-panel-header">
         <span>
-            <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team1}.png"/>
+            <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team1_army_id}.png"/>
             {round.team1name}
         </span>
     </div>
@@ -147,7 +147,7 @@
             <tbody>
             {players1}
                 <tr>
-                    <td><img src="/ASP/frontend/images/ranks/rank_{rank}.gif"/></td>
+                    <td><img src="/ASP/frontend/images/ranks/rank_{rank_id}.gif"/></td>
                     <?php if ({player_id} == 0): ?>
                     <td>{name}</td>
                     <?php else: ?>
@@ -175,7 +175,7 @@
 <div class="mws-panel grid_4 mws-collapsible">
     <div class="mws-panel-header">
         <span>
-            <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team2}.png"/>
+            <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team2_army_id}.png"/>
             {round.team2name}
         </span>
     </div>
@@ -196,7 +196,7 @@
             <tbody>
             {players2}
                 <tr>
-                    <td><img src="/ASP/frontend/images/ranks/rank_{rank}.gif"/></td>
+                    <td><img src="/ASP/frontend/images/ranks/rank_{rank_id}.gif"/></td>
                     <?php if ({player_id} == 0): ?>
                     <td>{name}</td>
                     <?php else: ?>

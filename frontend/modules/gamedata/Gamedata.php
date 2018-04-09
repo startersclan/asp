@@ -35,6 +35,7 @@ class Gamedata extends Controller
         $kits = $pdo->query("SELECT * FROM kit ORDER BY id")->fetchAll();
         $vehicles = $pdo->query("SELECT * FROM vehicle ORDER BY id")->fetchAll();
         $weapons = $pdo->query("SELECT * FROM weapon ORDER BY id")->fetchAll();
+        $modes = $pdo->query("SELECT * FROM game_mode ORDER BY id")->fetchAll();
 
         // Add button type for armies
         for ($i = 0; $i < count($armies); $i++)
@@ -64,6 +65,13 @@ class Gamedata extends Controller
             $weapons[$i]['title'] = ($weapons[$i]['id'] > 17) ? 'Delete Weapon' : 'Cannot delete vanilla weapons';
         }
 
+        // Add button type for weapons
+        for ($i = 0; $i < count($modes); $i++)
+        {
+            $modes[$i]['bid'] = ($modes[$i]['id'] > 2) ? 'delete' : 'disable';
+            $modes[$i]['title'] = ($modes[$i]['id'] > 2) ? 'Delete Game Mode' : 'Cannot delete vanilla game modes';
+        }
+
 
         // Load view
         $view = new View('index', 'gamedata');
@@ -71,6 +79,7 @@ class Gamedata extends Controller
         $view->set('kits', $kits);
         $view->set('vehicles', $vehicles);
         $view->set('weapons', $weapons);
+        $view->set('modes', $modes);
 
         // Attach needed scripts for the form
         $view->attachScript("/ASP/frontend/js/jquery.form.js");
@@ -181,6 +190,54 @@ class Gamedata extends Controller
     }
 
     /**
+     * @protocol    ANY
+     * @request     /ASP/gamedata/mods
+     * @output      html
+     */
+    public function mods()
+    {
+        // Require database connection
+        $this->requireDatabase();
+
+        // Load data
+        $mods = [];
+        $pdo = Database::GetConnection('stats');
+        $result = $pdo->query("SELECT * FROM `game_mod` ORDER BY `id` ASC");
+        while ($row = $result->fetch())
+        {
+            $auth = (int)$row['authorized'];
+            if ($auth == 0)
+            {
+                $row['status_badge'] = 'important';
+                $row['status_text'] = 'Not Authorized';
+            }
+            else
+            {
+                $row['status_badge'] = 'success';
+                $row['status_text'] = 'Authorized';
+            }
+
+            $mods[] = $row;
+        }
+
+        // Load view
+        $view = new View('game_mods', 'gamedata');
+        $view->set('mods', $mods);
+
+        // Attach needed scripts for the form
+        $view->attachScript("/ASP/frontend/js/jquery.form.js");
+        $view->attachScript("/ASP/frontend/js/validate/jquery.validate-min.js");
+        $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");
+        $view->attachScript("/ASP/frontend/modules/gamedata/js/game_mods.js");
+
+        // Attach needed stylesheets
+        $view->attachStylesheet("/ASP/frontend/css/icons/icol16.css");
+
+        // Send output
+        $view->render();
+    }
+
+    /**
      * @protocol    POST
      * @request     /ASP/gamedata/add
      * @output      json
@@ -202,7 +259,7 @@ class Gamedata extends Controller
             // Define server id
             $id = (isset($_POST['itemId'])) ? (int)$items['itemId'] : 0;
             $name = preg_replace('/[^A-Za-z0-9_\-\s\t\/\.]/', '', trim($items['itemName']));
-            $type = preg_replace("/[^A-Za-z]/", '', $items['itemType']);
+            $type = preg_replace("/[^A-Za-z_]/", '', $items['itemType']);
 
             // Switch on our action base
             switch ($_POST['action'])
@@ -255,18 +312,21 @@ class Gamedata extends Controller
 
             // Get item id
             $itemId = (int)$items['itemId'];
-            $type = preg_replace("/[^A-Za-z]/", '', $items['itemType']);
+            $type = preg_replace("/[^A-Za-z_]/", '', $items['itemType']);
 
             // Perform identifier escapes
             $qType = $pdo->quoteIdentifier($type);
             $table = $pdo->quoteIdentifier("player_{$type}");
             $col = $pdo->quoteIdentifier("{$type}_id");
 
-            // Prepare statement
-            /** @noinspection SqlResolve */
-            $stmt = $pdo->prepare("DELETE FROM {$table} WHERE {$col}=:id");
-            $stmt->bindValue(':id', $itemId, PDO::PARAM_INT);
-            $stmt->execute();
+            if ($type != 'game_mode')
+            {
+                // Prepare statement
+                /** @noinspection SqlResolve */
+                $stmt = $pdo->prepare("DELETE FROM {$table} WHERE {$col}=:id");
+                $stmt->bindValue(':id', $itemId, PDO::PARAM_INT);
+                $stmt->execute();
+            }
 
             // Prepare statement
             /** @noinspection SqlResolve */
@@ -469,11 +529,65 @@ class Gamedata extends Controller
             $stmt->execute();
 
             // Echo success
-            $this->sendJsonResponse(true, '', ['unlockId' => $uId]);
+            $this->sendJsonResponse(true, 'Success', ['unlockId' => $uId]);
         }
         catch (Exception $e)
         {
             $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage());
+            die;
+        }
+    }
+
+    /**
+     * @protocol    POST
+     * @request     /ASP/gamedata/addMod
+     * @output      json
+     */
+    public function postAddMod()
+    {
+        // Require action
+        $this->requireAction('add', 'edit');
+
+        // Require database connection
+        $this->requireDatabase(true);
+        $pdo = Database::GetConnection('stats');
+
+        try
+        {
+            // Use a dictionary here to gain an exception on missing array item
+            $items = new Dictionary(false, $_POST);
+            $data = [
+                'name' => preg_replace('/[^A-Za-z0-9_]/', '', trim($items['shortName'])),
+                'longname' => preg_replace('/[^A-Za-z0-9_\-\s\t\/\.&\(\)]/', '', $items['longName']),
+                'authorized' => (int)$items['authorized']
+            ];
+
+            // Switch on our action base
+            switch ($_POST['action'])
+            {
+                case 'add':
+                    $pdo->insert('game_mod', $data);
+                    $date['id'] = $pdo->lastInsertId('id');
+                    $data['success'] = true;
+                    $data['mode'] = 'add';
+                    $data['status_badge'] = ($data['authorized']) ? 'success' : 'important';
+                    $data['status_text'] = ($data['authorized']) ? 'Authorized' : 'Not Authorized';
+                    echo json_encode($data);
+                    break;
+                case 'edit':
+                    $pdo->update('game_mod', $data, ['id' => (int)$items['originalId']]);
+                    $data['id'] = (int)$items['originalId'];
+                    $data['success'] = true;
+                    $data['mode'] = 'edit';
+                    $data['status_badge'] = ($data['authorized']) ? 'success' : 'important';
+                    $data['status_text'] = ($data['authorized']) ? 'Authorized' : 'Not Authorized';
+                    echo json_encode($data);
+                    break;
+            }
+        }
+        catch (Exception $e)
+        {
+            $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage(), ['lastQuery' => $pdo->lastQuery]);
             die;
         }
     }

@@ -30,7 +30,7 @@
             <li>
                 <span class="key"><i class="icon-folder-closed"></i> Game Mod</span>
                 <span class="val">
-					<span class="text-nowrap">{round.mod}</i></span>
+					<span class="text-nowrap">{round.modname}</i></span>
 				</span>
             </li>
             <li>
@@ -68,7 +68,7 @@
     <div class="mws-panel-body">
         <div class="table-container">
             <div class="left">
-                <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team1}.png"/>
+                <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team1_army_id}.png"/>
                 <br />
                 {round.team1name}
             </div>
@@ -76,7 +76,7 @@
                 <span style="font-weight: 900; font-size: 32px;">{round.tickets1} : {round.tickets2}</span>
             </div>
             <div class="right">
-                <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team2}.png"/>
+                <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team2_army_id}.png"/>
                 <br />
                 {round.team2name}
             </div>
@@ -138,7 +138,7 @@
                         <input id="report-{id}" type="checkbox">
                     </td>
                     <td><span class="badge badge-{badge}">{severity_name}</span></td>
-                    <td><img src="/ASP/frontend/images/ranks/rank_{rank}.gif"></td>
+                    <td><img src="/ASP/frontend/images/ranks/rank_{rank_id}.gif"></td>
                     <td>{name}</td>
                     <td>{message}</td>
                     <td>

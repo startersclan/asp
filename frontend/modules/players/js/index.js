@@ -110,6 +110,7 @@
                 width: "640",
                 resizable: false,
                 buttons: [{
+                    id: "form-submit-btn",
                     text: "Submit",
                     click: function () {
                         $(this).find('form#mws-validate').submit();
@@ -124,6 +125,7 @@
                 width: "640",
                 resizable: false,
                 buttons: [{
+                    id: "form-submit-btn2",
                     text: "Submit",
                     click: function () {
                         $(this).find('form#mws-validate-2').submit();
@@ -168,6 +170,7 @@
                     modal: true,
                     title: "Create New Player"
                 }).dialog("open");
+                $('#form-submit-btn').prop("disabled", false);
 
                 // Just to be sure, older IE's needs this
                 return false;
@@ -203,6 +206,7 @@
             {
                 $("#mws-validate-error").hide();
                 $('#jui-message').attr('class', 'alert loading').html("Submitting form data...").slideDown(200);
+                $('#form-submit-btn').prop("disabled", true);
                 return true;
             },
             success: function (response, statusText, xhr, $form) {
@@ -224,6 +228,9 @@
             error: function(request, status, error) {
                 $('#jui-message').attr('class', 'alert error').html('AJAX Error! Please check the console log.').slideDown(500);
             },
+            complete: function (jqXHR, textStatus) {
+                $('#form-submit-btn').prop("disabled", false);
+            },
             timeout: 5000
         });
 
@@ -235,6 +242,7 @@
             {
                 $("#mws-validate-error-2").hide();
                 $('#jui-message-2').attr('class', 'alert loading').html("Submitting form data...").slideDown(200);
+                $('#form-submit-btn2').prop("disabled", true);
                 return true;
             },
             success: function (response, statusText, xhr, $form) {
@@ -255,6 +263,9 @@
             },
             error: function(request, status, error) {
                 $('#jui-message-2').attr('class', 'alert error').html('AJAX Error! Please check the console log.').slideDown(500);
+            },
+            complete: function (jqXHR, textStatus) {
+                $('#form-submit-btn2').prop("disabled", false);
             },
             timeout: 5000
         });
@@ -284,6 +295,7 @@
             $('#jui-global-message')
                 .attr('class', 'alert loading')
                 .html("Refreshing Table Contents")
+                .append('<span class="close-bt"></span>')
                 .slideDown(500);
 
             // Reload page (temporary).
@@ -482,9 +494,8 @@
                             $('#jui-global-message')
                                 .attr('class', 'alert error')
                                 .html(result.message)
-                                .slideDown(500)
-                                .delay(5000)
-                                .fadeOut('slow');
+                                .append('<span class="close-bt"></span>')
+                                .slideDown(500);
                         }
                         else {
                             // Update html and button displays
@@ -500,18 +511,16 @@
                             $('#jui-global-message')
                                 .attr('class', 'alert error')
                                 .html(result.message)
-                                .slideDown(500)
-                                .delay(5000)
-                                .fadeOut('slow');
+                                .append('<span class="close-bt"></span>')
+                                .slideDown(500);
                         }
                         else
                         {
                             $('#jui-global-message')
                                 .attr('class', 'alert error')
                                 .html("An Error Occurred. Please check the ASP error log for details.")
-                                .slideDown(500)
-                                .delay(5000)
-                                .fadeOut('slow');
+                                .append('<span class="close-bt"></span>')
+                                .slideDown(500);
                         }
                     });
             }
@@ -525,9 +534,8 @@
                             $('#jui-global-message')
                                 .attr('class', 'alert error')
                                 .html(result.message)
-                                .slideDown(500)
-                                .delay(5000)
-                                .fadeOut('slow');
+                                .append('<span class="close-bt"></span>')
+                                .slideDown(500);
                         }
                         else {
                             // Update html and button displays
@@ -543,18 +551,16 @@
                             $('#jui-global-message')
                                 .attr('class', 'alert error')
                                 .html(result.message)
-                                .slideDown(500)
-                                .delay(5000)
-                                .fadeOut('slow');
+                                .append('<span class="close-bt"></span>')
+                                .slideDown(500);
                         }
                         else
                         {
                             $('#jui-global-message')
                                 .attr('class', 'alert error')
                                 .html("An Error Occurred. Please check the ASP error log for details.")
-                                .slideDown(500)
-                                .delay(5000)
-                                .fadeOut('slow');
+                                .append('<span class="close-bt"></span>')
+                                .slideDown(500);
                         }
                     });
             }

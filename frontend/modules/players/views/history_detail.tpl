@@ -11,13 +11,13 @@
             <div class="center">
                 <div class="table-container">
                     <div class="left">
-                        <img style="margin: -3px 0 0 5px; height: 64px;" src="/ASP/frontend/images/armies/large/{round.team1}.png"/>
+                        <img style="margin: -3px 0 0 5px; height: 64px;" src="/ASP/frontend/images/armies/large/{round.team1_army_id}.png"/>
                     </div>
                     <div class="center">
                         <span style="font-weight: 900; font-size: 32px;">{round.tickets1} : {round.tickets2}</span>
                     </div>
                     <div class="right">
-                        <img style="margin: -3px 0 0 5px; height: 64px;" src="/ASP/frontend/images/armies/large/{round.team2}.png"/>
+                        <img style="margin: -3px 0 0 5px; height: 64px;" src="/ASP/frontend/images/armies/large/{round.team2_army_id}.png"/>
                     </div>
                 </div>
             </div>
@@ -38,7 +38,7 @@
         <span>Player Information</span>
     </div>
     <div class="mws-panel-body no-padding">
-        <img src="/ASP/frontend/images/armies/wide/{round.team}.png"/>
+        <img src="/ASP/frontend/images/armies/wide/{round.army_id}.png"/>
     </div>
     <div class="mws-panel-body no-padding">
         <ul class="mws-summary clearfix">
@@ -57,7 +57,7 @@
                 <span class="key"><i class="icon-rating3"></i> Player Rank</span>
                 <span class="val">
 					<span class="text-nowrap">
-                        <img id="rankIcon" style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{round.rank}.gif"/>
+                        <img id="rankIcon" style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{round.rank_id}.gif"/>
                         <span id="changeableRank">{round.rankName}</span>
                     </span>
 				</span>
@@ -177,7 +177,7 @@
             <li>
                 <span class="key"><i class="icon-folder-closed"></i> Game Mod</span>
                 <span class="val">
-					<span class="text-nowrap">{round.mod}</i></span>
+					<span class="text-nowrap">{round.modname}</i></span>
 				</span>
             </li>
             <li>

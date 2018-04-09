@@ -64,7 +64,7 @@ class PlayerAjaxModel
             ['db' => 'id', 'dt' => 'id'],
             ['db' => 'name', 'dt' => 'name'],
             ['db' => 'online', 'dt' => 'status'],
-            ['db' => 'rank', 'dt' => 'rank',
+            ['db' => 'rank_id', 'dt' => 'rank',
                 'formatter' => function( $d, $row ) {
                     return "<img class='center' src=\"/ASP/frontend/images/ranks/rank_{$d}.gif\">";
                 }
@@ -174,7 +174,7 @@ class PlayerAjaxModel
                     return TimeHelper::SecondsToHms($i);
                 }
             ],
-            ['db' => 'team', 'dt' => 'team',
+            ['db' => 'army_id', 'dt' => 'team',
                 'formatter' => function( $d, $row ) {
                     return "<img class='center' src=\"/ASP/frontend/images/armies/small/{$d}.png\">";
                 }
@@ -185,7 +185,7 @@ class PlayerAjaxModel
                     return date('F jS, Y g:i A T', $i);
                 }
             ],
-            ['db' => 'rank', 'dt' => 'actions',
+            ['db' => 'rank_id', 'dt' => 'actions',
                 'formatter' => function( $d, $row ) {
                     $id = (int)$row['player_id'];
                     $rid = (int)$row['round_id'];
@@ -238,11 +238,11 @@ class PlayerAjaxModel
             $temp[$key] = 0;
         }
 
-        $query = "SELECT `imported` FROM player_round_history AS h LEFT JOIN round AS r ON h.round_id = r.id WHERE h.player_id = $playerId AND `imported` > $timestamp";
+        $query = "SELECT `time_end` FROM player_round_history AS h LEFT JOIN round AS r ON h.round_id = r.id WHERE h.player_id = $playerId AND `time_end` > $timestamp";
         $result = $this->pdo->query($query);
         while ($row = $result->fetch())
         {
-            $key = date("l (m/d)", (int)$row['imported']);
+            $key = date("l (m/d)", (int)$row['time_end']);
             $temp[$key] += 1;
         }
 
@@ -288,7 +288,7 @@ class PlayerAjaxModel
         $i = 0;
         foreach ($timeArrays as $start => $finish)
         {
-            $query = "SELECT COUNT(`player_id`) FROM player_round_history AS h LEFT JOIN round AS r ON h.round_id = r.id WHERE h.player_id = $playerId AND `imported` BETWEEN $start AND $finish";
+            $query = "SELECT COUNT(`player_id`) FROM player_round_history AS h LEFT JOIN round AS r ON h.round_id = r.id WHERE h.player_id = $playerId AND `time_end` BETWEEN $start AND $finish";
             $result = (int)$this->pdo->query($query)->fetchColumn(0);
 
             $output['month']['y'][] = array($i, $result);
@@ -328,7 +328,7 @@ class PlayerAjaxModel
         $i = 0;
         foreach ($timeArrays as $start => $finish)
         {
-            $query = "SELECT COUNT(`player_id`) FROM player_round_history AS h LEFT JOIN round AS r ON h.round_id = r.id WHERE h.player_id = $playerId AND `imported` BETWEEN $start AND $finish";
+            $query = "SELECT COUNT(`player_id`) FROM player_round_history AS h LEFT JOIN round AS r ON h.round_id = r.id WHERE h.player_id = $playerId AND `time_end` BETWEEN $start AND $finish";
             $result = (int)$this->pdo->query($query)->fetchColumn(0);
 
             $output['year']['y'][] = array($i, $result);

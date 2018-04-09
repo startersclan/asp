@@ -1,4 +1,9 @@
 <div id="jui-message" style="display: none;"></div>
+<div class="alert info">
+    <span class="close-bt"></span>
+    Here you can specify stat keys to match that of the Battlefield 2 server's constants.py file, which allows for a
+    mod support. Please note that you cannot delete hardcoded stats keys in the base Battlefield 2 game.
+</div>
 <div class="mws-panel grid_4 mws-collapsible">
     <div class="mws-panel-header">
         <span><i class="icon-flag"></i> Armies</span>
@@ -69,6 +74,43 @@
                     </td>
                 </tr>
                 {/kits}
+            </tody>
+        </table>
+    </div>
+</div>
+<div class="mws-panel grid_4 mws-collapsible">
+    <div class="mws-panel-header">
+        <span><i class="icon-sign-post"></i> Game Modes</span>
+    </div>
+    <div class="mws-panel-toolbar">
+        <div class="btn-toolbar">
+            <div class="btn-group">
+                <a id="add-new-game_mode" href="#" class="btn"><i class="icol-add"></i> Add New Game Mode</a>
+            </div>
+        </div>
+    </div>
+    <div class="mws-panel-body no-padding">
+        <table id="game_mode"  class="mws-table">
+            <thead>
+            <tr>
+                <th style="width: 7%;">ID</th>
+                <th>Name</th>
+                <th style="width: 10%;">Actions</th>
+            </tr>
+            </thead>
+            <tody>
+                {modes}
+                    <tr id="tr-vehicle-{id}">
+                        <td>{id}</td>
+                        <td>{name}</td>
+                        <td>
+                        <span class="btn-group">
+                            <a id="edit-game_mode-{id}" href="#"  rel="tooltip" title="Edit Name" class="btn btn-small"><i class="icon-pencil"></i></a>
+                            <a id="{bid}-game_mode-{id}" href="#" rel="tooltip" title="{title}" class="btn btn-small"><i class="icon-trash"></i></a>
+                        </span>
+                        </td>
+                    </tr>
+                {/modes}
             </tody>
         </table>
     </div>

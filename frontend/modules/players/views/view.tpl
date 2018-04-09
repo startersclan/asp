@@ -48,7 +48,7 @@
                 <span class="key"><i class="icon-rating3"></i> Player Rank</span>
                 <span class="val">
 					<span class="text-nowrap">
-                        <img id="rankIcon" style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{player.rank}.gif"/>
+                        <img id="rankIcon" style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{player.rank_id}.gif"/>
                         <span id="changeableRank">{player.rankName}</span>
                     </span>
 				</span>

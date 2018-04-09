@@ -84,7 +84,7 @@ class View
 
     /**
      * Array of template messages
-     * @var array[] ('level', 'message')
+     * @var array[] ('level', 'message', isClosable)
      */
     protected static $messages = array();
 
@@ -92,12 +92,13 @@ class View
      * Adds a message to be displayed in the Global Messages container of the layout
      *
      * @param string $message The string message to display to the client
+     * @param bool $isClosable Indicates whether the client is able to close this message
      *
      * @return void
      */
-    public static function ShowGlobalMessage($message)
+    public static function ShowGlobalMessage($message, $isClosable = true)
     {
-        self::$messages[] = array('global', $message);
+        self::$messages[] = array('global', $message, $isClosable);
     }
 
     /**
@@ -228,12 +229,13 @@ class View
      *
      * @param string $type The html class type ie: "error", "info", "warning" etc
      * @param string $message The string message to display to the client
+     * @param bool $isClosable Indicates whether the client is able to close this message
      *
      * @return void
      */
-    public function displayMessage($type, $message)
+    public function displayMessage($type, $message, $isClosable = true)
     {
-        self::$messages[] = array($type, $message);
+        self::$messages[] = array($type, $message, $isClosable);
     }
 
     /**
@@ -289,7 +291,12 @@ class View
             // Display Global Messages
             $buffer = '';
             foreach (self::$messages as $message)
-                $buffer .= "<div class=\"alert {$message[0]}\">" . $message[1] . "</div>" . PHP_EOL;
+            {
+
+                $buffer .= "<div class=\"alert {$message[0]}\">" . $message[1];
+                $buffer .= $message[2] ? '<span class="close-bt"></span>' : '';
+                $buffer .= "</div>" . PHP_EOL;
+            }
 
             $header = str_replace($this->LDelim . "GLOBAL_MESSAGES" . $this->RDelim, $buffer, $header);
         }

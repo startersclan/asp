@@ -80,7 +80,8 @@ SQL;
     {
         // Fetch report
         $query = <<<SQL
-SELECT r.*, rh.map_id, rh.time_end AS `timestamp`, s.name AS `server_name`, mi.name AS `mapname`, rh.time_end - rh.time_start AS `time`
+SELECT r.*, rh.map_id, rh.time_end AS `timestamp`, s.name AS `server_name`, mi.name AS `mapname`, 
+  rh.time_end - rh.time_start AS `time`
 FROM battlespy_report AS r
   LEFT JOIN round AS rh ON r.round_id = rh.id
   LEFT JOIN server AS s ON r.server_id = s.id
@@ -100,7 +101,7 @@ SQL;
 
         // Fetch report messages
         $messages = [];
-        $query = 'SELECT m.*, p.name, p.rank FROM battlespy_message AS m JOIN player AS p ON m.player_id = p.id WHERE report_id='. $id .' ORDER BY `severity` DESC';
+        $query = 'SELECT m.*, p.name, p.rank_id FROM battlespy_message AS m JOIN player AS p ON m.player_id = p.id WHERE report_id='. $id .' ORDER BY `severity` DESC';
         $results = $this->pdo->query($query);
 
         // Add css badge text

@@ -34,12 +34,14 @@
                     $('#jui-global-message')
                         .attr('class', 'alert error')
                         .html(result.message)
+                        .append('<span class="close-bt"></span>')
                         .slideDown(500);
                 }
                 else {
                     $('#jui-global-message')
                         .attr('class', 'alert success')
                         .html(result.message)
+                        .append('<span class="close-bt"></span>')
                         .slideDown(500);
                 }
 
@@ -50,6 +52,7 @@
                 $('#jui-global-message')
                     .attr('class', 'alert success')
                     .html(request.responseText)
+                    .append('<span class="close-bt"></span>')
                     .slideDown(500);
             },
             timeout: 5000

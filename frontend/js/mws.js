@@ -1,5 +1,11 @@
 $(document).ready(function() {
 
+    // Close buttons
+    $('.close-bt').live('click', function()
+    {
+        $(this).parent().fadeOut(500);
+    });
+
 	/* Collapsible Panels */
     $( '.mws-panel.mws-collapsible' ).each(function(i, element) {
         var p = $( element ),

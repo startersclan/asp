@@ -796,13 +796,12 @@ div#mws-error-container p
  * ================================================== */
 
 .alert {
-    width: 95%;
-    margin: 10px auto 9px;
+    margin: 10px 1% 9px;
 
     border: 1px solid;
     clear: both;
 
-    padding: 10px 10px 10px 35px;
+    padding: 10px 25px 10px 35px;
     -webkit-border-radius: 5px 5px 5px 5px;
     -moz-border-radius: 5px 5px 5px 5px;
     border-radius: 5px 5px 5px 5px;
@@ -828,12 +827,30 @@ div#mws-error-container p
     margin-bottom: 0;
 }
 
-.alert span.hide {
-    font-weight: bold;
-    text-shadow: 1px 1px 0 #FFFFFF;
-    float: right;
-    cursor: pointer;
+.alert span.close-bt {
+    display: block;
+    position: absolute;
+    top: 1em;
+    right: 1.5em;
+    font-size: 1em;
+    line-height: 1em;
+    width: 1em;
+    height: 1em;
+    padding: 0;
     margin: 0;
+    background: url(../../images/icons/fugue/cross-small.png) no-repeat center center;
+    cursor: pointer;
+    -moz-border-radius: 0.333em;
+    -webkit-border-radius: 0.333em;
+    -webkit-background-clip: padding-box;
+    border-radius: 0.333em;
+    opacity: 0.5;
+    filter: alpha(opacity=0.5);
+}
+
+.alert span.close-bt:hover {
+    opacity: 1;
+    filter: none;
 }
 
 .alert.global {

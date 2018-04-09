@@ -43,7 +43,10 @@ DROP TABLE IF EXISTS `vehicle`;
 DROP TABLE IF EXISTS `unlock`;
 DROP TABLE IF EXISTS `round_history`;
 DROP TABLE IF EXISTS `round`;
+DROP TABLE IF EXISTS `game_mod`;
+DROP TABLE IF EXISTS `game_mode`;
 DROP TABLE IF EXISTS `server`;
+DROP TABLE IF EXISTS `rank`;
 DROP TABLE IF EXISTS `mapinfo`;
 DROP TABLE IF EXISTS `map`;
 DROP TABLE IF EXISTS `kit`;
@@ -93,6 +96,28 @@ CREATE TABLE `award` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
+-- Table structure for table `game_mod`
+--
+
+CREATE TABLE `game_mod` (
+  `id` TINYINT UNSIGNED AUTO_INCREMENT,
+  `name` VARCHAR(24) UNIQUE NOT NULL,
+  `longname` VARCHAR(48) NOT NULL,
+  `authorized` TINYINT(1) NOT NULL DEFAULT 1, -- Indicates whether we allow this mod
+  PRIMARY KEY(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `game_mode`
+--
+
+CREATE TABLE `game_mode` (
+  `id` TINYINT UNSIGNED,
+  `name` VARCHAR(48) UNIQUE NOT NULL,
+  PRIMARY KEY(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
 -- Table structure for table `kit`
 --
 
@@ -114,6 +139,16 @@ CREATE TABLE `map` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
+-- Table structure for table `kit`
+--
+
+CREATE TABLE `rank` (
+  `id` TINYINT UNSIGNED,
+  `name` VARCHAR(32) NOT NULL,
+  PRIMARY KEY(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
 -- Table structure for table `server`
 --
 
@@ -129,7 +164,8 @@ CREATE TABLE `server` (
   `plasma` TINYINT(1) NOT NULL DEFAULT 0,
   `online` TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY(`id`),
-  CONSTRAINT `ip-port-unq` UNIQUE (`ip`, `port`)
+  CONSTRAINT `ip-port-unq` UNIQUE (`ip`, `port`),
+  CONSTRAINT `ip-queryport-unq` UNIQUE (`ip`, `queryport`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -140,25 +176,23 @@ CREATE TABLE `round` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `map_id` SMALLINT UNSIGNED NOT NULL,
   `server_id` SMALLINT UNSIGNED NOT NULL,
+  `mod_id` TINYINT UNSIGNED NOT NULL,
+  `gamemode_id` TINYINT UNSIGNED NOT NULL,
+  `team1_army_id` TINYINT UNSIGNED NOT NULL,      -- Team 1 Army ID
+  `team2_army_id` TINYINT UNSIGNED NOT NULL,      -- Team 2 Army ID
   `time_start` INT UNSIGNED NOT NULL,
   `time_end` INT UNSIGNED NOT NULL,
-  `imported` INT UNSIGNED NOT NULL,
-  `gamemode` TINYINT UNSIGNED NOT NULL,
-  `mod` VARCHAR(20) NOT NULL,
+  `time_imported` INT UNSIGNED NOT NULL,       -- Timestamp when the game was processed into database
   `winner` TINYINT NOT NULL,              -- Winning team (0 for none)
-  `team1` TINYINT UNSIGNED NOT NULL,      -- Team 1 Army ID
-  `team2` TINYINT UNSIGNED NOT NULL,      -- Team 2 Army ID
   `tickets1` SMALLINT UNSIGNED NOT NULL,  -- Remaining tickets on team1
   `tickets2` SMALLINT UNSIGNED NOT NULL,  -- Remaining tickets on team2
-  `pids1` SMALLINT UNSIGNED NOT NULL,     -- Players starting on team1
-  `pids1_end` SMALLINT UNSIGNED NOT NULL, -- Players ending on team1
-  `pids2` SMALLINT UNSIGNED NOT NULL,     -- Players starting on team2
-  `pids2_end` SMALLINT UNSIGNED NOT NULL, -- Players ending on team2
   PRIMARY KEY(`id`),
   FOREIGN KEY(`map_id`) REFERENCES map(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   FOREIGN KEY(`server_id`) REFERENCES server(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  FOREIGN KEY(`team1`) REFERENCES army(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  FOREIGN KEY(`team2`) REFERENCES army(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+  FOREIGN KEY(`mod_id`) REFERENCES game_mod(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY(`gamemode_id`) REFERENCES game_mode(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY(`team1_army_id`) REFERENCES army(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY(`team2_army_id`) REFERENCES army(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -170,7 +204,7 @@ CREATE TABLE `unlock` (
   `kit_id` TINYINT UNSIGNED NOT NULL,
   `name` VARCHAR(32) NOT NULL,
   `desc` VARCHAR(64) NOT NULL,
-  PRIMARY KEY (`id`),
+  PRIMARY KEY(`id`),
   FOREIGN KEY(`kit_id`) REFERENCES kit(`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -225,7 +259,7 @@ CREATE TABLE `player` (
   `lastonline` INT UNSIGNED NOT NULL DEFAULT 0,
   `time` INT UNSIGNED NOT NULL DEFAULT 0,
   `rounds` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-  `rank` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0,
+  `rank_id` TINYINT UNSIGNED NOT NULL,
   `score` MEDIUMINT NOT NULL DEFAULT 0,
   `cmdscore` MEDIUMINT NOT NULL DEFAULT 0,
   `skillscore` MEDIUMINT NOT NULL DEFAULT 0,
@@ -269,7 +303,8 @@ CREATE TABLE `player` (
   `permban` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
   `bantime` INT UNSIGNED NOT NULL DEFAULT 0,    -- Banned Timestamp
   `online` TINYINT(1) NOT NULL DEFAULT 0,
-  PRIMARY KEY(`id`)
+  PRIMARY KEY(`id`),
+  FOREIGN KEY(`rank_id`) REFERENCES `rank`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2900000 DEFAULT CHARSET=utf8;
 
 --
@@ -297,8 +332,8 @@ CREATE TRIGGER `player_joined` BEFORE INSERT ON `player`
 # Insert row into `player_rank_history` on rank change
 CREATE TRIGGER `player_rank_change` AFTER UPDATE ON `player`
   FOR EACH ROW BEGIN
-    IF new.rank != old.rank THEN
-      REPLACE INTO player_rank_history VALUES (new.id, new.rank, old.rank, UNIX_TIMESTAMP());
+    IF new.rank_id != old.rank_id THEN
+      REPLACE INTO player_rank_history VALUES (new.id, new.rank_id, old.rank_id, UNIX_TIMESTAMP());
     END IF;
   END $$
 
@@ -395,9 +430,9 @@ CREATE INDEX `idx_player_kit_id_kills_time` ON player_kit(`kit_id`, `kills`, `ti
 CREATE TABLE `player_round_history` (
   `player_id` INT UNSIGNED NOT NULL,
   `round_id` INT UNSIGNED NOT NULL,
-  `team` TINYINT UNSIGNED NOT NULL,
+  `army_id` TINYINT UNSIGNED NOT NULL,
   `time` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-  `rank` TINYINT(2) UNSIGNED NOT NULL DEFAULT 0, -- Rank at the end of the round, post ASP corrections!
+  `rank_id` TINYINT UNSIGNED NOT NULL, -- Rank at the end of the round, post ASP corrections!
   `score` SMALLINT NOT NULL DEFAULT 0,
   `cmdscore` SMALLINT NOT NULL DEFAULT 0,
   `skillscore` SMALLINT NOT NULL DEFAULT 0,
@@ -435,7 +470,8 @@ CREATE TABLE `player_round_history` (
   PRIMARY KEY(`player_id`, `round_id`),
   FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`round_id`) REFERENCES round(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY(`team`) REFERENCES army(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+  FOREIGN KEY(`army_id`) REFERENCES army(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY(`rank_id`) REFERENCES `rank`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- CREATE INDEX `idx_player_history_timestamp_score_pid` ON player_round_history(`timestamp`, `score`, `player_id`);
@@ -446,11 +482,13 @@ CREATE TABLE `player_round_history` (
 
 CREATE TABLE `player_rank_history` (
   `player_id` INT UNSIGNED NOT NULL,
-  `to_rank` SMALLINT UNSIGNED NOT NULL,
-  `from_rank` SMALLINT UNSIGNED NOT NULL,
+  `to_rank_id` TINYINT UNSIGNED NOT NULL,
+  `from_rank_id` TINYINT UNSIGNED NOT NULL,
   `timestamp` INT UNSIGNED NOT NULL,
   PRIMARY KEY(`player_id`,`timestamp`),
-  FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  FOREIGN KEY(`player_id`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`to_rank_id`) REFERENCES `rank`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  FOREIGN KEY(`from_rank_id`) REFERENCES `rank`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET utf8;
 
 --
@@ -607,33 +645,6 @@ CREATE TABLE `risingstar` (
 CREATE INDEX `idx_risingstar_pid` ON risingstar(`player_id`);
 
 --
--- Table structure for table `ip2nation`
---
-
-CREATE TABLE `ip2nation` (
-  `ip` INT UNSIGNED NOT NULL DEFAULT 0,
-  `country` char(2) NOT NULL DEFAULT '',
-  PRIMARY KEY(`ip`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `ip2nationcountries`
---
-
-CREATE TABLE `ip2nationcountries` (
-  `code` VARCHAR(4) NOT NULL DEFAULT '',
-  `iso_code_2` VARCHAR(2) NOT NULL DEFAULT '',
-  `iso_code_3` VARCHAR(3) DEFAULT '',
-  `iso_country` VARCHAR(255) NOT NULL DEFAULT '',
-  `country` VARCHAR(255) NOT NULL DEFAULT '',
-  `lat` float NOT NULL DEFAULT 0,
-  `lon` float NOT NULL DEFAULT 0,
-  PRIMARY KEY(`code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
 -- Table structure for table `battlespy_report`
 --
 
@@ -678,14 +689,16 @@ CREATE OR REPLACE VIEW `player_awards_view` AS
   GROUP BY a.player_id, a.award_id;
 
 CREATE OR REPLACE VIEW `round_history_view` AS
-  SELECT h.id AS `id`, mi.displayname AS `map`, h.time_end AS `round_end`, h.team1 AS `team1`, h.team2 AS `team2`, h.winner AS `winner`,
-    h.pids1 + h.pids2 AS `players`, GREATEST(h.tickets1, h.tickets2) AS `tickets`, s.name AS `server`
+  SELECT h.id AS `id`, mi.displayname AS `map`, h.time_end AS `round_end`, h.team1_army_id AS `team1`,
+    h.team2_army_id AS `team2`, h.winner AS `winner`,
+    GREATEST(h.tickets1, h.tickets2) AS `tickets`, s.name AS `server`,
+    (SELECT COUNT(*) FROM player_round_history WHERE round_id = h.id) AS `players`
   FROM `round` AS h
     LEFT JOIN map AS mi ON h.map_id = mi.id
     LEFT JOIN `server` AS s ON h.server_id = s.id;
 
 CREATE OR REPLACE VIEW `player_history_view` AS
-  SELECT ph.*, mi.name AS mapname, mi.displayname AS map_display_name, server.name AS name, rh.time_end, rh.pids1_end + rh.pids2_end AS `playerCount`
+  SELECT ph.*, mi.name AS mapname, mi.displayname AS map_display_name, server.name AS name, rh.time_end
   FROM player_round_history AS ph
     LEFT JOIN round AS rh ON ph.round_id = rh.id
     LEFT JOIN server ON rh.server_id = server.id
@@ -704,8 +717,8 @@ CREATE PROCEDURE `create_player`(
   OUT `pid` INT
 )
   BEGIN
-    INSERT INTO player(`id`, `name`, `password`, `country`, `lastip`)
-      VALUES(pid, playerName, playerPassword, countryCode, ipAddress);
+    INSERT INTO player(`id`, `name`, `password`, `country`, `lastip`, `rank_id`)
+      VALUES(pid, playerName, playerPassword, countryCode, ipAddress, 0);
     SELECT pid;
   END $$
 
@@ -865,6 +878,33 @@ INSERT INTO `kit` VALUES (5, 'Support');
 INSERT INTO `kit` VALUES (6, 'Sniper');
 
 --
+-- Dumping data for table `rank`
+--
+
+INSERT INTO `rank` VALUES (0, 'Private');
+INSERT INTO `rank` VALUES (1, 'Private First Class');
+INSERT INTO `rank` VALUES (2, 'Lance Corporal');
+INSERT INTO `rank` VALUES (3, 'Corporal');
+INSERT INTO `rank` VALUES (4, 'Sergeant');
+INSERT INTO `rank` VALUES (5, 'Staff Sergeant');
+INSERT INTO `rank` VALUES (6, 'Gunnery Sergeant');
+INSERT INTO `rank` VALUES (7, 'Master Sergeant');
+INSERT INTO `rank` VALUES (8, 'First Sergeant');
+INSERT INTO `rank` VALUES (9, 'Master Gunnery Sergeant');
+INSERT INTO `rank` VALUES (10, 'Sergeant Major');
+INSERT INTO `rank` VALUES (11, 'Sergeant Major of the Corp');
+INSERT INTO `rank` VALUES (12, '2nd Lieutenant');
+INSERT INTO `rank` VALUES (13, '1st Lieutenant');
+INSERT INTO `rank` VALUES (14, 'Captain');
+INSERT INTO `rank` VALUES (15, 'Major');
+INSERT INTO `rank` VALUES (16, 'Lieutenant Colonel');
+INSERT INTO `rank` VALUES (17, 'Colonel');
+INSERT INTO `rank` VALUES (18, 'Brigadier General');
+INSERT INTO `rank` VALUES (19, 'Major General');
+INSERT INTO `rank` VALUES (20, 'Lieutenant General');
+INSERT INTO `rank` VALUES (21, 'General');
+
+--
 -- Dumping data for table `unlock`
 --
 
@@ -919,9 +959,24 @@ INSERT INTO `weapon` VALUES (16, 'Zipline', 0, 1);
 INSERT INTO `weapon` VALUES (17, 'Tactical', 0, 1);
 
 --
+-- Dumping data for table `game_mod`
+--
+INSERT INTO `game_mod`(`id`, `name`, `longname`, `authorized`) VALUES (1, 'bf2', 'Battlefield 2', 1);
+INSERT INTO `game_mod`(`id`, `name`, `longname`, `authorized`) VALUES (2, 'xpack', 'Battlefield 2: Special Forces', 1);
+INSERT INTO `game_mod`(`id`, `name`, `longname`, `authorized`) VALUES (3, 'aix2', 'Allied Intent Extended 2.0', 0);
+INSERT INTO `game_mod`(`id`, `name`, `longname`, `authorized`) VALUES (4, 'naw', 'Nations At War', 0);
+
+--
+-- Dumping data for table `game_mode`
+--
+INSERT INTO `game_mode`(`id`, `name`) VALUES (0, 'Conquest');
+INSERT INTO `game_mode`(`id`, `name`) VALUES (1, 'Single Player');
+INSERT INTO `game_mode`(`id`, `name`) VALUES (2, 'Coop');
+
+--
 -- Dumping data for table `_version`
 --
-INSERT INTO `_version`(`updateid`, `version`) VALUES (30010, '3.0.1');
+INSERT INTO `_version`(`updateid`, `version`) VALUES (30010, '3.0.0');
 
 INSERT INTO `server`(`ip`, `prefix`, `name`, `port`, `queryport`) VALUES ('127.0.0.1', 'w212', 'Local Server 1', 16567, 29900);
 INSERT INTO `server`(`ip`, `prefix`, `name`, `port`, `queryport`) VALUES ('::1', 'w212', 'Local Server 2', 16567, 29900);

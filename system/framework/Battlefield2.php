@@ -46,13 +46,10 @@ class Battlefield2
      */
     public static function GetGameModeString($gamemode)
     {
-        switch ((int)$gamemode)
-        {
-            default: return "Unknown";
-            case 0: return "Conquest";
-            case 1: return "Single Player";
-            case 2: return "Coop";
-        }
+        $pdo = Database::GetConnection('stats');
+        $result = $pdo->query("SELECT `name` FROM `game_mode` WHERE id=". (int)$gamemode);
+        $name = $result->fetchColumn(0);
+        return ($name === false) ? 'Unknown' : $name;
     }
 
     /**
@@ -64,11 +61,9 @@ class Battlefield2
      */
     public static function GetRankName($rank)
     {
-        if (empty(self::$Ranks))
-        {
-            /** @noinspection PhpIncludeInspection */
-            self::$Ranks = include Path::Combine(SYSTEM_PATH, 'config', 'ranks.php');
-        }
-        return ($rank > count(self::$Ranks)) ? "Unknown ({$rank})" : self::$Ranks[$rank]['title'];
+        $pdo = Database::GetConnection('stats');
+        $result = $pdo->query("SELECT `name` FROM `rank` WHERE id=". (int)$rank);
+        $name = $result->fetchColumn(0);
+        return ($name === false) ? 'Unknown' : $name;
     }
 }

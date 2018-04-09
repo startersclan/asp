@@ -97,6 +97,7 @@ if (!function_exists('build_navigation'))
             $group->append('/ASP/gamedata', 'Manage Stat Keys');
             $group->append('/ASP/gamedata/awards', 'Manage Awards');
             $group->append('/ASP/gamedata/unlocks', 'Manage unlocks');
+            $group->append('/ASP/gamedata/mods', 'Manage Game Mods');
             $navigation->append($group);
         }
 

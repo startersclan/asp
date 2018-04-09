@@ -13,24 +13,34 @@ namespace System;
 class StatsData
 {
     /**
-     * @var int The number or army types in the database
+     * @var int The number of army types in the database
      */
     public static $NumArmies = 0;
 
     /**
-     * @var int The number or kit types in the database
+     * @var int The number of kit types in the database
      */
     public static $NumKits = 0;
 
     /**
-     * @var int The number or vehicle types in the database
+     * @var int The number of vehicle types in the database
      */
     public static $NumVehicles = 0;
 
     /**
-     * @var int The number or weapon types in the database
+     * @var int The number of weapon types in the database
      */
     public static $NumWeapons = 0;
+
+    /**
+     * @var int The number of gamemodes in the database
+     */
+    public static $NumGamemodes = 0;
+
+    /**
+     * @var int The number of ranks in the database
+     */
+    public static $NumRanks = 0;
 
     /**
      * @var string[] An array of ArmyId => Army String Name
@@ -53,6 +63,16 @@ class StatsData
     public static $WeaponNames = [];
 
     /**
+     * @var string[] An array of GamemodeId => Game Mode String Name
+     */
+    public static $GameModes = [];
+
+    /**
+     * @var string[] An array of RankId => Rank String Name
+     */
+    public static $RankNames = [];
+
+    /**
      * Loads the stats data from the database if it has not been previously
      * called
      */
@@ -64,28 +84,52 @@ class StatsData
             $pdo = Database::GetConnection('stats');
 
             // Load armies
-            $result = $pdo->query("SELECT name FROM army")->fetchAll();
-            self::$NumArmies = count($result);
-            for ($i = 0; $i < self::$NumArmies; $i++)
-                self::$ArmyNames[] = $result[$i]['name'];
+            $result = $pdo->query("SELECT name FROM army ORDER BY id ASC");
+            while ($row = $result->fetch())
+            {
+                self::$ArmyNames[] = $row['name'];
+                self::$NumArmies++;
+            }
 
             // Load kits
-            $result = $pdo->query("SELECT name FROM kit")->fetchAll();
-            self::$NumKits = count($result);
-            for ($i = 0; $i < self::$NumKits; $i++)
-                self::$KitNames[] = $result[$i]['name'];
+            $result = $pdo->query("SELECT name FROM kit ORDER BY id ASC");
+            while ($row = $result->fetch())
+            {
+                self::$KitNames[] = $row['name'];
+                self::$NumKits++;
+            }
 
             // Load vehicles
-            $result = $pdo->query("SELECT name FROM vehicle")->fetchAll();
-            self::$NumVehicles = count($result);
-            for ($i = 0; $i < self::$NumVehicles; $i++)
-                self::$VehicleNames[] = $result[$i]['name'];
+            $result = $pdo->query("SELECT name FROM vehicle ORDER BY id ASC");
+            while ($row = $result->fetch())
+            {
+                self::$VehicleNames[] = $row['name'];
+                self::$NumVehicles++;
+            }
 
             // Load weapons
-            $result = $pdo->query("SELECT name FROM weapon")->fetchAll();
-            self::$NumWeapons = count($result);
-            for ($i = 0; $i < self::$NumWeapons; $i++)
-                self::$WeaponNames[] = $result[$i]['name'];
+            $result = $pdo->query("SELECT name FROM weapon ORDER BY id ASC");
+            while ($row = $result->fetch())
+            {
+                self::$WeaponNames[] = $row['name'];
+                self::$NumWeapons++;
+            }
+
+            // Load Game Modes
+            $result = $pdo->query("SELECT name FROM game_mode ORDER BY id ASC");
+            while ($row = $result->fetch())
+            {
+                self::$GameModes[] = $row['name'];
+                self::$NumGamemodes++;
+            }
+
+            // Load Ranks
+            $result = $pdo->query("SELECT name FROM `rank` ORDER BY id ASC");
+            while ($row = $result->fetch())
+            {
+                self::$RankNames[] = $row['name'];
+                self::$NumRanks++;
+            }
         }
     }
 }

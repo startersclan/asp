@@ -54,8 +54,11 @@ class RoundInfoAjaxModel
             ['db' => 'server', 'dt' => 'server'],
             ['db' => 'winner', 'dt' => 'winner',
                 'formatter' => function( $d, $row ) {
+                    $id = (int)$d;
+                    if ($id == 0)
+                        return "<img class='center' src=\"/ASP/frontend/images/armies/small/-1.png\">";
 
-                    $w = $row['team'. $d];
+                    $w = $row["team{$id}"];
                     return "<img class='center' src=\"/ASP/frontend/images/armies/small/{$w}.png\">";
                 }
             ],

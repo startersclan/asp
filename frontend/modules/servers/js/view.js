@@ -51,6 +51,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
                     else {
@@ -65,18 +66,16 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
-                            .slideDown(500)
-                            .delay(5000)
-                            .fadeOut('slow');
+                            .append('<span class="close-bt"></span>')
+                            .slideDown(500);
                     }
                     else
                     {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html("An Error Occurred. Please check the ASP error log for details.")
-                            .slideDown(500)
-                            .delay(5000)
-                            .fadeOut('slow');
+                            .append('<span class="close-bt"></span>')
+                            .slideDown(500);
                     }
                 });
 
@@ -100,6 +99,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
                     else {
@@ -114,18 +114,16 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
-                            .slideDown(500)
-                            .delay(5000)
-                            .fadeOut('slow');
+                            .append('<span class="close-bt"></span>')
+                            .slideDown(500);
                     }
                     else
                     {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html("An Error Occurred. Please check the ASP error log for details.")
-                            .slideDown(500)
-                            .delay(5000)
-                            .fadeOut('slow');
+                            .append('<span class="close-bt"></span>')
+                            .slideDown(500);
                     }
                 });
 
@@ -149,6 +147,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
                     else {
@@ -164,18 +163,16 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
-                            .slideDown(500)
-                            .delay(5000)
-                            .fadeOut('slow');
+                            .append('<span class="close-bt"></span>')
+                            .slideDown(500);
                     }
                     else
                     {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html("An Error Occurred. Please check the ASP error log for details.")
-                            .slideDown(500)
-                            .delay(5000)
-                            .fadeOut('slow');
+                            .append('<span class="close-bt"></span>')
+                            .slideDown(500);
                     }
                 });
 
@@ -199,6 +196,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
                     else {
@@ -214,18 +212,16 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
-                            .slideDown(500)
-                            .delay(5000)
-                            .fadeOut('slow');
+                            .append('<span class="close-bt"></span>')
+                            .slideDown(500);
                     }
                     else
                     {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html("An Error Occurred. Please check the ASP error log for details.")
-                            .slideDown(500)
-                            .delay(5000)
-                            .fadeOut('slow');
+                            .append('<span class="close-bt"></span>')
+                            .slideDown(500);
                     }
                 });
 
@@ -407,10 +403,11 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html("Received empty response from AJAX request.")
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
                     // Parse response
-                    else if (result.success == true) {
+                    else if (result.success === true) {
 
                         // If the server is offline, show that.
                         if (!result.online) {
@@ -475,6 +472,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
 
                         // Fill the rest of the screen
@@ -486,6 +484,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html("Request Timed Out.")
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
                 }

@@ -69,7 +69,7 @@ class PlayerModel
         return $this->pdo->insert('player', [
             'name' => $name,
             'password' => md5(trim($password)),
-            'rank' => (int)$rank,
+            'rank_id' => (int)$rank,
             'email' => trim($email),
             'country' => $iso
         ]);
@@ -129,7 +129,7 @@ class PlayerModel
     {
         // Fetch player
         $query = <<<SQL
-SELECT `name`, `rank`, `email`, `joined`, `time`, `lastonline`, `score`, `skillscore`, `cmdscore`, `teamscore`, 
+SELECT `name`, `rank_id`, `email`, `joined`, `time`, `lastonline`, `score`, `skillscore`, `cmdscore`, `teamscore`, 
   `kills`, `deaths`, `teamkills`, `kicked`, `banned`, `permban`, `heals`, `repairs`, `resupplies`, `revives`,
   `captures`, `captureassists`, `defends`, `country`, `driverspecials`, `neutralizes`, `neutralizeassists`,
   `damageassists`, `rounds`, `wins`, `losses`, `cmdtime`, `sqmtime`, `sqltime`, `lwtime`, `suicides`, 
@@ -171,6 +171,7 @@ SQL;
             $query = new UpdateOrInsertQuery($this->pdo, 'player');
             $query->set('time', '=', 0);
             $query->set('rounds', '=', 0);
+            $query->set('rank_id', '=', 0);
             $query->set('score', '=', 0);
             $query->set('cmdscore', '=', 0);
             $query->set('skillscore', '=', 0);
@@ -195,7 +196,6 @@ SQL;
             $query->set('teamdamage', '=', 0);
             $query->set('teamvehicledamage', '=', 0);
             $query->set('suicides', '=', 0);
-            $query->set('rank', '=', 0);
             $query->set('cmdtime', '=', 0);
             $query->set('sqltime', '=', 0);
             $query->set('sqmtime', '=', 0);
@@ -805,7 +805,7 @@ SQL;
         $data['WLRatioColor'] = ($data['WLRatio2'] > 0.99) ? "green" : "red";
 
         // Set rank name
-        $data['rankName'] = Battlefield2::GetRankName((int)$player['rank']);
+        $data['rankName'] = Battlefield2::GetRankName((int)$player['rank_id']);
 
         // Calculate SPM
         $data['spm'] = ($time > 0) ? number_format( $score / ($time / 60), 3 ) : 0;
@@ -911,13 +911,13 @@ SQL;
         {
             $victim = $row['victim'];
             $count = $row['count'];
-            $result = $this->pdo->query("SELECT name, rank FROM player WHERE id={$victim}");
+            $result = $this->pdo->query("SELECT name, rank_id FROM player WHERE id={$victim}");
             if ($row = $result->fetch())
             {
                 $data = [
                     'id' => $victim,
                     'name' => $row['name'],
-                    'rank' => $row['rank'],
+                    'rank' => $row['rank_id'],
                     'count' => $count
                 ];
                 $view->set('favVictim', $data);
@@ -940,13 +940,13 @@ SQL;
         {
             $attacker = $row['attacker'];
             $count = $row['count'];
-            $result = $this->pdo->query("SELECT name, rank FROM player WHERE id={$attacker}");
+            $result = $this->pdo->query("SELECT name, rank_id FROM player WHERE id={$attacker}");
             if ($row = $result->fetch())
             {
                 $data = [
                     'id' => $attacker,
                     'name' => $row['name'],
-                    'rank' => $row['rank'],
+                    'rank' => $row['rank_id'],
                     'count' => $count
                 ];
                 $view->set('worstOp', $data);
@@ -1113,7 +1113,7 @@ SQL;
                     $exists = $this->pdo->query("SELECT id FROM player WHERE name={$name} LIMIT 1")->fetchColumn(0);
                     if ($exists === false)
                     {
-                        $query = "INSERT INTO `player`(`name`, `country`, `email`, `password`) VALUES ({$name}, 'US', 'bot@botNames.ai', '')";
+                        $query = "INSERT INTO `player`(`name`, `country`, `email`, `password`, `rank_id`) VALUES ({$name}, 'US', 'bot@botNames.ai', '', 0)";
                         $this->pdo->exec($query);
                         $imported++;
                     }

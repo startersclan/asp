@@ -89,6 +89,7 @@
                 width: "640",
                 resizable: false,
                 buttons: [{
+                    id: "form-submit-btn",
                     text: "Submit",
                     click: function () {
                         $(this).find('form#mws-validate').submit();
@@ -166,6 +167,7 @@
             },
             beforeSubmit: function (arr, data, options) {
                 $('#jui-message').attr('class', 'alert loading').html("Submitting form data...").slideDown(200);
+                $('#form-submit-btn').prop("disabled", true);
                 return true;
             },
             success: function (response, statusText, xhr, $form) {
@@ -200,6 +202,9 @@
             error: function(request, status, error) {
                 $('#jui-message').attr('class', 'alert error').html('AJAX Error! Please check the console log.').slideDown(500);
             },
+            complete: function (jqXHR, textStatus) {
+                $('#form-submit-btn').prop("disabled", false);
+            },
             timeout: 5000
         });
 
@@ -232,6 +237,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
                     else {
@@ -250,6 +256,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
                     else
@@ -257,6 +264,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html("An Error Occurred. Please check the ASP error log for details.")
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
                 });
@@ -279,6 +287,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
                     else {
@@ -305,6 +314,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
                     else
@@ -312,6 +322,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html("An Error Occurred. Please check the ASP error log for details.")
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
                 });
@@ -344,6 +355,7 @@
                                         $('#jui-global-message')
                                             .attr('class', 'alert error')
                                             .html(result.message)
+                                            .append('<span class="close-bt"></span>')
                                             .slideDown(500);
                                     }
                                     else {
@@ -358,6 +370,7 @@
                                         $('#jui-global-message')
                                             .attr('class', 'alert error')
                                             .html(result.message)
+                                            .append('<span class="close-bt"></span>')
                                             .slideDown(500);
                                     }
                                     else
@@ -365,6 +378,7 @@
                                         $('#jui-global-message')
                                             .attr('class', 'alert error')
                                             .html("An Error Occurred. Please check the ASP error log for details.")
+                                            .append('<span class="close-bt"></span>')
                                             .slideDown(500);
                                     }
                                 });
@@ -412,6 +426,7 @@
                                         $('#jui-global-message')
                                             .attr('class', 'alert error')
                                             .html(result.message)
+                                            .append('<span class="close-bt"></span>')
                                             .slideDown(500);
                                     }
                                     else {
@@ -426,6 +441,7 @@
                                         $('#jui-global-message')
                                             .attr('class', 'alert error')
                                             .html(result.message)
+                                            .append('<span class="close-bt"></span>')
                                             .slideDown(500);
                                     }
                                     else
@@ -433,6 +449,7 @@
                                         $('#jui-global-message')
                                             .attr('class', 'alert error')
                                             .html("An Error Occurred. Please check the ASP error log for details.")
+                                            .append('<span class="close-bt"></span>')
                                             .slideDown(500);
                                     }
                                 });
@@ -454,9 +471,6 @@
 
             // Just to be sure, older IE's needs this
             return false;
-
-            // Just to be sure, older IE's needs this
-            return false;
         });
 
         // Reset Unlocks Button Click
@@ -473,12 +487,14 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
                     else {
                         $('#jui-global-message')
                             .attr('class', 'alert success')
                             .html("Player unlocks were successfully reset.")
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
 
@@ -492,6 +508,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
                     else
@@ -499,6 +516,7 @@
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html("An Error Occurred. Please check the ASP error log for details.")
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
 

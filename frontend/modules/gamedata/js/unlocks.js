@@ -71,6 +71,7 @@
                 width: "640",
                 resizable: false,
                 buttons: [{
+                    id: "form-submit-btn",
                     text: "Submit",
                     click: function () {
                         $(this).find('form#mws-validate').submit();
@@ -112,6 +113,7 @@
                     modal: true,
                     title: "Create New Unlock"
                 }).dialog("open");
+                $('#form-submit-btn').prop("disabled", false);
 
                 // Just to be sure, older IE's needs this
                 return false;
@@ -126,6 +128,7 @@
             {
                 $('#mws-validate-error').hide();
                 $('#jui-message').attr('class', 'alert loading').html("Submitting form data...").slideDown(200);
+                $('#form-submit-btn').prop("disabled", true);
                 return true;
             },
             success: function (response, statusText, xhr, $form) {
@@ -230,8 +233,9 @@
                 // Show dialog form
                 $("#editor-form").dialog("option", {
                     modal: true,
-                    title: 'Update Existing Award'
+                    title: 'Update Existing Unlock'
                 }).dialog("open");
+                $('#form-submit-btn').prop("disabled", false);
             }
             else if (action == 'delete') {
                 // Show dialog form

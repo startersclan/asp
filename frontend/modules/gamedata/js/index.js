@@ -39,6 +39,7 @@
                 width: "640",
                 resizable: false,
                 buttons: [{
+                    id: "form-submit-btn",
                     text: "Submit",
                     click: function () {
                         $(this).find('form#mws-validate').submit();
@@ -148,18 +149,16 @@
                                     $('#jui-message')
                                         .attr('class', 'alert error')
                                         .html(result.message)
-                                        .slideDown(500)
-                                        .delay(5000)
-                                        .fadeOut('slow');
+                                        .append('<span class="close-bt"></span>')
+                                        .slideDown(500);
                                 }
                                 else
                                 {
                                     $('#jui-message')
                                         .attr('class', 'alert error')
                                         .html("An Error Occurred. Please check the ASP error log for details.")
-                                        .slideDown(500)
-                                        .delay(5000)
-                                        .fadeOut('slow');
+                                        .append('<span class="close-bt"></span>')
+                                        .slideDown(500);
                                 }
                             });
 
@@ -207,6 +206,7 @@
             beforeSubmit: function (arr, data, options)
             {
                 $("#mws-validate-error").hide();
+                $('#form-submit-btn').prop("disabled", true);
                 return true;
             },
             success: function (response, statusText, xhr, $form) {
@@ -246,10 +246,13 @@
             error: function(request, status, error) {
                 $('#jui-message').attr('class', 'alert error').html('AJAX Error! Please check the console log.').slideDown(500);
             },
+            complete: function (jqXHR, textStatus) {
+                $('#form-submit-btn').prop("disabled", false);
+            },
             timeout: 5000
         });
 
-        var items = ['army', 'kit', 'vehicle', 'weapon'];
+        var items = ['army', 'kit', 'vehicle', 'weapon', 'game_mode'];
         for (var i = 0; i < items.length; i++)
         {
             var item = items[i];
