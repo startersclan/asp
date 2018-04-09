@@ -33,10 +33,20 @@
                         ajax: true,
                         showBots: (showBots) ? 1 : 0
                     });
+                },
+                beforeSend: function() {
+                    $('.loading-cell').css('background-image', 'url(/ASP/frontend/images/core/alerts/loading2.gif)');
+                },
+                complete: function(jqXHR, textStatus) {
+                    if (textStatus === "success")
+                        $('.loading-cell').css('background-image', 'url(/ASP/frontend/images/core/alerts/tick-circle.png)');
+                    else
+                        $('.loading-cell').css('background-image', 'url(/ASP/frontend/images/core/alerts/exclamation.png)');
                 }
             },
-            order: [[ 3, "desc" ]], // Order by global score
+            order: [[ 4, "desc" ]], // Order by global score
             columns: [
+                { "data": "check" },
                 { "data": "id" },
                 { "data": "rank" },
                 { "data": "name" },
@@ -48,12 +58,13 @@
                 { "data": "actions" }
             ],
             columnDefs: [
-                { "searchable": false, "targets": 1 },
-                { "searchable": false, "targets": 3 },
-                { "searchable": false, "targets": 5 },
+                { "searchable": false, "orderable": false, "targets": 0 },
+                { "searchable": false, "targets": 2 },
+                { "searchable": false, "targets": 4 },
                 { "searchable": false, "targets": 6 },
                 { "searchable": false, "targets": 7 },
-                { "searchable": false, "orderable": false, "targets": 8 }
+                { "searchable": false, "targets": 8 },
+                { "searchable": false, "orderable": false, "targets": 9 }
             ]
         }).on( 'draw.dt', function () {
             //noinspection JSUnresolvedVariable

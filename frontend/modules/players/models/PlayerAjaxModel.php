@@ -61,6 +61,11 @@ class PlayerAjaxModel
     public function getPlayerList($data)
     {
         $columns = [
+            ['db' => 'id', 'dt' => 'check',
+                'formatter' => function( $d, $row ) {
+                    return "<input type=\"checkbox\">";
+                }
+            ],
             ['db' => 'id', 'dt' => 'id'],
             ['db' => 'name', 'dt' => 'name'],
             ['db' => 'online', 'dt' => 'status'],

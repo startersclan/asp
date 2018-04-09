@@ -43,6 +43,11 @@ class RoundInfoAjaxModel
     public function getRoundList($data)
     {
         $columns = [
+            ['db' => 'id', 'dt' => 'check',
+                'formatter' => function( $d, $row ) {
+                    return "<input type=\"checkbox\">";
+                }
+            ],
             ['db' => 'id', 'dt' => 'id'],
             ['db' => 'round_end', 'dt' => 'round_end',
                 'formatter' => function( $d, $row ) {

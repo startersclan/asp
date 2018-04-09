@@ -1,7 +1,7 @@
 <div id="jui-global-message" class="alert" style="display: none;"></div>
 <div class="mws-panel grid_2">
     <div class="mws-panel-header">
-        <span><i class="icon-map-marker"></i> {round.name}</span>
+        <span><i class="icon-map-marker"></i> {round.map_display_name}</span>
     </div>
     <div class="mws-panel-body no-padding" style="text-align: center">
         <img src="/ASP/frontend/images/maps/<?php echo strtolower('{round.name}'); ?>.png">
@@ -24,7 +24,7 @@
             <li>
                 <span class="key"><i class="icon-globe"></i>Map Name</span>
                 <span class="val">
-					<span class="text-nowrap">{round.name}</span>
+					<span class="text-nowrap">{round.map_display_name}</span>
 				</span>
             </li>
             <li>

@@ -113,6 +113,14 @@
     background-image: url(../../images/core/sort_desc.png);
 }
 
+.dataTables_wrapper table thead th span.loading-cell
+{
+    background-image: url(../../images/core/alerts/loading2.gif);
+    background-position: center;
+    background-repeat: no-repeat;
+    padding-left: 15px;
+}
+
 .dataTables_wrapper:before,
 .dataTables_wrapper:after {
     content: '.';

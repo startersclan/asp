@@ -19,6 +19,7 @@
         <table class="mws-datatable-fn mws-table">
             <thead>
             <tr>
+                <th style="width: 3%"><span class="loading-cell"></span></th>
                 <th style="width: 7%">PID</th>
                 <th style="width: 5%">Rank</th>
                 <th>Name</th>
