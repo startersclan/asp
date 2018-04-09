@@ -7,7 +7,6 @@
  * License:      GNU GPL v3
  *
  */
-use System\Battlefield2;
 use System\StatsData;
 use System\TimeHelper;
 use System\View;

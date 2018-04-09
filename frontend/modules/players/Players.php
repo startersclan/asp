@@ -176,7 +176,7 @@ class Players extends Controller
         else
         {
             // Grab database connection
-            $this->requireDatabase(true);
+            $this->requireDatabase();
 
             // Attach Model
             $this->loadModel("PlayerHistoryModel", 'players');
@@ -475,6 +475,11 @@ class Players extends Controller
      * @protocol    POST
      * @request     /ASP/players/history
      * @output      json
+     *
+     * @param int $id
+     * @param int $subid
+     *
+     * @throws Exception
      */
     public function postHistory($id = 0, $subid = 0)
     {

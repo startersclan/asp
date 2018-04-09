@@ -575,12 +575,12 @@ class ServerModel
         }
         else
         {
-            $rows = $this->pdo->query("SELECT name, rank FROM player WHERE id={$id} LIMIT 1");
+            $rows = $this->pdo->query("SELECT name, rank_id FROM player WHERE id={$id} LIMIT 1");
             if ($row = $rows->fetch())
             {
                 $sn = strtolower(trim($player['player']));
                 $dn = strtolower(trim($row['name']));
-                $player['rank'] = ($dn == $sn) ? (int)$row['rank'] : 0;
+                $player['rank'] = ($dn == $sn) ? (int)$row['rank_id'] : 0;
             }
             else
             {
@@ -625,11 +625,11 @@ class ServerModel
             $totalCounts[$key] = 0;
         }
 
-        $query = "SELECT `imported`, `server_id` FROM round WHERE `imported` > $timestamp";
+        $query = "SELECT `time_imported`, `server_id` FROM round WHERE `time_imported` > $timestamp";
         $result = $this->pdo->query($query);
         while ($row = $result->fetch())
         {
-            $key = date("l (m/d)", (int)$row['imported']);
+            $key = date("l (m/d)", (int)$row['time_imported']);
             $totalCounts[$key] += 1;
 
             if ($row['server_id'] == $serverId)
@@ -686,14 +686,14 @@ class ServerModel
         foreach ($timeArrays as $start => $finish)
         {
             // Server
-            $query = "SELECT COUNT(`imported`) FROM round WHERE server_id = $serverId AND `imported` BETWEEN $start AND $finish";
+            $query = "SELECT COUNT(`time_imported`) FROM round WHERE server_id = $serverId AND `time_imported` BETWEEN $start AND $finish";
             $result = (int)$this->pdo->query($query)->fetchColumn(0);
 
             $output['month']['y']['server'][] = array($i, $result);
             $output['month']['x']['server'][] = array($i, $serverCounts[$i]);
 
             // Total
-            $query = "SELECT COUNT(`imported`) FROM round WHERE `imported` BETWEEN $start AND $finish";
+            $query = "SELECT COUNT(`time_imported`) FROM round WHERE `time_imported` BETWEEN $start AND $finish";
             $result = (int)$this->pdo->query($query)->fetchColumn(0);
 
             $output['month']['y']['total'][] = array($i, $result);
@@ -734,14 +734,14 @@ class ServerModel
         foreach ($timeArrays as $start => $finish)
         {
             // Server
-            $query = "SELECT COUNT(`imported`) FROM round WHERE server_id = $serverId AND `imported` BETWEEN $start AND $finish";
+            $query = "SELECT COUNT(`time_imported`) FROM round WHERE server_id = $serverId AND `time_imported` BETWEEN $start AND $finish";
             $result = (int)$this->pdo->query($query)->fetchColumn(0);
 
             $output['year']['y']['server'][] = array($i, $result);
             $output['year']['x']['server'][] = array($i, $serverCounts[$i]);
 
             // Total
-            $query = "SELECT COUNT(`imported`) FROM round WHERE `imported` BETWEEN $start AND $finish";
+            $query = "SELECT COUNT(`time_imported`) FROM round WHERE `time_imported` BETWEEN $start AND $finish";
             $result = (int)$this->pdo->query($query)->fetchColumn(0);
 
             $output['year']['y']['total'][] = array($i, $result);
