@@ -19,7 +19,7 @@ $(document).ready(function() {
     }
 
     if ($.fn.validate) {
-        $form = $("#configForm").validate({
+        $("#configForm").validate({
             ignoreTitle: true,
             rules: {
                 cfg__db_port: {
@@ -57,7 +57,7 @@ $(document).ready(function() {
             invalidHandler: function (form, validator) {
                 var errors = validator.numberOfInvalids();
                 if (errors) {
-                    var message = errors == 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
+                    var message = errors === 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
                     $("#mws-validate-error").html(message).show();
                     $("html, body").animate({ scrollTop: 0 }, "fast");
                 } else {
@@ -82,37 +82,35 @@ $(document).ready(function() {
     // bind the Config form using 'ajaxForm'
     $('#configForm').ajaxForm({
         data: { ajax: true },
-        beforeSubmit: function (arr, data, options)
+        beforeSubmit: function ()
         {
             $("#mws-validate-error").hide();
             $('#js_message').attr('class', 'alert loading').html('Submitting config settings...').slideDown(300);
             $("html, body").animate({ scrollTop: 0 }, "fast");
             return true;
         },
-        success: save_result,
-        error: function(request, status, error) {
+        success: function (response)
+        {
+            // Parse the JSON response
+            var result = jQuery.parseJSON(response);
+            if (result.success === true)
+            {
+                // Display our Success message, and ReDraw the table so we immediately see our action
+                $('#js_message').attr('class', 'alert success')
+                    .html('Success! Config saved successfully!')
+                    .append('<span class="close-bt"></span>');
+            }
+            else
+            {
+                $('#js_message').attr('class', 'alert error')
+                    .html('There was an error saving the configuration file. ' + result.message)
+                    .append('<span class="close-bt"></span>');
+            }
+        },
+        error: function(request) {
             $("#mws-jui-dialog").html('<pre>' + request.responseText + '</pre>').dialog("open");
         },
         timeout: 5000
     });
 
-    // Callback function for the Config ajaxForm
-    function save_result(response, statusText, xhr, $form)
-    {
-        // Parse the JSON response
-        var result = jQuery.parseJSON(response);
-        if (result.success == true)
-        {
-            // Display our Success message, and ReDraw the table so we immediately see our action
-            $('#js_message').attr('class', 'alert success')
-                .html('Success! Config saved successfully!')
-                .append('<span class="close-bt"></span>');
-        }
-        else
-        {
-            $('#js_message').attr('class', 'alert error')
-                .html('There was an error saving the configuration file. ' + result.message)
-                .append('<span class="close-bt"></span>');
-        }
-    }
 });

@@ -161,11 +161,11 @@ class HomeModel
             $temp[$key] = 0;
         }
 
-        $query = "SELECT `imported` FROM round WHERE `imported` > $timestamp";
+        $query = "SELECT `time_imported` FROM round WHERE `time_imported` > $timestamp";
         $result = $this->pdo->query($query);
         while ($row = $result->fetch())
         {
-            $key = date("l (m/d)", (int)$row['imported']);
+            $key = date("l (m/d)", (int)$row['time_imported']);
             $temp[$key] += 1;
         }
 
@@ -211,7 +211,7 @@ class HomeModel
         $i = 0;
         foreach ($timeArrays as $start => $finish)
         {
-            $query = "SELECT COUNT(*) FROM round WHERE `imported` BETWEEN $start AND $finish";
+            $query = "SELECT COUNT(*) FROM round WHERE `time_imported` BETWEEN $start AND $finish";
             $result = (int)$this->pdo->query($query)->fetchColumn(0);
 
             $output['month']['y'][] = array($i, $result);
@@ -252,7 +252,7 @@ class HomeModel
         $i = 0;
         foreach ($timeArrays as $start => $finish)
         {
-            $query = "SELECT COUNT(*) FROM round WHERE `imported` BETWEEN $start AND $finish";
+            $query = "SELECT COUNT(*) FROM round WHERE `time_imported` BETWEEN $start AND $finish";
             $result = (int)$this->pdo->query($query)->fetchColumn(0);
 
             $output['year']['y'][] = array($i, $result);

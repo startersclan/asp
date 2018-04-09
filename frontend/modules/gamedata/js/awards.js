@@ -1,4 +1,4 @@
-;(function( $, window, document, undefined ) {
+;(function( $, window, document ) {
 
     $(document).ready(function() {
 
@@ -44,7 +44,7 @@
             invalidHandler: function (form, validator) {
                 var errors = validator.numberOfInvalids();
                 if (errors) {
-                    var message = errors == 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
+                    var message = errors === 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
                     $("#mws-validate-error").html(message).show();
                     $('#jui-message').hide();
                 } else {
@@ -104,7 +104,7 @@
             });
 
             // Add New Server Click
-            $("#add-new").click(function(e) {
+            $("#add-new").on('click', function(e) {
 
                 // For all modern browsers, prevent default behavior of the click
                 e.preventDefault();
@@ -142,22 +142,22 @@
         // noinspection JSJQueryEfficiency
         $("#mws-validate").ajaxForm({
             data: { ajax: true },
-            beforeSubmit: function (arr, data, options)
+            beforeSubmit: function ()
             {
                 $('#mws-validate-error').hide();
                 $('#jui-message').attr('class', 'alert loading').html("Submitting form data...").slideDown(200);
                 $('#form-submit-btn').prop("disabled", true);
                 return true;
             },
-            success: function (response, statusText, xhr, $form) {
+            success: function (response) {
                 // Parse the JSON response
                 var result = jQuery.parseJSON(response);
-                if (result.success == true) {
+                if (result.success === true) {
                     var id = result.id;
                     var rowNode;
-                    var backend = (parseInt(result.backend) == 1) ? 'Yes' : 'No';
+                    var backend = (parseInt(result.backend) === 1) ? 'Yes' : 'No';
 
-                    if (result.mode == 'add') {
+                    if (result.mode === 'add') {
                         // Add award to table
                         //noinspection JSUnresolvedFunction
                         rowNode = Table.row.add([
@@ -175,7 +175,7 @@
 
                         $( rowNode ).attr('id', 'tr-award-' + id);
                     }
-                    else if (result.mode == 'edit') {
+                    else if (result.mode === 'edit') {
                         selectedRowNode.find('td:eq(0)').html(result.id);
                         selectedRowNode.find('td:eq(1)').html(result.name);
                         selectedRowNode.find('td:eq(2)').html(result.code);
@@ -194,7 +194,7 @@
                 $('#jui-message').attr('class', 'alert error').html('AJAX Error! Please check the console log.');
                 console.log(error);
             },
-            complete: function (jqXHR, textStatus) {
+            complete: function () {
                 $('#form-submit-btn').prop("disabled", false);
             },
             timeout: 5000
@@ -238,7 +238,7 @@
             var code = selectedRowNode.find('td:eq(2)').html();
             var backend = selectedRowNode.find('td:eq(5)').html();
 
-            if (action == 'edit') {
+            if (action === 'edit') {
 
                 // Hide previous errors
                 $('#jui-message').hide();
@@ -253,7 +253,7 @@
                 $('input[name="awardName"]').val(name);
                 $('input[name="awardCode"]').val(code);
                 $('input[name="awardId"]').val(id);
-                $("#awardBackend").val( (backend == 'Yes') ? 1 : 0 );
+                $("#awardBackend").val( (backend === 'Yes') ? 1 : 0 );
 
                 // Set award type
                 var awardType = $("#awardType");
@@ -276,7 +276,7 @@
                     title: 'Update Existing Award'
                 }).dialog("open");
             }
-            else if (action == 'delete') {
+            else if (action === 'delete') {
                 // Show dialog form
                 $("#mws-jui-dialog")
                     .html('Are you sure you want to delete award "' + name + '"? This action cannot be <b>reversed</b>! \
@@ -294,7 +294,7 @@
                                         .done(function( data ) {
                                             // Parse response
                                             var result = jQuery.parseJSON(data);
-                                            if (result.success == false) {
+                                            if (result.success === false) {
                                                 $('#jui-global-message')
                                                     .attr('class', 'alert error')
                                                     .html(result.message)

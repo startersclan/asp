@@ -1,6 +1,6 @@
 $(document).ready(function() {
     // Create our base loading modal
-    Modal = $("#ajax-dialog").dialog({
+    var Modal = $("#ajax-dialog").dialog({
         autoOpen: false,
         title: "Processing System Tests",
         modal: true,
@@ -44,9 +44,9 @@ $(document).ready(function() {
                 var message = '';
 
                 // Create our message!
-                if(result.success == true)
+                if(result.success === true)
                 {
-                    if(result.warnings == true)
+                    if(result.warnings === true)
                     {
                         message = '<div class="alert warning">Not all System Checks Passed... But your current configuration is good enough to start recieving stats.</div><br />';
                     }
@@ -66,7 +66,7 @@ $(document).ready(function() {
                 $('.mws-panel-content').html(message + result.html + button);
                 Modal.dialog('close');
             },
-            error: function(request, status, err)
+            error: function()
             {
                 $('.mws-dialog-inner').html('<font color="red">There was an error testing the system. Please refresh the page and try again.</font>');
                 Modal.parent().find(".ui-dialog-buttonset").show();

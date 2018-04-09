@@ -1,4 +1,4 @@
-;(function ($, window, document, undefined) {
+;(function ($, window, document) {
 
     $(document).ready(function () {
 
@@ -18,7 +18,7 @@
             });
         }
 
-        $("#clear").click(function(){
+        $("#clear").on('click', function(){
             // Show dialog form
             $("#ajax-dialog").dialog("option", { modal: true, position: 'center center' }).dialog("open");
 
@@ -30,10 +30,11 @@
                 .done(function( data ) {
                     // Parse response
                     var result = jQuery.parseJSON(data);
-                    if (result.success == false) {
+                    if (result.success === false) {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
+                            .append('<span class="close-bt"></span>')
                             .slideDown(500);
                     }
                     else {

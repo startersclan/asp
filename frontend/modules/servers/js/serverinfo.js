@@ -1,16 +1,16 @@
-;(function( $, window, document, undefined ) {
+;(function( $, window, document ) {
 
     $(document).ready(function() {
 
         // IPv4 Address Validation
         jQuery.validator.addMethod('validIP', function(value) {
             var split = value.split('.');
-            if (split.length != 4)
+            if (split.length !== 4)
                 return false;
 
             for (var i = 0; i < split.length; i++) {
                 var s = split[i];
-                if (s.length == 0 || isNaN(s) || s < 0 || s > 255)
+                if (s.length === 0 || isNaN(s) || s < 0 || s > 255)
                     return false;
             }
             return true;
@@ -56,7 +56,7 @@
             invalidHandler: function (form, validator) {
                 var errors = validator.numberOfInvalids();
                 if (errors) {
-                    var message = errors == 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
+                    var message = errors === 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
                     $("#mws-validate-error").html(message).show();
                     $('#jui-message').hide();
                 } else {
@@ -92,7 +92,7 @@
             });
 
             // Add New Server Click
-            $("#add-new").click(function(e) {
+            $("#add-new").on('click', function(e) {
 
                 // For all modern browsers, prevent default behavior of the click
                 e.preventDefault();
@@ -126,19 +126,18 @@
         //noinspection JSJQueryEfficiency
         $("#mws-validate").ajaxForm({
             data: { ajax: true },
-            beforeSubmit: function (arr, data, options)
-            {
+            beforeSubmit: function () {
                 $("#mws-validate-error").hide();
                 $('#jui-message').attr('class', 'alert loading').html("Submitting form data...").slideDown(200);
                 $('#form-submit-btn').prop("disabled", true);
                 return true;
             },
-            success: function (response, statusText, xhr, $form) {
+            success: function (response) {
                 // Parse the JSON response
                 var result = jQuery.parseJSON(response);
-                if (result.success == true) {
+                if (result.success === true) {
                     var id = result.serverId;
-                    if (result.mode == 'add') {
+                    if (result.mode === 'add') {
                         // Add server to table
                         //noinspection JSUnresolvedFunction
                         var rowNode = Table.row.add([
@@ -163,7 +162,7 @@
 
                         $( rowNode ).attr('id', 'tr-server-' + id);
                     }
-                    else if (result.mode == 'update') {
+                    else if (result.mode === 'update') {
                         selectedRowNode.find('td:eq(2)').html(result.serverName);
                         selectedRowNode.find('td:eq(3)').html(result.serverPrefix);
                         selectedRowNode.find('td:eq(4)').html(result.serverIp);
@@ -178,10 +177,10 @@
                     $('#jui-message').attr('class', 'alert error').html(result.message).slideDown(500);
                 }
             },
-            error: function(request, status, error) {
+            error: function() {
                 $('#jui-message').attr('class', 'alert error').html('AJAX Error! Please check the console log.').slideDown(500);
             },
-            complete: function (jqXHR, textStatus) {
+            complete: function () {
                 $('#form-submit-btn').prop("disabled", false);
             },
             timeout: 5000
@@ -204,7 +203,7 @@
             var id = sid[sid.length-1];
 
             // If action is "go", then let the link direct the user
-            if (action == "go") {
+            if (action === "go") {
                 return;
             }
             else {
@@ -212,7 +211,7 @@
                 e.preventDefault();
             }
 
-            if (action == 'edit') {
+            if (action === 'edit') {
 
                 // Hide previous errors
                 $('#jui-message').hide();
@@ -242,7 +241,7 @@
                     .done(function( data ) {
                         // Parse response
                         var result = jQuery.parseJSON(data);
-                        if (result.success == false) {
+                        if (result.success === false) {
                             $('#jui-global-message')
                                 .attr('class', 'alert error')
                                 .html(result.message)
@@ -276,13 +275,13 @@
                         }
                     });
             }
-            else if (action == 'auth') {
+            else if (action === 'auth') {
                 // Push the request
                 $.post( "/ASP/servers/authorize", { action: "auth", servers: [id] })
                     .done(function( data ) {
                         // Parse response
                         var result = jQuery.parseJSON(data);
-                        if (result.success == false) {
+                        if (result.success === false) {
                             $('#jui-global-message')
                                 .attr('class', 'alert error')
                                 .html(result.message)
@@ -316,9 +315,9 @@
                         }
                     });
             }
-            else if (action == 'delete') {
+            else if (action === 'delete') {
                 // Skip disabled buttons
-                if ($(this).attr('disabled') == 'disabled')
+                if ($(this).attr('disabled') === 'disabled')
                     return false;
 
                 // Always have the user confirm his action here!
@@ -353,7 +352,7 @@
         });
 
         // Delete Selected Click
-        $("#delete-selected").click(function(e) {
+        $("#delete-selected").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -393,7 +392,7 @@
         });
 
         // Un-Authorized Selected Click
-        $("#unauth-selected").click(function(e) {
+        $("#unauth-selected").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -407,7 +406,7 @@
 
                     // Parse response
                     var result = jQuery.parseJSON(data);
-                    if (result.success == false) {
+                    if (result.success === false) {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
@@ -463,7 +462,7 @@
 
                     // Parse response
                     var result = jQuery.parseJSON(data);
-                    if (result.success == false) {
+                    if (result.success === false) {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
@@ -505,7 +504,7 @@
         });
 
         // Plasma Click
-        $("#plasma-selected").click(function(e) {
+        $("#plasma-selected").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -519,7 +518,7 @@
 
                     // Parse response
                     var result = jQuery.parseJSON(data);
-                    if (result.success == false) {
+                    if (result.success === false) {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
@@ -559,7 +558,7 @@
         });
 
         // Plasma Click
-        $("#unplasma-selected").click(function(e) {
+        $("#unplasma-selected").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -573,7 +572,7 @@
 
                     // Parse response
                     var result = jQuery.parseJSON(data);
-                    if (result.success == false) {
+                    if (result.success === false) {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
@@ -613,7 +612,7 @@
         });
 
         // Refresh Click
-        $("#refresh").click(function(e) {
+        $("#refresh").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -633,7 +632,7 @@
 
                     // Parse response
                     var result = jQuery.parseJSON(data);
-                    if (result.success == false) {
+                    if (result.success === false) {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)

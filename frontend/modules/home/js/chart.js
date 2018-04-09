@@ -67,7 +67,7 @@
             plot.draw();
         });
 
-        $('#radio1').click(function() {
+        $('#radio1').on('click', function() {
             if ($loaded) {
                 //noinspection JSUnresolvedVariable
                 plot.setData([{
@@ -86,7 +86,7 @@
             }
         });
 
-        $('#radio2').click(function() {
+        $('#radio2').on('click', function() {
             if ($loaded) {
                 //noinspection JSUnresolvedVariable
                 plot.setData([{
@@ -105,7 +105,7 @@
             }
         });
 
-        $('#radio3').click(function() {
+        $('#radio3').on('click', function() {
             if ($loaded) {
                 //noinspection JSUnresolvedVariable
                 plot.setData([{

@@ -1,4 +1,4 @@
-;(function( $, window, document, undefined ) {
+;(function( $, window, document ) {
 
     function tableOnReload() {
         $('#jui-global-message').fadeOut('fast');
@@ -89,7 +89,7 @@
             invalidHandler: function (form, validator) {
                 var errors = validator.numberOfInvalids();
                 if (errors) {
-                    var message = errors == 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
+                    var message = errors === 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
                     $("#mws-validate-error").html(message).show();
                     $('#jui-message').hide();
                 } else {
@@ -102,7 +102,7 @@
             invalidHandler: function (form, validator) {
                 var errors = validator.numberOfInvalids();
                 if (errors) {
-                    var message = errors == 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
+                    var message = errors === 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
                     $("#mws-validate-error-2").html(message).show();
                     $('#jui-message-2').hide();
                 } else {
@@ -188,7 +188,7 @@
             });
 
             // Import Click
-            $("#import-bots").click(function(e) {
+            $("#import-bots").on('click', function(e) {
 
                 // For all modern browsers, prevent default behavior of the click
                 e.preventDefault();
@@ -213,17 +213,16 @@
         // noinspection JSJQueryEfficiency
         $("#mws-validate").ajaxForm({
             data: { ajax: true },
-            beforeSubmit: function (arr, data, options)
-            {
+            beforeSubmit: function () {
                 $("#mws-validate-error").hide();
                 $('#jui-message').attr('class', 'alert loading').html("Submitting form data...").slideDown(200);
                 $('#form-submit-btn').prop("disabled", true);
                 return true;
             },
-            success: function (response, statusText, xhr, $form) {
+            success: function (response) {
                 // Parse the JSON response
                 var result = jQuery.parseJSON(response);
-                if (result.success == true) {
+                if (result.success === true) {
 
                     // Reload the table
                     // noinspection JSUnresolvedFunction
@@ -236,10 +235,10 @@
                     $('#jui-message').attr('class', 'alert error').html(result.message).slideDown(500);
                 }
             },
-            error: function(request, status, error) {
+            error: function() {
                 $('#jui-message').attr('class', 'alert error').html('AJAX Error! Please check the console log.').slideDown(500);
             },
-            complete: function (jqXHR, textStatus) {
+            complete: function () {
                 $('#form-submit-btn').prop("disabled", false);
             },
             timeout: 5000
@@ -249,17 +248,16 @@
         // noinspection JSJQueryEfficiency
         $("#mws-validate-2").ajaxForm({
             data: { ajax: true },
-            beforeSubmit: function (arr, data, options)
-            {
+            beforeSubmit: function () {
                 $("#mws-validate-error-2").hide();
                 $('#jui-message-2').attr('class', 'alert loading').html("Submitting form data...").slideDown(200);
                 $('#form-submit-btn2').prop("disabled", true);
                 return true;
             },
-            success: function (response, statusText, xhr, $form) {
+            success: function (response) {
                 // Parse the JSON response
                 var result = jQuery.parseJSON(response);
-                if (result.success == true) {
+                if (result.success === true) {
 
                     // Reload the table
                     // noinspection JSUnresolvedFunction
@@ -272,10 +270,10 @@
                     $('#jui-message-2').attr('class', 'alert error').html(result.message).slideDown(500);
                 }
             },
-            error: function(request, status, error) {
+            error: function () {
                 $('#jui-message-2').attr('class', 'alert error').html('AJAX Error! Please check the console log.').slideDown(500);
             },
-            complete: function (jqXHR, textStatus) {
+            complete: function () {
                 $('#form-submit-btn2').prop("disabled", false);
             },
             timeout: 5000
@@ -298,7 +296,7 @@
         $.fn.fileInput && $("input[type='file']").fileInput();
 
         // Refresh Click
-        $("#refresh").click(function(e) {
+        $("#refresh").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -318,25 +316,27 @@
         });
 
         // Show Bots Button Click
-        $("#show-bots").click(function(e) {
+        $("#show-bots").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
+
+            var selected = $("#show-bots");
 
             // The a element does not have a property disabled. So defining one won't
             // affect any event handlers you may have attached to it. Therefore, we use data instead
             if ($(this).data('disabled')) return;
 
-            $("#show-bots").data('disabled', true);
+            selected.data('disabled', true);
             showBots = true;
 
             // noinspection JSUnresolvedFunction
             Table.ajax.reload();
 
-            $("#show-bots").data('disabled', false);
+            selected.data('disabled', false);
 
             // Switch button views
-            $("#show-bots").hide();
+            selected.hide();
             $("#hide-bots").show();
 
             // Just to be sure, older IE's needs this
@@ -344,25 +344,27 @@
         });
 
         // Add New Server Click
-        $("#hide-bots").click(function(e) {
+        $("#hide-bots").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
+
+            var selected = $("#hide-bots");
 
             // The a element does not have a property disabled. So defining one won't
             // affect any event handlers you may have attached to it. Therefore, we use data instead
             if ($(this).data('disabled')) return;
 
-            $("#hide-bots").data('disabled', true);
+            selected.data('disabled', true);
             showBots = false;
 
             // noinspection JSUnresolvedFunction
             Table.ajax.reload();
 
-            $("#hide-bots").data('disabled', false);
+            selected.data('disabled', false);
 
             // Switch button views
-            $("#hide-bots").hide();
+            selected.hide();
             $("#show-bots").show();
 
             // Just to be sure, older IE's needs this
@@ -370,7 +372,7 @@
         });
 
         // Add New Server Click
-        $("#delete-bots").click(function(e) {
+        $("#delete-bots").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -391,10 +393,11 @@
                                 .done(function( data ) {
                                     // Parse response
                                     var result = jQuery.parseJSON(data);
-                                    if (result.success == false) {
+                                    if (result.success === false) {
                                         $('#jui-global-message')
                                             .attr('class', 'alert error')
                                             .html(result.message)
+                                            .append('<span class="close-bt"></span>')
                                             .slideDown(500);
                                     }
                                     else {
@@ -409,18 +412,16 @@
                                         $('#jui-global-message')
                                             .attr('class', 'alert error')
                                             .html(result.message)
-                                            .slideDown(500)
-                                            .delay(5000)
-                                            .fadeOut('slow');
+                                            .append('<span class="close-bt"></span>')
+                                            .slideDown(500);
                                     }
                                     else
                                     {
                                         $('#jui-global-message')
                                             .attr('class', 'alert error')
                                             .html("An Error Occurred. Please check the ASP error log for details.")
-                                            .slideDown(500)
-                                            .delay(5000)
-                                            .fadeOut('slow');
+                                            .append('<span class="close-bt"></span>')
+                                            .slideDown(500);
                                     }
                                 });
 
@@ -448,7 +449,7 @@
             var id = sid[sid.length-1];
 
             // If action is "go", then let the link direct the user
-            if (action == "go") {
+            if (action === "go") {
                 return;
             }
             else {
@@ -460,7 +461,7 @@
             var tr = $(this).closest('tr');
             var name = tr.find('td:eq(2)').html();
 
-            if (action == 'edit') {
+            if (action === 'edit') {
 
                 // Hide previous errors
                 $("#mws-validate-error").hide();
@@ -495,7 +496,7 @@
                     title: 'Update Existing Player'
                 }).dialog("open");
             }
-            else if (action == 'unban') {
+            else if (action === 'unban') {
                 // Push the request
                 $.post( "/ASP/players/authorize", { ajax: true, action: "unban", playerId: id })
                     .done(function( data ) {
@@ -535,13 +536,13 @@
                         }
                     });
             }
-            else if (action == 'ban') {
+            else if (action === 'ban') {
                 // Push the request
                 $.post( "/ASP/players/authorize", { ajax: true, action: "ban", playerId: id })
                     .done(function( data ) {
                         // Parse response
                         var result = jQuery.parseJSON(data);
-                        if (result.success == false) {
+                        if (result.success === false) {
                             $('#jui-global-message')
                                 .attr('class', 'alert error')
                                 .html(result.message)

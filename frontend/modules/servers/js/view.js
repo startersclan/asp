@@ -1,4 +1,4 @@
-;(function ($, window, document, undefined) {
+;(function ($, window, document) {
 
     $(document).ready(function () {
 
@@ -13,7 +13,7 @@
         }
 
         // Refresh Click
-        $("#refresh").click(function(e) {
+        $("#refresh").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -36,7 +36,7 @@
         });
 
         // Authorize Click
-        $("#auth-server").click(function(e) {
+        $("#auth-server").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -47,7 +47,7 @@
 
                     // Parse response
                     var result = jQuery.parseJSON(data);
-                    if (result.success == false) {
+                    if (result.success === false) {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
@@ -84,7 +84,7 @@
         });
 
         // Un-Authorize Click
-        $("#unauth-server").click(function(e) {
+        $("#unauth-server").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -95,7 +95,7 @@
 
                     // Parse response
                     var result = jQuery.parseJSON(data);
-                    if (result.success == false) {
+                    if (result.success === false) {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
@@ -132,7 +132,7 @@
         });
 
         // Plasma Click
-        $("#plasma-server").click(function(e) {
+        $("#plasma-server").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -143,7 +143,7 @@
 
                     // Parse response
                     var result = jQuery.parseJSON(data);
-                    if (result.success == false) {
+                    if (result.success === false) {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
@@ -181,7 +181,7 @@
         });
 
         // Un-Plasma Click
-        $("#unplasma-server").click(function(e) {
+        $("#unplasma-server").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -192,7 +192,7 @@
 
                     // Parse response
                     var result = jQuery.parseJSON(data);
-                    if (result.success == false) {
+                    if (result.success === false) {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
@@ -299,7 +299,7 @@
             plot.draw();
         });
 
-        $('#weekRadio').click(function() {
+        $('#weekRadio').on('click', function() {
             if ($loaded) {
                 //noinspection JSUnresolvedVariable
                 plot.setData([{
@@ -322,7 +322,7 @@
             }
         });
 
-        $('#monthRadio').click(function() {
+        $('#monthRadio').on('click', function() {
             if ($loaded) {
                 //noinspection JSUnresolvedVariable
                 plot.setData([{
@@ -345,7 +345,7 @@
             }
         });
 
-        $('#yearRadio').click(function() {
+        $('#yearRadio').on('click', function() {
             if ($loaded) {
                 //noinspection JSUnresolvedVariable
                 plot.setData([{
@@ -479,8 +479,8 @@
                         $("#status").html("Offline").css('color', 'red');
                     }
                 },
-                error: function(request, status, err) {
-                    if(status == "timeout") {
+                error: function(request, status) {
+                    if(status === "timeout") {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html("Request Timed Out.")

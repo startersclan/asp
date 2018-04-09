@@ -1,4 +1,4 @@
-;(function ($, window, document, undefined) {
+;(function ($, window, document) {
 
     $(document).ready(function () {
 
@@ -18,7 +18,7 @@
             });
         }
 
-        $("#update").click(function(){
+        $("#update").on('click', function(){
             // Show dialog form
             $("#ajax-dialog").dialog("option", { modal: true, position: 'center center' }).dialog("open");
 

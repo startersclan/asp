@@ -106,7 +106,7 @@
             });
 
             // Add New Server Click
-            $("#edit-player").click(function(e) {
+            $("#edit-player").on('click', function(e) {
 
                 // For all modern browsers, prevent default behavior of the click
                 e.preventDefault();
@@ -133,7 +133,7 @@
 
         // Ajax and form Validation
         //noinspection JSJQueryEfficiency
-        var validator = $("#mws-validate").validate({
+        $("#mws-validate").validate({
             rules: {
                 playerName: {
                     required: true,
@@ -165,15 +165,15 @@
                 ajax: true,
                 playerId: playerId
             },
-            beforeSubmit: function (arr, data, options) {
+            beforeSubmit: function () {
                 $('#jui-message').attr('class', 'alert loading').html("Submitting form data...").slideDown(200);
                 $('#form-submit-btn').prop("disabled", true);
                 return true;
             },
-            success: function (response, statusText, xhr, $form) {
+            success: function (response) {
                 // Parse the JSON response
                 var result = jQuery.parseJSON(response);
-                if (result.success == true) {
+                if (result.success === true) {
                     // Update variables
                     playerName = result.name;
                     playerRank = result.rank;
@@ -199,10 +199,10 @@
                     $('#jui-message').attr('class', 'alert error').html(result.message).slideDown(500);
                 }
             },
-            error: function(request, status, error) {
+            error: function() {
                 $('#jui-message').attr('class', 'alert error').html('AJAX Error! Please check the console log.').slideDown(500);
             },
-            complete: function (jqXHR, textStatus) {
+            complete: function () {
                 $('#form-submit-btn').prop("disabled", false);
             },
             timeout: 5000
@@ -224,7 +224,7 @@
         $.fn.select2 && $("select.mws-select2").select2();
 
         // Ban Button Click
-        $("#ban-player").click(function(e) {
+        $("#ban-player").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -233,7 +233,7 @@
                 .done(function( data ) {
                     // Parse response
                     var result = jQuery.parseJSON(data);
-                    if (result.success == false) {
+                    if (result.success === false) {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
@@ -274,7 +274,7 @@
         });
 
         // UnBan Button Click
-        $("#unban-player").click(function(e) {
+        $("#unban-player").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -283,7 +283,7 @@
                 .done(function( data ) {
                     // Parse response
                     var result = jQuery.parseJSON(data);
-                    if (result.success == false) {
+                    if (result.success === false) {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
@@ -332,7 +332,7 @@
         });
 
         // Reset Stats and Awards Button Click
-        $("#reset-stats").click(function(e) {
+        $("#reset-stats").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -351,7 +351,7 @@
                                 .done(function( data ) {
                                     // Parse response
                                     var result = jQuery.parseJSON(data);
-                                    if (result.success == false) {
+                                    if (result.success === false) {
                                         $('#jui-global-message')
                                             .attr('class', 'alert error')
                                             .html(result.message)
@@ -403,7 +403,7 @@
         });
 
         // Reset Awards Button Click
-        $("#reset-awards").click(function(e) {
+        $("#reset-awards").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -422,7 +422,7 @@
                                 .done(function( data ) {
                                     // Parse response
                                     var result = jQuery.parseJSON(data);
-                                    if (result.success == false) {
+                                    if (result.success === false) {
                                         $('#jui-global-message')
                                             .attr('class', 'alert error')
                                             .html(result.message)
@@ -474,7 +474,7 @@
         });
 
         // Reset Unlocks Button Click
-        $("#reset-unlocks").click(function(e) {
+        $("#reset-unlocks").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -483,7 +483,7 @@
                 .done(function( data ) {
                     // Parse response
                     var result = jQuery.parseJSON(data);
-                    if (result.success == false) {
+                    if (result.success === false) {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
@@ -593,7 +593,7 @@
             plot.draw();
         });
 
-        $('#weekRadio').click(function() {
+        $('#weekRadio').on('click', function() {
             if ($loaded) {
                 //noinspection JSUnresolvedVariable
                 plot.setData([{
@@ -612,7 +612,7 @@
             }
         });
 
-        $('#monthRadio').click(function() {
+        $('#monthRadio').on('click', function() {
             if ($loaded) {
                 //noinspection JSUnresolvedVariable
                 plot.setData([{
@@ -631,7 +631,7 @@
             }
         });
 
-        $('#yearRadio').click(function() {
+        $('#yearRadio').on('click', function() {
             if ($loaded) {
                 //noinspection JSUnresolvedVariable
                 plot.setData([{

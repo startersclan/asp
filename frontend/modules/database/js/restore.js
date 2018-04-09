@@ -1,4 +1,4 @@
-;(function ($, window, document, undefined) {
+;(function ($, window, document) {
 
     $(document).ready(function () {
 
@@ -21,16 +21,15 @@
         // ===============================================
         // bind the Config form using 'ajaxForm'
         var restoreForm = $('#restore-form').ajaxForm({
-            beforeSubmit: function (arr, data, options)
-            {
+            beforeSubmit: function () {
                 // Show dialog form
                 $("#ajax-dialog").dialog("option", { modal: true, position: 'center center' }).dialog("open");
                 return true;
             },
-            success: function (response, status, xhr, form) {
+            success: function (response) {
                 // Parse response
                 var result = jQuery.parseJSON(response);
-                if (result.success == false) {
+                if (result.success === false) {
                     $('#jui-global-message')
                         .attr('class', 'alert error')
                         .html(result.message)
@@ -48,7 +47,7 @@
                 // Close dialog
                 $("#ajax-dialog").dialog("close");
             },
-            error: function(request, status, error) {
+            error: function(request) {
                 $('#jui-global-message')
                     .attr('class', 'alert success')
                     .html(request.responseText)
@@ -58,7 +57,7 @@
             timeout: 5000
         });
 
-        $("#restore").click(function(){
+        $("#restore").on('click', function(){
             // Disable button
             $("#restore").prop('disabled', true);
             restoreForm.submit();

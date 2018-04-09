@@ -1,4 +1,4 @@
-;(function ($, window, document, undefined) {
+;(function ($, window, document) {
 
     $(document).ready(function () {
 
@@ -101,7 +101,7 @@
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
 
-            if (action == 'go') {
+            if (action === 'go') {
                 $('button[id^="go-"]').prop('disabled', true);
                 window.location = "/ASP/players/history/" + playerId + "/" + id;
             }

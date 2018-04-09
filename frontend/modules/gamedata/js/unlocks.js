@@ -1,4 +1,4 @@
-;(function( $, window, document, undefined ) {
+;(function( $, window, document ) {
 
     $(document).ready(function() {
 
@@ -51,7 +51,7 @@
             invalidHandler: function (form, validator) {
                 var errors = validator.numberOfInvalids();
                 if (errors) {
-                    var message = errors == 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
+                    var message = errors === 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
                     $("#mws-validate-error").html(message).show();
                     $('#jui-message').hide();
                 } else {
@@ -88,7 +88,7 @@
             });
 
             // Add New Server Click
-            $("#add-new").click(function(e) {
+            $("#add-new").on('click', function(e) {
 
                 // For all modern browsers, prevent default behavior of the click
                 e.preventDefault();
@@ -124,21 +124,20 @@
         // noinspection JSJQueryEfficiency
         $("#mws-validate").ajaxForm({
             data: { ajax: true },
-            beforeSubmit: function (arr, data, options)
-            {
+            beforeSubmit: function () {
                 $('#mws-validate-error').hide();
                 $('#jui-message').attr('class', 'alert loading').html("Submitting form data...").slideDown(200);
                 $('#form-submit-btn').prop("disabled", true);
                 return true;
             },
-            success: function (response, statusText, xhr, $form) {
+            success: function (response) {
                 // Parse the JSON response
                 var result = jQuery.parseJSON(response);
-                if (result.success == true) {
+                if (result.success === true) {
                     var id = result.id;
                     var rowNode;
 
-                    if (result.mode == 'add') {
+                    if (result.mode === 'add') {
                         // Add award to table
                         //noinspection JSUnresolvedFunction
                         rowNode = Table.row.add([
@@ -154,7 +153,7 @@
 
                         $( rowNode ).attr('id', 'tr-unlock-' + id);
                     }
-                    else if (result.mode == 'edit') {
+                    else if (result.mode === 'edit') {
                         selectedRowNode.find('td:eq(0)').html(result.id);
                         selectedRowNode.find('td:eq(1)').html(result.name);
                         selectedRowNode.find('td:eq(2)').html(result.desc);
@@ -184,7 +183,7 @@
         $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
 
         // Refresh Click
-        $("#refresh").click(function(e) {
+        $("#refresh").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -213,7 +212,7 @@
             var desc = htmlDecode( selectedRowNode.find('td:eq(2)').html() );
             var kit = selectedRowNode.find('td:eq(3)').html();
 
-            if (action == 'edit') {
+            if (action === 'edit') {
 
                 // Hide previous errors
                 $('#jui-message').hide();
@@ -237,7 +236,7 @@
                 }).dialog("open");
                 $('#form-submit-btn').prop("disabled", false);
             }
-            else if (action == 'delete') {
+            else if (action === 'delete') {
                 // Show dialog form
                 $("#mws-jui-dialog")
                     .html('Are you sure you want to delete unlock "' + name + '"? This action cannot be <b>reversed</b>! \
@@ -255,7 +254,7 @@
                                         .done(function( data ) {
                                             // Parse response
                                             var result = jQuery.parseJSON(data);
-                                            if (result.success == false) {
+                                            if (result.success === false) {
                                                 $('#jui-global-message')
                                                     .attr('class', 'alert error')
                                                     .html(result.message)

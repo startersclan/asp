@@ -1,4 +1,4 @@
-;(function( $, window, document, undefined ) {
+;(function( $, window, document ) {
 
     $(document).ready(function() {
 
@@ -99,12 +99,11 @@
         //noinspection JSJQueryEfficiency
         $("#mws-validate").ajaxForm({
             data: { ajax: true },
-            beforeSubmit: function (arr, data, options)
-            {
+            beforeSubmit: function () {
                 $("#mws-validate-error").hide();
                 return true;
             },
-            success: function (response, statusText, xhr, $form) {
+            success: function (response) {
                 // Parse the JSON response
                 var result = jQuery.parseJSON(response);
                 if (result.success === true) {
@@ -121,7 +120,7 @@
                     $("#editor-form").dialog("close");
                 }
             },
-            error: function(request, status, error) {
+            error: function() {
                 $('#jui-message').attr('class', 'alert error').html('AJAX Error! Please check the console log.').slideDown(500);
             },
             timeout: 10000

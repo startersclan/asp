@@ -1,4 +1,4 @@
-;(function ($, window, document, undefined) {
+;(function ($, window, document) {
 
     $(document).ready(function () {
 
@@ -9,7 +9,7 @@
             bInfo: false,
             order: [[ 2, "desc" ]],
             columnDefs: [
-                { "orderable": false, "targets": 0 },
+                { "orderable": false, "targets": 0 }
             ]
         }).on( 'draw.dt', function () {
             //noinspection JSUnresolvedVariable

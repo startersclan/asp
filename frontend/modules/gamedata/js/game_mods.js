@@ -1,4 +1,4 @@
-;(function( $, window, document, undefined ) {
+;(function( $, window, document ) {
 
     $(document).ready(function() {
 
@@ -80,7 +80,7 @@
             });
 
             // Add New Server Click
-            $("#add-new").click(function(e) {
+            $("#add-new").on('click', function(e) {
 
                 // For all modern browsers, prevent default behavior of the click
                 e.preventDefault();
@@ -113,21 +113,21 @@
         // noinspection JSJQueryEfficiency
         $("#mws-validate").ajaxForm({
             data: { ajax: true },
-            beforeSubmit: function (arr, data, options)
+            beforeSubmit: function ()
             {
                 $('#mws-validate-error').hide();
                 $('#jui-message').attr('class', 'alert loading').html("Submitting form data...").slideDown(200);
                 $('#form-submit-btn').prop("disabled", true);
                 return true;
             },
-            success: function (response, statusText, xhr, $form) {
+            success: function (response) {
                 // Parse the JSON response
                 var result = jQuery.parseJSON(response);
-                if (result.success == true) {
+                if (result.success === true) {
                     var id = result.id;
                     var rowNode;
 
-                    if (result.mode == 'add') {
+                    if (result.mode === 'add') {
                         // Add award to table
                         //noinspection JSUnresolvedFunction
                         rowNode = Table.row.add([
@@ -142,7 +142,7 @@
 
                         $( rowNode ).attr('id', 'tr-unlock-' + id);
                     }
-                    else if (result.mode == 'edit') {
+                    else if (result.mode === 'edit') {
                         selectedRowNode.find('td:eq(0)').html(result.id);
                         selectedRowNode.find('td:eq(1)').html(result.name);
                         selectedRowNode.find('td:eq(2)').html(result.longname);
@@ -162,7 +162,7 @@
                     .append('<span class="close-bt"></span>');
                 console.log(error);
             },
-            complete: function (jqXHR, textStatus) {
+            complete: function () {
                 $('#form-submit-btn').prop("disabled", false);
             },
             timeout: 5000
@@ -177,7 +177,7 @@
         $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
 
         // Refresh Click
-        $("#refresh").click(function(e) {
+        $("#refresh").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();

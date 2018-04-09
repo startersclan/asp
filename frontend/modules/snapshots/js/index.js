@@ -1,4 +1,4 @@
-;(function ($, window, document, undefined) {
+;(function ($, window, document) {
 
     $(document).ready(function () {
 
@@ -37,7 +37,7 @@
             $('input[type=checkbox]:checked').map(function() {
                 // Extract the server ID
                 var sid = $(this).attr('id').split("-").slice(1).join("-");
-                if (sid != "all")
+                if (sid !== "all")
                     snapshotIds.push(sid);
             });
 
@@ -52,7 +52,7 @@
 
                     // Parse response
                     var result = jQuery.parseJSON(data);
-                    if (result.success == false) {
+                    if (result.success === false) {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)
@@ -93,7 +93,7 @@
         });
 
         // Process Selected Click
-        $("#accept-selected").click(function(e) {
+        $("#accept-selected").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -102,7 +102,7 @@
             $('input[type=checkbox]:checked').map(function() {
                 // Extract the server ID
                 var sid = $(this).attr('id').split("-").slice(1).join("-");
-                if (sid != "all")
+                if (sid !== "all")
                     snapshotIds.push(sid);
             });
 
@@ -125,7 +125,7 @@
         });
 
         // Refresh Click
-        $("#refresh").click(function(e) {
+        $("#refresh").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -151,7 +151,7 @@
 
                     // Parse response
                     var result = jQuery.parseJSON(data);
-                    if (result.success == false) {
+                    if (result.success === false) {
                         $('#jui-global-message')
                             .attr('class', 'alert error')
                             .html(result.message)

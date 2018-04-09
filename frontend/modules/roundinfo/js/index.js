@@ -1,9 +1,9 @@
-;(function ($, window, document, undefined) {
+;(function ($, window, document) {
 
     $(document).ready(function () {
 
         // Data Tables
-        var Table = $(".mws-datatable-fn").DataTable({
+        $(".mws-datatable-fn").DataTable({
             pagingType: "full_numbers",
             processing: false,
             serverSide: true,

@@ -1,4 +1,4 @@
-;(function( $, window, document, undefined ) {
+;(function( $, window, document ) {
 
     $(document).ready(function() {
 
@@ -21,7 +21,7 @@
             invalidHandler: function (form, validator) {
                 var errors = validator.numberOfInvalids();
                 if (errors) {
-                    var message = errors == 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
+                    var message = errors === 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
                     $("#mws-validate-error").html(message).show();
                 } else {
                     $("#mws-validate-error").hide();
@@ -56,7 +56,7 @@
             });
 
             // Add New Click
-            $("[id^=add-new-]").click(function(e) {
+            $("[id^=add-new-]").on('click', function(e) {
 
                 // For all modern browsers, prevent default behavior of the click
                 e.preventDefault();
@@ -104,7 +104,7 @@
 
             // Extract the server ID
             var sid = $(this).attr('id').split("-");
-            if (sid.length != 3 || $(this).attr('disabled') == 'disabled')
+            if (sid.length !== 3 || $(this).attr('disabled') === 'disabled')
                 return false;
 
             // Parse sections into variables
@@ -114,7 +114,7 @@
             tableRow = $(this).closest('tr');
             var name = tableRow.find('td:eq(1)').html();
 
-            if (currentAction == 'delete') {
+            if (currentAction === 'delete') {
                 // Show dialog form
                 $("#mws-jui-dialog").dialog("option", {
                     modal: true,
@@ -134,7 +134,7 @@
 
                                 // Parse response
                                 var result = jQuery.parseJSON(data);
-                                if (result.success == false) {
+                                if (result.success === false) {
                                     $('#jui-message').attr('class', 'alert error').html(result.message).slideDown(500);
                                 }
                                 else {
@@ -203,16 +203,15 @@
         //noinspection JSJQueryEfficiency
         $("#mws-validate").ajaxForm({
             data: { ajax: true },
-            beforeSubmit: function (arr, data, options)
-            {
+            beforeSubmit: function () {
                 $("#mws-validate-error").hide();
                 $('#form-submit-btn').prop("disabled", true);
                 return true;
             },
-            success: function (response, statusText, xhr, $form) {
+            success: function (response) {
                 // Parse the JSON response
                 var result = jQuery.parseJSON(response);
-                if (result.success == true) {
+                if (result.success === true) {
 
                     if (currentAction == 'add') {
                         // Reload the table
@@ -232,7 +231,7 @@
                         // Refresh buttons
                         disable_btns_for(currentType);
                     }
-                    else if (currentAction == 'edit') {
+                    else if (currentAction === 'edit') {
                         tableRow.find('td:eq(1)').html(result.itemName);
                     }
 
@@ -243,10 +242,10 @@
                     $('#jui-message').attr('class', 'alert error').html(result.message).slideDown(500);
                 }
             },
-            error: function(request, status, error) {
+            error: function() {
                 $('#jui-message').attr('class', 'alert error').html('AJAX Error! Please check the console log.').slideDown(500);
             },
-            complete: function (jqXHR, textStatus) {
+            complete: function () {
                 $('#form-submit-btn').prop("disabled", false);
             },
             timeout: 5000
