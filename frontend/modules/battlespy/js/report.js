@@ -69,7 +69,7 @@
         });
 
         // Delete Selected Click
-        $("#delete-selected").click(function(e) {
+        $("#delete-selected").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -107,7 +107,7 @@
         });
 
         // Refresh Click
-        $("#refresh").click(function(e) {
+        $("#refresh").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
