@@ -137,9 +137,45 @@ class PlayerAjaxModel
             ],
         ];
 
+        // Apply Filtering
+        $filters = [];
+        $value = (int)$_POST['showBots'];
+        if ($value == 0)
+            $filters[] = "`password` != ''";
+
+        // Filter by country
+        if ($_POST['filterCountry'] != '99')
+            $filters[] = "`country` = ". $this->pdo->quote($_POST['filterCountry']);
+
+        // Filter by rank
+        $value = (int)$_POST['filterRank'];
+        if ($value != 99)
+            $filters[] = "`rank_id` = ". $value;
+
+        // Filter account status
+        $value = (int)$_POST['filterStatus'];
+        if ($value != 99)
+        {
+            $lastMonth = time() - (84600 * 30);
+            switch ($value)
+            {
+                case 0:
+                    $filters[] = '`permban` = 0';
+                    $filters[] = "`lastonline` >= " . $lastMonth;
+                    break;
+                case 1:
+                    $filters[] = '`permban` = 0';
+                    $filters[] = "`lastonline` <= " . $lastMonth;
+                    break;
+                case 2:
+                    $filters[] = '`permban` = 1';
+                    break;
+            }
+
+        }
+
         // Use the DataTables library class
-        $applyFilter = ((int)$_POST['showBots']) == 0;
-        $filter = ($applyFilter) ? "`password` != ''" : '';
+        $filter = (count($filters) == 0) ? '' : join(' AND ', $filters);
         return DataTables::FetchData($data, $this->pdo, 'player', 'id', $columns, $filter);
     }
 

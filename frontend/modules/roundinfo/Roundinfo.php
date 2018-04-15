@@ -83,9 +83,6 @@ class Roundinfo extends Controller
             die;
         }
 
-        // Load stats data
-        \System\StatsData::Load();
-
         // Attach round information to view
         $view = new View('view', 'roundinfo');
         $view->set('round', $round['round']);
@@ -93,8 +90,17 @@ class Roundinfo extends Controller
         $view->set('players2', $round['players2']);
 
         // Add advanced information, and awards
+        \System\StatsData::Load();
         $this->roundInfoModel->addAdvancedRoundInfo($round['players'], $id, $view);
         $this->roundInfoModel->attachAwards($id, $view);
+
+        // Check for a battlespy report
+        $reportId =  $this->roundInfoModel->getBattleSpyReportId($id);
+        if ($reportId > 0)
+        {
+            $link = "<a href=\"/ASP/battlespy/report/{$reportId}\" target=\"_blank\">Click Here</a>";
+            $view->displayMessage('warning', "This round has a BattleSpy report attached to it. {$link} to view the report.");
+        }
 
         // Attach needed scripts for the form
         $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");

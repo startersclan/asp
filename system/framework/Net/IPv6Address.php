@@ -58,6 +58,29 @@ class IPv6Address implements iIPAddress
     }
 
     /**
+     * Indicates whether this address falls under the supplied CIDR
+     *
+     * @param string|iIPAddress $address
+     *
+     * @return bool
+     *
+     * @see https://www.ipaddressguide.com/ipv6-cidr
+     */
+    public function isInCidr($address)
+    {
+        if ($address instanceof IPv6Address)
+        {
+            $address = $address->toString();
+        }
+
+        list($subnet, $mask) = explode('/', $address);
+        $subnet = inet_pton($subnet);
+        $addr = inet_pton($this->ipAddress);
+        $binMask = $this->iPv6MaskToByteArray($mask);
+        return ($addr & $binMask) == $subnet;
+    }
+
+    /**
      * Compares the current IPAddress instance with the comparing parameter and returns true
      *  if the two instances contain the same IP address.
      *
@@ -93,8 +116,32 @@ class IPv6Address implements iIPAddress
         return $this->ipAddress;
     }
 
+    /**
+     * Returns the string representation of this IPAddress
+     */
     public function __toString()
     {
         return $this->ipAddress;
+    }
+
+    private function iPv6MaskToByteArray($subnetMask)
+    {
+        $addr = str_repeat("f", $subnetMask / 4);
+        switch ($subnetMask % 4) {
+            case 0:
+                break;
+            case 1:
+                $addr .= "8";
+                break;
+            case 2:
+                $addr .= "c";
+                break;
+            case 3:
+                $addr .= "e";
+                break;
+        }
+        $addr = str_pad($addr, 32, '0');
+        $addr = pack("H*", $addr);
+        return $addr;
     }
 }

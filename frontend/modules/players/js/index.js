@@ -1,12 +1,12 @@
 ;(function( $, window, document ) {
 
-    function tableOnReload() {
-        $('#jui-global-message').fadeOut('fast');
-    }
-
     $(document).ready(function() {
 
+        // Define variables
         var showBots = true;
+        var filterCountry = 99;
+        var filterRank = 99;
+        var filterStatus = 99;
 
         /**
          * Extracts the filename, without extension from a path
@@ -31,17 +31,20 @@
                 data: function ( d ) {
                     return $.extend( {}, d, {
                         ajax: true,
-                        showBots: (showBots) ? 1 : 0
+                        showBots: (showBots) ? 1 : 0,
+                        filterRank: filterRank,
+                        filterCountry: filterCountry,
+                        filterStatus: filterStatus
                     });
                 },
                 beforeSend: function() {
-                    $('.loading-cell').css('background-image', 'url(/ASP/frontend/images/core/alerts/loading2.gif)');
+                    $('.loading-cell').css('background-image', 'url(/ASP/frontend/images/core/alerts/loading.gif)');
                 },
                 complete: function(jqXHR, textStatus) {
                     if (textStatus === "success")
                         $('.loading-cell').css('background-image', 'url(/ASP/frontend/images/core/alerts/tick-circle.png)');
                     else
-                        $('.loading-cell').css('background-image', 'url(/ASP/frontend/images/core/alerts/exclamation.png)');
+                        $('.loading-cell').css('background-image', 'url(/ASP/frontend/images/core/alerts/cross-circle.png)');
                 }
             },
             order: [[ 4, "desc" ]], // Order by global score
@@ -61,6 +64,7 @@
                 { "searchable": false, "orderable": false, "targets": 0 },
                 { "searchable": false, "targets": 2 },
                 { "searchable": false, "targets": 4 },
+                { "searchable": false, "targets": 5 },
                 { "searchable": false, "targets": 6 },
                 { "searchable": false, "targets": 7 },
                 { "searchable": false, "targets": 8 },
@@ -71,8 +75,8 @@
             $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
         });
 
-        // Ajax and form Validation
-        //noinspection JSJQueryEfficiency
+        // Validate the Add Player Form
+        // noinspection JSJQueryEfficiency
         var validator = $("#mws-validate").validate({
             rules: {
                 playerName: {
@@ -94,19 +98,6 @@
                     $('#jui-message').hide();
                 } else {
                     $("#mws-validate-error").hide();
-                }
-            }
-        });
-
-        $("#mws-validate-2").validate({
-            invalidHandler: function (form, validator) {
-                var errors = validator.numberOfInvalids();
-                if (errors) {
-                    var message = errors === 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
-                    $("#mws-validate-error-2").html(message).show();
-                    $('#jui-message-2').hide();
-                } else {
-                    $("#mws-validate-error-2").hide();
                 }
             }
         });
@@ -153,7 +144,7 @@
             });
 
             // Add New Server Click
-            $("#add-new").click(function(e) {
+            $("#add-new").on('click', function(e) {
 
                 // For all modern browsers, prevent default behavior of the click
                 e.preventDefault();
@@ -277,6 +268,17 @@
                 $('#form-submit-btn2').prop("disabled", false);
             },
             timeout: 5000
+        }).validate({
+            invalidHandler: function (form, validator) {
+                var errors = validator.numberOfInvalids();
+                if (errors) {
+                    var message = errors === 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
+                    $("#mws-validate-error-2").html(message).show();
+                    $('#jui-message-2').hide();
+                } else {
+                    $("#mws-validate-error-2").hide();
+                }
+            }
         });
 
         // Spinners
@@ -288,8 +290,44 @@
         $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
 
         // Chosen Select Box Plugin
-        // noinspection JSUnresolvedVariable
-        $.fn.select2 && $("select.mws-select2").select2();
+        $("select#filterCountry").select2().change(function() {
+            //Use $option (with the "$") to see that the variable is a jQuery object
+            var $option = $(this).find('option:selected');
+
+            //Added with the EDIT
+            filterCountry = $option.val();//to get content of "value"
+
+            // Redraw Table
+            Table.ajax.reload();
+        });
+
+        $("select#filterRank").select2().change(function() {
+            //Use $option (with the "$") to see that the variable is a jQuery object
+            var $option = $(this).find('option:selected');
+
+            //Added with the EDIT
+            filterRank = $option.val();//to get content of "value"
+
+            // Redraw Table
+            Table.ajax.reload();
+        });
+
+        $("select#filterStatus").select2({
+            dropdownCssClass : 'no-search'
+        }).change(function() {
+            //Use $option (with the "$") to see that the variable is a jQuery object
+            var $option = $(this).find('option:selected');
+
+            //Added with the EDIT
+            filterStatus = $option.val();//to get content of "value"
+
+            // Redraw Table
+            Table.ajax.reload();
+        });
+
+        // Copy list of countries from one select to the next!
+        var options = $("#country").html();
+        $('#filterCountry').append(options);
 
         /* File Input Styling */
         // noinspection JSUnresolvedVariable
@@ -297,19 +335,11 @@
 
         // Refresh Click
         $("#refresh").on('click', function(e) {
-
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
 
-            $('#jui-global-message')
-                .attr('class', 'alert loading')
-                .html("Refreshing Table Contents")
-                .append('<span class="close-bt"></span>')
-                .slideDown(500);
-
-            // Reload page (temporary).
-            // noinspection JSUnresolvedFunction
-            Table.ajax.reload(tableOnReload);
+            // Reload table
+            Table.ajax.reload();
 
             // Just to be sure, older IE's needs this
             return false;
@@ -502,7 +532,7 @@
                     .done(function( data ) {
                         // Parse response
                         var result = jQuery.parseJSON(data);
-                        if (result.success == false) {
+                        if (result.success === false) {
                             $('#jui-global-message')
                                 .attr('class', 'alert error')
                                 .html(result.message)

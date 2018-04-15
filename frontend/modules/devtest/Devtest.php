@@ -15,10 +15,24 @@ use System\Net\iIPAddress;
  */
 class Devtest extends \System\Controller
 {
+    public function index()
+    {
+        /** @var \System\Net\IPv4Address $addy */
+        $addy = '';
+        \System\Net\IPAddress::TryParse('192.168.1.1', $addy);
+
+        var_dump($addy->isInCidr('192.168.1.254/32'));
+    }
+
+    public function phpInfo()
+    {
+        echo phpinfo();
+    }
+
     /**
      *
      */
-    public function index()
+    public function php()
     {
         //$pdo = System\Database::GetConnection('stats');
         //$pdo->from('player_army')->select('army_id', 'player_id')->where('army_id')->between(1, 6);

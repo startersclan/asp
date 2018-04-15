@@ -54,6 +54,30 @@ class IPv4Address implements iIPAddress
     }
 
     /**
+     * Indicates whether this address falls under the supplied CIDR
+     *
+     * @param string|iIPAddress $address
+     *
+     * @return bool
+     *
+     * @see https://www.ipaddressguide.com/cidr
+     */
+    public function isInCidr($address)
+    {
+        if ($address instanceof IPv4Address)
+        {
+            $address = $address->toString();
+        }
+
+        list ($subnet, $bits) = explode('/', $address);
+        $ip = ip2long($this->ipAddress);
+        $subnet = ip2long($subnet);
+        $mask = -1 << (32 - $bits);
+        $subnet &= $mask; // in case the supplied subnet was not correctly aligned
+        return ($ip & $mask) == $subnet;
+    }
+
+    /**
      * Returns whether this IP Address is equal to the supplied IP
      *
      * @param string|iIPAddress $Ip The IPAddress to compare to
@@ -88,9 +112,11 @@ class IPv4Address implements iIPAddress
         return $this->ipAddress;
     }
 
+    /**
+     * Returns the string representation of this IPAddress
+     */
     public function __toString()
     {
         return $this->ipAddress;
     }
-
 }

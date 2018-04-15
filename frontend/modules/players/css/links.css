@@ -11,3 +11,6 @@ img.center {
     display: block;
     margin: 0 auto;
 }
+.no-search .select2-search {
+    display:none
+}

@@ -147,7 +147,7 @@
             <tbody>
             {players1}
                 <tr>
-                    <td><img src="/ASP/frontend/images/ranks/rank_{rank_id}.gif"/></td>
+                    <td><img class="center" src="/ASP/frontend/images/ranks/rank_{rank_id}.gif"/></td>
                     <?php if ({player_id} == 0): ?>
                     <td>{name}</td>
                     <?php else: ?>
@@ -196,7 +196,7 @@
             <tbody>
             {players2}
                 <tr>
-                    <td><img src="/ASP/frontend/images/ranks/rank_{rank_id}.gif"/></td>
+                    <td><img class="center" src="/ASP/frontend/images/ranks/rank_{rank_id}.gif"/></td>
                     <?php if ({player_id} == 0): ?>
                     <td>{name}</td>
                     <?php else: ?>

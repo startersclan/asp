@@ -110,6 +110,19 @@ SQL;
     }
 
     /**
+     * Returns the BattleSpy report ID for the indicated round id
+     *
+     * @param $id
+     *
+     * @return int the battlespy report id, or zero if there is none.
+     */
+    public function getBattleSpyReportId($id)
+    {
+        $query = "SELECT id FROM battlespy_report WHERE round_id=". (int)$id;
+        return (int)$this->pdo->query($query)->fetchColumn(0);
+    }
+
+    /**
      * Attempts to attach advanced round info from the snapshot into the view
      *
      * @param array $players

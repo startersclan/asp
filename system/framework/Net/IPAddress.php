@@ -115,7 +115,7 @@ class IPAddress
             $ipparts = explode('::', $Ip, 2);
 
             $head = $ipparts[0];
-            $tail = isset($ipparts[1]) ? $ipparts[1] : array();
+            $tail = isset($ipparts[1]) ? $ipparts[1] : '';
 
             $headparts = explode(':', $head);
             $ippad = array();

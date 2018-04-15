@@ -64,6 +64,10 @@ class Players extends Controller
         $view->attachStylesheet("/ASP/frontend/css/icons/icol16.css");
         $view->attachStylesheet("/ASP/frontend/js/select2/select2.css");
 
+        // Load ranks
+        \System\StatsData::Load();
+        $view->set('ranks', \System\StatsData::$RankNames);
+
         // Send output
         $view->render();
     }

@@ -25,6 +25,15 @@ interface iIPAddress
     public function isLoopback();
 
     /**
+     * Indicates whether this address falls under the supplied CIDR
+     *
+     * @param string|iIPAddress $address
+     *
+     * @return bool
+     */
+    public function isInCidr($address);
+
+    /**
      * Compares the current IPAddress instance with the comparing parameter and returns true
      *  if the two instances contain the same IP address.
      *

@@ -3,22 +3,27 @@
     align-items: center;
 }
 
-.left{
+div.left{
     text-align: left;
     display:table-cell;
     width:33.33vw;
 }
 
-.center{
+div.center{
     text-align: center;
     display:table-cell;
     width:33.33vw;
 }
 
-.right{
+div.right{
     text-align: right;
     display:table-cell;
     width:33.33vw;
+}
+
+img.center {
+    display: block;
+    margin: 0 auto;
 }
 
 .mws-table tr td a:link {

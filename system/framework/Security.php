@@ -17,7 +17,11 @@ namespace System;
  */
 class Security
 {
-    const SESSION_COOKIE_LIFETIME = 3600;
+    /**
+     * @var int Specifies the lifetime of the cookie in seconds which is sent to the browser.
+     * @see http://php.net/manual/en/session.configuration.php#ini.session.cookie-lifetime
+     */
+    const SESSION_COOKIE_LIFETIME = 0;
 
     /**
      * Takes a username and password, and returns attempts to log the

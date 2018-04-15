@@ -16,6 +16,40 @@
         </div>
     </div>
     <div class="mws-panel-body no-padding">
+        <form class="mws-form">
+            <div class="mws-form-inline">
+                <div class="mws-form-row">
+                    <label class="mws-form-label">Additional Filters: </label>
+                    <div class="mws-form-item">
+                        <div class="mws-form-cols">
+                            <div class="mws-form-col-2-8">
+                                <select id="filterRank" name="filterRank" class="mws-select2">
+                                    <option value="99">&rarr; Filter By Rank &larr;</option>
+                                    {ranks}
+                                    <option value="{iteration.id}">{value}</option>
+                                    {/ranks}
+                                </select>
+                            </div>
+                            <div class="mws-form-col-2-8">
+                                <select id="filterCountry" name="filterCountry" class="mws-select2">
+                                    <option value="99">&rarr; Filter By Country &larr;</option>
+                                </select>
+                            </div>
+                            <div class="mws-form-col-2-8">
+                                <select id="filterStatus" name="filterStatus" class="mws-select2">
+                                    <option value="99">&rarr; Filter By Account Status &larr;</option>
+                                    <option value="0">Active</option>
+                                    <option value="1">Inactive</option>
+                                    <option value="2">Banned</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="mws-panel-body no-padding">
         <table class="mws-datatable-fn mws-table">
             <thead>
             <tr>

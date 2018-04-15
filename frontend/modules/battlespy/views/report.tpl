@@ -61,7 +61,7 @@
     <div class="mws-panel-toolbar">
         <div class="btn-toolbar">
             <div class="btn-group dropup">
-                <a href="/ASP/roundinfo/view/{round.id}" class="btn"><i class="icol-magnifier"></i> View Round Details</a>
+                <a href="/ASP/roundinfo/view/{round.id}" target="_blank" class="btn"><i class="icol-magnifier"></i> View Round Details</a>
             </div>
         </div>
     </div>
@@ -138,7 +138,7 @@
                         <input id="report-{id}" type="checkbox">
                     </td>
                     <td><span class="badge badge-{badge}">{severity_name}</span></td>
-                    <td><img src="/ASP/frontend/images/ranks/rank_{rank_id}.gif"></td>
+                    <td><img class="center" src="/ASP/frontend/images/ranks/rank_{rank_id}.gif"></td>
                     <td>{name}</td>
                     <td>{message}</td>
                     <td>
