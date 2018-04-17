@@ -60,9 +60,11 @@ class IPv6Address implements iIPAddress
     /**
      * Indicates whether this address falls under the supplied CIDR
      *
-     * @param string|iIPAddress $address
+     * @param string|iIPAddress $address the CIDR address range to compare against this IPAddress
+     *  instance.
      *
-     * @return bool
+     * @return bool true if this IPAddress fulls under the supplied CIDR range. If no range is supplied,
+     *  this address will be directly compared and will return whether both addresses are equal.
      *
      * @see https://www.ipaddressguide.com/ipv6-cidr
      */
@@ -71,6 +73,12 @@ class IPv6Address implements iIPAddress
         if ($address instanceof IPv6Address)
         {
             $address = $address->toString();
+        }
+
+        // if no forward slash, just compare
+        if (strpos($address, '/') === false)
+        {
+            return $this->equals($address);
         }
 
         list($subnet, $mask) = explode('/', $address);
@@ -143,5 +151,25 @@ class IPv6Address implements iIPAddress
         $addr = str_pad($addr, 32, '0');
         $addr = pack("H*", $addr);
         return $addr;
+    }
+
+    /**
+     * Maps the IPAddress object to an IPv6 address.
+     *
+     * @return IPv6Address
+     */
+    public function mapToIPv6()
+    {
+        return $this;
+    }
+
+    /**
+     * Maps the IPAddress object to an IPv4 address.
+     *
+     * @return IPv4Address
+     */
+    public function mapToIPv4()
+    {
+        throw new \Exception('Cannot convert IPv6 to IPv4!');
     }
 }

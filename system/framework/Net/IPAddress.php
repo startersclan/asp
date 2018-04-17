@@ -18,7 +18,7 @@ class IPAddress
     /**
      * Determines whether a string is a valid IP address
      *
-     * @param string $input THe string representation of the IP to validate
+     * @param string $input A string that contains an IP address in dotted-quad notation for IPv4 and in colon-hexadecimal notation for IPv6.
      * @param iIPAddress $out [Reference Variable] The IPAddress Object for the
      * provided IP address version.
      *
@@ -43,6 +43,52 @@ class IPAddress
             // Invalid IP
             return false;
         }
+    }
+
+    /**
+     * Converts an IP address string to an IPAddress instance.
+     *
+     * @param string $input A string that contains an IP address in dotted-quad notation for IPv4 and in colon-hexadecimal notation for IPv6.
+     *
+     * @return iIPAddress
+     *
+     * @throws \ArgumentException if the supplied string is not a valid IP address.
+     */
+    public static function Parse($input)
+    {
+        $out = null;
+        if (!self::TryParse($input, $out))
+            throw new \ArgumentException('Invalid IP Address string passed', 'input');
+
+        return $out;
+    }
+
+    /**
+     *
+     *
+     * @param string $address A string that contains an IP address in dotted-quad notation for IPv4 and in colon-hexadecimal notation for IPv6.
+     * @param string[] $ranges CIDR ranges
+     *
+     * @return bool
+     *
+     * @throws \ArgumentException if the supplied address is not properly formatted
+     *
+     * @see https://serverfault.com/a/12896
+     */
+    public static function IsInCIDR($address, $ranges)
+    {
+        if (!($address instanceof iIPAddress))
+        {
+            $address = self::Parse($address);
+        }
+
+        foreach ($ranges as $range)
+        {
+            if ($address->isInCidr($range))
+                return true;
+        }
+
+        return false;
     }
 
     /**

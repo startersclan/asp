@@ -9,6 +9,8 @@
  */
 namespace System;
 
+use System\Net\IPAddress;
+
 /**
  * Security Class
  *
@@ -102,7 +104,7 @@ class Security
     public static function IsAuthorizedIp($ip)
     {
         $hosts = Config::Get('admin_hosts');
-        return in_array($ip, $hosts);
+        return IPAddress::IsInCIDR($ip, $hosts);
     }
 }
 

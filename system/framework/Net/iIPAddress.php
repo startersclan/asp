@@ -51,6 +51,20 @@ interface iIPAddress
     public function getType();
 
     /**
+     * Maps the IPAddress object to an IPv6 address.
+     *
+     * @return IPv6Address
+     */
+    public function mapToIPv6();
+
+    /**
+     * Maps the IPAddress object to an IPv4 address.
+     *
+     * @return IPv4Address
+     */
+    public function mapToIPv4();
+
+    /**
      * Returns either IPv4 dotted-quad or IPv6 colon-hexadecimal notation.
      *
      * @return string

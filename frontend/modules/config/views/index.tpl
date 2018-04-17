@@ -259,7 +259,7 @@
                                data-trigger="hover"
                                data-placement="right"
                                data-original-title="Admin Panel IP Whitelist"
-                               data-content="Authorised IP Addresses for Admin System (Localhost is ALWAYS enabled). Enter one IPv4 Address per line (Supports CIDR x.x.x.x/y notation).">
+                               data-content="Authorised IP Addresses for Admin System (Localhost is ALWAYS enabled). Enter one IP Address per line. CIDR (x.x.x.x/y) notation is supported.">
                             Auth. Admin Ips:
                         </label>
                         <div class="mws-form-item">

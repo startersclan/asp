@@ -8,7 +8,7 @@
  *
  */
 
-use System\Net\iIPAddress;
+use System\Net\IPAddress;
 
 /**
  * A Dev testing module
@@ -17,11 +17,11 @@ class Devtest extends \System\Controller
 {
     public function index()
     {
-        /** @var \System\Net\IPv4Address $addy */
-        $addy = '';
-        \System\Net\IPAddress::TryParse('192.168.1.1', $addy);
-
-        var_dump($addy->isInCidr('192.168.1.254/32'));
+        $data = [
+            'AuthID' => \System\Keygen\Keygen::numeric(4)->prefix('1')->generate(true),
+            'AuthToken' => \System\Keygen\Keygen::alphanum(16)->generate()
+        ];
+        echo '<pre>' . var_export($data, true) . '</pre>';
     }
 
     public function phpInfo()

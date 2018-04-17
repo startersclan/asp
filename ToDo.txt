@@ -1,8 +1,10 @@
 Must Do's:
  - Add a blacklist option for hiding servers in the server browser.
- - Add a Game Mod management system, only allowing games playing admin whitelisted game mods to be saved to the database.
 
 Nice To Have's:
  - Undo and subtract player stats on rounds where cheating is caught (Undo Snapshot)
  - Create a system where a round played with too many BattleSpy flags will not be saved, but rather have to be
     sanctioned after review by the stats admin before being processed into the database.
+
+Server Identifying:
+ - Prefix (ServerId On Host) -> AuthToken (Approved or declined with lists of IP Addresses)
