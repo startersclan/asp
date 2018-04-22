@@ -58,7 +58,7 @@ class IPAddress
     {
         $out = null;
         if (!self::TryParse($input, $out))
-            throw new \ArgumentException('Invalid IP Address string passed', 'input');
+            throw new \ArgumentException('Invalid IP Address string passed "'. $input .'"', 'input');
 
         return $out;
     }

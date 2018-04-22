@@ -8,9 +8,191 @@
         // Query server online status
         queryServer();
 
-        if( $.fn.button ) {
-            $("#mws-ui-button-radio").buttonset();
-        }
+        // Buttons
+        $.fn.button && $("#mws-ui-button-radio").buttonset();
+
+        // Spinners
+        //noinspection JSUnresolvedVariable
+        $.fn.spinner && $('.mws-spinner').spinner();
+
+        // -------------------------------------------------------------------------
+        // Ajax Forms
+        $("#edit-server-form").dialog({
+            autoOpen: false,
+            title: "Edit Server Details",
+            modal: true,
+            width: "640",
+            resizable: false,
+            buttons: [{
+                id: "form-submit-btn",
+                text: "Submit",
+                click: function () {
+                    $(this).find('form#mws-validate-server').submit();
+                }
+            }]
+        });
+
+        $("#edit-token-form").dialog({
+            autoOpen: false,
+            title: "Authorize Token Addresses",
+            modal: true,
+            width: "500",
+            resizable: false,
+            buttons: [{
+                id: "form-submit-btn2",
+                text: "Submit",
+                click: function () {
+                    $(this).find('form#mws-validate-token').submit();
+                }
+            }]
+        });
+
+        $("#mws-jui-dialog").dialog({
+            autoOpen: false,
+            title: "Confirm AuthID Change",
+            modal: true,
+            width: "640",
+            resizable: false
+        });
+
+        // -------------------------------------------------------------------------
+        //noinspection JSJQueryEfficiency
+        var validator = $("#mws-validate-server").validate({
+            rules: {
+                serverName: {
+                    required: true,
+                    minlength: 3,
+                    maxlength: 100
+                },
+                serverIp: {
+                    required: true
+                },
+                serverPort: {
+                    required: true,
+                    min: 1,
+                    max: 65535
+                },
+                serverQueryPort: {
+                    required: true,
+                    min: 1,
+                    max: 65535
+                }
+            },
+            invalidHandler: function (form, validator) {
+                var errors = validator.numberOfInvalids();
+                if (errors) {
+                    var message = errors === 1 ? 'You missed 1 field. It has been highlighted' : 'You missed ' + errors + ' fields. They have been highlighted';
+                    $("#mws-validate-error").html(message).show();
+                    $('#jui-message').hide();
+                } else {
+                    $("#mws-validate-error").hide();
+                }
+            }
+        });
+
+        //noinspection JSJQueryEfficiency
+        $("#mws-validate-server").ajaxForm({
+            data: { ajax: true },
+            beforeSubmit: function () {
+                $("#mws-validate-error").hide();
+                $('#jui-message').attr('class', 'alert loading').html("Submitting form data...").slideDown(200);
+                $('#form-submit-btn').prop("disabled", true);
+                return true;
+            },
+            success: function (response) {
+                // Parse the JSON response
+                var result = jQuery.parseJSON(response);
+                if (result.success === true) {
+                    $("span#sName").html(result.serverName);
+                    $("span#sAddress").html(result.serverIp);
+                    $("span#sGamePort").html(result.serverPort);
+                    $("span#sQueryPort").html(result.serverQueryPort);
+
+                    // Close dialog
+                    $("#edit-server-form").dialog("close");
+                }
+                else {
+                    $('#jui-message').attr('class', 'alert error').html(result.message).slideDown(500);
+                }
+            },
+            error: function() {
+                $('#jui-message').attr('class', 'alert error').html('AJAX Error! Please check the console log.').slideDown(500);
+            },
+            complete: function () {
+                $('#form-submit-btn').prop("disabled", false);
+            },
+            timeout: 15000
+        });
+
+        //noinspection JSJQueryEfficiency
+        $("#mws-validate-token").ajaxForm({
+            data: { ajax: true, addresses: $("select#ips").tagsinput('items') },
+            beforeSubmit: function () {
+                $("#mws-validate-error").hide();
+                $('#jui-message').attr('class', 'alert loading').html("Submitting form data...").slideDown(200);
+                $('#form-submit-btn').prop("disabled", true);
+                return true;
+            },
+            success: function (response) {
+                // Parse the JSON response
+                var result = jQuery.parseJSON(response);
+                if (result.success === true) {
+                    // Grab the addresses span element
+                    var selector = $("span#addresses");
+                    selector.html('');
+
+                    // Reset label with new addresses
+                    var items = $("select#ips").val();
+                    $.each(items, function(index, value) {
+                        selector.append('<label class="label label-info">' + value + '</label> ');
+                    });
+
+                    // Close dialog
+                    $("#edit-token-form").dialog("close");
+                }
+                else {
+                    $('#jui-message2').attr('class', 'alert error').html(result.message).slideDown(500);
+                }
+            },
+            error: function() {
+                $('#jui-message2').attr('class', 'alert error').html('AJAX Error! Please check the console log.').slideDown(500);
+            },
+            complete: function () {
+                $('#form-submit-btn2').prop("disabled", false);
+            },
+            timeout: 15000
+        });
+
+        // -------------------------------------------------------------------------
+        // Edit Server Details On-Click
+        $("#edit-details").on('click', function(e) {
+
+            // For all modern browsers, prevent default behavior of the click
+            e.preventDefault();
+
+            // Close menu
+            $(this).closest(".dropdown-menu").prev().dropdown("toggle");
+
+            // Hide previous errors
+            $('#jui-message').hide();
+            $("#mws-validate-error").hide();
+            validator.resetForm();
+
+            // Set form default values
+            $('input[name="serverName"]').val($("span#sName").html());
+            $('input[name="serverIp"]').val($("span#sAddress").html());
+            $('input[name="serverPort"]').val($("span#sGamePort").html());
+            $('input[name="serverQueryPort"]').val($("span#sQueryPort").html());
+
+            // Show dialog form
+            $("#edit-server-form").dialog("option", {
+                title: 'Update Server Details',
+                modal: true
+            }).dialog("open");
+
+            // Just to be sure, older IE's needs this
+            return false;
+        });
 
         // Refresh Click
         $("#refresh").on('click', function(e) {
@@ -57,6 +239,7 @@
                     else {
                         $("#auth-server").hide();
                         $("#unauth-server").show();
+                        $("label#authorized").html("Authorized").attr('class', 'label label-success');
                     }
                 })
                 .fail(function( jqXHR ) {
@@ -105,6 +288,7 @@
                     else {
                         $("#auth-server").show();
                         $("#unauth-server").hide();
+                        $("label#authorized").html("Unauthorized").attr('class', 'label label-important');
                     }
                 })
                 .fail(function( jqXHR ) {
@@ -151,7 +335,7 @@
                             .slideDown(500);
                     }
                     else {
-                        $("#plasma").html("Yes").css('color', 'green');
+                        $("label#plasma").html("Yes").attr('class', 'label label-success');
                         $("#plasma-server").hide();
                         $("#unplasma-server").show();
                     }
@@ -200,7 +384,7 @@
                             .slideDown(500);
                     }
                     else {
-                        $("#plasma").html("No").css('color', 'black');
+                        $("label#plasma").html("No").attr('class', 'label label-inactive');
                         $("#unplasma-server").hide();
                         $("#plasma-server").show();
                     }
@@ -224,6 +408,179 @@
                             .slideDown(500);
                     }
                 });
+
+            // Just to be sure, older IE's needs this
+            return false;
+        });
+
+        // Edit Server Details On-Click
+        $("#edit-addresses").on('click', function(e) {
+
+            // For all modern browsers, prevent default behavior of the click
+            e.preventDefault();
+
+            // Close dropdown menu
+            $(".dropdown-menu").dropdown("toggle");
+
+            // Hide previous errors
+            $('#jui-message2').hide();
+            $("#mws-validate-error2").hide();
+
+            // Set form default values
+            var input = $('select#ips');
+            $('span#addresses').children('label').each(function(i) {
+                var addy = $(this).html();
+                input.tagsinput('add', addy);
+            });
+
+            // Show dialog form
+            $("#edit-token-form").dialog("option", {
+                title: 'Authorized Server Ip Addresses',
+                modal: true
+            }).dialog("open");
+
+            // Just to be sure, older IE's needs this
+            return false;
+        });
+
+        // Generate New Auth ID
+        $("#gen-auth-id").on('click', function(e) {
+
+            // For all modern browsers, prevent default behavior of the click
+            e.preventDefault();
+
+            // Close dropdown menu
+            $(".dropdown-menu").dropdown("toggle");
+
+            // Show dialog form
+            $("#mws-jui-dialog")
+                .html('Are you sure you want to generate a new AuthID? You should never have to change an AuthID unless it has been compromised. \
+                    The server owner will need to be notified of this change before they will be able to post stats data again!')
+                .dialog("option", {
+                    modal: true,
+                    buttons: [{
+                        text: "Confirm",
+                        class: "btn btn-danger",
+                        click: function () {
+
+                            $.post( "/ASP/servers/token", { ajax: true, action: "newId", serverId: serverId })
+                                .done(function( data ) {
+                                    // Parse response
+                                    var result = jQuery.parseJSON(data);
+                                    if (result.success === false) {
+                                        $('#jui-global-message')
+                                            .attr('class', 'alert error')
+                                            .html(result.message)
+                                            .append('<span class="close-bt"></span>')
+                                            .slideDown(500);
+                                    }
+                                    else {
+                                        // Reload window
+                                        $("#currentAuthId").html(result.message);
+                                    }
+                                })
+                                .fail(function( jqXHR ) {
+                                    var result = jQuery.parseJSON(jqXHR.responseText);
+                                    if (result != null)
+                                    {
+                                        $('#jui-global-message')
+                                            .attr('class', 'alert error')
+                                            .html(result.message)
+                                            .append('<span class="close-bt"></span>')
+                                            .slideDown(500);
+                                    }
+                                    else
+                                    {
+                                        $('#jui-global-message')
+                                            .attr('class', 'alert error')
+                                            .html("An Error Occurred. Please check the ASP error log for details.")
+                                            .append('<span class="close-bt"></span>')
+                                            .slideDown(500);
+                                    }
+                                });
+
+                            // Close dialog
+                            $(this).dialog("close");
+                        }
+                    },
+                        {
+                            text: "Cancel",
+                            click: function () {
+                                $(this).dialog("close");
+                            }
+                        }]
+                }).dialog("open");
+
+            // Just to be sure, older IE's needs this
+            return false;
+        });
+
+        // Generate New Auth Token
+        $("#gen-auth-token").on('click', function(e) {
+
+            // For all modern browsers, prevent default behavior of the click
+            e.preventDefault();
+
+            // Close dropdown menu
+            $(".dropdown-menu").dropdown("toggle");
+
+            // Show dialog form
+            $("#mws-jui-dialog")
+                .html('Are you sure you want to generate a new AuthToken? The server owner will need to be notified of this change before they will be able to post stats data again!')
+                .dialog("option", {
+                    modal: true,
+                    buttons: [{
+                        text: "Confirm",
+                        class: "btn btn-danger",
+                        click: function () {
+
+                            $.post( "/ASP/servers/token", { ajax: true, action: "newToken", serverId: serverId })
+                                .done(function( data ) {
+                                    // Parse response
+                                    var result = jQuery.parseJSON(data);
+                                    if (result.success === false) {
+                                        $('#jui-global-message')
+                                            .attr('class', 'alert error')
+                                            .html(result.message)
+                                            .append('<span class="close-bt"></span>')
+                                            .slideDown(500);
+                                    }
+                                    else {
+                                        // Reload window
+                                        $("#currentAuthToken").html(result.message);
+                                    }
+                                })
+                                .fail(function( jqXHR ) {
+                                    var result = jQuery.parseJSON(jqXHR.responseText);
+                                    if (result != null)
+                                    {
+                                        $('#jui-global-message')
+                                            .attr('class', 'alert error')
+                                            .html(result.message)
+                                            .append('<span class="close-bt"></span>')
+                                            .slideDown(500);
+                                    }
+                                    else
+                                    {
+                                        $('#jui-global-message')
+                                            .attr('class', 'alert error')
+                                            .html("An Error Occurred. Please check the ASP error log for details.")
+                                            .append('<span class="close-bt"></span>')
+                                            .slideDown(500);
+                                    }
+                                });
+
+                            // Close dialog
+                            $(this).dialog("close");
+                        }
+                    },
+                        {
+                            text: "Cancel",
+                            click: function () {
+                                $(this).dialog("close");
+                            }
+                        }]
+                }).dialog("open");
 
             // Just to be sure, older IE's needs this
             return false;
@@ -268,6 +625,13 @@
                     tickDecimals: 0,
                     min:0
                 }
+            });
+
+            // On Window Resize, redraw chart
+            $(window).resize(function() {
+                plot.resize();
+                plot.setupGrid();
+                plot.draw();
             });
         }
 
@@ -412,17 +776,28 @@
                         // If the server is offline, show that.
                         if (!result.online) {
                             // Fill the rest of the screen
-                            $("#status").html("Offline").css('color', 'red');
+                            $("#status").html("Offline").attr('class', 'label label-important');
                             $('#details').html("");
                             $("#jui-global-message").slideUp(200);
                             $("#refresh").data('disabled', false);
+
+                            // Resize Graph
+                            $("#graph").attr('class', 'mws-panel grid_8');
+                            $("#mws-line-chart").height(360);
+                            plot.resize();
+
                             return;
                         }
 
                         // Server is online!
                         $('#details').html(result.message);
-                        $("#status").html("Online").css('color', 'green');
+                        $("#status").html("Online").attr('class', 'label label-success');
                         $("#jui-global-message").slideUp(200);
+
+                        // Resize Graph
+                        $("#graph").attr('class', 'mws-panel grid_5');
+                        $("#mws-line-chart").height(280);
+                        plot.resize();
 
                         // Set image
                         checkImage(result.image);

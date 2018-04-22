@@ -107,7 +107,6 @@
 
                 // Set form default values
                 $('input[name="serverName"]').val("");
-                $('input[name="serverPrefix"]').val("");
                 $('input[name="serverIp"]').val("");
                 $('input[name="serverPort"]').val(16567);
                 $('input[name="serverQueryPort"]').val(29900);
@@ -144,13 +143,13 @@
                             '<td class="checkbox-column"><input id="server-' + id + '" type="checkbox"></td>',
                             result.serverId,
                             result.serverName,
-                            result.serverPrefix,
+                            result.authId,
                             result.serverIp,
                             result.serverPort,
                             result.serverQueryPort,
                             0,
-                            'Yes',
-                            'No',
+                            '<span id="tr-auth-' + id + '" class="badge badge-success">Yes</span>',
+                            '<span id="tr-plasma-' + id + '" class="badge badge-inactive">No</span>',
                             '<span class="btn-group"> \
                                 <a id="go-btn" href="/ASP/servers/view/' + id + '" rel="tooltip" title="View Server" class="btn btn-small"><i class="icon-eye-open"></i></a>\
                                 <a id="edit-btn-' + id + '" href="#"  rel="tooltip" title="Edit Server" class="btn btn-small"><i class="icon-pencil"></i></a> \
@@ -164,7 +163,6 @@
                     }
                     else if (result.mode === 'update') {
                         selectedRowNode.find('td:eq(2)').html(result.serverName);
-                        selectedRowNode.find('td:eq(3)').html(result.serverPrefix);
                         selectedRowNode.find('td:eq(4)').html(result.serverIp);
                         selectedRowNode.find('td:eq(5)').html(result.serverPort);
                         selectedRowNode.find('td:eq(6)').html(result.serverQueryPort);
@@ -183,7 +181,7 @@
             complete: function () {
                 $('#form-submit-btn').prop("disabled", false);
             },
-            timeout: 5000
+            timeout: 15000
         });
 
         // Spinners
@@ -223,11 +221,10 @@
                 $('input[name="serverId"]').val(id);
 
                 // Set form values
-                $('input[name="serverName"]').val($('#tr-server-' + id).find('td:eq(2)').html());
-                $('input[name="serverPrefix"]').val($('#tr-server-' + id).find('td:eq(3)').html());
-                $('input[name="serverIp"]').val($('#tr-server-' + id).find('td:eq(4)').html());
-                $('input[name="serverPort"]').val($('#tr-server-' + id).find('td:eq(5)').html());
-                $('input[name="serverQueryPort"]').val($('#tr-server-' + id).find('td:eq(6)').html());
+                $('input[name="serverName"]').val(selectedRowNode.find('td:eq(2)').html());
+                $('input[name="serverIp"]').val(selectedRowNode.find('td:eq(4)').html());
+                $('input[name="serverPort"]').val(selectedRowNode.find('td:eq(5)').html());
+                $('input[name="serverQueryPort"]').val(selectedRowNode.find('td:eq(6)').html());
 
                 // Show dialog form
                 $("#add-server-form").dialog("option", {
@@ -448,7 +445,7 @@
         });
 
         // Authorized Selected Click
-        $("#auth-selected").click(function(e) {
+        $("#auth-selected").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();

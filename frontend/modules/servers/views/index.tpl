@@ -1,7 +1,7 @@
 <div id="jui-global-message" class="alert" style="display: none;"></div>
 <div class="mws-panel grid_8">
     <div class="mws-panel-header">
-        <span><i class="icon-table"></i> Registered Servers</span>
+        <span><i class="icon-table"></i> Registered Stats Servers</span>
     </div>
     <div class="mws-panel-toolbar">
         <div class="btn-toolbar">
@@ -23,11 +23,11 @@
                 <th class="checkbox-column">
                     <input id="select-all" type="checkbox">
                 </th>
-                <th style="width: 5%">SID</th>
+                <th style="width: 4%">Id</th>
                 <th>Server Name</th>
-                <th style="width: 12%">Server Token</th>
+                <th style="width: 5%">Auth ID</th>
                 <th style="width: 12%">Server IP Address</th>
-                <th style="width: 7%">Server Port</th>
+                <th style="width: 7%">Game Port</th>
                 <th style="width: 7%">Query Port</th>
                 <th style="width: 6%">Snapshots</th>
                 <th style="width: 6%">Authorized</th>
@@ -43,9 +43,9 @@
                 </td>
                 <td>{id}</td>
                 <td>{name}</td>
-                <td>{prefix}</td>
+                <td>{auth_id}</td>
                 <td>{ip}</td>
-                <td>{port}</td>
+                <td>{gameport}</td>
                 <td>{queryport}</td>
                 <td>{snapshots}</td>
                 <td><span id="tr-auth-{id}" class="badge badge-{auth_badge}">{auth_text}</span></td>
@@ -82,26 +82,20 @@
                         </div>
                     </div>
                     <div class="mws-form-row">
-                        <label class="mws-form-label">Server Prefix</label>
-                        <div class="mws-form-item">
-                            <input type="text" name="serverPrefix" class="required large">
-                        </div>
-                    </div>
-                    <div class="mws-form-row">
-                        <label class="mws-form-label">Server Ip Address</label>
+                        <label class="mws-form-label">Server IPv4 Address</label>
                         <div class="mws-form-item">
                             <input type="text" name="serverIp" class="required large">
                         </div>
                     </div>
                     <div class="mws-form-row">
-                        <label class="mws-form-label">Server Port</label>
+                        <label class="mws-form-label">Game Port</label>
                         <div class="mws-form-item">
                             <input type="text" id="s1" name="serverPort" class="required mws-spinner" value="16567">
                             <label for="s1" class="error" generated="true" style="display:none"></label>
                         </div>
                     </div>
                     <div class="mws-form-row">
-                        <label class="mws-form-label">Server Query Port</label>
+                        <label class="mws-form-label">Query Port</label>
                         <div class="mws-form-item">
                             <input type="text" id="s2" name="serverQueryPort" class="required mws-spinner" value="29900">
                             <label for="s2" class="error" generated="true" style="display:none"></label>

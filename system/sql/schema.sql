@@ -45,6 +45,7 @@ DROP TABLE IF EXISTS `round_history`;
 DROP TABLE IF EXISTS `round`;
 DROP TABLE IF EXISTS `game_mod`;
 DROP TABLE IF EXISTS `game_mode`;
+DROP TABLE IF EXISTS `server_auth_ip`;
 DROP TABLE IF EXISTS `server`;
 DROP TABLE IF EXISTS `rank`;
 DROP TABLE IF EXISTS `mapinfo`;
@@ -153,19 +154,29 @@ CREATE TABLE `rank` (
 --
 
 CREATE TABLE `server` (
-  `id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `ip` VARCHAR(46) NOT NULL DEFAULT '',
-  `prefix` VARCHAR(30) NOT NULL DEFAULT '',
+  `id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT, -- Public server ID, row id
+  `auth_id` MEDIUMINT UNSIGNED NOT NULL UNIQUE,    -- Private server auth id
+  `auth_token` VARCHAR(16) NOT NULL,              -- Private server auth token
   `name` VARCHAR(100) DEFAULT NULL,
-  `port` SMALLINT UNSIGNED DEFAULT 0,
-  `queryport` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-  `authorized` TINYINT(1) NOT NULL DEFAULT 0, -- Servers are allowed to post snapshots
+  `ip` VARCHAR(46) NOT NULL DEFAULT '',           -- Last IP
+  `gameport` SMALLINT UNSIGNED DEFAULT 16567,
+  `queryport` SMALLINT UNSIGNED NOT NULL DEFAULT 29900,
   `lastupdate` INT UNSIGNED NOT NULL DEFAULT 0,
+  `authorized` TINYINT(1) NOT NULL DEFAULT 0,     -- Auth Token is allowed to post snapshots
   `plasma` TINYINT(1) NOT NULL DEFAULT 0,
   `online` TINYINT(1) NOT NULL DEFAULT 0,
-  PRIMARY KEY(`id`),
-  CONSTRAINT `ip-port-unq` UNIQUE (`ip`, `port`),
-  CONSTRAINT `ip-queryport-unq` UNIQUE (`ip`, `queryport`)
+  PRIMARY KEY(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `server_auth_ip`
+--
+
+CREATE TABLE `server_auth_ip` (
+  `id` SMALLINT UNSIGNED NOT NULL,            -- Server ID
+  `address` VARCHAR(50) NOT NULL DEFAULT '',  -- Authorized IP Address, length 46 + 4 for CIDR ranges
+  PRIMARY KEY(`id`, `address`),
+  FOREIGN KEY(`id`) REFERENCES server(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -977,6 +988,3 @@ INSERT INTO `game_mode`(`id`, `name`) VALUES (2, 'Coop');
 -- Dumping data for table `_version`
 --
 INSERT INTO `_version`(`updateid`, `version`) VALUES (30010, '3.0.0');
-
-INSERT INTO `server`(`ip`, `prefix`, `name`, `port`, `queryport`) VALUES ('127.0.0.1', 'w212', 'Local Server 1', 16567, 29900);
-INSERT INTO `server`(`ip`, `prefix`, `name`, `port`, `queryport`) VALUES ('::1', 'w212', 'Local Server 2', 16567, 29900);

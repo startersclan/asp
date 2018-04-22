@@ -47,7 +47,7 @@ else // Player exists
     $connection = Database::GetConnection("stats");
 
     // Make sure the player exists
-    $query = "SELECT `rank`, `chng`, `decr` FROM `player` WHERE `id` = {$pid}";
+    $query = "SELECT `rank_id`, `chng`, `decr` FROM `player` WHERE `id` = {$pid}";
     $row = $connection->query($query)->fetch();
 
     // Query failed or player does not exist
@@ -69,7 +69,7 @@ else // Player exists
 
         // Send response
         $Response->writeHeaderLine("rank", "chng", "decr");
-        $Response->writeDataLine($row['rank'], $chng, $decr);
+        $Response->writeDataLine($row['rank_id'], $chng, $decr);
         $Response->send();
     }
 }

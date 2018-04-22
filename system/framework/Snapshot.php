@@ -15,6 +15,7 @@ use SecurityException;
 use System\Collections\Dictionary;
 use System\Database\UpdateOrInsertQuery;
 use System\IO\Path;
+use System\Net\IPAddress;
 
 class Snapshot extends GameResult
 {
@@ -48,6 +49,16 @@ class Snapshot extends GameResult
     public $serverId = 0;
 
     /**
+     * @var int The server's AuthID if there is one!
+     */
+    public $authId = 0;
+
+    /**
+     * @var string The server's AuthToken if there is one!
+     */
+    public $authToken = '';
+
+    /**
      * Snapshot constructor.
      *
      * @param Dictionary $snapshotData snapshot as a JSON string
@@ -68,7 +79,8 @@ class Snapshot extends GameResult
             throw new Exception("Incompatible snapshot version: ". $snapshotData['version']);
 
         // Server data
-        $this->serverPrefix = preg_replace("/[^A-Za-z0-9_]/", '', $snapshotData['prefix']);
+        $this->authId = (int)$snapshotData["authId"];
+        $this->authToken = $snapshotData["authToken"];
         $this->serverName = preg_replace("/[^". Player::NAME_REGEX ."]/", '', $snapshotData['serverName']);
         $this->serverPort = (int)$snapshotData["gamePort"];
         $this->queryPort = (int)$snapshotData["queryPort"];
@@ -125,8 +137,7 @@ class Snapshot extends GameResult
         }
 
         // Load server
-        $ip = $connection->quote($this->serverIp);
-        $result = $connection->query("SELECT `id` FROM `server` WHERE `ip`={$ip} AND `port`={$this->serverPort} LIMIT 1");
+        $result = $connection->query("SELECT `id` FROM `server` WHERE `auth_id`={$this->authId}");
         if ($row = $result->fetch())
         {
             $this->serverId = (int)$row['id'];
@@ -172,12 +183,80 @@ class Snapshot extends GameResult
         }
 
         // ---------------------------------------------------------------------
+        // Start logging information about this snapshot
+        $this->logWriter->logNotice("Begin Processing (%s) From Server ID (%d)...", [$this->mapName, $this->serverId]);
+
+        // ---------------------------------------------------------------------
+        // Ensure this is a valid AuthId. If AuthID is invalid, server ID will be 0
+        if ($this->serverId == 0)
+        {
+            $this->logWriter->logSecurity("Invalid AuthID found in Snapshot data [{$this->authId}]");
+            throw new SecurityException("Invalid AuthID found in Snapshot data", empty($row) ? 0 : 1);
+        }
+        else
+        {
+            $this->logWriter->logDebug("Valid AuthID found in Snapshot data [{$this->authId}]");
+        }
+
+        // ---------------------------------------------------------------------
         // Ensure this is an authorized server
         $result = $connection->query("SELECT `authorized` FROM `server` WHERE `id`={$this->serverId}");
         if (!($row = $result->fetch()) || (int)$row['authorized'] == 0)
         {
             $this->logWriter->logSecurity("Unauthorised Game Server '{$this->serverIp}:{$this->serverPort}' attempted to send snapshot data!");
-            throw new SecurityException("Unauthorised Game Server!", empty($row) ? 0 : 1);
+            throw new SecurityException("Unauthorised Game Server!", empty($row) ? 2 : 3);
+        }
+        else
+        {
+            $this->logWriter->logDebug("Found authorised Game Server '{$this->serverIp}:{$this->serverPort}'");
+        }
+
+        // ---------------------------------------------------------------------
+        // Ensure this is an valid authorization token, and the server IP is OK
+        $result = $connection->query("SELECT `ip`, `auth_token` FROM `server` WHERE `id`={$this->serverId}");
+        if ($row = $result->fetch())
+        {
+            // Match Authentication Token
+            $token = $row['auth_token'];
+            if ($token !== $this->authToken)
+            {
+                $this->logWriter->logSecurity("Invalid AuthToken passed! [AuthId: {$this->authId}, AuthToken: {$this->authToken}]");
+                throw new SecurityException("Invalid AuthToken passed!", 4);
+            }
+            else
+            {
+                $this->logWriter->logDebug("Valid AuthToken passed! [AuthId: {$this->authId}, AuthToken: {$this->authToken}]");
+            }
+
+            // Validate the server IP against the AuthToken
+            if ($this->serverIp !== $row['ip'])
+            {
+                // Match Server IP's
+                $valid = false;
+                $addy = IPAddress::Parse($this->serverIp);
+                $result = $connection->query("SELECT `address` FROM `server_auth_ip` WHERE `id`={$this->serverId}");
+                while ($row = $result->fetch())
+                {
+                    if ($addy->isInCidr($row['address']))
+                        $valid = true;
+                }
+
+                if (!$valid)
+                {
+                    $message = "Invalid Server IpAddress received for AuthId! [AuthId: {$this->authId}, ServerAddress: {$this->serverIp}]";
+                    $this->logWriter->logSecurity($message);
+                    throw new SecurityException($message, 5);
+                }
+                else
+                {
+                    $this->logWriter->logDebug("Valid Server IpAddress received for AuthId! [ServerAddress: {$this->serverIp}]");
+                }
+            }
+        }
+        else
+        {
+            $this->logWriter->logSecurity("Unauthorised Game Server '{$this->serverIp}:{$this->serverPort}' attempted to send snapshot data!");
+            throw new SecurityException("Unauthorised Game Server!", empty($row) ? 6 : 7);
         }
 
         // ---------------------------------------------------------------------
@@ -195,10 +274,9 @@ class Snapshot extends GameResult
         }
 
         // ---------------------------------------------------------------------
-        // Start logging information about this snapshot
+        // Logging player and map information in this snapshot
         $playerCount = count($this->players);
         $message = ($this->isCustomMap) ? "Custom Map (%d)..." : "Standard Map (%d)...";
-        $this->logWriter->logNotice("Begin Processing (%s) From Server ID (%d)...", [$this->mapName, $this->serverId]);
         $this->logWriter->logNotice($message, $this->mapId);
         $this->logWriter->logNotice("Found (%d) Player(s)...", $playerCount);
 

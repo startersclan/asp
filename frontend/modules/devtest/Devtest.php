@@ -18,7 +18,7 @@ class Devtest extends \System\Controller
     public function index()
     {
         $data = [
-            'AuthID' => \System\Keygen\Keygen::numeric(4)->prefix('1')->generate(true),
+            'AuthID' => \System\Keygen\Keygen::numeric(5)->prefix('1')->generate(),
             'AuthToken' => \System\Keygen\Keygen::alphanum(16)->generate()
         ];
         echo '<pre>' . var_export($data, true) . '</pre>';

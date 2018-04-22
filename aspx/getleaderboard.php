@@ -73,7 +73,7 @@ else
 
             if (!$pid)
             {
-                $query = "SELECT id, name, rank, country, time, score FROM player WHERE score > 0
+                $query = "SELECT id, name, rank_id, country, time, score FROM player WHERE score > 0
 				    ORDER BY score DESC, name DESC LIMIT " . $min . ", " . $max;
                 $result = $connection->query($query);
                 while ($row = $result->fetch())
@@ -84,14 +84,14 @@ else
                         trim($row['name']),
                         $row['score'],
                         $row['time'],
-                        $row['rank'],
+                        $row['rank_id'],
                         strtoupper($row['country'])
                     );
                 }
             }
             else
             {
-                $query = "SELECT id, name, rank, country, time, score FROM player WHERE id = {$pid}";
+                $query = "SELECT id, name, rank_id, country, time, score FROM player WHERE id = {$pid}";
                 $row = $connection->query($query)->fetch();
                 if (!empty($row))
                 {
@@ -103,7 +103,7 @@ else
                         trim($row['name']),
                         $row['score'],
                         $row['time'],
-                        $row['rank'],
+                        $row['rank_id'],
                         strtoupper($row['country'])
                     );
                 }
@@ -117,7 +117,7 @@ else
 
             if ($pid == 0)
             {
-                $query = "SELECT id, name, rank, country, cmdtime, cmdscore FROM player WHERE cmdscore > 0"
+                $query = "SELECT id, name, rank_id, country, cmdtime, cmdscore FROM player WHERE cmdscore > 0"
                     . " ORDER BY cmdscore DESC LIMIT {$min}, {$max}";
                 $result = $connection->query($query);
                 while ($row = $result->fetch())
@@ -128,14 +128,14 @@ else
                         trim($row['name']),
                         $row['cmdscore'],
                         $row['cmdtime'],
-                        $row['rank'],
+                        $row['rank_id'],
                         strtoupper($row['country'])
                     );
                 }
             }
             else
             {
-                $query = "SELECT id, name, rank, country, cmdtime, cmdscore FROM player WHERE id = {$pid}";
+                $query = "SELECT id, name, rank_id, country, cmdtime, cmdscore FROM player WHERE id = {$pid}";
                 $row = $connection->query($query)->fetch();
                 if (!empty($row))
                 {
@@ -147,7 +147,7 @@ else
                         trim($row['name']),
                         $row['cmdscore'],
                         $row['cmdtime'],
-                        $row['rank'],
+                        $row['rank_id'],
                         strtoupper($row['country'])
                     );
                 }
@@ -161,7 +161,7 @@ else
 
             if ($pid == 0)
             {
-                $query = "SELECT id, name, rank, country, time, teamscore FROM player WHERE teamscore > 0
+                $query = "SELECT id, name, rank_id, country, time, teamscore FROM player WHERE teamscore > 0
 				    ORDER BY teamscore DESC LIMIT " . $min . ", " . $max;
                 $result = $connection->query($query);
                 while ($row = $result->fetch())
@@ -172,14 +172,14 @@ else
                         trim($row['name']),
                         $row['teamscore'],
                         $row['time'],
-                        $row['rank'],
+                        $row['rank_id'],
                         strtoupper($row['country'])
                     );
                 }
             }
             else
             {
-                $query = "SELECT id, name, rank, country, time, teamscore FROM player WHERE id = {$pid}";
+                $query = "SELECT id, name, rank_id, country, time, teamscore FROM player WHERE id = {$pid}";
                 $row = $connection->query($query)->fetch();
                 if (!empty($row))
                 {
@@ -191,7 +191,7 @@ else
                         trim($row['name']),
                         $row['teamscore'],
                         $row['time'],
-                        $row['rank'],
+                        $row['rank_id'],
                         strtoupper($row['country'])
                     );
                 }
@@ -205,7 +205,7 @@ else
 
             if (!$pid)
             {
-                $query = "SELECT id, name, rank, country, time, kills, skillscore FROM player WHERE skillscore > 0
+                $query = "SELECT id, name, rank_id, country, time, kills, skillscore FROM player WHERE skillscore > 0
 				    ORDER BY skillscore DESC LIMIT " . $min . ", " . $max;
                 $result = $connection->query($query);
                 while ($row = $result->fetch())
@@ -217,14 +217,14 @@ else
                         $row['skillscore'],
                         $row['kills'],
                         $row['time'],
-                        $row['rank'],
+                        $row['rank_id'],
                         strtoupper($row['country'])
                     );
                 }
             }
             else
             {
-                $query = "SELECT id, name, rank, country, time, kills, skillscore FROM player WHERE id = {$pid}";
+                $query = "SELECT id, name, rank_id, country, time, kills, skillscore FROM player WHERE id = {$pid}";
                 $row = $connection->query($query)->fetch();
                 if (!empty($row))
                 {
@@ -237,7 +237,7 @@ else
                         $row['skillscore'],
                         $row['kills'],
                         $row['time'],
-                        $row['rank'],
+                        $row['rank_id'],
                         strtoupper($row['country'])
                     );
                 }
@@ -265,7 +265,7 @@ else
         if (!$pid)
         {
             $query = <<<SQL
-SELECT pos, player_id, weeklyscore, p.name, p.rank, p.country, p.joined, p.time
+SELECT pos, player_id, weeklyscore, p.name, p.rank_id, p.country, p.joined, p.time
 FROM risingstar AS r 
   INNER JOIN player AS p ON player_id = p.id 
 WHERE pos BETWEEN $min AND $max
@@ -280,7 +280,7 @@ SQL;
                     $row['weeklyscore'],
                     $row['time'],
                     date('m/d/y h:i:00 A', $row['joined']),
-                    $row['rank'],
+                    $row['rank_id'],
                     strtoupper($row['country'])
                 );
             }
@@ -288,7 +288,7 @@ SQL;
         else
         {
             // Ensure Player exists by PID
-            $query = "SELECT `id`, `name`, `rank`, `country`, `time`, `joined` FROM player WHERE id={$pid} LIMIT 1";
+            $query = "SELECT `id`, `name`, `rank_id`, `country`, `time`, `joined` FROM player WHERE id={$pid} LIMIT 1";
             $player = $connection->query($query)->fetch();
             if (empty($player))
             {
@@ -314,7 +314,7 @@ SQL;
                 $result['weeklyscore'],
                 $player['time'],
                 date('m/d/y h:i:00 A', $player['joined']),
-                $player['rank'],
+                $player['rank_id'],
                 strtoupper($player['country'])
             );
         }
@@ -333,7 +333,7 @@ SQL;
         if ($pid == 0)
         {
             $query = <<<SQL
-SELECT p.name, p.rank, p.country, k.player_id, k.kills, k.deaths, k.time
+SELECT p.name, p.rank_id, p.country, k.player_id, k.kills, k.deaths, k.time
 FROM player_kit AS k
   INNER JOIN player AS p ON k.player_id = p.id
 WHERE k.kit_id = $id AND k.kills > 0
@@ -350,7 +350,7 @@ SQL;
                     $row['kills'],
                     $row['deaths'],
                     $row['time'],
-                    $row['rank'],
+                    $row['rank_id'],
                     strtoupper($row['country'])
                 );
             }
@@ -358,7 +358,7 @@ SQL;
         else // Searching by PID
         {
             // Ensure Player exists by PID
-            $query = "SELECT `id`, `name`, `rank`, `country` FROM player WHERE id={$pid} LIMIT 1";
+            $query = "SELECT `id`, `name`, `rank_id`, `country` FROM player WHERE id={$pid} LIMIT 1";
             $player = $connection->query($query)->fetch();
             if (empty($player))
             {
@@ -393,7 +393,7 @@ SQL;
                 $player['kills'],
                 $player['deaths'],
                 $player['time'],
-                $player['rank'],
+                $player['rank_id'],
                 strtoupper($player['country'])
             );
         }
@@ -411,7 +411,7 @@ SQL;
         {
             $query = <<<SQL
 SELECT 
-  p.name AS name, p.rank AS rank, p.country AS country, 
+  p.name AS name, p.rank_id AS rank, p.country AS country, 
   k.player_id AS pid, k.kills AS kills, k.deaths AS deaths, k.time AS `time`
 FROM player_vehicle AS k
   INNER JOIN player AS p ON k.player_id = p.id
@@ -429,7 +429,7 @@ SQL;
                     $row['kills'],
                     $row['deaths'],
                     $row['time'],
-                    $row['rank'],
+                    $row['rank_id'],
                     strtoupper($row['country'])
                 );
             }
@@ -437,7 +437,7 @@ SQL;
         else // Searching by PID
         {
             // Ensure Player exists by PID
-            $query = "SELECT `id`, `name`, `rank`, `country` FROM player WHERE id={$pid} LIMIT 1";
+            $query = "SELECT `id`, `name`, `rank_id`, `country` FROM player WHERE id={$pid} LIMIT 1";
             $player = $connection->query($query)->fetch();
             if (empty($player))
             {
@@ -472,7 +472,7 @@ SQL;
                 $player['kills'],
                 $player['deaths'],
                 $player['time'],
-                $player['rank'],
+                $player['rank_id'],
                 strtoupper($player['country'])
             );
         }
@@ -491,7 +491,7 @@ SQL;
         {
             $query = <<<SQL
 SELECT 
-  p.name AS name, p.rank AS rank, p.country AS country, 
+  p.name AS name, p.rank_id AS rank, p.country AS country, 
   k.player_id AS pid, k.kills AS kills, k.deaths AS deaths, k.time AS `time`, k.hits AS hits, k.fired AS fired
 FROM player_weapon AS k
   INNER JOIN player AS p ON k.player_id = p.id
@@ -513,7 +513,7 @@ SQL;
                     $row['deaths'],
                     $row['time'],
                     ($fired > 0) ? @number_format(($hits / $fired) * 100) : 0,
-                    $row['rank'],
+                    $row['rank_id'],
                     strtoupper($row['country'])
                 );
             }
@@ -521,7 +521,7 @@ SQL;
         else // Searching by PID
         {
             // Ensure Player exists by PID
-            $query = "SELECT `id`, `name`, `rank`, `country` FROM player WHERE id={$pid} LIMIT 1";
+            $query = "SELECT `id`, `name`, `rank_id`, `country` FROM player WHERE id={$pid} LIMIT 1";
             $player = $connection->query($query)->fetch();
             if (empty($player))
             {
@@ -561,7 +561,7 @@ SQL;
                 $player['deaths'],
                 $player['time'],
                 $player['accuracy'],
-                $player['rank'],
+                $player['rank_id'],
                 strtoupper($player['country'])
             );
         }

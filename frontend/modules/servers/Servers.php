@@ -100,22 +100,91 @@ class Servers extends Controller
 
         // Set last seen
         $server['last_update'] = TimeHelper::FormatDifference((int)$server['lastupdate'], time());
+        $server['auth_badge'] = ($server['authorized']) ? 'success' : 'important';
+        $server['auth_text'] = ($server['authorized']) ? 'Authorized' : 'Unauthorized';
+        $server['plasma_badge'] = ($server['plasma']) ? 'success' : 'inactive';
+        $server['plasma_text'] = ($server['plasma']) ? 'Yes' : 'No';
 
         // Create view
         $view = new View('view', 'servers');
         $view->set('server', $server);
 
+        // Fetch Auth Token authorized addresses
+        $addresses = $this->serverModel->fetchAuthorizedServerIpsById($id);
+        $view->set('addresses', $addresses);
+
         // Attach needed scripts for the form
+        $view->attachScript("/ASP/frontend/js/jquery.form.js");
+        $view->attachScript("/ASP/frontend/js/validate/jquery.validate.js");
         $view->attachScript("/ASP/frontend/js/flot/jquery.flot.min.js");
         $view->attachScript("/ASP/frontend/js/flot/plugins/jquery.flot.tooltip.js");
         $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");
+        $view->attachScript("/ASP/frontend/js/bootstrap/bootstrap-tagsinput.js");
         $view->attachScript("/ASP/frontend/modules/servers/js/view.js");
 
         // Attach Stylesheets
         $view->attachStylesheet("/ASP/frontend/css/icons/icol16.css");
+        $view->attachStylesheet("/ASP/frontend/js/bootstrap/bootstrap-tagsinput.css");
 
         // Send output
         $view->render();
+    }
+
+    /**
+     * @protocol    POST
+     * @request     /ASP/servers/token
+     * @output      json
+     */
+    public function postToken()
+    {
+        // Ensure correct action
+        $this->requireAction('address', 'newId', 'newToken');
+
+        // Require the database
+        $this->requireDatabase(true);
+
+        // Attach Model
+        $this->loadModel('ServerModel', 'servers');
+
+        // Sanitize id
+        $id = (int)$_POST['serverId'];
+
+        try
+        {
+            // Process based on action
+            switch ($_POST['action'])
+            {
+                case 'address':
+                    // Sync list with database
+                    $this->serverModel->syncAuthorizedServerIpsById($id, $_POST['addresses']);
+
+                    // Send success
+                    $this->sendJsonResponse(true, 'Successfully sync\'d list');
+                    break;
+                case 'newId':
+                    $newId = $this->serverModel->generateNewAuthIdForServer($id);
+                    if ($newId === false)
+                        $this->sendJsonResponse(false, 'Unable to generate new AuthId for server');
+                    else
+                        $this->sendJsonResponse(true, $newId);
+
+                    break;
+                case 'newToken':
+                    $newId = $this->serverModel->generateNewAuthTokenForServer($id);
+                    if (empty($newId))
+                        $this->sendJsonResponse(false, 'Unable to generate new AuthToken for server');
+                    else
+                        $this->sendJsonResponse(true, $newId);
+                    break;
+            }
+        }
+        catch (Exception $e)
+        {
+            System::LogException($e);
+
+            // Send success
+            $this->sendJsonResponse(false, $e);
+        }
     }
 
     /**
@@ -216,15 +285,19 @@ class Servers extends Controller
                     // Add the server via the Model
                     $id = $this->serverModel->addServer(
                         $items['serverName'],
-                        $items['serverPrefix'],
                         $items['serverIp'],
                         (int)$items['serverPort'],
-                        (int)$items['serverQueryPort']
+                        (int)$items['serverQueryPort'],
+                        true,
+                        $authID,
+                        $authToken
                     );
 
                     // Add additional information for the output
                     $items->add('mode', 'add');
                     $items->add('serverId', $id);
+                    $items->add('authId', $authID);
+                    $items->add('authToken', $authToken);
 
                     // Send client response
                     $this->sendJsonResponse(true, '', $items->toArray());
@@ -234,7 +307,6 @@ class Servers extends Controller
                     $this->serverModel->updateServerById(
                         (int)$items['serverId'],
                         $items['serverName'],
-                        $items['serverPrefix'],
                         $items['serverIp'],
                         (int)$items['serverPort'],
                         (int)$items['serverQueryPort']

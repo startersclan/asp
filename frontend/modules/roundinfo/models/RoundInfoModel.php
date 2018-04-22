@@ -49,7 +49,7 @@ SELECT h.*,
   mi.displayname AS `map_display_name`, 
   s.name AS `server`, 
   s.ip AS `ip`, 
-  s.port AS `port`,
+  s.gameport AS `port`,
   g.longname AS `modname`,
   gm.name AS `gamemode`
 FROM round AS h 

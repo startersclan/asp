@@ -50,7 +50,7 @@ else
     {
         case 0:
             // Get Player Data
-            $row = $connection->query("SELECT `name`, `score`, `rank` FROM `player` WHERE `id` = {$pid}")->fetch();
+            $row = $connection->query("SELECT `name`, `score`, `rank_id` FROM `player` WHERE `id` = {$pid}")->fetch();
             if (empty($row))
             {
                 $Response->writeHeaderLine("pid", "nick", "asof");
@@ -63,7 +63,7 @@ else
             else
             {
                 // Cast to an int
-                $rank = (int)$row['rank'];
+                $rank = (int)$row['rank_id'];
 
                 // Determine Earned Unlocks due to Rank
                 $unlocks = getRankUnlocks($rank);

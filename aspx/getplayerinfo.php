@@ -84,7 +84,7 @@ else
                 'mode1' => $row['mode1'],
                 'mode2' => $row['mode2'],
                 'time' => $row['time'],
-                'smoc' => (($row['rank']) == 11 ? 1 : 0),
+                'smoc' => (($row['rank_id']) == 11 ? 1 : 0),
                 'cmsc' => $row['skillscore'],
                 'osaa' => '0.00', // Overall small arms accuracy
                 'kill' => $row['kills'],
@@ -112,7 +112,7 @@ else
                 'dkas' => $row['driverassists'],
                 'dsab' => $row['driverspecials'],
                 'cdsc' => $row['cmdscore'],
-                'rank' => $row['rank'],
+                'rank' => $row['rank_id'],
                 'kick' => $row['kicked'],
                 'bbrs' => $row['bestscore'],
                 'tcdr' => $row['cmdtime'],
@@ -194,7 +194,7 @@ else
     {
         // NOTE: xpack and bf2 have same return
         $query = <<<SQL
-SELECT id, name, score, rank, defends, repairs, heals, resupplies, driverspecials, cmdscore, cmdtime, sqltime, 
+SELECT id, name, score, rank_id, defends, repairs, heals, resupplies, driverspecials, cmdscore, cmdtime, sqltime, 
   sqmtime, wins, losses, teamscore, killstreak, deathstreak, time, kills
 FROM `player` 
 WHERE `id` = {$pid}
@@ -218,7 +218,7 @@ SQL;
             'pid' => $row['id'],
             'name' => $row['name'],
             'scor' => $row['score'],
-            'rank' => $row['rank'],
+            'rank' => $row['rank_id'],
             'dfcp' => $row['defends'],
             'rpar' => $row['repairs'],
             'heal' => $row['heals'],
@@ -519,7 +519,7 @@ SQL;
     }
     elseif ($info == 'rank')
     {
-        $query = "SELECT `id`, `name`, `rank`, `chng`, `decr` FROM `player` WHERE `id` = {$pid}";
+        $query = "SELECT `id`, `name`, `rank_id`, `chng`, `decr` FROM `player` WHERE `id` = {$pid}";
         $row = $connection->query($query)->fetch();
         if (empty($row))
         {
@@ -535,7 +535,7 @@ SQL;
                 $connection->exec("UPDATE `player` SET `chng` = 0, `decr` = 0 WHERE `id` = {$pid}");
 
             $Response->writeHeaderLine("pid", "nick", "rank", "chng", "decr");
-            $Response->writeDataLine($row['id'], $row['name'], $row['rank'], $row['chng'], $row['decr']);
+            $Response->writeDataLine($row['id'], $row['name'], $row['rank_id'], $row['chng'], $row['decr']);
             $Response->send();
         }
     }
@@ -755,13 +755,13 @@ function addPlayerTopVictimAndOpp(&$Output, $pid)
     {
         $victim = $row['victim'];
         $count = $row['count'];
-        $row = $connection->query("SELECT name, rank FROM player WHERE id={$victim}")->fetch();
+        $row = $connection->query("SELECT name, rank_id FROM player WHERE id={$victim}")->fetch();
         if (!empty($row))
         {
             $Output['tvcr'] = $victim;
             $Output['mvks'] = $count;
             $Output['mvns'] = $row['name'];
-            $Output['mvrs'] = $row['rank'];
+            $Output['mvrs'] = $row['rank_id'];
         }
     }
 
@@ -772,13 +772,13 @@ function addPlayerTopVictimAndOpp(&$Output, $pid)
     {
         $attacker = $row['attacker'];
         $count = $row['count'];
-        $row = $connection->query("SELECT name, rank FROM player WHERE id={$attacker}")->fetch();
+        $row = $connection->query("SELECT name, rank_id FROM player WHERE id={$attacker}")->fetch();
         if (!empty($row))
         {
             $Output['topr'] = $attacker;
             $Output['vmks'] = $count;
             $Output['vmns'] = $row['name'];
-            $Output['vmrs'] = $row['rank'];
+            $Output['vmrs'] = $row['rank_id'];
         }
     }
 }

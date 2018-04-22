@@ -37,6 +37,13 @@
                     min:0
                 }
             });
+
+            // On Window Resize, redraw chart
+            $(window).resize(function() {
+                plot.resize();
+                plot.setupGrid();
+                plot.draw();
+            });
         }
 
         if( $.fn.button ) {

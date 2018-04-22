@@ -49,7 +49,7 @@ else
     if (empty($result))
     {
         // Grab player rank
-        $rank = $connection->query("SELECT rank FROM `player` WHERE `id` = $pid LIMIT 1")->fetchColumn(0);
+        $rank = $connection->query("SELECT rank_id FROM `player` WHERE `id` = $pid LIMIT 1")->fetchColumn(0);
         if ($rank === false)
         {
             $Response->responseError(true);

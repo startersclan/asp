@@ -322,8 +322,9 @@ class File
         try
         {
             $file = new FileStream($path, 'r+');
-
-            return $file->canWrite();
+            $canWrite = $file->canWrite();
+            $file->close();
+            return $canWrite;
         }
         catch (\Exception $e)
         {
