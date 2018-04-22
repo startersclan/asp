@@ -354,7 +354,7 @@ class Snapshot extends GameResult
                 $row = $connection->query(sprintf($sql, $player->id))->fetch();
 
                 // If player does not exist, stop here!
-                if (!$row)
+                if (empty($row))
                 {
                     // Is this a Cross Service Exploitation?
                     if (!$player->isAi)
@@ -381,7 +381,7 @@ class Snapshot extends GameResult
 
                     // Check if the player was banned before the start of the round. Servers should be
                     // using the VerifyPlayer module to prevent this from happening
-                    if ($banned && $bantime < ($this->roundStartTime + 1))
+                    if ($banned && $bantime < ($this->roundStartTime + 3600))
                     {
                         $message = sprintf("Banned Player Found in Snapshot: %s (%d)!", $player->name, $player->id);
                         $this->logWriter->logError($message);
@@ -773,6 +773,7 @@ class Snapshot extends GameResult
             $this->logWriter->logDebug("Saving server updated information");
             $query = new UpdateOrInsertQuery($connection, 'server');
             $query->set('name', '=', StringHelper::SubStrWords($this->serverName, 100));
+            $query->set('gameport', '=', $this->serverPort);
             $query->set('queryport', '=', $this->queryPort);
             $query->set('lastupdate', 'g', time());
             $query->where('id', '=', $this->serverId);

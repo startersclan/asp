@@ -73,7 +73,7 @@ class PlayerHistoryModel
         // Fetch round
         $query = <<<SQL
 SELECT ph.*, h.*, p.name, mi.name AS `mapname`, mi.displayname AS map_display_name, s.name AS `server`, 
-  s.ip AS `ip`, s.port AS `port`, s.id AS `server_id`, g.longname AS `modname`, gm.name AS `gamemode`, 
+  s.ip AS `ip`, s.gameport AS `port`, s.id AS `server_id`, g.longname AS `modname`, gm.name AS `gamemode`, 
   r2.name AS `rankName`, (SELECT COUNT(player_id) FROM player_round_history WHERE ph.round_id = {$rid}) AS `playerCount`
 FROM player_round_history AS ph 
   LEFT JOIN player AS p ON ph.player_id = p.id

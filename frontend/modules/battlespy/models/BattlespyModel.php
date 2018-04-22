@@ -47,7 +47,7 @@ class BattlespyModel extends System\Controller
     {
         // Fetch reports
         $query = <<<SQL
-SELECT r.*, rh.map_id, rh.time_end AS `timestamp`, s.name AS `server`, mi.name AS `mapname`,
+SELECT r.*, rh.map_id, rh.time_end AS `timestamp`, s.name AS `server`, mi.displayname AS `mapname`,
   (SELECT COUNT(id) FROM battlespy_message WHERE `report_id` = r.id) AS `count`
 FROM battlespy_report AS r
   LEFT JOIN round AS rh ON r.round_id = rh.id

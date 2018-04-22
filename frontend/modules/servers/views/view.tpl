@@ -67,7 +67,7 @@
 </div>
 <div class="mws-panel grid_3 mws-collapsible">
     <div class="mws-panel-header">
-        <span><i class="icon-book"></i> Stats Authentication Token</span>
+        <span><i class="icon-business-card"></i> Stats Authentication Token</span>
     </div>
     <div class="mws-panel-toolbar">
         <div class="btn-toolbar">
