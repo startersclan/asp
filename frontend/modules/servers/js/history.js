@@ -2,6 +2,8 @@
 
     $(document).ready(function () {
 
+        var serverId = $("span#serverId").html();
+
         // Data Tables
         $(".mws-datatable-fn").DataTable({
             pagingType: "full_numbers",
@@ -9,12 +11,13 @@
             serverSide: true,
             order: [[ 1, "desc" ]],
             ajax: {
-                url: "/ASP/roundinfo/list",
+                url: "/ASP/servers/history",
                 type: "POST",
                 data: function ( d ) {
                     return $.extend( {}, d, {
                         ajax: true,
-                        action: 'list'
+                        action: 'list',
+                        serverId: serverId
                     });
                 },
                 beforeSend: function() {
@@ -31,7 +34,6 @@
                 { "data": "check" },
                 { "data": "round_end" },
                 { "data": "map" },
-                { "data": "server" },
                 { "data": "players" },
                 { "data": "team1" },
                 { "data": "team2" },
@@ -42,13 +44,12 @@
             columnDefs: [
                 { "searchable": false, "orderable": false, "targets": 0 },
                 { "orderable": false, "targets": 2 },
-                { "searchable": true, "orderable": false, "targets": 3 },
-                { "searchable": true, "targets": 4 },
+                { "searchable": true, "targets": 3 },
+                { "searchable": false, "orderable": false, "targets": 4 },
                 { "searchable": false, "orderable": false, "targets": 5 },
                 { "searchable": false, "orderable": false, "targets": 6 },
                 { "searchable": false, "orderable": false, "targets": 7 },
-                { "searchable": false, "orderable": false, "targets": 8 },
-                { "searchable": false, "orderable": false, "targets": 9 }
+                { "searchable": false, "orderable": false, "targets": 8 }
             ]
         });
 

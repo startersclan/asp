@@ -457,6 +457,7 @@
                 .html('Are you sure you want to generate a new AuthID? You should never have to change an AuthID unless it has been compromised. \
                     The server owner will need to be notified of this change before they will be able to post stats data again!')
                 .dialog("option", {
+                    title: "Confirm AuthID Change",
                     modal: true,
                     buttons: [{
                         text: "Confirm",
@@ -528,6 +529,7 @@
             $("#mws-jui-dialog")
                 .html('Are you sure you want to generate a new AuthToken? The server owner will need to be notified of this change before they will be able to post stats data again!')
                 .dialog("option", {
+                    title: "Confirm AuthToken Change",
                     modal: true,
                     buttons: [{
                         text: "Confirm",
@@ -851,7 +853,7 @@
                             .slideDown(500);
 
                         // Fill the rest of the screen
-                        $("#status").html("Offline").css('color', 'red');
+                        $("#status").html("Offline").attr('class', 'label label-important');
                     }
                 },
                 error: function(request, status) {

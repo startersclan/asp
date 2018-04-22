@@ -18,6 +18,7 @@
                     <i class="icol-pencil"></i> Edit Details
                 </a>
                 <a id="refresh" href="#" class="btn"><i class="icol-arrow-refresh"></i> Re-Query</a>
+                <a href="/ASP/servers/history/{server.id}" class="btn"><i class="icol-clock"></i> Round History</a>
             </div>
         </div>
     </div>

@@ -1,4 +1,7 @@
 <?php
+
+use System\DataTables;
+
 /**
  * BF2Statistics ASP Framework
  *
@@ -7,17 +10,8 @@
  * License:      GNU GPL v3
  *
  */
-use System\DataTables;
 
-/**
- * Round Info Ajax Model
- *
- * This model is used to fetch round data for the dataTables javascript library
- *
- * @package Models
- * @subpackage RoundInfo
- */
-class RoundInfoAjaxModel
+class ServerAjaxModel
 {
     /**
      * @var \System\Database\DbConnection The stats database connection
@@ -34,13 +28,14 @@ class RoundInfoAjaxModel
     }
 
     /**
-     * This method retrieves the played rounds list for DataTables
+     * This method retrieves the played rounds by server id for DataTables
      *
+     * @param int $id the server ID
      * @param array $data The GET or POSTS data for DataTables
      *
      * @return array
      */
-    public function getRoundList($data)
+    public function getRoundList($id, $data)
     {
         $columns = [
             ['db' => 'id', 'dt' => 'check',
@@ -56,7 +51,6 @@ class RoundInfoAjaxModel
                 }
             ],
             ['db' => 'map', 'dt' => 'map'],
-            ['db' => 'server_name', 'dt' => 'server'],
             ['db' => 'winner', 'dt' => 'winner',
                 'formatter' => function( $d, $row ) {
                     $id = (int)$d;
@@ -95,6 +89,6 @@ class RoundInfoAjaxModel
             ],
         ];
 
-        return DataTables::FetchData($data, $this->pdo, 'round_history_view', 'id', $columns);
+        return DataTables::FetchData($data, $this->pdo, 'round_history_view', 'id', $columns, 'server_id = '. (int)$id);
     }
 }
