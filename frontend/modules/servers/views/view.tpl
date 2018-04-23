@@ -124,7 +124,7 @@
 				</span>
             </li>
             <li>
-                <span class="key"><i class="icon-server"></i> Allow Address</span>
+                <span class="key"><i class="icon-server"></i> Whitelist IP's</span>
                 <span id="addresses" class="val">
                 {addresses}
                     <label class="label label-info">{value}</label>

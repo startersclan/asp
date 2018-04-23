@@ -71,10 +71,12 @@ class Config extends Controller
         $view->attachScript("/ASP/frontend/js/jquery.form.js");
         $view->attachScript("/ASP/frontend/js/validate/jquery.validate-min.js");
         $view->attachScript("/ASP/frontend/js/select2/select2.min.js");
+        $view->attachScript("/ASP/frontend/js/bootstrap/bootstrap-tagsinput.js");
         $view->attachScript("/ASP/frontend/modules/config/js/editconfig.js");
 
         // Attach needed stylesheets
         $view->attachStylesheet("/ASP/frontend/js/select2/select2.css");
+        $view->attachStylesheet("/ASP/frontend/js/bootstrap/bootstrap-tagsinput.css");
 
         // Send output
         $view->render();
@@ -128,6 +130,12 @@ class Config extends Controller
                 $key = explode('__', $item);
                 if ($key[0] == 'cfg')
                 {
+                    if ($key[1] == 'admin_hosts')
+                    {
+                        Cfg::Set($key[1], explode(',', $val));
+                        continue;
+                    }
+
                     Cfg::Set($key[1], $val);
                 }
             }

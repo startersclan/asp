@@ -237,6 +237,7 @@ class ServerModel
 
             // Prepare statement
             $stmt = $this->pdo->prepare("DELETE FROM server WHERE id=:id");
+            $stmt2 = $this->pdo->prepare("DELETE FROM server_auth_ip WHERE id=:id");
             foreach ($ids as $serverId)
             {
                 // Ignore the all!
@@ -247,6 +248,10 @@ class ServerModel
                 $games = (int)$this->pdo->query($query)->fetchColumn(0);
                 if ($games > 0)
                     throw new Exception("Cannot delete Server (ID: {$serverId}) because it has saved stats in the database");
+
+                // Bind value and run query
+                $stmt2->bindValue(':id', (int)$serverId, PDO::PARAM_INT);
+                $stmt2->execute();
 
                 // Bind value and run query
                 $stmt->bindValue(':id', (int)$serverId, PDO::PARAM_INT);

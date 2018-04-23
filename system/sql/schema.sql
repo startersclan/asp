@@ -169,6 +169,11 @@ CREATE TABLE `server` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
+-- Add index for the servers
+--
+CREATE INDEX `idx_server_ip_queryport` ON `server`(`ip`, `queryport`);
+
+--
 -- Table structure for table `server_auth_ip`
 --
 
@@ -987,4 +992,4 @@ INSERT INTO `game_mode`(`id`, `name`) VALUES (2, 'Coop');
 --
 -- Dumping data for table `_version`
 --
-INSERT INTO `_version`(`updateid`, `version`) VALUES (30010, '3.0.0');
+INSERT INTO `_version`(`updateid`, `version`) VALUES (30000, '3.0.0');

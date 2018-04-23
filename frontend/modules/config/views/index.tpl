@@ -263,8 +263,14 @@
                             Auth. Admin Ips:
                         </label>
                         <div class="mws-form-item">
-                            <textarea class="small" name="cfg__admin_hosts" rows="50%" cols="100%" title=""><?php echo implode("\n", \System\Config::Get('admin_hosts')); ?>
-                            </textarea>
+                            <input
+                                class="small required"
+                                style="width: 100% !important;"
+                                name="cfg__admin_hosts"
+                                value="<?php echo join(',', \System\Config::Get('admin_hosts')); ?>"
+                                title=""
+                                data-role="tagsinput"
+                            >
                         </div>
                     </div>
                     <div class="mws-form-row">
