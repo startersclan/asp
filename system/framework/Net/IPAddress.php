@@ -26,13 +26,17 @@ class IPAddress
      */
     public static function TryParse($input, &$out)
     {
-        if (filter_var($input, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4))
+        // Check for CIDR ranges
+        $parts = explode('/', $input);
+
+        // Check IPv4
+        if (filter_var($parts[0], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4))
         {
             // Valid IPv4
             $out = new IPv4Address($input);
             return true;
         }
-        elseif (filter_var($input, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6))
+        elseif (filter_var($parts[0], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6))
         {
             // Valid IPv6
             $out = new IPv6Address($input);

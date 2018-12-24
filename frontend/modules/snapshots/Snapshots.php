@@ -100,6 +100,12 @@ class Snapshots extends Controller
             // Tell the client of the success
             $this->sendJsonResponse(true, $message);
         }
+        catch (SecurityException $e)
+        {
+            $fileName = Path::GetFilename($file);
+            $message = sprintf("Failed to process snapshot (%s)!\n\n%s", $fileName, $e->getMessage());
+            $this->sendJsonResponse(false, $message);
+        }
         catch (IOException $e)
         {
             $fileName = Path::GetFilename($file);

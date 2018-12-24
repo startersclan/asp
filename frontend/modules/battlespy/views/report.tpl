@@ -2,6 +2,7 @@
 <div class="mws-panel grid_2">
     <div class="mws-panel-header">
         <span><i class="icon-map-marker"></i> {round.map_display_name}</span>
+        <span id="reportId" style="display: none">{report.id}</span>
     </div>
     <div class="mws-panel-body no-padding" style="text-align: center">
         <img src="/ASP/frontend/images/maps/<?php echo strtolower('{round.name}'); ?>.png">

@@ -176,12 +176,12 @@
                 if (result.success === true) {
                     // Update variables
                     playerName = result.name;
-                    playerRank = result.rank;
+                    playerRank = result.rank_id;
                     playerIso = result.iso;
                     playerEmail = result.email;
 
                     // Update html
-                    $("#playerCurrentRank").html(result.rank);
+                    $("#playerCurrentRank").html(result.rank_id);
                     $("#playerCurrentName").html(result.name);
                     $("#playerCurrentEmail").html(result.email);
                     $("#playerCurrentIso").html(result.iso);
@@ -189,7 +189,7 @@
                     $("#changeableName").html(result.name);
                     $("#changeableRank").html(result.rankName);
                     $("#fullCountryName").html(getCountryName());
-                    $("#rankIcon").attr('src', "/ASP/frontend/images/ranks/rank_" + result.rank + ".gif");
+                    $("#rankIcon").attr('src', "/ASP/frontend/images/ranks/rank_" + result.rank_id + ".gif");
                     $("#flag").attr('src', "/ASP/frontend/images/flags/" + result.iso + ".png");
 
                     // Close dialog

@@ -27,7 +27,7 @@ if (!function_exists('build_navigation'))
         $task = $GLOBALS['controller'];
         $system = array('config', 'install', 'database');
         $players = array('players');
-        $server = array('servers', 'mapinfo', 'snapshots', 'roundinfo');
+        $server = array('providers', 'servers', 'mapinfo', 'snapshots', 'roundinfo');
         $game = array('gamedata');
 
         // Create navigation class
@@ -70,15 +70,14 @@ if (!function_exists('build_navigation'))
             $navigation->append($group);
 
             // Add Player Links
-            $group = new NavigationItem("Player Manager", "#", "icon-users", in_array($task, $players));
-            $group->append('/ASP/players', 'Manage Players');
-            $group->append('/ASP/players/special', 'Manage Special Ranks');
+            $group = new NavigationItem("Player Manager", "/ASP/players", "icon-users", in_array($task, $players));
             $navigation->append($group);
 
             // Add Server Admin Links
             $snapshots = ($ss > 0) ? '<span class="mws-nav-tooltip" title="Unauthorized Snapshots">' . $ss . '</span>' : '';
             $group = new NavigationItem("Server Admin" . $snapshots, "#", "icon-business-card", in_array($task, $server));
-            $group->append('/ASP/servers', 'Manage Servers');
+            $group->append('/ASP/providers', 'Manage Stats Providers');
+            $group->append('/ASP/servers', 'View Stats Servers');
             $group->append('/ASP/snapshots', 'Manage Snapshots');
             $group->append('/ASP/roundinfo', 'Round History');
             $group->append('/ASP/mapinfo', 'Map Statistics');

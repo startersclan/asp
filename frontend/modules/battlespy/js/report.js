@@ -2,6 +2,9 @@
 
     $(document).ready(function () {
 
+        // Variables
+        var reportId = parseInt($("#reportId").html());
+
         $("#mws-jui-dialog").dialog({
             autoOpen: false,
             title: "Confirm Delete BattleSpy Message",
@@ -94,12 +97,44 @@
                             $(this).dialog("close");
                         }
                     },
-                        {
-                            text: "Cancel",
-                            click: function () {
-                                $(this).dialog("close");
-                            }
-                        }]
+                    {
+                        text: "Cancel",
+                        click: function () {
+                            $(this).dialog("close");
+                        }
+                    }]
+                }).dialog("open");
+
+            // Just to be sure, older IE's needs this
+            return false;
+        });
+
+        // Delete Selected Click
+        $("#delete-report").on('click', function(e) {
+
+            // For all modern browsers, prevent default behavior of the click
+            e.preventDefault();
+
+            // Show dialog form
+            $("#mws-jui-dialog")
+                .html('Are you sure you want to delete BattleSpy report #' + reportId + '?')
+                .dialog("option", {
+                    modal: true,
+                    buttons: [{
+                        text: "Confirm",
+                        class: "btn btn-danger",
+                        click: function () {
+                            // Delete report
+                            deleteReport();
+                            $(this).dialog("close");
+                        }
+                    },
+                    {
+                        text: "Cancel",
+                        click: function () {
+                            $(this).dialog("close");
+                        }
+                    }]
                 }).dialog("open");
 
             // Just to be sure, older IE's needs this
@@ -118,6 +153,47 @@
             // Just to be sure, older IE's needs this
             return false;
         });
+
+        function deleteReport()
+        {
+            // Push the request
+            $.post( "/ASP/battlespy/deleteReports", { action: "delete", ajax: true, reports: [reportId] })
+                .done(function( data ) {
+
+                    // Parse response
+                    var result = jQuery.parseJSON(data);
+                    if (result.success === false) {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .append('<span class="close-bt"></span>')
+                            .slideDown(500);
+                    }
+                    else {
+                        // Redirect
+                        window.location.href = "/ASP/battlespy";
+                    }
+                })
+                .fail(function( jqXHR ) {
+                    var result = jQuery.parseJSON(jqXHR.responseText);
+                    if (result != null)
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html(result.message)
+                            .append('<span class="close-bt"></span>')
+                            .slideDown(500);
+                    }
+                    else
+                    {
+                        $('#jui-global-message')
+                            .attr('class', 'alert error')
+                            .html("An Error Occurred. Please check the ASP error log for details.")
+                            .append('<span class="close-bt"></span>')
+                            .slideDown(500);
+                    }
+                });
+        }
 
         function deleteMessages(ids)
         {

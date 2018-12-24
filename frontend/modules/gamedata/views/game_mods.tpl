@@ -1,7 +1,7 @@
 <div id="jui-global-message" class="alert info">
     <span class="close-bt"></span>
     Here you can assign which mods server's are allowed to play with stats enabled.
-    If a sever plays a mod not listed here, it will be treated as Un-authorized.
+    If a server plays a mod not listed here, it will be treated as Un-authorized.
     Be sure the server's constants.py file also is up to date to include authorized mod data.
 </div>
 <div class="mws-panel grid_8">

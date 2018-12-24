@@ -8,20 +8,20 @@
 ***************************************/
 $admin_user = 'admin';
 $admin_pass = 'admin';
-$admin_hosts = array('0.0.0.0/0');
+$admin_hosts = array('0.0.0.0/0','192.1.0.1/32');
 $admin_ignore_ai = 1;
-$admin_last_login = 1524439528;
-$admin_current_login = 1524445311;
+$admin_last_login = 1545672137;
+$admin_current_login = 1545679654;
 $admin_timezone = 'America/Los_Angeles';
 $debug_lvl = 4;
 $db_host = '127.0.0.1';
 $db_port = 3306;
 $db_user = 'root';
 $db_pass = 'ascent';
-$db_name = 'bf2stats';
+$db_name = 'gamestats';
 $stats_strict_api = 0;
 $stats_aspx_cache_time = 30;
-$stats_risingstar_refresh = 1522024813;
+$stats_risingstar_refresh = 1546232981;
 $stats_ignore_ai = 0;
 $stats_min_game_time = 0;
 $stats_min_player_game_time = 0;

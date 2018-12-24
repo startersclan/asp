@@ -489,7 +489,7 @@
 
             // Always have the user confirm his action here!
             var tr = $(this).closest('tr');
-            var name = tr.find('td:eq(2)').html();
+            var name = tr.find('td:eq(3)').html();
 
             if (action === 'edit') {
 
@@ -512,12 +512,12 @@
                 $('#passwordLabel').html('Update Password');
 
                 // Set player rank
-                var rankHtml = tr.find('td:eq(1)').html();
+                var rankHtml = tr.find('td:eq(2)').html();
                 var rank =  rankHtml.filename().split('_')[1];
                 $("#rankSelect").val(rank);
 
                 // Select users country
-                var cntry = tr.find('td:eq(4)').html();
+                var cntry = tr.find('td:eq(5)').html();
                 $("select.mws-select2").val(cntry).change();
 
                 // Show dialog form

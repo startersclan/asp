@@ -407,7 +407,7 @@ class Players extends Controller
                     $cols = [
                         'name' => trim($name),
                         'country' => $items['playerCountry'],
-                        'rank' => $items['playerRank']
+                        'rank_id' => $items['playerRank']
                     ];
 
                     // Add password if it is not empty
@@ -425,7 +425,7 @@ class Players extends Controller
                     $this->sendJsonResponse(true, 'Player Updated', [
                         'mode' => 'update',
                         'name' => $name,
-                        'rank' => $items['playerRank'],
+                        'rank_id' => $items['playerRank'],
                         'email' => $items['playerEmail'],
                         'iso' => $items['playerCountry'],
                         'rankName' => Battlefield2::GetRankName((int)$items['playerRank'])

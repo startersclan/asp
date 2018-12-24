@@ -68,8 +68,9 @@ class Gamedata extends Controller
         // Add button type for weapons
         for ($i = 0; $i < count($modes); $i++)
         {
-            $modes[$i]['bid'] = ($modes[$i]['id'] > 2) ? 'delete' : 'disable';
-            $modes[$i]['title'] = ($modes[$i]['id'] > 2) ? 'Delete Game Mode' : 'Cannot delete vanilla game modes';
+            $canDelete = ($modes[$i]['id'] > 2 && $modes[$i]['id'] != 99);
+            $modes[$i]['bid'] = ($canDelete) ? 'delete' : 'disable';
+            $modes[$i]['title'] = ($canDelete) ? 'Delete Game Mode' : 'Cannot delete vanilla game modes';
         }
 
 

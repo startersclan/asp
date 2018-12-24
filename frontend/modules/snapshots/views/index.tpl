@@ -19,7 +19,6 @@
                 <th class="checkbox-column">
                     <input id="select-all" type="checkbox">
                 </th>
-                <th style="width: 10%">Server Prefix</th>
                 <th>Server Name</th>
                 <th>Server IP</th>
                 <th style="width: 7%">Server Port</th>
@@ -34,7 +33,6 @@
                     <td class="checkbox-column">
                         <input id="snapshot-{name}" type="checkbox">
                     </td>
-                    <td>{prefix}</td>
                     <td>{server}</td>
                     <td>{ipaddress}</td>
                     <td>{port}</td>

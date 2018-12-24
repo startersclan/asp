@@ -49,6 +49,11 @@ class Snapshot extends GameResult
     public $serverId = 0;
 
     /**
+     * @var int The Server ID in the database if it exists
+     */
+    public $providerId = 0;
+
+    /**
      * @var int The server's AuthID if there is one!
      */
     public $authId = 0;
@@ -136,8 +141,15 @@ class Snapshot extends GameResult
             }
         }
 
+        // Load Provider
+        $result = $connection->query("SELECT `id` FROM `stats_provider` WHERE `auth_id`={$this->authId}");
+        if ($row = $result->fetch())
+        {
+            $this->providerId = (int)$row['id'];
+        }
+
         // Load server
-        $result = $connection->query("SELECT `id` FROM `server` WHERE `auth_id`={$this->authId}");
+        $result = $connection->query("SELECT `id` FROM `server` WHERE `ip`='{$this->serverIp}' AND `queryport`={$this->queryPort}");
         if ($row = $result->fetch())
         {
             $this->serverId = (int)$row['id'];
@@ -173,6 +185,7 @@ class Snapshot extends GameResult
 
         // Grab database connection and lets go!
         $connection = Database::GetConnection("stats");
+        $provider = null;
 
         // Get a log file
         $this->logWriter = LogWriter::Instance("stats_debug");
@@ -184,79 +197,82 @@ class Snapshot extends GameResult
 
         // ---------------------------------------------------------------------
         // Start logging information about this snapshot
-        $this->logWriter->logNotice("Begin Processing (%s) From Server ID (%d)...", [$this->mapName, $this->serverId]);
+        $this->logWriter->logNotice("Begin Processing (%s)...", [$this->mapName]);
 
         // ---------------------------------------------------------------------
-        // Ensure this is a valid AuthId. If AuthID is invalid, server ID will be 0
-        if ($this->serverId == 0)
+        // Ensure this is a valid AuthId. If AuthID is invalid, provider ID will be 0
+        // Ensure Auth Token matches the snapshot
+        if ($this->providerId == 0)
         {
             $this->logWriter->logSecurity("Invalid AuthID found in Snapshot data [{$this->authId}]");
             throw new SecurityException("Invalid AuthID found in Snapshot data", empty($row) ? 0 : 1);
         }
         else
         {
-            $this->logWriter->logDebug("Valid AuthID found in Snapshot data [{$this->authId}]");
+            // Check the Auth Token
+            $result = $connection->query("SELECT * FROM `stats_provider` WHERE `id`={$this->providerId}");
+            $provider = $result->fetch();
+            if ($this->authToken != $provider['auth_token'])
+            {
+                $this->logWriter->logDebug("Invalid AuthToken passed! [AuthId: {$this->authId}, AuthToken: {$this->authToken}]");
+                throw new SecurityException("Invalid Auth Token found in Snapshot data", 1);
+            }
+
+            $this->logWriter->logDebug("Valid AuthID and AuthToken found in Snapshot data [{$this->authId}]");
         }
 
         // ---------------------------------------------------------------------
         // Ensure this is an authorized server
-        $result = $connection->query("SELECT `authorized` FROM `server` WHERE `id`={$this->serverId}");
-        if (!($row = $result->fetch()) || (int)$row['authorized'] == 0)
+        if ((int)$provider['authorized'] == 0)
         {
-            $this->logWriter->logSecurity("Unauthorised Game Server '{$this->serverIp}:{$this->serverPort}' attempted to send snapshot data!");
-            throw new SecurityException("Unauthorised Game Server!", empty($row) ? 2 : 3);
+            $this->logWriter->logSecurity("UnAuthorized Stats Provider ({$this->providerId}) attempted to send snapshot data!");
+            throw new SecurityException("UnAuthorized Stats Provider!", empty($row) ? 2 : 3);
         }
         else
         {
-            $this->logWriter->logDebug("Found authorised Game Server '{$this->serverIp}:{$this->serverPort}'");
+            $this->logWriter->logDebug(sprintf("Stats Provider is Authorized (ID: %d)", $this->providerId));
         }
 
         // ---------------------------------------------------------------------
-        // Ensure this is an valid authorization token, and the server IP is OK
-        $result = $connection->query("SELECT `ip`, `auth_token` FROM `server` WHERE `id`={$this->serverId}");
-        if ($row = $result->fetch())
+        // Create server if not existing
+        if ($this->serverId == 0)
         {
-            // Match Authentication Token
-            $token = $row['auth_token'];
-            if ($token !== $this->authToken)
-            {
-                $this->logWriter->logSecurity("Invalid AuthToken passed! [AuthId: {$this->authId}, AuthToken: {$this->authToken}]");
-                throw new SecurityException("Invalid AuthToken passed!", 4);
-            }
-            else
-            {
-                $this->logWriter->logDebug("Valid AuthToken passed! [AuthId: {$this->authId}, AuthToken: {$this->authToken}]");
-            }
-
-            // Validate the server IP against the AuthToken
-            if ($this->serverIp !== $row['ip'])
-            {
-                // Match Server IP's
-                $valid = false;
-                $addy = IPAddress::Parse($this->serverIp);
-                $result = $connection->query("SELECT `address` FROM `server_auth_ip` WHERE `id`={$this->serverId}");
-                while ($row = $result->fetch())
-                {
-                    if ($addy->isInCidr($row['address']))
-                        $valid = true;
-                }
-
-                if (!$valid)
-                {
-                    $message = "Invalid Server IpAddress received for AuthId! [AuthId: {$this->authId}, ServerAddress: {$this->serverIp}]";
-                    $this->logWriter->logSecurity($message);
-                    throw new SecurityException($message, 5);
-                }
-                else
-                {
-                    $this->logWriter->logDebug("Valid Server IpAddress received for AuthId! [ServerAddress: {$this->serverIp}]");
-                }
-            }
+            // Create server
+            require Path::Combine(ROOT, 'frontend', 'modules', 'servers', 'models', 'ServerModel.php');
+            $model = new \ServerModel();
+            $this->serverId = $model->addServer($this->providerId, $this->serverName, $this->serverIp, $this->serverPort, $this->queryPort);
+            $this->logWriter->logDebug("Creating new Game Server added using ServerID [{$this->serverId}]");
         }
         else
         {
-            $this->logWriter->logSecurity("Unauthorised Game Server '{$this->serverIp}:{$this->serverPort}' attempted to send snapshot data!");
-            throw new SecurityException("Unauthorised Game Server!", empty($row) ? 6 : 7);
+            $this->logWriter->logDebug("Existing ServerID Found using Remote Address [{$this->serverId}]");
+        }
+
+        // ---------------------------------------------------------------------
+        // Ensure this is an valid server IP for this Stats Provider
+        $valid = false;
+        $serverIP = IPAddress::Parse($this->serverIp);
+        $result = $connection->query("SELECT * FROM stats_provider_auth_ip WHERE provider_id={$this->providerId}");
+        while ($row = $result->fetch())
+        {
+            // Grab IP as an object
+            if ($serverIP->isInCidr($row['address']))
+            {
+                $valid = true;
+                break;
+            }
+        }
+
+        // Is this a valid server IP?
+        if (!$valid)
+        {
+            $message = "UnAuthorized Server IpAddress received for AuthId! [AuthId: {$this->authId}, ServerAddress: {$this->serverIp}]";
+            $this->logWriter->logSecurity($message);
+            throw new SecurityException($message, 5);
+        }
+        else
+        {
+            $this->logWriter->logDebug("Server IpAddress is Authorized for AuthId!");
         }
 
         // ---------------------------------------------------------------------

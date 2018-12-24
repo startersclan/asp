@@ -10,6 +10,7 @@
 
 namespace System;
 use PDO;
+use System\Database\DbConnection;
 use System\Database\UpdateOrInsertQuery;
 
 /**
@@ -72,7 +73,7 @@ class BattleSpy
     protected $notifications;
 
     /**
-     * @var PDO The database connection
+     * @var DbConnection The database connection
      */
     protected $pdo;
 
@@ -119,11 +120,11 @@ class BattleSpy
     /**
      * BattleSpy constructor.
      *
-     * @param PDO $connection
+     * @param DbConnection $connection
      * @param int $serverId
      * @param int $roundId
      */
-    public function __construct(PDO $connection, $serverId, $roundId)
+    public function __construct(DbConnection $connection, $serverId, $roundId)
     {
         // Set internals
         $this->pdo = $connection;
@@ -200,7 +201,7 @@ class BattleSpy
                 {
                     // Report player for having too many kills on a single player
                     $severity = ($count > $double) ? 3 : (($count > $plus50p) ? 2 : 1);
-                    $message = sprintf("Player Kills on Player (%d) exceeds threshold of (%d)", $pid, $this->maxTargetKills);
+                    $message = sprintf("Player to Player Kills (%d) on victim Player (%d) exceeds threshold of (%d)", $count, $pid, $this->maxTargetKills);
                     $this->report($player->id, $message, self::FLAG_PLAYER_TARGET_KILLS, $severity);
                 }
             }

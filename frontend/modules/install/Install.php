@@ -194,6 +194,37 @@ class Install extends \System\Controller
             // Commit changes
             $pdo->commit();
 
+            // --------------------------------------------------
+            // Insert Default Data
+            // --------------------------------------------------
+            $pdo->beginTransaction();
+
+            // Create parser
+            $parser = new SqlFileParser(SYSTEM_PATH . DS . 'sql' . DS . 'data.sql');
+            $queries = $parser->getStatements();
+
+            try
+            {
+                // Read file contents
+                foreach ($queries as $query)
+                {
+                    $current = $query;
+                    $pdo->exec($query);
+                }
+            }
+            catch (Exception $e)
+            {
+                $logWriter = new LogWriter(SYSTEM_PATH . DS . 'logs' . DS . 'php_errors.log');
+                $logWriter->logDebug('Query Failed: ' . $current);
+
+                // Send Error Results
+                $this->sendJsonResponse(false, 'Failed to install database default data! ' . $e->getMessage());
+                die;
+            }
+
+            // Commit changes
+            $pdo->commit();
+
             // Success
             $this->sendJsonResponse(true, 'Tables Created Successfully');
             die;

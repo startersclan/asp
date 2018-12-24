@@ -37,14 +37,17 @@ class IPv6Address implements iIPAddress
      */
     public function __construct($address)
     {
+        // Check for CIDR ranges
+        $parts = explode('/', $address);
+
         // Make sure IP is valid!
-        if (!filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6))
+        if (!filter_var($parts[0], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6))
             throw new \InvalidArgumentException("IPv6 Address is invalid!");
 
         $flags = FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
-        $this->ipAddress = $address;
-        $this->fullIpAddress = IPAddress::ExpandIPv6Notation($address, true);
-        $this->isLocal = !filter_var($address, FILTER_VALIDATE_IP, $flags);
+        $this->ipAddress = $parts[0];
+        $this->fullIpAddress = IPAddress::ExpandIPv6Notation($parts[0], true);
+        $this->isLocal = !filter_var($parts[0], FILTER_VALIDATE_IP, $flags);
     }
 
     /**

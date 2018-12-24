@@ -1028,7 +1028,7 @@ SQL;
         {
             $averages['wins'] = number_format(round($totals['wins'] / $length, 0));
             $averages['losses'] = number_format(round($totals['losses'] / $length, 0));
-            $averages['time'] = TimeHelper::SecondsToHms($totals['time']);
+            $averages['time'] = TimeHelper::SecondsToHms(round($totals['time'] / $length, 0));
             $averages['ratio'] = number_format(round($totals['ratio'] / $length, 2), 2);
             $averages['best'] = number_format(round($totals['best'] / $length, 0));
         }

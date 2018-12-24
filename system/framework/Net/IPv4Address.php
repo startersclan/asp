@@ -33,14 +33,17 @@ class IPv4Address implements iIPAddress
      */
     public function __construct($address)
     {
+        // Check for CIDR ranges
+        $parts = explode('/', $address);
+
         // Make sure IP is valid!
-        if (!filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4))
+        if (!filter_var($parts[0], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4))
             throw new \InvalidArgumentException("IPv4 Address is invalid!");
 
         // Define local properties
         $flags = FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
-        $this->ipAddress = $address;
-        $this->isLocal = (substr($address, 0, 4) == "127." || !filter_var($address, FILTER_VALIDATE_IP, $flags));
+        $this->ipAddress = $parts[0];
+        $this->isLocal = (substr($parts[0], 0, 4) == "127." || !filter_var($parts[0], FILTER_VALIDATE_IP, $flags));
     }
 
     /**

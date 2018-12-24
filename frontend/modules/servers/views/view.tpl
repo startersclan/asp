@@ -67,48 +67,23 @@
 </div>
 <div class="mws-panel grid_3 mws-collapsible">
     <div class="mws-panel-header">
-        <span><i class="icon-business-card"></i> Stats Authentication Token</span>
+        <span><i class="icon-business-card"></i> Stats Provider Information</span>
     </div>
     <div class="mws-panel-toolbar">
         <div class="btn-toolbar">
             <div class="btn-group">
-                <a id="auth-server" href="#" class="btn" <?php echo ({server.authorized} == 0) ? '' : ' style="display: none"'; ?>>
-                    <i class="icol-accept"></i> Authorize
+                <a id="go-btn" href="/ASP/providers/view/{server.provider_id}" class="btn">
+                    <i class="icol-user-business-boss"></i> View Stats Provider
                 </a>
-                <a id="unauth-server" href="#" class="btn" <?php echo ({server.authorized} == 1) ? '' : ' style="display: none"'; ?>>
-                    <i class="icol-cross-shield-2"></i> Un-Authorize
-                </a>
-                <a id="plasma-server" href="#" class="btn" <?php echo ({server.plasma} == 0) ? '' : ' style="display: none"'; ?>>
-                    <i class="icol-sort-date"></i> Plasma
-                </a>
-                <a id="unplasma-server" href="#" class="btn" <?php echo ({server.plasma} == 1) ? '' : ' style="display: none"'; ?>>
-                    <i class="icol-sort"></i> Un-Plasma
-                </a>
-                <a id="auth-addresses" href="#" class="btn dropdown-toggle" data-toggle="dropdown">
-                    <i class="icol-cog"></i> Options
-                    <span class="caret"></span>
-                </a>
-                <ul id="dropdown" class="dropdown-menu pull-right" data-toggle="dropdown">
-                    <li><a id="edit-addresses" href="#"><i class="icol-application-osx-terminal"></i> Edit IP Addresses</a></li>
-                    <li class="divider"></li>
-                    <li><a id="gen-auth-id" href="#"><i class="icol-star-2"></i> Generate New Auth ID</a></li>
-                    <li><a id="gen-auth-token" href="#"><i class="icol-key"></i> Generate New Auth Token</a></li>
-                </ul>
             </div>
         </div>
     </div>
     <div class="mws-panel-body no-padding">
         <ul class="mws-summary clearfix">
             <li>
-                <span class="key"><i class="icon-user"></i> Auth ID</span>
+                <span class="key"><i class="icon-user"></i> Provider Name</span>
                 <span class="val">
-                    <span id="currentAuthId" class="text-nowrap">{server.auth_id}</span>
-				</span>
-            </li>
-            <li>
-                <span class="key"><i class="icon-key-2"></i> Auth Token</span>
-                <span class="val">
-					<span id="currentAuthToken" class="text-nowrap">{server.auth_token}</span>
+                    <span id="currentAuthId" class="text-nowrap">{server.provider_name}</span>
 				</span>
             </li>
             <li>
@@ -121,14 +96,6 @@
                 <span class="key"><i class="icon-pushpin"></i> Plasma Server</span>
                 <span class="val">
                     <label id="plasma" class="label label-{server.plasma_badge}">{server.plasma_text}</label>
-				</span>
-            </li>
-            <li>
-                <span class="key"><i class="icon-server"></i> Whitelist IP's</span>
-                <span id="addresses" class="val">
-                {addresses}
-                    <label class="label label-info">{value}</label>
-                {/addresses}
 				</span>
             </li>
         </ul>
@@ -191,28 +158,4 @@
             </div>
         </div>
     </form>
-</div>
-
-<!-- Edit Token Addresses Ajax Model -->
-<div id="edit-token-form">
-    <form id="mws-validate-token" class="mws-form" method="post" action="/ASP/servers/token">
-        <input id="token-action" type="hidden" name="action" value="address">
-        <input id="token-id" type="hidden" name="serverId" value="{server.id}">
-        <div id="mws-validate-error2" class="mws-form-message error" style="display:none;"></div>
-        <div id="jui-message2" class="alert" style="display: none;"></div>
-        <div class="mws-form-row">
-            Enter one IP Address Per Line! CIDR ranges are supported.
-        </div>
-        <div class="mws-form-row">
-            <label class="mws-form-label">Authorized Ip Addresses</label>
-            <div class="mws-form-item">
-                <select id="ips" name="items" multiple data-role="tagsinput"></select>
-            </div>
-        </div>
-    </form>
-</div>
-
-<!-- Change Auth Confirmation Model -->
-<div id="mws-jui-dialog">
-    <div class="mws-dialog-inner"></div>
 </div>

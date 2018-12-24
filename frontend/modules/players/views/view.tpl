@@ -32,7 +32,7 @@
             <li>
                 <!-- Hidden fields for JavaScript -->
                 <span id="playerCurrentId" style="display: none">{id}</span>
-                <span id="playerCurrentRank" style="display: none">{player.rank}</span>
+                <span id="playerCurrentRank" style="display: none">{player.rank_id}</span>
                 <span id="playerCurrentIso" style="display: none">{player.country}</span>
                 <span id="playerCurrentEmail" style="display: none">{player.email}</span>
                 <span id="labelStatus" style="display: none">{player.badge}</span>

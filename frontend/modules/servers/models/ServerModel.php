@@ -8,7 +8,6 @@
  *
  */
 use GameQ\GameQ;
-use System\Keygen\Keygen;
 use System\Net\IPAddress;
 use System\Player;
 use System\TimeHelper;
@@ -60,7 +59,14 @@ class ServerModel
      */
     public function fetchServers()
     {
-        $servers = $this->pdo->query("SELECT * FROM `server` ORDER BY id ASC")->fetchAll();
+        $query = <<<SQL
+SELECT s.*, p.name AS provider_name, p.authorized, p.plasma 
+FROM `server` AS s
+  LEFT JOIN stats_provider AS p on s.provider_id = p.id
+ORDER BY s.id ASC
+SQL;
+
+        $servers = $this->pdo->query($query)->fetchAll();
         if (empty($servers))
             return [];
 
@@ -94,27 +100,29 @@ class ServerModel
     public function fetchServerById($id)
     {
         $id = (int)$id;
-        return $this->pdo->query("SELECT * FROM server WHERE id={$id}")->fetch();
+        $query = <<<SQL
+SELECT s.*, p.name AS provider_name, p.authorized, p.plasma 
+FROM `server` AS s
+  LEFT JOIN stats_provider AS p on s.provider_id = p.id
+WHERE s.id={$id}
+SQL;
+        return $this->pdo->query($query)->fetch();
     }
 
     /**
      * Adds a new server record in the server table
      *
+     * @param int $provider_id The stats provider this server falls under
      * @param string $name The server name, no longer than 100 characters.
      * @param string $ip The server's ip address
      * @param int $port The game port
      * @param int $queryPort The gamespy port
-     * @param bool $authorized true if the server is authorized to post snapshots,
-     *  false otherwise
-     *
-     * @param string $authID [Reference Variable]
-     * @param string $authToken [Reference Variable]
      *
      * @return int the server id, or 0 on error
      *
      * @throws ArgumentException
      */
-    public function addServer($name, $ip, $port, $queryPort, $authorized = false, &$authID, &$authToken)
+    public function addServer($provider_id, $name, $ip, $port, $queryPort)
     {
         /**
          * Check for valid IP address
@@ -142,24 +150,15 @@ class ServerModel
         if ($queryPort > 65535)
             throw new ArgumentException('Port number is Invalid!', 'queryPort');
 
-        // Generate a AuthID and AuthToken
-        $authID = $this->generateUniqueAuthId();
-        $authToken = $this->generateAuthToken();
-
         // Prepare statement
         $this->pdo->insert('server', [
-            'auth_id' => $authID,
-            'auth_token' => $authToken,
+            'provider_id' => $provider_id,
             'name' => $name,
             'ip' => $address->toString(),
             'gameport' => $port,
             'queryport' => $queryPort,
-            'authorized' => $authorized ? 1 : 0
         ]);
         $serverId = (int)$this->pdo->lastInsertId('id');
-
-        // Authorize the input address!
-        $this->pdo->insert('server_auth_ip', ['id' => $serverId, 'address' => $address->toString()]);
 
         // Return server ID
         return $serverId;
@@ -237,7 +236,6 @@ class ServerModel
 
             // Prepare statement
             $stmt = $this->pdo->prepare("DELETE FROM server WHERE id=:id");
-            $stmt2 = $this->pdo->prepare("DELETE FROM server_auth_ip WHERE id=:id");
             foreach ($ids as $serverId)
             {
                 // Ignore the all!
@@ -248,102 +246,6 @@ class ServerModel
                 $games = (int)$this->pdo->query($query)->fetchColumn(0);
                 if ($games > 0)
                     throw new Exception("Cannot delete Server (ID: {$serverId}) because it has saved stats in the database");
-
-                // Bind value and run query
-                $stmt2->bindValue(':id', (int)$serverId, PDO::PARAM_INT);
-                $stmt2->execute();
-
-                // Bind value and run query
-                $stmt->bindValue(':id', (int)$serverId, PDO::PARAM_INT);
-                $stmt->execute();
-            }
-
-            // Commit?
-            if ($count > 2)
-                $this->pdo->commit();
-        }
-        catch (Exception $e)
-        {
-            // Rollback?
-            if ($count > 2)
-                $this->pdo->rollBack();
-
-            throw $e;
-        }
-    }
-
-    /**
-     * Sets the authorization level on a list of servers by id
-     *
-     * @param bool $mode true to authorize the specified server, otherwise false
-     * @param int[] $ids A list of server ids to perform the action on
-     *
-     * @throws Exception thrown if there is an error in the SQL statement
-     */
-    public function authorizeServers($mode, $ids)
-    {
-        $count = count($ids);
-        $mode = ($mode) ? 1 : 0;
-
-        // Prepared statement!
-        try
-        {
-            // Transaction if more than 2 servers
-            if ($count > 2)
-                $this->pdo->beginTransaction();
-
-            // Prepare statement
-            $stmt = $this->pdo->prepare("UPDATE server SET authorized=$mode WHERE id=:id");
-            foreach ($ids as $serverId)
-            {
-                // Ignore the all!
-                if ($serverId == 'all') continue;
-
-                // Bind value and run query
-                $stmt->bindValue(':id', (int)$serverId, PDO::PARAM_INT);
-                $stmt->execute();
-            }
-
-            // Commit?
-            if ($count > 2)
-                $this->pdo->commit();
-        }
-        catch (Exception $e)
-        {
-            // Rollback?
-            if ($count > 2)
-                $this->pdo->rollBack();
-
-            throw $e;
-        }
-    }
-
-    /**
-     * Sets the plasma indicator on a list of servers by id
-     *
-     * @param bool $mode true to plasma the specified server, otherwise false
-     * @param int[] $ids A list of server ids to perform the action on
-     *
-     * @throws Exception thrown if there is an error in the SQL statement
-     */
-    public function plasmaServers($mode, $ids)
-    {
-        $count = count($ids);
-        $mode = ($mode) ? 1 : 0;
-
-        // Prepared statement!
-        try
-        {
-            // Transaction if more than 2 servers
-            if ($count > 2)
-                $this->pdo->beginTransaction();
-
-            // Prepare statement
-            $stmt = $this->pdo->prepare("UPDATE server SET plasma=$mode WHERE id=:id");
-            foreach ($ids as $serverId)
-            {
-                // Ignore the all!
-                if ($serverId == 'all') continue;
 
                 // Bind value and run query
                 $stmt->bindValue(':id', (int)$serverId, PDO::PARAM_INT);
@@ -760,113 +662,5 @@ class ServerModel
 
         // return chart data
         return $output;
-    }
-
-    /**
-     * Generates a complete, unique AuthID
-     *
-     * @return int
-     */
-    public function generateUniqueAuthId()
-    {
-        // Keep generating keys until we have a unique one
-        do
-        {
-            $authID = (int)Keygen::numeric(5)->prefix('1')->generate(true);
-            $query = "SELECT COUNT(id) FROM `server` WHERE auth_id=" . $authID;
-            $result = (int)$this->pdo->query($query)->fetchColumn(0);
-        }
-        while ($result > 0);
-
-        return (int)$authID;
-    }
-
-    /**
-     * Generate an auth token
-     *
-     * @return string
-     */
-    public function generateAuthToken()
-    {
-        return Keygen::alphanum(16)->generate();
-    }
-
-    /**
-     * Gets a list of authorized server IP's by server ID
-     *
-     * @param int $id The server ID
-     *
-     * @return array
-     */
-    public function fetchAuthorizedServerIpsById($id)
-    {
-        $list = [];
-        $stmt = $this->pdo->query("SELECT address FROM server_auth_ip WHERE id={$id}");
-        while ($row = $stmt->fetch())
-        {
-            $list[] = $row['address'];
-        }
-        return $list;
-    }
-
-    /**
-     * Syncs a list of authorized IP Addresses for a server in the database.
-     *
-     * @param int $id The server id
-     * @param array $addresses The full list of authorized addresses
-     *
-     * @throws ArgumentException if an supplied address is not a valid IP address
-     */
-    public function syncAuthorizedServerIpsById($id, array $addresses)
-    {
-        $id = (int)$id;
-        $list = $this->fetchAuthorizedServerIpsById($id);
-
-        $add = array_diff($addresses, $list);
-        $remove = array_diff($list, $addresses);
-
-        foreach ($add as $item)
-        {
-            $addy = IPAddress::Parse($item);
-            $this->pdo->insert('server_auth_ip', ['id' => $id, 'address' => $addy]);
-        }
-
-        foreach ($remove as $item)
-        {
-            $addy = $this->pdo->quote(IPAddress::Parse($item));
-            $this->pdo->delete('server_auth_ip', "id = {$id} AND address = ".  $addy);
-        }
-    }
-
-    /**
-     * Generates a new AuthID for the specified server ID
-     *
-     * @param int $id the server id
-     *
-     * @return bool|int the new Auth ID on success, false otherwise
-     */
-    public function generateNewAuthIdForServer($id)
-    {
-        $id = (int)$id;
-        $newId = $this->generateUniqueAuthId();
-
-        $result = $this->pdo->update('server', ['auth_id' => $newId], ['id' => $id]);
-        return ($result) ? $newId : false;
-    }
-
-    /**
-     * Generates a new AuthToken for the specified server ID
-     *
-     * @param int $id the server id
-     *
-     * @return bool|string the new Auth Token on success, false otherwise
-     */
-    public function generateNewAuthTokenForServer($id)
-    {
-        $id = (int)$id;
-        $newId = $this->generateAuthToken();
-
-        $result = $this->pdo->update('server', ['auth_token' => $newId], ['id' => $id]);
-        return ($result) ? $newId : false;
     }
 }

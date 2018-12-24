@@ -55,7 +55,7 @@ class SnapshotsModel
                 $snapshot = new Dictionary(true, $json);
                 $snapshots[] = [
                     'name' => Path::GetFilenameWithoutExtension($file),
-                    'prefix' => $snapshot['prefix'],
+                    'authid' => $snapshot['authId'],
                     'server' => $snapshot['serverName'],
                     'port' => $snapshot['gamePort'],
                     'ipaddress' => $snapshot['serverIp'],
@@ -84,12 +84,10 @@ class SnapshotsModel
      *  the snapshot data is incomplete.
      * @throws IOException thrown if there is a problem moving the snapshot file to the
      *  processed folder.
+     * @throws SecurityException if the snapshot has an invalid AuthId or AuthToken
      */
     public function importSnapshot($file, &$message)
     {
-        // Grab that DB connection
-        $pdo = Database::GetConnection('stats');
-
         // Parse snapshot data
         $stream = File::OpenRead($file);
         $json = $stream->readToEnd();
@@ -104,35 +102,9 @@ class SnapshotsModel
         $data = new Dictionary(false, $data);
         $snapshot = new Snapshot($data);
 
-        // Ensure this is an authorized server
-        $ip = $pdo->quote($snapshot->serverIp);
-        $port = $snapshot->serverPort;
-
-        // Ensure server exists and is authorized before proceeding
-        $row = $pdo->query("SELECT id, authorized FROM server WHERE `ip`={$ip} AND `port`={$port} LIMIT 1")->fetch();
-        if (empty($row))
-        {
-            // Create server entry
-            $query = new UpdateOrInsertQuery($pdo, 'server');
-            $query->set('prefix', '=', $snapshot->serverPrefix);
-            $query->set('name', '=', $snapshot->serverName);
-            $query->set('ip', '=', $snapshot->serverIp);
-            $query->set('port', '=', $snapshot->serverPort);
-            $query->set('queryport', '=', $snapshot->queryPort);
-            $query->set('authorized', '=', 1);
-            $query->set('lastupdate', '=', $snapshot->roundEndTime);
-            $query->executeInsert();
-            $snapshot->serverId = $pdo->lastInsertId('id');
-        }
-        else
-        {
-            $serverId = (int)$row['id'];
-            $authorized = ((int)$row['authorized']) == 1;
-            if (!$authorized)
-                $pdo->exec("UPDATE `server` SET authorized=1 WHERE id={$serverId}");
-
-            $snapshot->serverId = $serverId;
-        }
+        // Ensure we are bound to a stats provider
+        if ($snapshot->providerId == 0)
+            throw new SecurityException("Server is not authorized to post snapshot data");
 
         // Ensure snapshot is not already processed from before!
         if ($snapshot->isProcessed())
