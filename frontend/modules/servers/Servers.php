@@ -206,6 +206,38 @@ class Servers extends Controller
 
     /**
      * @protocol    POST
+     * @request     /ASP/servers/delete
+     * @output      json
+     */
+    public function postDelete()
+    {
+        // Require specific actions
+        $this->requireAction('delete');
+
+        // Require database connection
+        $this->requireDatabase(true);
+
+        // Attach Model
+        $this->loadModel('ServerModel', 'servers');
+
+        try
+        {
+            // Delete servers
+            $this->serverModel->deleteServers($_POST['servers']);
+            $this->sendJsonResponse(true, $_POST['servers']);
+        }
+        catch (Exception $e)
+        {
+            // Log exception
+            System::LogException($e);
+
+            // Tell the client that we have failed
+            $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage());
+        }
+    }
+
+    /**
+     * @protocol    POST
      * @request     /ASP/servers/status
      * @output      json
      */

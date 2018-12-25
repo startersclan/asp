@@ -8,7 +8,7 @@
             <thead>
             <tr>
                 <th style="width: 3%"><span class="loading-cell"></span></th>
-                <th style="width: 15%">Round Date</th>
+                <th style="width: 17%">Round Date</th>
                 <th>Map Name</th>
                 <th>Server</th>
                 <th style="width: 7%">Players</th>

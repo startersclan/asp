@@ -13,6 +13,10 @@
         //noinspection JSUnresolvedVariable
         $.fn.spinner && $('.mws-spinner').spinner();
 
+        // Tooltips
+        //noinspection JSUnresolvedVariable
+        $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
+
         // Data Tables
         var Table = $(".mws-datatable-fn").DataTable({
             pagingType: "full_numbers",

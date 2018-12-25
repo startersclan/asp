@@ -6,6 +6,7 @@
 
         // Data Tables
         $(".mws-datatable-fn").DataTable({
+            pageLength: 25,
             pagingType: "full_numbers",
             processing: false,
             serverSide: true,
