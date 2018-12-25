@@ -307,6 +307,11 @@ ALTER TABLE `round` ADD FOREIGN KEY(`mod_id`) REFERENCES game_mod(`id`) ON DELET
 ALTER TABLE `round` ADD FOREIGN KEY(`gamemode_id`) REFERENCES game_mode(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 --
+-- Create Indexes for Snapshot's checking if a round has been processed
+--
+CREATE INDEX `idx_round_scored` ON round(`map_id`, `time_end`, `time_start`);
+
+--
 -- Alter Table player_army
 --
 ALTER TABLE `player_army` CHANGE `id` `army_id` TINYINT UNSIGNED NOT NULL;

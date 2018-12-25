@@ -123,7 +123,7 @@ class Snapshot extends GameResult
         // Check for unknown map id
         if ($this->mapId == 99)
         {
-            $stmt = $connection->prepare("SELECT id FROM map WHERE name = :name");
+            $stmt = $connection->prepare("SELECT `id` FROM `map` WHERE `name` = :name");
             $stmt->bindValue(':name', $this->mapName, \PDO::PARAM_STR);
             if ($stmt->execute() && ($id = $stmt->fetchColumn(0)) !== false)
             {
@@ -134,30 +134,30 @@ class Snapshot extends GameResult
         }
         else
         {
-            $result = $connection->query("SELECT COUNT(id) FROM map WHERE id = ". $this->mapId);
+            $result = $connection->query("SELECT COUNT(id) FROM `map` WHERE `id` = ". $this->mapId);
             if (($id = (int)$result->fetchColumn(0)) == 0)
             {
                 $connection->insert('map', ['id' => $this->mapId, 'name' => $this->mapName, 'displayname' => $this->mapName]);
             }
         }
 
-        // Load Provider
+        // Attempt to grab Provider Id
         $result = $connection->query("SELECT `id` FROM `stats_provider` WHERE `auth_id`={$this->authId}");
         if ($row = $result->fetch())
         {
             $this->providerId = (int)$row['id'];
         }
 
-        // Load server
+        // Attempt to grab Server Id
         $result = $connection->query("SELECT `id` FROM `server` WHERE `ip`='{$this->serverIp}' AND `queryport`={$this->queryPort}");
         if ($row = $result->fetch())
         {
             $this->serverId = (int)$row['id'];
         }
 
-        // Check for processed snapshot. Server ports can change so do not check by server ID
-        $query = "SELECT COUNT(id) FROM round WHERE map_id=%d AND time_end=%d AND time_start=%d";
-        $result = $connection->query(sprintf($query, $this->mapId, $this->roundEndTime, $this->roundStartTime));
+        // Check for processed snapshot. Server addresses can change so do not check by server port and/or ip addresses
+        $query = "SELECT COUNT(id) FROM `round` WHERE `map_id`=%d AND `server_id`=%d AND `time_end`=%d AND `time_start`=%d";
+        $result = $connection->query(sprintf($query, $this->mapId, $this->serverId, $this->roundEndTime, $this->roundStartTime));
         $this->isProcessed = ((int)$result->fetchColumn(0)) > 0;
     }
 
@@ -186,6 +186,7 @@ class Snapshot extends GameResult
         // Grab database connection and lets go!
         $connection = Database::GetConnection("stats");
         $provider = null;
+        $isNewServer = ($this->serverId == 0);
 
         // Get a log file
         $this->logWriter = LogWriter::Instance("stats_debug");
@@ -197,7 +198,7 @@ class Snapshot extends GameResult
 
         // ---------------------------------------------------------------------
         // Start logging information about this snapshot
-        $this->logWriter->logNotice("Begin Processing (%s)...", [$this->mapName]);
+        $this->logWriter->logNotice("Begin Processing (%s)...", $this->mapName);
 
         // ---------------------------------------------------------------------
         // Ensure this is a valid AuthId. If AuthID is invalid, provider ID will be 0
@@ -212,7 +213,7 @@ class Snapshot extends GameResult
             // Check the Auth Token
             $result = $connection->query("SELECT * FROM `stats_provider` WHERE `id`={$this->providerId}");
             $provider = $result->fetch();
-            if ($this->authToken != $provider['auth_token'])
+            if ($this->authToken !== $provider['auth_token'])
             {
                 $this->logWriter->logDebug("Invalid AuthToken passed! [AuthId: {$this->authId}, AuthToken: {$this->authToken}]");
                 throw new SecurityException("Invalid Auth Token found in Snapshot data", 1);
@@ -245,7 +246,7 @@ class Snapshot extends GameResult
         }
         else
         {
-            $this->logWriter->logDebug("Existing ServerID Found using Remote Address [{$this->serverId}]");
+            $this->logWriter->logDebug("Existing ServerID found using Remote Address [{$this->serverId}]");
         }
 
         // ---------------------------------------------------------------------
@@ -320,7 +321,8 @@ class Snapshot extends GameResult
 
         // ---------------------------------------------------------------------
         // Ensure the game mode is not unknown
-        if ($this->gameMode >= StatsData::$NumGamemodes)
+        $result = $connection->query("SELECT COUNT(`id`) FROM `game_mode` WHERE `id`={$this->gameMode}")->fetchColumn();
+        if ($result == 0)
         {
             $message = sprintf("Unknown GameMode id (%d) found in Snapshot.. Aborting", $this->gameMode);
             $this->logWriter->logWarning($message);
@@ -786,14 +788,18 @@ class Snapshot extends GameResult
             // ********************************
             // Process ServerInfo
             // ********************************
-            $this->logWriter->logDebug("Saving server updated information");
-            $query = new UpdateOrInsertQuery($connection, 'server');
-            $query->set('name', '=', StringHelper::SubStrWords($this->serverName, 100));
-            $query->set('gameport', '=', $this->serverPort);
-            $query->set('queryport', '=', $this->queryPort);
-            $query->set('lastupdate', 'g', time());
-            $query->where('id', '=', $this->serverId);
-            $query->executeUpdate();
+            if (!$isNewServer )
+            {
+                $this->logWriter->logDebug("Saving server updated information");
+                $query = new UpdateOrInsertQuery($connection, 'server');
+                $query->set('provider_id', '=', $this->providerId);
+                $query->set('name', '=', StringHelper::SubStrWords($this->serverName, 100));
+                $query->set('gameport', '=', $this->serverPort);
+                $query->set('queryport', '=', $this->queryPort);
+                $query->set('lastupdate', 'g', time());
+                $query->where('id', '=', $this->serverId);
+                $query->executeUpdate();
+            }
 
             // ********************************
             // Save BattleSpy Reports

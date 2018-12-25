@@ -376,6 +376,12 @@ SQL;
         // Fetch the round awards
         $awards = $this->pdo->query($query)->fetchAll();
 
+        // Default placement data (Incase bot stats are ignored)
+        $data = ['id' => 0, 'name' => 'N/A', 'rank' => 0, 'team' => -1];
+        $view->set('first_place', $data);
+        $view->set('second_place', $data);
+        $view->set('third_place', $data);
+
         // Assign Player positions
         $i = 0;
         foreach ($awards as $award)

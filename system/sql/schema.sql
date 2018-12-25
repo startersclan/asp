@@ -222,6 +222,12 @@ CREATE TABLE `round` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
+-- Create Indexes for Snapshot's checking if a round has been processed
+--
+
+CREATE INDEX `idx_round_processed` ON round(`map_id`, `server_id`, `time_end`, `time_start`);
+
+--
 -- Table structure for table `unlock`
 --
 

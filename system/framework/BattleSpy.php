@@ -9,7 +9,6 @@
  */
 
 namespace System;
-use PDO;
 use System\Database\DbConnection;
 use System\Database\UpdateOrInsertQuery;
 
