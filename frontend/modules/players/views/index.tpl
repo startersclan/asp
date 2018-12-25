@@ -39,8 +39,9 @@
                                 <select id="filterStatus" name="filterStatus" class="mws-select2">
                                     <option value="99">&rarr; Filter By Account Status &larr;</option>
                                     <option value="0">Active</option>
-                                    <option value="1">Inactive</option>
-                                    <option value="2">Banned</option>
+                                    <option value="1">Online</option>
+                                    <option value="2">Inactive</option>
+                                    <option value="3">Banned</option>
                                 </select>
                             </div>
                         </div>

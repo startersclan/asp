@@ -24,6 +24,17 @@ class Devtest extends \System\Controller
         echo '<pre>' . var_export($data, true) . '</pre>';
     }
 
+    public function createIndex()
+    {
+        // Require a database connection
+        $this->requireDatabase(true);
+
+        // Fetch database connection
+        $pdo = System\Database::GetConnection('stats');
+
+        var_dump($pdo->exec("CREATE INDEX `idx_round_processed` ON round(`map_id`, `server_id`, `time_end`, `time_start`)"));
+    }
+
     public function phpInfo()
     {
         echo phpinfo();

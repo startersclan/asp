@@ -164,14 +164,16 @@ class PlayerAjaxModel
                     $filters[] = "`lastonline` >= " . $lastMonth;
                     break;
                 case 1:
+                    $filters[] = '`online` = 1';
+                    break;
+                case 2:
                     $filters[] = '`permban` = 0';
                     $filters[] = "`lastonline` <= " . $lastMonth;
                     break;
-                case 2:
+                case 3:
                     $filters[] = '`permban` = 1';
                     break;
             }
-
         }
 
         // Use the DataTables library class
