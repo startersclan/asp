@@ -664,16 +664,44 @@ SQL;
         // Sanitize
         $id = (int)$providerId;
 
-        // Get server ID's by provider id
-        $servers = $this->getServerIdsByProviderId($id);
-        $serversString = (empty($servers)) ? 0 : join(',', $servers);
-
         $query = <<<SQL
-SELECT s.*, COUNT(r.id) AS `snapshots` FROM server AS s
-  LEFT JOIN round AS r on s.id = r.server_id
-WHERE s.id IN ($serversString) 
+SELECT s.*, p.authorized, p.plasma, COUNT(r2.id) AS `snapshots`
+FROM `server` AS s
+  LEFT JOIN stats_provider AS p on s.provider_id = p.id
+  LEFT JOIN round AS r2 on s.id = r2.server_id
+WHERE s.provider_id = $id
 GROUP BY s.id
 SQL;
-        return $this->pdo->query($query)->fetchAll();
+
+        // Get real authorization
+        $addresses = [];
+        $servers = $this->pdo->query($query)->fetchAll();
+        $query = "SELECT `address` FROM `stats_provider_auth_ip` WHERE `provider_id`={$id}";
+        $rows = $this->pdo->query($query)->fetchAll();
+
+        foreach ($rows as $row)
+        {
+            $addresses[] = $row['address'];
+        }
+
+        // Add authorized tag per server
+        for ($i = 0; $i < count($servers); $i++)
+        {
+            $serverIp = IPAddress::Parse($servers[$i]['ip']);
+            $auth = false;
+
+            foreach ($addresses as $address)
+            {
+                if ($serverIp->isInCidr($address))
+                {
+                    $auth = true;
+                    break;
+                }
+            }
+
+            $servers[$i]['authorized'] = ($auth) ? 1 : 0;
+        }
+
+        return $servers;
     }
 }

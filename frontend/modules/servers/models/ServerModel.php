@@ -60,9 +60,11 @@ class ServerModel
     public function fetchServers()
     {
         $query = <<<SQL
-SELECT s.*, p.name AS provider_name, p.authorized, p.plasma 
+SELECT s.*, p.name AS provider_name, p.authorized, p.plasma, COUNT(r2.id) AS `snapshots`
 FROM `server` AS s
   LEFT JOIN stats_provider AS p on s.provider_id = p.id
+  LEFT JOIN round AS r2 on s.id = r2.server_id
+GROUP BY s.id
 ORDER BY s.id ASC
 SQL;
 
@@ -70,20 +72,42 @@ SQL;
         if (empty($servers))
             return [];
 
-        // Select counts of snapshots received by each server
-        $counts = [];
-        $query = "SELECT `server_id`, COUNT(*) AS `count` FROM `round` GROUP BY `server_id`";
-        $res = $this->pdo->query($query)->fetchAll();
-        foreach ($res as $row)
+        // Get real authorization
+        $providers = new \System\Collections\Dictionary();
+        $query = "SELECT * FROM `stats_provider_auth_ip`";
+        $rows = $this->pdo->query($query)->fetchAll();
+
+        foreach ($rows as $row)
         {
-            $key = (int)$row['server_id'];
-            $counts[$key] = (int)$row['count'];
+            $id = (int)$row['provider_id'];
+            if ($providers->containsKey($id))
+            {
+                $providers[$id][] = $row['address'];
+            }
+            else
+            {
+                $providers->add($id, array($row['address']));
+            }
         }
 
+        // Add authorized tag per server
         for ($i = 0; $i < count($servers); $i++)
         {
-            $key = (int)$servers[$i]['id'];
-            $servers[$i]['snapshots'] = (!isset($counts[$key])) ? 0 : $counts[$key];
+            $serverIp = IPAddress::Parse($servers[$i]['ip']);
+            $providerId = (int)$servers[$i]['provider_id'];
+            $auth = false;
+
+            foreach ($providers[$providerId] as $address)
+            {
+                if ($serverIp->isInCidr($address))
+                {
+                    $auth = true;
+                    break;
+                }
+            }
+
+
+            $servers[$i]['authorized'] = ($auth) ? 1 : 0;
         }
 
         return $servers;

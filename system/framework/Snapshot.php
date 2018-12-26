@@ -64,6 +64,11 @@ class Snapshot extends GameResult
     public $authToken = '';
 
     /**
+     * @var Dictionary
+     */
+    protected $playerData = null;
+
+    /**
      * Snapshot constructor.
      *
      * @param Dictionary $snapshotData snapshot as a JSON string
@@ -187,6 +192,7 @@ class Snapshot extends GameResult
         $connection = Database::GetConnection("stats");
         $provider = null;
         $isNewServer = ($this->serverId == 0);
+        $this->playerData = new Dictionary();
 
         // Get a log file
         $this->logWriter = LogWriter::Instance("stats_debug");
@@ -219,7 +225,7 @@ class Snapshot extends GameResult
                 throw new SecurityException("Invalid Auth Token found in Snapshot data", 1);
             }
 
-            $this->logWriter->logDebug("Valid AuthID and AuthToken found in Snapshot data [{$this->authId}]");
+            $this->logWriter->logDebug(sprintf("Valid AuthID (%d) and AuthToken found in Snapshot data", $this->authId));
         }
 
         // ---------------------------------------------------------------------
@@ -231,7 +237,7 @@ class Snapshot extends GameResult
         }
         else
         {
-            $this->logWriter->logDebug(sprintf("Stats Provider is Authorized (ID: %d)", $this->providerId));
+            $this->logWriter->logDebug(sprintf("Stats Provider (ID: %d) is Authorized", $this->providerId));
         }
 
         // ---------------------------------------------------------------------
@@ -239,14 +245,14 @@ class Snapshot extends GameResult
         if ($this->serverId == 0)
         {
             // Create server
-            require Path::Combine(ROOT, 'frontend', 'modules', 'servers', 'models', 'ServerModel.php');
+            require_once Path::Combine(ROOT, 'frontend', 'modules', 'servers', 'models', 'ServerModel.php');
             $model = new \ServerModel();
             $this->serverId = $model->addServer($this->providerId, $this->serverName, $this->serverIp, $this->serverPort, $this->queryPort);
             $this->logWriter->logDebug("Creating new Game Server added using ServerID [{$this->serverId}]");
         }
         else
         {
-            $this->logWriter->logDebug("Existing ServerID found using Remote Address [{$this->serverId}]");
+            $this->logWriter->logDebug(sprintf("Existing Server (ID: %d) found using Remote Address", $this->serverId));
         }
 
         // ---------------------------------------------------------------------
@@ -367,8 +373,8 @@ class Snapshot extends GameResult
             // ********************************
             foreach ($this->players as $player)
             {
-                // Check if player exists already
-                $sql = "SELECT permban, bantime FROM player WHERE id=%d LIMIT 1";
+                // Check if player exists, and get banned information and best scores
+                $sql = "SELECT lastip, country, rank_id, killstreak, deathstreak, bestscore, permban, bantime FROM player WHERE id=%d LIMIT 1";
                 $row = $connection->query(sprintf($sql, $player->id))->fetch();
 
                 // If player does not exist, stop here!
@@ -394,6 +400,10 @@ class Snapshot extends GameResult
                 }
                 else
                 {
+                    // Add player data
+                    $this->playerData->add($player->id, $row);
+
+                    // Convert values
                     $banned = (int)$row['permban'];
                     $bantime = (int)$row['bantime'];
 
@@ -422,10 +432,6 @@ class Snapshot extends GameResult
 
                 // Write log
                 $this->logWriter->logNotice("Processing Player (%d)", $player->id);
-
-                // Check if player exists already
-                $sql = "SELECT lastip, country, rank_id, killstreak, deathstreak, bestscore FROM player WHERE id=%d LIMIT 1";
-                $row = $connection->query(sprintf($sql, $player->id))->fetch();
 
                 // Run player check through BattleSpy
                 $this->battleSpy->analyze($player);
@@ -469,6 +475,9 @@ class Snapshot extends GameResult
                 $query->set('mode0', '+', ($this->gameMode == 0));
                 $query->set('mode1', '+', ($this->gameMode == 1));
                 $query->set('mode2', '+', ($this->gameMode == 2));
+
+                // Grab existing player data
+                $row = $this->playerData[$player->id];
 
                 // Set wins / losses
                 if (!$wasDrawRound)

@@ -118,6 +118,7 @@
                 <th style="width: 12%">Server IP Address</th>
                 <th style="width: 7%">Game Port</th>
                 <th style="width: 7%">Query Port</th>
+                <th style="width: 10%"> Address Status</th>
                 <th style="width: 6%">Games</th>
                 <th style="width: 7%">Actions</th>
             </tr>
@@ -130,6 +131,7 @@
                     <td>{ip}</td>
                     <td>{gameport}</td>
                     <td>{queryport}</td>
+                    <td><span class="badge badge-{auth_badge}">{auth_text}</span></td>
                     <td>{snapshots}</td>
                     <td>
                     <span class="btn-group">

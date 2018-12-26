@@ -111,6 +111,13 @@ class Providers extends Controller
 
         // Fetch servers
         $servers = $this->providerModel->getServersByProviderId($id);
+
+        // Attach tags
+        for ($i = 0; $i < count($servers); $i++)
+        {
+            $servers[$i]['auth_badge'] = ($servers[$i]['authorized']) ? 'success' : 'important';
+            $servers[$i]['auth_text'] = ($servers[$i]['authorized']) ? 'Authorized' : 'Not Authorized';
+        }
         $view->set('servers', $servers);
 
         // Attach needed scripts for the form
