@@ -76,6 +76,8 @@ class SnapshotsModel
      * After the snapshot is parsed, it will be moved to the 'processed' snapshot directory.
      *
      * @param string $file The full file path to the snapshot json file
+     * @param bool $ignoreAuthorization if true, all security and authorization protocols will be skipped.
+     *      Should always remain false unless an administrator OK's the snapshot for manual processing.
      * @param string $message [Reference Variable] Gets the result message
      *
      * @return void
@@ -84,9 +86,9 @@ class SnapshotsModel
      *  the snapshot data is incomplete.
      * @throws IOException thrown if there is a problem moving the snapshot file to the
      *  processed folder.
-     * @throws SecurityException if the snapshot has an invalid AuthId or AuthToken
+     * @throws SecurityException if the snapshot has an invalid AuthId
      */
-    public function importSnapshot($file, &$message)
+    public function importSnapshot($file, $ignoreAuthorization, &$message)
     {
         // Parse snapshot data
         $stream = File::OpenRead($file);
@@ -114,7 +116,7 @@ class SnapshotsModel
         else
         {
             // Process data
-            $snapshot->processData();
+            $snapshot->processData($ignoreAuthorization);
             $message = "Snapshot was processed successfully.";
         }
 

@@ -134,6 +134,7 @@ namespace System
     }
 
     // Parse Snapshot
+    $snapshot = null;
     try
     {
         // Add ip address of connecting client
@@ -145,6 +146,33 @@ namespace System
 
         // SNAPSHOT Data OK
         $LogWriter->logNotice("SNAPSHOT Data Complete (%s)", $snapshot->mapName);
+
+        // Check authorization. This method does it's own logging!
+        $snapshot->checkAuthorization();
+    }
+    catch (SecurityException $e)
+    {
+        // Only keep UnAuthorized snapshots if the AuthID and AuthToken are valid
+        if ($e->getCode() >= 2)
+        {
+            $fileName = $snapshot->getFilename();
+            try
+            {
+                // Create and write the snapshot data into a backup file
+                $file = new FileStream(SNAPSHOT_AUTH_PATH . DS . $fileName, 'w+');
+                $file->write(json_encode($data->toArray(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK));
+                $file->close();
+
+                // Log
+                $LogWriter->logNotice("SNAPSHOT Data Logged (%s)", $fileName);
+            }
+            catch (Exception $e)
+            {
+                $LogWriter->logError("Unable to create a new SNAPSHOT Data Logfile (%s): %s", [$fileName, $e->getMessage()]);
+            }
+        }
+
+        die(_ERR_RESPONSE . $e->getMessage());
     }
     catch (Exception $e)
     {

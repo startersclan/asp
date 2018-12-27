@@ -30,6 +30,11 @@ class Snapshot extends GameResult
     protected $isProcessed = false;
 
     /**
+     * @var bool
+     */
+    protected $authResult = false;
+
+    /**
      * @var BattleSpy
      */
     protected $battleSpy;
@@ -179,10 +184,14 @@ class Snapshot extends GameResult
     /**
      * Processes the snapshot data, inserted and updating player data in the gamespy database
      *
-     * @throws SecurityException if the server posting this snapshot is not authorized to post snapshots
-     * @throws Exception if an error occurs while processing data
+     * @param bool $ignoreAuthorization if true, all security and authorization protocols will be skipped.
+     *      Should always remain false unless an administrator OK's the snapshot for manual processing.
+     *
+     * @throws SecurityException if the AuthID is invalid
+     * @throws \ArgumentException if the server IP address is not valid
+     * @throws \IOException
      */
-    public function processData()
+    public function processData($ignoreAuthorization = false)
     {
         // Make sure we are not processing the same data again
         if ($this->isProcessed)
@@ -207,37 +216,20 @@ class Snapshot extends GameResult
         $this->logWriter->logNotice("Begin Processing (%s)...", $this->mapName);
 
         // ---------------------------------------------------------------------
-        // Ensure this is a valid AuthId. If AuthID is invalid, provider ID will be 0
-        // Ensure Auth Token matches the snapshot
-        if ($this->providerId == 0)
+        // Check authorization if we haven't already
+        if ($ignoreAuthorization)
         {
-            $this->logWriter->logSecurity("Invalid AuthID found in Snapshot data [{$this->authId}]");
-            throw new SecurityException("Invalid AuthID found in Snapshot data", empty($row) ? 0 : 1);
-        }
-        else
-        {
-            // Check the Auth Token
-            $result = $connection->query("SELECT * FROM `stats_provider` WHERE `id`={$this->providerId}");
-            $provider = $result->fetch();
-            if ($this->authToken !== $provider['auth_token'])
+            // ---------------------------------------------------------------------
+            // Ensure this is a valid AuthId. THIS IS A MUST!
+            if ($this->providerId == 0)
             {
-                $this->logWriter->logDebug("Invalid AuthToken passed! [AuthId: {$this->authId}, AuthToken: {$this->authToken}]");
-                throw new SecurityException("Invalid Auth Token found in Snapshot data", 1);
+                $this->logWriter->logSecurity("Invalid AuthID found in Snapshot data [{$this->authId}]");
+                throw new SecurityException("Invalid AuthID found in Snapshot data", 0);
             }
-
-            $this->logWriter->logDebug(sprintf("Valid AuthID (%d) and AuthToken found in Snapshot data", $this->authId));
         }
-
-        // ---------------------------------------------------------------------
-        // Ensure this is an authorized server
-        if ((int)$provider['authorized'] == 0)
+        else if ($this->authResult == false)
         {
-            $this->logWriter->logSecurity("UnAuthorized Stats Provider ({$this->providerId}) attempted to send snapshot data!");
-            throw new SecurityException("UnAuthorized Stats Provider!", empty($row) ? 2 : 3);
-        }
-        else
-        {
-            $this->logWriter->logDebug(sprintf("Stats Provider (ID: %d) is Authorized", $this->providerId));
+            $this->checkAuthorization();
         }
 
         // ---------------------------------------------------------------------
@@ -253,33 +245,6 @@ class Snapshot extends GameResult
         else
         {
             $this->logWriter->logDebug(sprintf("Existing Server (ID: %d) found using Remote Address", $this->serverId));
-        }
-
-        // ---------------------------------------------------------------------
-        // Ensure this is an valid server IP for this Stats Provider
-        $valid = false;
-        $serverIP = IPAddress::Parse($this->serverIp);
-        $result = $connection->query("SELECT * FROM stats_provider_auth_ip WHERE provider_id={$this->providerId}");
-        while ($row = $result->fetch())
-        {
-            // Grab IP as an object
-            if ($serverIP->isInCidr($row['address']))
-            {
-                $valid = true;
-                break;
-            }
-        }
-
-        // Is this a valid server IP?
-        if (!$valid)
-        {
-            $message = "UnAuthorized Server IpAddress received for AuthId! [AuthId: {$this->authId}, ServerAddress: {$this->serverIp}]";
-            $this->logWriter->logSecurity($message);
-            throw new SecurityException($message, 5);
-        }
-        else
-        {
-            $this->logWriter->logDebug("Server IpAddress is Authorized for AuthId!");
         }
 
         // ---------------------------------------------------------------------
@@ -834,6 +799,142 @@ class Snapshot extends GameResult
             $this->logWriter->logError("Failed to process SNAPSHOT! %s", $e->getMessage());
             throw $e;
         }
+    }
+
+    /**
+     * Checks the remote server address has a valid AuthID, AuthToken, and
+     * authorized game server IPAddress to post stats to the database
+     *
+     * @throws SecurityException if the remote server address does not have a valid AuthID, AuthToken, or
+     *      is not an authorized game server IPAddress to post stats to the database.
+     * <pre>
+     *  Exception Error Codes:
+     *      0 => Invalid AuthID
+     *      1 => Invalid AuthToken for AuthID
+     *      2 => Provider is not authorized to post stats
+     *      3 => Game server IP address is not whitelisted under provider
+     * </pre>
+     * @throws \ArgumentException if the supplied ServerIP is not a valid IP address
+     */
+    public function checkAuthorization()
+    {
+        // Get a log file
+        $this->logWriter = LogWriter::Instance("stats_debug");
+        if ($this->logWriter === false)
+        {
+            $this->logWriter = new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "stats_debug.log"), "stats_debug");
+            $this->logWriter->setLogLevel(Config::Get('debug_lvl'));
+        }
+
+        // Grab database connection and lets go!
+        $connection = Database::GetConnection("stats");
+
+        // ---------------------------------------------------------------------
+        // Ensure this is a valid AuthId. If AuthID is invalid, provider ID will be 0
+        // Ensure Auth Token matches the snapshot
+        if ($this->providerId == 0)
+        {
+            $this->logWriter->logSecurity("Invalid AuthID found in Snapshot data [{$this->authId}]");
+            throw new SecurityException("Invalid AuthID found in Snapshot data", 0);
+        }
+
+        // Check the Auth Token
+        $result = $connection->query("SELECT * FROM `stats_provider` WHERE `id`={$this->providerId}");
+        $provider = $result->fetch();
+        if ($this->authToken !== $provider['auth_token'])
+        {
+            $this->logWriter->logDebug("Invalid AuthToken passed! [AuthId: {$this->authId}, AuthToken: {$this->authToken}]");
+            throw new SecurityException("Invalid Auth Token found in Snapshot data", 1);
+        }
+
+        $this->logWriter->logDebug(sprintf("Valid AuthID (%d) and AuthToken found in Snapshot data", $this->authId));
+
+        // ---------------------------------------------------------------------
+        // Ensure this is an authorized server
+        if ((int)$provider['authorized'] == 0)
+        {
+            $this->logWriter->logSecurity("UnAuthorized Stats Provider ({$this->providerId}) attempted to send snapshot data!");
+            throw new SecurityException("UnAuthorized Stats Provider!", 2);
+        }
+        else
+        {
+            $this->logWriter->logDebug(sprintf("Stats Provider (ID: %d) is Authorized", $this->providerId));
+        }
+
+        // ---------------------------------------------------------------------
+        // Ensure this is an valid server IP for this Stats Provider
+        $valid = false;
+        $serverIP = IPAddress::Parse($this->serverIp);
+        $result = $connection->query("SELECT * FROM stats_provider_auth_ip WHERE provider_id={$this->providerId}");
+        while ($row = $result->fetch())
+        {
+            // Grab IP as an object
+            if ($serverIP->isInCidr($row['address']))
+            {
+                $valid = true;
+                break;
+            }
+        }
+
+        // Is this a valid server IP?
+        if (!$valid)
+        {
+            $message = "UnAuthorized Server IpAddress received for AuthId! [AuthId: {$this->authId}, ServerAddress: {$this->serverIp}]";
+            $this->logWriter->logSecurity($message);
+            throw new SecurityException($message, 3);
+        }
+        else
+        {
+            $this->logWriter->logDebug("Server IpAddress is Authorized for AuthId!");
+        }
+
+        // Flag we are all good
+        $this->authResult = true;
+    }
+
+    /**
+     * Returns whether the remote server address has a valid AuthID, AuthToken, and
+     * authorized game server IPAddress to post stats to the database
+     *
+     * @return bool
+     *
+     * @throws \ArgumentException if the supplied ServerIP is not a valid IP address
+     */
+    public function isAuthorized()
+    {
+        // Invalid Auth Id
+        if ($this->providerId == 0)
+            return false;
+
+        // Grab database connection and lets go!
+        $connection = Database::GetConnection("stats");
+
+        // Check if Provider is authorized first!
+        $result = $connection->query("SELECT auth_token, authorized FROM `stats_provider` WHERE `id`={$this->providerId} LIMIT 1");
+        $provider = $result->fetch();
+        if ($provider['authorized'] == 0 || $this->authToken !== $provider['auth_token'])
+            return false;
+
+        // Grab authorized game server addresses
+        $query = "SELECT `address` FROM `stats_provider_auth_ip` WHERE `provider_id`={$this->providerId}";
+        $rows = $connection->query($query)->fetchAll();
+
+        // Parse server IP
+        $serverIp = IPAddress::Parse($this->serverIp);
+        $auth = false;
+
+        // Check against authorized server IP addresses for this provider
+        foreach ($rows as $row)
+        {
+            $address = $row['address'];
+            if ($serverIp->isInCidr($address))
+            {
+                $auth = true;
+                break;
+            }
+        }
+
+        return $auth;
     }
 
     /**

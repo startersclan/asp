@@ -95,7 +95,7 @@ class Snapshots extends Controller
         {
             // Load model, and call method
             $this->loadModel('SnapshotsModel', 'snapshots');
-            $this->snapshotsModel->importSnapshot($file, $message);
+            $this->snapshotsModel->importSnapshot($file, true, $message);
 
             // Tell the client of the success
             $this->sendJsonResponse(true, $message);

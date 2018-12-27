@@ -101,14 +101,6 @@
     <div class="mws-panel-header">
         <span><i class="icon-table"></i> Registered Stats Servers</span>
     </div>
-    <div class="mws-panel-toolbar">
-        <div class="btn-toolbar">
-            <div class="btn-group">
-                <a id="add-new" href="#" class="btn"><i class="icol-add"></i> Add New Server</a>
-                <a id="refresh" href="#" class="btn"><i class="icol-arrow-refresh"></i> Refresh</a>
-            </div>
-        </div>
-    </div>
     <div class="mws-panel-body no-padding">
         <table class="mws-datatable-fn mws-table">
             <thead>

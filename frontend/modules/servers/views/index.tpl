@@ -14,7 +14,7 @@
                 <th style="width: 7%">Game Port</th>
                 <th style="width: 7%">Query Port</th>
                 <th style="width: 6%">Games</th>
-                <th style="width: 8%">Status</th>
+                <th style="width: 8%">Address Status</th>
                 <th style="width: 6%">Plasma</th>
                 <th style="width: 9%">Actions</th>
             </tr>
