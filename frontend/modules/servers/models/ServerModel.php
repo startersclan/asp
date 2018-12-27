@@ -125,12 +125,41 @@ SQL;
     {
         $id = (int)$id;
         $query = <<<SQL
-SELECT s.*, p.name AS provider_name, p.authorized, p.plasma 
+SELECT s.*, p.name AS provider_name, p.authorized AS provider_authorized, p.plasma 
 FROM `server` AS s
   LEFT JOIN stats_provider AS p on s.provider_id = p.id
 WHERE s.id={$id}
 SQL;
-        return $this->pdo->query($query)->fetch();
+        $server = $this->pdo->query($query)->fetch();
+        if (empty($server))
+            return false;
+
+        // Get real authorization
+        $providerId = (int)$server['provider_id'];
+        $addresses = [];
+        $query = "SELECT `address` FROM `stats_provider_auth_ip` WHERE `provider_id`={$providerId}";
+        $rows = $this->pdo->query($query)->fetchAll();
+
+        foreach ($rows as $row)
+        {
+            $addresses[] = $row['address'];
+        }
+
+        // Add authorized tag per server
+        $serverIp = IPAddress::Parse($server['ip']);
+        $auth = false;
+
+        foreach ($addresses as $address)
+        {
+            if ($serverIp->isInCidr($address))
+            {
+                $auth = true;
+                break;
+            }
+        }
+
+        $server['server_authorized'] = ($auth) ? 1 : 0;
+        return $server;
     }
 
     /**

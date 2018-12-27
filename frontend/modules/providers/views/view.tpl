@@ -53,7 +53,7 @@
 				</span>
             </li>
             <li>
-                <span class="key"><i class="icon-check"></i> Status</span>
+                <span class="key"><i class="icon-check"></i> Ranked Status</span>
                 <span class="val">
 					<label id="authorized" class="label label-{provider.auth_badge}">{provider.auth_text}</label>
 				</span>
@@ -118,7 +118,7 @@
                 <th style="width: 12%">Server IP Address</th>
                 <th style="width: 7%">Game Port</th>
                 <th style="width: 7%">Query Port</th>
-                <th style="width: 10%"> Address Status</th>
+                <th style="width: 8%">Address Status</th>
                 <th style="width: 6%">Games</th>
                 <th style="width: 7%">Actions</th>
             </tr>

@@ -42,7 +42,7 @@ class Providers extends Controller
         for ($i = 0; $i < count($providers); $i++)
         {
             $providers[$i]['auth_badge'] = ($providers[$i]['authorized']) ? 'success' : 'important';
-            $providers[$i]['auth_text'] = ($providers[$i]['authorized']) ? 'Yes' : 'No';
+            $providers[$i]['auth_text'] = ($providers[$i]['authorized']) ? 'Authorized' : 'Not Authorized';
             $providers[$i]['plasma_badge'] = ($providers[$i]['plasma']) ? 'success' : 'inactive';
             $providers[$i]['plasma_text'] = ($providers[$i]['plasma']) ? 'Yes' : 'No';
         }

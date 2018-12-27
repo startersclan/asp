@@ -50,7 +50,7 @@ class Servers extends Controller
         for ($i = 0; $i < count($servers); $i++)
         {
             $servers[$i]['auth_badge'] = ($servers[$i]['authorized']) ? 'success' : 'important';
-            $servers[$i]['auth_text'] = ($servers[$i]['authorized']) ? 'Yes' : 'No';
+            $servers[$i]['auth_text'] = ($servers[$i]['authorized']) ? 'Authorized' : 'Not Authorized';
             $servers[$i]['plasma_badge'] = ($servers[$i]['plasma']) ? 'success' : 'inactive';
             $servers[$i]['plasma_text'] = ($servers[$i]['plasma']) ? 'Yes' : 'No';
         }
@@ -105,8 +105,10 @@ class Servers extends Controller
 
         // Set last seen
         $server['last_update'] = TimeHelper::FormatDifference((int)$server['lastupdate'], time());
-        $server['auth_badge'] = ($server['authorized']) ? 'success' : 'important';
-        $server['auth_text'] = ($server['authorized']) ? 'Authorized' : 'Not Authorized';
+        $server['server_auth_badge'] = ($server['server_authorized']) ? 'success' : 'important';
+        $server['server_auth_text'] = ($server['server_authorized']) ? 'Authorized Stats Server' : 'Unauthorized Stats Server';
+        $server['provider_auth_badge'] = ($server['provider_authorized']) ? 'success' : 'important';
+        $server['provider_auth_text'] = ($server['provider_authorized']) ? 'Authorized' : 'Not Authorized';
         $server['plasma_badge'] = ($server['plasma']) ? 'success' : 'inactive';
         $server['plasma_text'] = ($server['plasma']) ? 'Yes' : 'No';
 

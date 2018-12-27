@@ -28,7 +28,7 @@
                 <th style="width: 5%">Auth ID</th>
                 <th style="width: 12%">Auth Token</th>
                 <th style="width: 10%">Games Processed</th>
-                <th style="width: 6%">Authorized</th>
+                <th style="width: 8%">Ranked Status</th>
                 <th style="width: 6%">Plasma</th>
                 <th style="width: 7%">Actions</th>
             </tr>
