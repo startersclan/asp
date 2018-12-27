@@ -14,7 +14,7 @@
  */
 define('BF2_ADMIN', true);
 define('CODE_VERSION', '3.0.0');
-define('CODE_VERSION_DATE', '2018-12-24');
+define('CODE_VERSION_DATE', '2018-12-26');
 define('DB_EXPECTED_VERSION', '3.0.0');
 define('DS', DIRECTORY_SEPARATOR);
 define('ROOT', __DIR__);

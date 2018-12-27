@@ -356,6 +356,10 @@
             // Get all checked
             var checkValues = getSelectedProviders();
 
+            // Is anything selected?
+            if (checkValues.length < 1)
+                return false;
+
             // Push the request
             $.post( "/ASP/providers/authorize", { action: "unauth", providers: checkValues })
                 .done(function( data ) {
@@ -411,6 +415,10 @@
 
             // Get all checked
             var checkValues = getSelectedProviders();
+
+            // Is anything selected?
+            if (checkValues.length < 1)
+                return false;
 
             // Push the request
             $.post( "/ASP/providers/authorize", { action: "auth", providers: checkValues })
@@ -468,8 +476,12 @@
             // Get all checked
             var checkValues = getSelectedProviders();
 
+            // Is anything selected?
+            if (checkValues.length < 1)
+                return false;
+
             // Push the request
-            $.post( "/ASP/providers/plasma", { action: "plasma", ajax: true, providers: [checkValues] })
+            $.post( "/ASP/providers/plasma", { action: "plasma", ajax: true, providers: checkValues })
                 .done(function( data ) {
 
                     // Parse response
@@ -522,8 +534,12 @@
             // Get all checked
             var checkValues = getSelectedProviders();
 
+            // Is anything selected?
+            if (checkValues.length < 1)
+                return false;
+
             // Push the request
-            $.post( "/ASP/providers/plasma", { action: "unplasma", ajax: true, providers: [checkValues] })
+            $.post( "/ASP/providers/plasma", { action: "unplasma", ajax: true, providers: checkValues })
                 .done(function( data ) {
 
                     // Parse response

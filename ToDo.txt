@@ -2,9 +2,8 @@ Must Do's:
  - Add a blacklist option for hiding servers in the server browser.
 
 Nice To Have's:
- - Undo and subtract player stats on rounds where cheating is caught (Undo Snapshot)
+ - Snapshot module face lift. Ability to view round details of a round (from a snapshot) before it
+    is saved into the database (requiring manual admin authorization).
  - Create a system where a round played with too many BattleSpy flags will not be saved, but rather have to be
     sanctioned after review by the stats admin before being processed into the database.
-
-Server Identifying:
- - Prefix (ServerId On Host) -> AuthToken (Approved or declined with lists of IP Addresses)
+ - Page /player/view/:id => Add next 3 ranks progress like Bf2sclone had
