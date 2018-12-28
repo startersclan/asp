@@ -30,10 +30,11 @@ class DatabaseModel
      * @remarks Order is important here (foreign keys)!
      */
     protected static $BackupTables = [
-        'army', 'kit', 'vehicle', 'weapon', 'unlock', 'map', 'server', 'game_mod', 'game_mode', 'round',
+        'army', 'award', 'kit', 'rank', 'vehicle', 'weapon', 'unlock', 'map', 'stats_provider',
+        'stats_provider_auth_ip', 'server', 'game_mod', 'game_mode', 'round', 'failed_snapshot',
         'player', 'player_army', 'player_award', 'player_weapon', 'player_kit', 'player_kill',
-        'player_map', 'player_rank_history', 'player_vehicle', 'player_unlock',
-        'player_army_history', 'player_round_history', 'player_kill_history', 'player_kit_history',
+        'player_map', 'player_vehicle', 'player_unlock', 'player_army_history',
+        'player_round_history', 'player_kill_history', 'player_kit_history', 'player_rank_history',
         'player_weapon_history', 'player_vehicle_history', 'battlespy_report', 'battlespy_message'
     ];
 
@@ -43,10 +44,10 @@ class DatabaseModel
      * @remarks Reverse order is important here (foreign keys)!
      */
     protected static $ClearTables = [
-        'battlespy_message', 'battlespy_report', 'player_army_history', 'player_round_history', 'player_kill_history',
-        'player_kit_history', 'player_weapon_history', 'player_vehicle_history', 'risingstar', 'player_unlock',
-        'player_vehicle', 'player_weapon', 'player_rank_history', 'player_map', 'player_kill',
-        'player_kit', 'player_award', 'player_army', 'player', 'round', 'server', 'map'
+        'battlespy_message', 'battlespy_report', 'failed_snapshot', 'player_army_history', 'player_round_history',
+        'player_kill_history', 'player_kit_history', 'player_weapon_history', 'player_vehicle_history',
+        'player_unlock', 'player_vehicle', 'player_weapon', 'player_rank_history', 'player_map',
+        'player_kill', 'player_kit', 'player_award', 'player_army', 'risingstar', 'player', 'round', 'server', 'map'
     ];
 
     /**

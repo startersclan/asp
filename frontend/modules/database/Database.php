@@ -318,6 +318,7 @@ class Database extends Controller
         {
             // Create view
             $view = new View('update_error', 'database');
+            $view->attachScript("/ASP/frontend/modules/database/js/update_error.js");
             $view->render();
         }
     }
