@@ -32,7 +32,7 @@ class Mapinfo extends Controller
         $this->requireDatabase();
 
         // Fetch server list!
-        $this->loadModel('MapinfoModel', 'Mapinfo', 'model');
+        $this->loadModel('MapinfoModel', 'mapinfo', 'model');
         $maps = $this->model->getMapStatistics();
 
         // Load view

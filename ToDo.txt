@@ -1,5 +1,6 @@
 Must Do's:
  - Add a blacklist option for hiding servers in the server browser.
+ - Add more global player statistics, like Kit statistics (pie chart), weapon statistics etc etc
 
 Nice To Have's:
  - Snapshot module face lift. Ability to view round details of a round (from a snapshot) before it
