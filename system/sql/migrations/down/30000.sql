@@ -1,12 +1,7 @@
 --
--- Add removed columns from the map table
+-- Drop added tables in 3.0.1
 --
-ALTER TABLE map ADD COLUMN `score` BIGINT UNSIGNED NOT NULL DEFAULT 0;
-ALTER TABLE map ADD COLUMN `time` BIGINT UNSIGNED NOT NULL DEFAULT 0;
-ALTER TABLE map ADD COLUMN `times` INT UNSIGNED NOT NULL DEFAULT 0;
-ALTER TABLE map ADD COLUMN `kills` INT UNSIGNED NOT NULL DEFAULT 0;
-ALTER TABLE map ADD COLUMN `deaths` INT UNSIGNED NOT NULL DEFAULT 0;
-ALTER TABLE map ADD COLUMN `custom` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0;
+DROP TABLE IF EXISTS `failed_snapshot`;
 
 --
 -- Always delete record from version table!!!

@@ -79,6 +79,14 @@ class HomeModel
     }
 
     /**
+     * @return int Returns the total number of games that failed to process
+     */
+    public function getNumGamesFailed()
+    {
+        return (int)$this->pdo->query('SELECT COUNT(id) FROM `failed_snapshot`')->fetchColumn(0);
+    }
+
+    /**
      * @return int Returns the total number of players
      */
     public function getNumPlayers()

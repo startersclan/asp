@@ -8,7 +8,7 @@ return [
         "down_string" => "",
     ],
     "3.0.1" => [
-        "comment" => "Removed a few un-needed columns from the map table.",
+        "comment" => "Added the failed snapshots table.",
         "up" => null,
         "up_string" => "",
         "down" => "30000",

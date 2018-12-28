@@ -92,6 +92,7 @@ namespace System
 | ---------------------------------------------------------------
 */
     // Connect to the database
+    $connection = null;
     try
     {
         // Create connection using the MySQL connection builder
@@ -102,7 +103,7 @@ namespace System
         $builder->password = Config::Get('db_pass');
         $builder->database = Config::Get('db_name');
 
-        Database::CreateConnection('stats', $builder);
+        $connection = Database::CreateConnection('stats', $builder);
     }
     catch (Exception $e)
     {
@@ -242,7 +243,14 @@ namespace System
     }
     catch (Exception $e)
     {
-        // No need to log here... a message will be logged automatically within the Snapshot class!
+        // Log into the database
+        $connection->insert('failed_snapshot', [
+            'server_id' => $snapshot->serverId,
+            'timestamp' => time(),
+            'filename' => Path::GetFilenameWithoutExtension($fileName),
+            'reason' => StringHelper::SubStrWords($e->getMessage(), 128)
+        ]);
+
         // Move unprocessed file to the failed folder
         File::Move(SNAPSHOT_TEMP_PATH . DS . $fileName, SNAPSHOT_FAIL_PATH . DS . $fileName);
     }

@@ -54,8 +54,7 @@ class Home extends Controller
         $view->set('num_rounds', number_format($rounds));
 
         // Failed count
-        $path = Path::Combine(SYSTEM_PATH, 'snapshots', 'failed');
-        $count = count(Directory::GetFiles($path, '^(.*)\.json$'));
+        $count = $this->homeModel->getNumGamesFailed();
         $view->set('failed_snapshots', number_format($count));
 
         // Number of players

@@ -24,6 +24,20 @@ use System\Snapshot;
 class SnapshotsModel
 {
     /**
+     * @var \System\Database\DbConnection The stats database connection
+     */
+    public $pdo;
+
+    /**
+     * SnapshotsModel constructor.
+     */
+    public function __construct()
+    {
+        // Fetch database connection
+        $this->pdo = System\Database::GetConnection('stats');
+    }
+
+    /**
      * Fetches an array of all un-authorized snapshots, and returns a data array
      * of information about the snapshot.
      *
@@ -67,6 +81,54 @@ class SnapshotsModel
         }
 
         return $snapshots;
+    }
+
+    /**
+     * Fetches an array of all failed snapshots from the database, and returns a data array
+     * of information about the snapshot.
+     *
+     * @return array
+     */
+    public function getFailedSnapshots()
+    {
+        $query = <<<SQL
+SELECT s.*, s2.id AS `server_id`, s2.name AS `server_name` 
+FROM `failed_snapshot` AS `s`
+  JOIN `server` AS `s2` on s.server_id = s2.id
+ORDER BY s.id ASC
+SQL;
+
+        $snapshots = $this->pdo->query($query)->fetchAll();
+        if (empty($snapshots))
+            return [];
+
+        return $snapshots;
+    }
+
+    /**
+     * Deletes a failed snapshot record from the database, as well as the
+     * snapshot file
+     *
+     * @param int $id
+     *
+     * @return bool
+     */
+    public function deleteFailedSnapshotById($id)
+    {
+        // Sanitize
+        $id = (int)$id;
+
+        // Grab failed snapshot first
+        $query = "SELECT `filename` FROM `failed_snapshot` WHERE id=". $id;
+        $snapshot = $this->pdo->query($query)->fetch();
+        if (empty($snapshot))
+            return false;
+
+        // Delete file
+        File::Delete(Path::Combine(SYSTEM_PATH, 'snapshots', 'failed', $snapshot['filename'] . '.json'));
+
+        // Delete record
+        return $this->pdo->delete('failed_snapshot', ['id' => $id]);
     }
 
     /**

@@ -78,7 +78,8 @@ if (!function_exists('build_navigation'))
             $group = new NavigationItem("Server Admin" . $snapshots, "#", "icon-business-card", in_array($task, $server));
             $group->append('/ASP/providers', 'Manage Stats Providers');
             $group->append('/ASP/servers', 'View Stats Servers');
-            $group->append('/ASP/snapshots', 'Manage Snapshots');
+            $group->append('/ASP/snapshots', 'Authorize Snapshots');
+            $group->append('/ASP/snapshots/failed', 'Failed Snapshots');
             $group->append('/ASP/roundinfo', 'Round History');
             $group->append('/ASP/mapinfo', 'Map Statistics');
             $navigation->append($group);

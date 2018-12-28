@@ -51,6 +51,37 @@ class Snapshots extends Controller
     }
 
     /**
+     * @protocol    GET
+     * @request     /ASP/snapshots/failed
+     * @output      html
+     */
+    public function failed()
+    {
+        // Load model
+        $this->loadModel('SnapshotsModel', 'snapshots');
+
+        $snapshots = $this->snapshotsModel->getFailedSnapshots();
+        for ($i = 0; $i < count($snapshots); $i++)
+        {
+            $snapshots[$i]['date'] = date('M j, Y G:i T', (int)$snapshots[$i]['timestamp']);
+        }
+
+        // Load view
+        $view = new View('failed', 'snapshots');
+        $view->set('snapshots', $snapshots);
+
+        // Attach needed scripts for the form
+        $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");
+        $view->attachScript("/ASP/frontend/modules/snapshots/js/failed.js");
+
+        // Attach needed stylesheets
+        $view->attachStylesheet("/ASP/frontend/css/icons/icol16.css");
+
+        // Send output
+        $view->render();
+    }
+
+    /**
      * @protocol    POST
      * @request     /ASP/snapshots/accept
      * @output      json
@@ -159,15 +190,38 @@ class Snapshots extends Controller
             $this->sendJsonResponse(false, 'No snapshots specified!');
             return;
         }
-
-        $path = Path::Combine(SYSTEM_PATH, "snapshots", "unauthorized");
+        else if (!isset($_POST['category']))
+        {
+            $this->sendJsonResponse(false, 'No category specified!');
+            return;
+        }
 
         try
         {
-            foreach ($_POST['snapshots'] as $file)
+            if ($_POST['category'] == 'auth')
             {
-                $file = Path::Combine($path, $file . '.json');
-                File::Delete($file);
+                $path = Path::Combine(SYSTEM_PATH, "snapshots", "unauthorized");
+
+                // Delete files
+                foreach ($_POST['snapshots'] as $file)
+                {
+                    $file = Path::Combine($path, $file . '.json');
+                    File::Delete($file);
+                }
+            }
+            else
+            {
+                // Require database
+                $this->requireDatabase(true);
+
+                // Load model, and call method
+                $this->loadModel('SnapshotsModel', 'snapshots');
+
+                // Remove
+                foreach ($_POST['snapshots'] as $id)
+                {
+                    $this->snapshotsModel->deleteFailedSnapshotById((int)$id);
+                }
             }
 
             $this->sendJsonResponse(true, 'Snapshots Removed.');

@@ -28,7 +28,7 @@
         });
 
         // Delete Selected Click
-        $("#delete-selected").click(function(e) {
+        $("#delete-selected").on('click', function(e) {
 
             // For all modern browsers, prevent default behavior of the click
             e.preventDefault();
@@ -47,7 +47,7 @@
 
             // Process Selected Snapshots
             // Push the request
-            $.post( "/ASP/snapshots/delete", { action: "delete", snapshots: snapshotIds, ajax: true })
+            $.post( "/ASP/snapshots/delete", { action: "delete", category: "auth", snapshots: snapshotIds, ajax: true })
                 .done(function( data ) {
 
                     // Parse response

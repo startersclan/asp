@@ -13,7 +13,7 @@
 		</span>
 	</a>
 
-	<a class="mws-stat" href="/ASP/snapshots">
+	<a class="mws-stat" href="/ASP/snapshots/failed">
 		<!-- Statistic Icon (edit to change icon) -->
 		<span class="mws-stat-icon icol32-lightning-delete"></span>
 
