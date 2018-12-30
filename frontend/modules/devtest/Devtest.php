@@ -18,10 +18,21 @@ class Devtest extends \System\Controller
     public function index()
     {
         $data = [
-            'AuthID' => \System\Keygen\Keygen::numeric(5)->prefix('1')->generate(),
+            'AuthID' => \System\Keygen\Keygen::numeric(6)->prefix('1')->generate(),
             'AuthToken' => \System\Keygen\Keygen::alphanum(16)->generate()
         ];
         echo '<pre>' . var_export($data, true) . '</pre>';
+    }
+
+    public function dropConstraint()
+    {
+        // Require a database connection
+        $this->requireDatabase(true);
+
+        // Fetch database connection
+        $pdo = System\Database::GetConnection('stats');
+
+        var_dump($pdo->exec("ALTER TABLE `server` DROP INDEX `ip-port-unq`;"));
     }
 
     public function createIndex()

@@ -14,6 +14,7 @@ use System\IO\Directory;
 use System\IO\File;
 use System\IO\Path;
 use System\Snapshot;
+use System\StringHelper;
 
 /**
  * Snapshots Model
@@ -166,10 +167,6 @@ SQL;
         $data = new Dictionary(false, $data);
         $snapshot = new Snapshot($data);
 
-        // Ensure we are bound to a stats provider
-        if ($snapshot->providerId == 0)
-            throw new SecurityException("Server is not authorized to post snapshot data");
-
         // Ensure snapshot is not already processed from before!
         if ($snapshot->isProcessed())
         {
@@ -177,9 +174,27 @@ SQL;
         }
         else
         {
-            // Process data
-            $snapshot->processData($ignoreAuthorization);
-            $message = "Snapshot was processed successfully.";
+            try
+            {
+                // Process data
+                $snapshot->processData($ignoreAuthorization);
+                $message = "Snapshot was processed successfully.";
+            }
+            catch (Exception $e)
+            {
+                // Log into the database
+                if ($snapshot->serverId > 0)
+                {
+                    $this->pdo->insert('failed_snapshot', [
+                        'server_id' => $snapshot->serverId,
+                        'timestamp' => time(),
+                        'filename' => Path::GetFilenameWithoutExtension($snapshot->getFilename()),
+                        'reason' => StringHelper::SubStrWords($e->getMessage(), 128)
+                    ]);
+                }
+
+                throw $e;
+            }
         }
 
         /**

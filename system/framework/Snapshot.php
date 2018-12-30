@@ -169,6 +169,14 @@ class Snapshot extends GameResult
         $query = "SELECT COUNT(id) FROM `round` WHERE `map_id`=%d AND `server_id`=%d AND `time_end`=%d AND `time_start`=%d";
         $result = $connection->query(sprintf($query, $this->mapId, $this->serverId, $this->roundEndTime, $this->roundStartTime));
         $this->isProcessed = ((int)$result->fetchColumn(0)) > 0;
+
+        // Get a log file
+        $this->logWriter = LogWriter::Instance("stats_debug");
+        if ($this->logWriter === false)
+        {
+            $this->logWriter = new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "stats_debug.log"), "stats_debug");
+            $this->logWriter->setLogLevel(Config::Get('debug_lvl'));
+        }
     }
 
     /**
@@ -189,7 +197,6 @@ class Snapshot extends GameResult
      *
      * @throws SecurityException if the AuthID is invalid
      * @throws \ArgumentException if the server IP address is not valid
-     * @throws \IOException
      */
     public function processData($ignoreAuthorization = false)
     {
@@ -198,15 +205,6 @@ class Snapshot extends GameResult
         $provider = null;
         $isNewServer = ($this->serverId == 0);
         $this->playerData = new Dictionary();
-
-        // ---------------------------------------------------------------------
-        // Get a log file
-        $this->logWriter = LogWriter::Instance("stats_debug");
-        if ($this->logWriter === false)
-        {
-            $this->logWriter = new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "stats_debug.log"), "stats_debug");
-            $this->logWriter->setLogLevel(Config::Get('debug_lvl'));
-        }
 
         // ---------------------------------------------------------------------
         // Start logging information about this snapshot
@@ -766,7 +764,7 @@ class Snapshot extends GameResult
             // ********************************
             // Process ServerInfo
             // ********************************
-            if (!$isNewServer )
+            if (!$isNewServer)
             {
                 $this->logWriter->logDebug("Saving server updated information");
                 $query = new UpdateOrInsertQuery($connection, 'server');
@@ -822,14 +820,6 @@ class Snapshot extends GameResult
      */
     public function checkAuthorization()
     {
-        // Get a log file
-        $this->logWriter = LogWriter::Instance("stats_debug");
-        if ($this->logWriter === false)
-        {
-            $this->logWriter = new LogWriter(Path::Combine(SYSTEM_PATH, "logs", "stats_debug.log"), "stats_debug");
-            $this->logWriter->setLogLevel(Config::Get('debug_lvl'));
-        }
-
         // Grab database connection and lets go!
         $connection = Database::GetConnection("stats");
 
