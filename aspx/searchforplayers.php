@@ -38,7 +38,7 @@ if (isset($_GET['nick']))
 {
     // Sanitize nick
     $pattern = Player::NAME_REGEX;
-    $nick = preg_replace("/[^{$pattern}]/", '', $nick);
+    $nick = preg_replace("/[^{$pattern}]/", '', $_GET['nick']);
 }
 
 // Make sure we have a Nick to go by
