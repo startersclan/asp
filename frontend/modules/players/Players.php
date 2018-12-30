@@ -138,8 +138,6 @@ class Players extends Controller
         $view->attachStylesheet("/ASP/frontend/css/icons/icol32.css");
         $view->attachStylesheet("/ASP/frontend/modules/players/css/view.css");
 
-        //echo '<pre>' . var_export($player, true) . '</pre>'; die;
-
         // Send output
         $view->render();
     }

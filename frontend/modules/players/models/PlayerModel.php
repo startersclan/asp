@@ -129,15 +129,19 @@ class PlayerModel
     {
         // Fetch player
         $query = <<<SQL
-SELECT `name`, `rank_id`, `email`, `joined`, `time`, `lastonline`, `score`, `skillscore`, `cmdscore`, `teamscore`, 
-  `kills`, `deaths`, `teamkills`, `kicked`, `banned`, `permban`, `heals`, `repairs`, `resupplies`, `revives`,
-  `captures`, `captureassists`, `defends`, `country`, `driverspecials`, `neutralizes`, `neutralizeassists`,
-  `damageassists`, `rounds`, `wins`, `losses`, `cmdtime`, `sqmtime`, `sqltime`, `lwtime`, `suicides`, 
-  `teamdamage`, `teamvehicledamage`, `killstreak`, `bestscore`, `online`, `lastip`
-FROM player
+SELECT p.*, COUNT(h.round_id) AS `total_rounds`
+FROM player AS `p`
+JOIN player_round_history AS h on p.id = h.player_id
 WHERE `id`={$id}
+GROUP BY p.id
 SQL;
-        return $this->pdo->query($query)->fetch();
+        $player = $this->pdo->query($query)->fetch();
+        if (empty($player))
+            return false;
+
+        // Remove password
+        unset($player['password']);
+        return $player;
     }
 
     /**

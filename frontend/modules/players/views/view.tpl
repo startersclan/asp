@@ -246,7 +246,7 @@
             <li>
                 <span class="key"><i class="icon-retweet"></i> Rounds Played</span>
                 <span class="val">
-					<span class="text-nowrap">{player.rounds}</span>
+					<span class="text-nowrap">{player.total_rounds}</span>
 				</span>
             </li>
             <li>

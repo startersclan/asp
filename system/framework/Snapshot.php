@@ -193,16 +193,13 @@ class Snapshot extends GameResult
      */
     public function processData($ignoreAuthorization = false)
     {
-        // Make sure we are not processing the same data again
-        if ($this->isProcessed)
-            throw new Exception("Round data has already been processed!");
-
         // Grab database connection and lets go!
         $connection = Database::GetConnection("stats");
         $provider = null;
         $isNewServer = ($this->serverId == 0);
         $this->playerData = new Dictionary();
 
+        // ---------------------------------------------------------------------
         // Get a log file
         $this->logWriter = LogWriter::Instance("stats_debug");
         if ($this->logWriter === false)
@@ -245,6 +242,13 @@ class Snapshot extends GameResult
         else
         {
             $this->logWriter->logDebug(sprintf("Existing Server (ID: %d) found using Remote Address", $this->serverId));
+        }
+
+        // Make sure we are not processing the same data again
+        if ($this->isProcessed)
+        {
+            $this->logWriter->logWarning("Round data has already been processed!");
+            throw new Exception("Round data has already been processed!");
         }
 
         // ---------------------------------------------------------------------
@@ -404,7 +408,7 @@ class Snapshot extends GameResult
                 // Prepare for player update / insertion
                 $query = new UpdateOrInsertQuery($connection, 'player');
                 $query->set('time', '+', $player->roundTime);
-                $query->set('rounds', '+', (int)$player->completedRound);
+                $query->set('rounds', '+', 1);
                 $query->set('lastip', '=', $player->ipAddress);
                 $query->set('rank_id', '=', $player->rank);
                 $query->set('score', '+', $player->roundScore);

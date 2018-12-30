@@ -76,8 +76,8 @@ if (!function_exists('build_navigation'))
             // Add Server Admin Links
             $snapshots = ($ss > 0) ? '<span class="mws-nav-tooltip" title="Unauthorized Snapshots">' . $ss . '</span>' : '';
             $group = new NavigationItem("Server Admin" . $snapshots, "#", "icon-business-card", in_array($task, $server));
-            $group->append('/ASP/providers', 'Manage Stats Providers');
-            $group->append('/ASP/servers', 'View Stats Servers');
+            $group->append('/ASP/providers', 'Manage Ranked Providers');
+            $group->append('/ASP/servers', 'View Registered Servers');
             $group->append('/ASP/snapshots', 'Authorize Snapshots');
             $group->append('/ASP/snapshots/failed', 'Failed Snapshots');
             $group->append('/ASP/roundinfo', 'Round History');

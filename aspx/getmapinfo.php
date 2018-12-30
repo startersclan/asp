@@ -35,12 +35,6 @@ $connection = Database::GetConnection("stats");
 
 // Make sure we have the needed params
 $pid = (isset($_GET['pid'])) ? (int)$_GET['pid'] : 0;
-$mapid = (isset($_GET['mapid'])) ? (int)$_GET['mapid'] : 0;
-$mapname = (isset($_GET['mapname'])) ? $_GET['mapname'] : '';
-$limit = (isset($_GET['customonly'])) ? (int)$_GET['customonly'] : 0;
-
-// Limit results to custom maps ONLY
-$maplimit = ($limit == 1) ? ' AND id >= 700' : '';
 
 if ($pid > 0)
 {
@@ -73,53 +67,10 @@ if ($pid > 0)
 }
 else
 {
-    // Prepare the SQL query
-    $query = "SELECT id, name, score, `time`, times, kills, deaths FROM map ";
-    $binds = [];
 
-    // Finish query based on url parameters
-    if ($mapid > 0)
-    {
-        $query .= "WHERE id = {$mapid} {$maplimit}";
-    }
-    elseif (!empty($mapname))
-    {
-        $query .= "WHERE name = :mapname {$maplimit}";
-        $binds[':mapname'] = $mapname;
-    }
-    else
-    {
-        $query .= "WHERE name <> '' {$maplimit} ORDER BY id";
-    }
-
-    // Prepare the query using parameters, making it SQL injection safe
-    $stmt = $connection->prepare($query);
-    foreach ($binds as $key => $value)
-        $stmt->bindValue($key, $value, \PDO::PARAM_STR);
-
-    // Execute the statement
-    if ($stmt->execute() && ($row = $stmt->fetch()))
-    {
-        $Response->writeHeaderLine("mapid", "name", "score", "time", "times", "kills", "deaths");
-        do
-        {
-            $Response->writeDataLine(
-                $row['id'],
-                $row['name'],
-                $row['score'],
-                $row['time'],
-                $row['times'],
-                $row['kills'],
-                $row['deaths']
-            );
-        } while ($row = $stmt->fetch());
-    }
-    else
-    {
-        $Response->responseError(true);
-        $Response->writeHeaderLine("err");
-        $Response->writeDataLine("Map Data Not Found!");
-    }
+    $Response->responseError(true);
+    $Response->writeHeaderLine("err");
+    $Response->writeDataLine("Invalid Syntax!");
 }
 
 // Output data

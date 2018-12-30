@@ -1,7 +1,7 @@
 <div id="jui-global-message" class="alert" style="display: none;"></div>
 <div class="mws-panel grid_8">
     <div class="mws-panel-header">
-        <span><i class="icon-table"></i> Registered Stats Providers</span>
+        <span><i class="icon-table"></i> Ranked Server Providers</span>
     </div>
     <div class="mws-panel-toolbar">
         <div class="btn-toolbar">

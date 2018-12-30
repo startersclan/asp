@@ -244,12 +244,15 @@ namespace System
     catch (Exception $e)
     {
         // Log into the database
-        $connection->insert('failed_snapshot', [
-            'server_id' => $snapshot->serverId,
-            'timestamp' => time(),
-            'filename' => Path::GetFilenameWithoutExtension($fileName),
-            'reason' => StringHelper::SubStrWords($e->getMessage(), 128)
-        ]);
+        if ($snapshot->serverId > 0)
+        {
+            $connection->insert('failed_snapshot', [
+                'server_id' => $snapshot->serverId,
+                'timestamp' => time(),
+                'filename' => Path::GetFilenameWithoutExtension($fileName),
+                'reason' => StringHelper::SubStrWords($e->getMessage(), 128)
+            ]);
+        }
 
         // Move unprocessed file to the failed folder
         File::Move(SNAPSHOT_TEMP_PATH . DS . $fileName, SNAPSHOT_FAIL_PATH . DS . $fileName);

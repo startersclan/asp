@@ -400,8 +400,8 @@ SQL;
         // Make sure Player exists
         $query = "SELECT `name` FROM `player` WHERE `id` = {$pid}";
         $result = $connection->query($query);
-        $name = null;
-        if (!($name = $result->fetchColumn(0)))
+        $name = $result->fetchColumn(0);
+        if (empty($name))
         {
             $Response->responseError(true);
             $Response->writeHeaderLine("asof", "err");
