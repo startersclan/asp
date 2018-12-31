@@ -22,7 +22,7 @@
                 <th style="width: 7%;">Actions</th>
             </tr>
             </thead>
-            <tody>
+            <tbody>
                 {unlocks}
                 <tr id="tr-unlock-{id}">
                     <td>{id}</td>
@@ -37,7 +37,7 @@
                     </td>
                 </tr>
                 {/unlocks}
-            </tody>
+            </tbody>
         </table>
     </div>
 </div>

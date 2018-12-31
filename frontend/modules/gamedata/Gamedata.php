@@ -459,9 +459,9 @@ class Gamedata extends Controller
             $items = new Dictionary(false, $_POST);
             $data = [
                 'id' => (int)$items['unlockId'],
+                'kit_id' => (int)$items['unlockKit'],
                 'name' => preg_replace('/[^A-Za-z0-9_]/', '', trim($items['unlockName'])),
-                'desc' => preg_replace('/[^A-Za-z0-9_\-\s\t\/\.&\(\)]/', '', $items['unlockDesc']),
-                'kit' => (int)$items['unlockKit']
+                'desc' => preg_replace('/[^A-Za-z0-9_\-\s\t\/\.&\(\)]/', '', $items['unlockDesc'])
             ];
             $name = $pdo->quoteIdentifier('name');
 
