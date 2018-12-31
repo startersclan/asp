@@ -208,6 +208,56 @@ class Servers extends Controller
 
     /**
      * @protocol    POST
+     * @request     /ASP/servers/edit
+     * @output      json
+     */
+    public function postEdit()
+    {
+        // Require specific actions
+        $this->requireAction('edit');
+
+        // Require database connection
+        $this->requireDatabase(true);
+
+        // Attach Model
+        $this->loadModel('ServerModel', 'servers');
+
+        // Use a dictionary here to gain an exception on missing array item
+        $items = new Dictionary(false, $_POST);
+
+        try
+        {
+            // Edit server
+            // Update the server via the Model
+            $this->serverModel->updateServerById(
+                (int)$items['serverId'],
+                $items['serverName'],
+                $items['serverIp'],
+                (int)$items['serverPort'],
+                (int)$items['serverQueryPort']
+            );
+
+            // Add additional information for the output
+            $items->add('mode', 'update');
+            $items->add('serverId', (int)$items['serverId']);
+
+            // Send success
+            $this->sendJsonResponse(true, '', $items->toArray());
+        }
+        catch (Exception $e)
+        {
+            // Log exception
+            System::LogException($e);
+
+            // Tell the client that we have failed
+            $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage(), [
+                'lastQuery' => $this->serverModel->pdo->lastQuery
+            ]);
+        }
+    }
+
+    /**
+     * @protocol    POST
      * @request     /ASP/servers/delete
      * @output      json
      */

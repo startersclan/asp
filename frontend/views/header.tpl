@@ -55,7 +55,7 @@
         </div>
 
 		<div id="title">Private Stats Admin</div>
-		<div id="dbver">Code Version: <?php echo CODE_VERSION; ?> || Database Version: <?php echo DB_VERSION ?> </div>
+		<div id="dbver">Code Version: <?php echo CODE_VERSION; ?> || Database Version: <?php echo DB_VERSION; ?> </div>
 
     </div>
     

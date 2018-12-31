@@ -18,9 +18,10 @@
         }
 
         //noinspection JSUnresolvedVariable
-        if( $.fn.spinner ) {
-            $('.mws-spinner').spinner();
-        }
+        $.fn.spinner && $('.mws-spinner').spinner();
+
+        // AutoSize
+        $.fn.autosize && $( '.autosize' ).autosize();
 
         $('#button-to-home').on('click', function(event) {
             event.preventDefault();

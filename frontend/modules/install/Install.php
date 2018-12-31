@@ -51,6 +51,7 @@ class Install extends \System\Controller
         $view->attachScript("/ASP/frontend/js/wizard/wizard.js");
         $view->attachScript("/ASP/frontend/js/jquery.form.js");
         $view->attachScript("/ASP/frontend/js/validate/jquery.validate-min.js");
+        $view->attachScript("/ASP/frontend/js/autosize/jquery.autosize-min.js");
         $view->attachScript("/ASP/frontend/modules/install/js/wizard.js");
 
         // Render view
