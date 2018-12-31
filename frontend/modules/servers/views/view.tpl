@@ -125,7 +125,7 @@
 
 <!-- Edit Server Ajax Model -->
 <div id="edit-server-form">
-    <form id="mws-validate-server" class="mws-form" method="post" action="/ASP/servers/add">
+    <form id="mws-validate-server" class="mws-form" method="post" action="/ASP/servers/edit">
         <input id="post-action" type="hidden" name="action" value="edit">
         <input id="server-id" type="hidden" name="serverId" value="{server.id}">
         <div id="mws-validate-error" class="mws-form-message error" style="display:none;"></div>
