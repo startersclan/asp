@@ -127,17 +127,18 @@ class PlayerModel
      */
     public function fetchPlayer($id)
     {
+        // Sanitize
+        $id = (int)$id;
+
         // Fetch player
-        $query = <<<SQL
-SELECT p.*, COUNT(h.round_id) AS `total_rounds`
-FROM player AS `p`
-JOIN player_round_history AS h on p.id = h.player_id
-WHERE `id`={$id}
-GROUP BY p.id
-SQL;
+        $query = "SELECT * FROM player WHERE `id`={$id}";
         $player = $this->pdo->query($query)->fetch();
         if (empty($player))
             return false;
+
+        // Get round counts
+        $query = "SELECT COUNT(round_id) FROM player_round_history WHERE player_id={$id}";
+        $player['total_rounds'] = (int)$this->pdo->query($query)->fetchColumn(0);
 
         // Remove password
         unset($player['password']);
