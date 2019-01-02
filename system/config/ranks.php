@@ -11,54 +11,72 @@ return array(
     0 => array(
         'title' => 'Private',
         'points' => 0,
+        'time' => 0,
+        'skip' => false,
         'has_rank' => 0,
         'has_awards' => array()
     ),
     1 => array(
         'title' => 'Private First Class',
         'points' => 150,
+        'time' => 0,
+        'skip' => false,
         'has_rank' => 0,
         'has_awards' => array()
     ),
     2 => array(
         'title' => 'Lance Corporal',
         'points' => 500,
+        'time' => 0,
+        'skip' => false,
         'has_rank' => 1,
         'has_awards' => array()
     ),
     3 => array(
         'title' => 'Corporal',
         'points' => 800,
+        'time' => 0,
+        'skip' => false,
         'has_rank' => 2,
         'has_awards' => array()
     ),
     4 => array(
         'title' => 'Sergeant',
         'points' => 2500,
+        'time' => 0,
+        'skip' => false,
         'has_rank' => 3,
         'has_awards' => array()
     ),
     5 => array(
         'title' => 'Staff Sergeant',
         'points' => 5000,
+        'time' => 0,
+        'skip' => false,
         'has_rank' => 4,
         'has_awards' => array()
     ),
     6 => array(
         'title' => 'Gunnery Sergeant',
         'points' => 8000,
+        'time' => 0,
+        'skip' => false,
         'has_rank' => 5,
         'has_awards' => array()
     ),
     7 => array(
         'title' => 'Master Sergeant',
         'points' => 20000,
+        'time' => 0,
+        'skip' => false,
         'has_rank' => 6,
         'has_awards' => array()
     ),
     8 => array(
         'title' => 'First Sergeant',
         'points' => 20000,
+        'time' => 0,
+        'skip' => false,
         'has_rank' => 6,
         'has_awards' => array(
             '1031105' => 1, // Engineer Combat Badge
@@ -75,12 +93,16 @@ return array(
     9 => array(
         'title' => 'Master Gunnery Sergeant',
         'points' => 50000,
+        'time' => 0,
+        'skip' => false,
         'has_rank' => array(7, 8),
         'has_awards' => array()
     ),
     10 => array(
         'title' => 'Sergeant Major',
         'points' => 50000,
+        'time' => 0,
+        'skip' => false,
         'has_rank' => array(7, 8),
         'has_awards' => array(
             '1031923' => 1, // Ground Defense
@@ -94,48 +116,64 @@ return array(
     11 => array(
         'title' => 'Sergeant Major of the Corp',
         'points' => -1,
+        'time' => 0,
+        'skip' => true,
         'has_rank' => 10,
         'has_awards' => array()
     ),
     12 => array(
         'title' => '2nd Lieutenant',
         'points' => 60000,
+        'time' => 0,
+        'skip' => false,
         'has_rank' => array(9, 10, 11),
         'has_awards' => array()
     ),
     13 => array(
         'title' => '1st Lieutenant',
         'points' => 75000,
+        'time' => 0,
+        'skip' => false,
         'has_rank' => 12,
         'has_awards' => array()
     ),
     14 => array(
         'title' => 'Captain',
         'points' => 90000,
+        'time' => 0,
+        'skip' => false,
         'has_rank' => 13,
         'has_awards' => array()
     ),
     15 => array(
         'title' => 'Major',
         'points' => 115000,
+        'time' => 0,
+        'skip' => false,
         'has_rank' => 14,
         'has_awards' => array()
     ),
     16 => array(
         'title' => 'Lieutenant Colonel',
         'points' => 125000,
+        'time' => 0,
+        'skip' => false,
         'has_rank' => 15,
         'has_awards' => array()
     ),
     17 => array(
         'title' => 'Colonel',
         'points' => 150000,
+        'time' => 0,
+        'skip' => false,
         'has_rank' => 16,
         'has_awards' => array()
     ),
     18 => array(
         'title' => 'Brigadier General',
         'points' => 180000,
+        'time' => 64800,
+        'skip' => false,
         'has_rank' => 17,
         'has_awards' => array(
             '1031105' => 2, // Engineer Combat Badge
@@ -152,6 +190,8 @@ return array(
     19 => array(
         'title' => 'Major General',
         'points' => 180000,
+        'time' => 75000,
+        'skip' => false,
         'has_rank' => 18,
         'has_awards' => array(
             '1031923' => 2, // Ground Defense
@@ -165,12 +205,16 @@ return array(
     20 => array(
         'title' => 'Lieutenant General',
         'points' => 200000,
+        'time' => 86400,
+        'skip' => false,
         'has_rank' => 19,
         'has_awards' => array()
     ),
     21 => array(
         'title' => 'General',
-        'points' => -1,
+        'points' => 200000,
+        'time' => 0,
+        'skip' => false,
         'has_rank' => 20,
         'has_awards' => array()
     ),

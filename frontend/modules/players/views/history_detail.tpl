@@ -165,7 +165,9 @@
             <li>
                 <span class="key"><i class="icon-globe"></i>Map Name</span>
                 <span class="val">
-					<span class="text-nowrap">{round.map_display_name}</span>
+					<span class="text-nowrap">
+                        <a href="/ASP/mapinfo/view/{round.map_id}">{round.map_display_name}</a>
+                    </span>
 				</span>
             </li>
             <li>

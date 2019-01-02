@@ -15,6 +15,11 @@ use System\Net\IPAddress;
  */
 class Devtest extends \System\Controller
 {
+    /**
+     * @var RankCalculator
+     */
+    protected $model;
+
     public function index()
     {
         $data = [
@@ -22,6 +27,13 @@ class Devtest extends \System\Controller
             'AuthToken' => \System\Keygen\Keygen::alphanum(16)->generate()
         ];
         echo '<pre>' . var_export($data, true) . '</pre>';
+    }
+
+    public function ranks()
+    {
+        $this->loadModel('RankCalculator', 'players', 'model');
+
+        \System\Debug::Dump($this->model->getNextRanks(2900126, 2));
     }
 
     public function dropConstraint()

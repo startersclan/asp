@@ -6,17 +6,17 @@
     <div class="mws-panel-body no-padding">
         <table class="mws-datatable-fn mws-table">
             <thead>
-            <tr>
-                <th style="width: 5%">ID</th>
-                <th>Folder Name</th>
-                <th>Display Name</th>
-                <th>Total Score</th>
-                <th>Total Time Played</th>
-                <th style="width: 9%">Games Played</th>
-                <th style="width: 9%">Total Kills</th>
-                <th style="width: 9%">Total Deaths</th>
-                <th style="width: 5%">Actions</th>
-            </tr>
+                <tr>
+                    <th style="width: 5%">ID</th>
+                    <th>Folder Name</th>
+                    <th>Display Name</th>
+                    <th>Total Score</th>
+                    <th>Total Time Played</th>
+                    <th style="width: 9%">Games Played</th>
+                    <th style="width: 9%">Total Kills</th>
+                    <th style="width: 9%">Total Deaths</th>
+                    <th style="width: 5%">Actions</th>
+                </tr>
             </thead>
             <tody>
             {maps}
@@ -25,12 +25,15 @@
                     <td>{name}</td>
                     <td>{displayname}</td>
                     <td>{score}</td>
-                    <td>{time}</td>
+                    <td data-sort="{time}">{time_display}</td>
                     <td>{count}</td>
                     <td>{kills}</td>
                     <td>{deaths}</td>
                     <td>
                         <span class="btn-group">
+                            <a id="go-map-{id}" href="/ASP/mapinfo/view/{id}"  rel="tooltip" title="View Map" class="btn btn-small">
+                                <i class="icon-eye-open"></i>
+                            </a>
                             <a id="edit-map-{id}" href="#"  rel="tooltip" title="Edit Map Name" class="btn btn-small">
                                 <i class="icon-pencil"></i>
                             </a>

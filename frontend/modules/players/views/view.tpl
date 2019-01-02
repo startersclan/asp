@@ -792,6 +792,43 @@
     </div>
 </div>
 
+<div class="mws-panel grid_8 mws-collapsible">
+    <div class="mws-panel-header">
+        <span>Time To Advancement</span>
+    </div>
+    <div class="mws-panel-body">
+        <table id="rank-advancement">
+            {nextRanks}
+            <tr>
+                <td width="128px">
+                    <span class="thumbnail">
+                        <img src="/ASP/frontend/images/ranks/large2/rank_{iteration.key}.png">
+                    </span>
+                </td>
+                <td>
+                    <p>
+                        Next Rank: <strong>{title}</strong>
+                        <br />{missing_desc}
+                    </p>
+                    <div class="progressbar">
+                        <div class="mws-progressbar-val ui-progressbar ui-widget ui-widget-content ui-corner-all" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="56">
+                            <div class="ui-progressbar-value ui-widget-header ui-corner-left" style="width: {percent_complete}%;">
+                                <span style="display: inline;">{percent_complete}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="margin-top: 5px;">
+                        Score: {player.score} of {points}.
+                        At your historical rate, you should earn {points_needed}
+                        in {days_complete} days (or {time_complete} straight).
+                    </p>
+                </td>
+            </tr>
+            {/nextRanks}
+        </table>
+    </div>
+</div>
+
 <!-- Add New Player Ajax Model -->
 <div id="edit-player-form">
     <form id="mws-validate" class="mws-form" method="post" action="/ASP/players/add">

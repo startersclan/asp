@@ -2,25 +2,6 @@
 
     $(document).ready(function() {
 
-        // Define globals
-        var currentId = '';
-        var tableRow;
-
-        // Data Tables
-        $(".mws-datatable-fn").DataTable({
-            pagingType: "full_numbers",
-            columnDefs: [
-                { "searchable": false, "orderable": false, "targets": 8 }
-            ]
-        }).on( 'draw.dt', function () {
-            //noinspection JSUnresolvedVariable
-            $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
-        });
-
-        // Tooltips
-        //noinspection JSUnresolvedVariable
-        $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
-
         // Ajax and form Validation
         // noinspection JSJQueryEfficiency
         var validator = $("#mws-validate").validate({
@@ -60,51 +41,6 @@
             });
         }
 
-        // Row Button Clicks
-        $(document).on('click', 'a.btn-small', function(e) {
-
-            // Extract the Map ID
-            var sid = $(this).attr('id').split("-");
-            if (sid.length !== 3 || $(this).attr('disabled') === 'disabled') {
-                // For all modern browsers, prevent default behavior of the click
-                e.preventDefault();
-                return false;
-            }
-
-            // If action is "go", then let the link direct the user
-            if (sid[0] === "go") {
-                return;
-            }
-            else {
-                // For all modern browsers, prevent default behavior of the click
-                e.preventDefault();
-            }
-
-            // Parse sections into variables
-            currentId = sid[2];
-            tableRow = $(this).closest('tr');
-            var name = tableRow.find('td:eq(2)').html();
-
-            // Hide previous errors
-            $("#mws-validate-error").hide();
-            validator.resetForm();
-
-            // Set hidden input value
-            $('input[name="mapId"]').val(currentId);
-
-            // Set form default values
-            $('input[name="mapName"]').val(name);
-
-            // Show dialog form
-            $("#editor-form").dialog("option", {
-                modal: true,
-                title: "Edit Map Name"
-            }).dialog("open");
-
-            // Just to be sure, older IE's needs this
-            return false;
-        });
-
         //noinspection JSJQueryEfficiency
         $("#mws-validate").ajaxForm({
             data: { ajax: true },
@@ -117,7 +53,8 @@
                 var result = jQuery.parseJSON(response);
                 if (result.success === true) {
 
-                    tableRow.find('td:eq(2)').html(result.displayName);
+                    // Update name
+                    $("#currentMapName").html(result.displayName);
 
                     // Close dialog
                     $("#editor-form").dialog("close");
@@ -133,6 +70,74 @@
                 $('#jui-message').attr('class', 'alert error').html('AJAX Error! Please check the console log.').slideDown(500);
             },
             timeout: 10000
+        });
+
+        // A custom label formatter used by several of the plots
+        function labelFormatter(label, series) {
+            // noinspection JSCheckFunctionSignatures
+            return "<div style='font-size:8pt; text-align:center; padding:2px; color:white;'>" + Math.round(series.percent) + "%</div>";
+        }
+
+        // Kill Death Ratio Chart
+        if ($("#mws-pie-1").length > 0) {
+            // noinspection JSUnresolvedVariable
+            $.plot($("#mws-pie-1"), armyData, {
+                series: {
+                    pie: {
+                        highlight: {
+                            opacity: 0.2
+                        },
+                        stroke: {
+                            width: 1
+                        },
+                        label: {
+                            show: true,
+                            radius: 3/4,
+                            formatter: labelFormatter,
+                            background: {
+                                opacity: 0.5,
+                                color: '#000'
+                            }
+                        },
+                        show: true
+                    }
+                },
+                legend: {
+                    show: true
+                },
+                grid: {
+                    hoverable: true
+                },
+                tooltip: true,
+                tooltipOpts: {
+                    content: "Total Wins: %n",
+                    defaultTheme: false,
+                    cssClass: 'flotTip',
+                    show: true
+                }
+            });
+        }
+
+        // Row Button Clicks
+        $("#edit-map").on('click', function(e) {
+
+            var name = $("#currentMapName").html();
+
+            // Hide previous errors
+            $("#mws-validate-error").hide();
+            validator.resetForm();
+
+            // Set form default values
+            $('input[name="mapName"]').val(name);
+
+            // Show dialog form
+            $("#editor-form").dialog("option", {
+                modal: true,
+                title: "Edit Map Name"
+            }).dialog("open");
+
+            // Just to be sure, older IE's needs this
+            return false;
         });
 
     });

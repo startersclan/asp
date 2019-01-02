@@ -3,7 +3,7 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2018, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
@@ -1075,6 +1075,14 @@ SQL;
         $view->set('serverData', $return);
     }
 
+    public function attachNextRanks($id, $count)
+    {
+        $calc = new RankCalculator();
+        $result = $calc->getNextRanks($id, $count);
+
+        
+    }
+
     /**
      * Imports a series of bot players into the player table from a botNames.ai file.
      *
@@ -1140,5 +1148,61 @@ SQL;
             $this->pdo->rollBack();
             throw $e;
         }
+    }
+
+    /**
+     * Appends a players time until advancement data to the view
+     *
+     * @param int $playerId
+     * @param int $score
+     * @param int $timePlayed
+     * @param int $lastonline
+     * @param int $joined
+     * @param View $view
+     *
+     * @throws Exception
+     */
+    public function attachTimeToAdvancement($playerId, $score, $timePlayed, $lastonline, $joined, View $view)
+    {
+        // sanitize
+        $playerId = (int)$playerId;
+
+        // Grab player
+        $calc = new RankCalculator();
+        $result = $calc->getNextRanks($playerId, 22);
+        $return = $result;
+
+        // Calculate player score per minute
+        $minutes = round($timePlayed / 60, 4);
+        $spm = ($minutes == 0) ? 0 : round($score / $minutes, 4);
+
+        foreach ($result as $key => $rank)
+        {
+            // Get Needed Points for this next rank
+            $reqPoints = (int)$rank['points'];
+            $needed = max(0, ($reqPoints - $score));
+
+            // Get our percentage to this next rank based on needed points
+            $percent = round(($score / $reqPoints) * 100, 0);
+            if ($percent > 100)
+                $percent = 100;
+
+            // Get the time to completion, based on our score per minute
+            $ttc = $needed / ($spm / 60);
+
+            // Get our days to completion time, based on our Join date, Last battle, and average Points per day
+            $span = TimeSpan::FromSeconds($lastonline - $joined);
+            $days = max(1, $span->getWholeDays());
+            $spd = round($score / $days, 0);
+
+            // Set array variables
+            $return[$key]['points'] = number_format($rank['points']);
+            $return[$key]['points_needed'] = number_format($needed);
+            $return[$key]['percent_complete'] = $percent;
+            $return[$key]['time_complete'] = TimeHelper::SecondsToHms($ttc);
+            $return[$key]['days_complete'] = ($spd == 0) ? "Never" : number_format(round($needed / $spd, 0));
+        }
+
+        $view->set('nextRanks', $return);
     }
 }

@@ -3,7 +3,7 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2018, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
@@ -91,6 +91,7 @@ class Players extends Controller
 
         // Attach Model
         $this->loadModel("PlayerModel", 'players');
+        $this->loadModel("RankCalculator", 'players');
 
         // Require database connection
         $this->requireDatabase();
@@ -106,6 +107,12 @@ class Players extends Controller
             return;
         }
 
+        // Store values for later, before we format them
+        $score = (int)$player['score'];
+        $joined = (int)$player['joined'];
+        $lastonline = (int)$player['lastonline'];
+        $timePlayed = (int)$player['time'];
+
         // Load view
         $view = new View('view',  'players');
         $view->set('id', $id);
@@ -120,6 +127,7 @@ class Players extends Controller
         $this->playerModel->attachMapData($id, $view);
         $this->playerModel->attachTopVictimAndOpp($id, $view);
         $this->playerModel->attachTopPlayedServers($id, $view);
+        $this->playerModel->attachTimeToAdvancement($id, $score, $timePlayed, $lastonline, $joined, $view);
 
         // Attach needed scripts for the form
         $view->attachScript("/ASP/frontend/js/jquery.form.js");
@@ -171,6 +179,7 @@ class Players extends Controller
             // Attach needed scripts for the form
             $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");
             $view->attachScript("/ASP/frontend/modules/players/js/history.js");
+            $view->attachStylesheet("/ASP/frontend/modules/players/css/links.css");
 
             // Send output
             $view->render();

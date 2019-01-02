@@ -71,7 +71,7 @@ else
     $player = $connection->query($query)->fetch();
 
     // Query failed or player does not exist
-    if (!$player)
+    if (empty($player))
     {
         $Response->writeHeaderLine("result", "message");
         $Response->writeDataLine("NOK", "Player Not Found!");

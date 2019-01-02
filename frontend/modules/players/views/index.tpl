@@ -53,18 +53,18 @@
     <div class="mws-panel-body no-padding">
         <table class="mws-datatable-fn mws-table">
             <thead>
-            <tr>
-                <th style="width: 3%"><span class="loading-cell"></span></th>
-                <th style="width: 7%">PID</th>
-                <th style="width: 5%">Rank</th>
-                <th>Name</th>
-                <th>Global Score</th>
-                <th>Country</th>
-                <th>Join Date</th>
-                <th>Last Seen</th>
-                <th style="width: 5%">Status</th>
-                <th style="width: 7%">Actions</th>
-            </tr>
+                <tr>
+                    <th style="width: 3%"><span class="loading-cell"></span></th>
+                    <th style="width: 7%">PID</th>
+                    <th style="width: 5%">Rank</th>
+                    <th>Name</th>
+                    <th>Global Score</th>
+                    <th>Country</th>
+                    <th>Join Date</th>
+                    <th>Last Seen</th>
+                    <th style="width: 5%">Status</th>
+                    <th style="width: 7%">Actions</th>
+                </tr>
             </thead>
         </table>
     </div>

@@ -3,12 +3,13 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2018, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
 use System\Controller;
 use System\Collections\Dictionary;
+use System\Response;
 use System\View;
 
 /**
@@ -44,6 +45,70 @@ class Mapinfo extends Controller
         $view->attachScript("/ASP/frontend/js/jquery.form.js");
         $view->attachScript("/ASP/frontend/js/validate/jquery.validate-min.js");
         $view->attachScript("/ASP/frontend/modules/mapinfo/js/index.js");
+
+        // Send output
+        $view->render();
+    }
+
+    /**
+     * @protocol    ANY
+     * @request     /ASP/mapinfo/view/:id
+     * @output      html
+     */
+    public function view($id)
+    {
+        // Ensure correct format for ID
+        $id = (int)$id;
+        if ($id == 0)
+        {
+            Response::Redirect('mapinfo');
+            return;
+        }
+
+        // Require database connection
+        $this->requireDatabase();
+
+        // Load model!
+        $this->loadModel('MapinfoModel', 'mapinfo', 'model');
+
+        // Fetch map by ID
+        $map = [];
+        $result = $this->model->getMapStatisticsById($id, true, $map);
+        if (!$result)
+        {
+            Response::Redirect('mapinfo');
+            return;
+        }
+
+        // Lowercase name for map image
+        $map['lcname'] = strtolower($map['name']);
+        //die('<pre>'. var_export($map, true) .'</pre>');
+
+        // Load view
+        $view = new View('map_details', 'mapinfo');
+        $view->set('map', $map);
+
+        // Attach needed stylesheets
+        $view->attachStylesheet("/ASP/frontend/css/icons/icol16.css");
+
+        // Attach needed scripts for the form
+        $view->attachScript("/ASP/frontend/js/jquery.form.js");
+        $view->attachScript("/ASP/frontend/js/validate/jquery.validate-min.js");
+        $view->attachScript("/ASP/frontend/js/flot/jquery.flot.min.js");
+        $view->attachScript("/ASP/frontend/js/flot/plugins/jquery.flot.pie.min.js");
+        $view->attachScript("/ASP/frontend/js/flot/plugins/jquery.flot.tooltip.js");
+        $view->attachScript("/ASP/frontend/modules/mapinfo/js/view.js");
+
+        $team1_names = implode('<br />', $map['team1_armies']);
+        $team2_names = implode('<br />', $map['team2_armies']);
+
+        // Set win/loss/tie Ratio Chart Data
+        $data = [
+            ['label' => $team1_names, 'data' => $map['team1_wins'], 'color' => "#418CF0"],
+            ['label' => $team2_names, 'data' => $map['team2_wins'], 'color' => "#FCB441"],
+            ['label' => "Tie Games", 'data' => $map['ties'], 'color' => "#E0400A"]
+        ];
+        $view->setJavascriptVar('armyData', $data);
 
         // Send output
         $view->render();

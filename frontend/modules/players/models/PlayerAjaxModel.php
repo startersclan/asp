@@ -196,6 +196,10 @@ class PlayerAjaxModel
             ['db' => 'round_id', 'dt' => 'rid'],
             ['db' => 'name', 'dt' => 'server'],
             ['db' => 'mapname', 'dt' => 'map'],
+            ['db' => 'rank_id', 'dt' => 'rank',
+                'formatter' => function( $d, $row ) {
+                    return "<img class='center' src=\"/ASP/frontend/images/ranks/rank_{$d}.gif\">";
+                }],
             ['db' => 'score', 'dt' => 'score',
                 'formatter' => function( $d, $row ) {
                     return number_format($d);
