@@ -800,28 +800,32 @@
         <table id="rank-advancement">
             {nextRanks}
             <tr>
-                <td width="128px">
+                <td id="rank">
                     <span class="thumbnail">
                         <img src="/ASP/frontend/images/ranks/large2/rank_{iteration.key}.png">
                     </span>
                 </td>
                 <td>
-                    <p>
+                    <span class="thumbnail thumbnail-value">
                         Next Rank: <strong>{title}</strong>
                         <br />{missing_desc}
-                    </p>
-                    <div class="progressbar">
-                        <div class="mws-progressbar-val ui-progressbar ui-widget ui-widget-content ui-corner-all" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="56">
-                            <div class="ui-progressbar-value ui-widget-header ui-corner-left" style="width: {percent_complete}%;">
-                                <span style="display: inline;">{percent_complete}%</span>
+                        <ul>
+                        {missing_awards}
+                            <li>{name}</li>
+                        {/missing_awards}
+                        </ul>
+                        <div class="progressbar">
+                            <div class="mws-progressbar-val ui-progressbar ui-widget ui-widget-content ui-corner-all" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="56">
+                                <div class="ui-progressbar-value ui-widget-header ui-corner-left" style="width: {percent_complete}%;">
+                                    <span style="display: inline;">{percent_complete}%</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <p style="margin-top: 5px;">
-                        Score: {player.score} of {points}.
-                        At your historical rate, you should earn {points_needed}
-                        in {days_complete} days (or {time_complete} straight).
-                    </p>
+                        <p style="margin-top: 5px;">
+                            Score: {player.score} of {points}. At your historical rate, you should earn {points_needed}
+                            in {days_complete} days (or {time_complete} straight).
+                        </p>
+                    </span>
                 </td>
             </tr>
             {/nextRanks}

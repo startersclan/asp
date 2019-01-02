@@ -66,4 +66,33 @@ class Battlefield2
         $name = $result->fetchColumn(0);
         return ($name === false) ? 'Unknown' : $name;
     }
+
+    /**
+     * Fetches the name of an award by ID
+     *
+     * @param int $awardId
+     * @param int $level
+     *
+     * @return string
+     */
+    public static function GetAwardName($awardId, $level = 0)
+    {
+        $pdo = Database::GetConnection('stats');
+        $result = $pdo->query("SELECT `name`, `type` FROM `award` WHERE id=". (int)$awardId);
+        $award = $result->fetch();
+        if (empty($award))
+            return "Unknown Award";
+
+        // If award is a badge, add the level
+        if ($award['type'] == 1)
+        {
+            $prefix = self::GetBadgePrefix($level);
+            return $prefix . ' ' . $award['name'];
+        }
+        else
+        {
+            // Store award name
+            return $award['name'];
+        }
+    }
 }

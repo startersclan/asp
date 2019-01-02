@@ -1,4 +1,7 @@
 <?php
+
+use System\Battlefield2;
+
 /**
  * BF2Statistics ASP Framework
  *
@@ -94,16 +97,19 @@ class RankCalculator
             {
                 $rankCount--;
                 $meetsAwardReqs = true;
-                $missingAwards = [];
                 if (!empty($rank['has_awards']))
                 {
-                    foreach ($rank['has_awards'] as $key => $value)
+                    foreach ($rank['has_awards'] as $awardId => $level)
                     {
-                        $query = "SELECT COUNT(*) FROM `player_award` WHERE `player_id`={$playerId} AND `award_id`={$key} AND `level` >= {$value}";
+                        $query = "SELECT COUNT(*) FROM `player_award` WHERE `player_id`={$playerId} AND `award_id`={$awardId} AND `level` >= {$level}";
                         if ($this->pdo->query($query)->fetchColumn(0) == 0)
                         {
                             $meetsAwardReqs = false;
-                            $missingAwards[$key] = $value;
+                            $missingAwards[] = [
+                                'id' => $awardId,
+                                'level' => $level,
+                                'name' => Battlefield2::GetAwardName($awardId, $level)
+                            ];
                         }
                     }
                 }
@@ -111,6 +117,9 @@ class RankCalculator
                 // If we meet the requirement for this rank, add it
                 if ($meetsAwardReqs)
                 {
+                    $rank['missing_awards'] = $missingAwards;
+                    $missingAwards = [];
+
                     // Set missing awards description
                     if (strlen($desc) > 0)
                     {
@@ -130,7 +139,7 @@ class RankCalculator
                 {
                     // If we have multiple ranks for next promotion, and we haven't cycled through all of them
                     $moreToGo = ($rankCount > 0 && $rankId != $zeroRankId);
-                    $desc = $this->generateMissingDesc($rank['title'], $missingAwards, $moreToGo);
+                    $desc = $this->generateMissingDesc($rank['title'], $moreToGo);
                 }
             }
 
@@ -149,6 +158,7 @@ class RankCalculator
                 if (!empty($missingAwards))
                 {
                     $rank['missing_awards'] = $missingAwards;
+                    $missingAwards = [];
                 }
 
                 $nextRanks[$zeroRankId] = $rank;
@@ -197,44 +207,20 @@ class RankCalculator
     /**
      * Generates the Missing Awards description message, based on what awards are missing
      *
-     * @param array $rank
+     * @param $rankName
+     * @param array $missingAwards
      * @param bool $prevRank
      *
      * @return string
      * @throws Exception
      */
-    protected function generateMissingDesc($rankName, Array $missingAwards, $prevRank)
+    protected function generateMissingDesc($rankName, $prevRank)
     {
         // Message
         $message = ($prevRank)
             ? "You are not yet eligible for the advanced rank of <strong>{$rankName}</strong> because you are missing the awards: "
-            : "You are missing the awards: ";
+            : "You are missing the awards:";
 
-        // Add missing award titles
-        $names = [];
-        foreach ($missingAwards as $awardId => $level)
-        {
-            // Fetch award name
-            $query = "SELECT `name`, `type` FROM `award` WHERE id={$awardId}";
-            $row = $this->pdo->query($query)->fetch();
-            if (empty($row))
-                throw new Exception("Invalid award id passed => {$awardId}");
-
-            // If award is a badge, add the level
-            if ($row['type'] == 1)
-            {
-                $prefix = \System\Battlefield2::GetBadgePrefix($level);
-                $names[] = $prefix . ' ' . $row['name'];
-            }
-            else
-            {
-                // Store award name
-                $names[] = $row['name'];
-            }
-        }
-
-        // Combine award names, and add them to description
-        $string = implode(', ', $names);
-        return $message . $string . '.';
+        return $message; // . $string . '.';
     }
 }

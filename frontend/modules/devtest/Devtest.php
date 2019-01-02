@@ -33,7 +33,7 @@ class Devtest extends \System\Controller
     {
         $this->loadModel('RankCalculator', 'players', 'model');
 
-        \System\Debug::Dump($this->model->getNextRanks(2900126, 2));
+        \System\Debug::Dump($this->model->getNextRanks(2900126, 22));
     }
 
     public function dropConstraint()

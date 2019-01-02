@@ -14,3 +14,16 @@ table#rank-advancement {
 table#rank-advancement tr td {
     padding-bottom: 0.8em;
 }
+
+td#rank {
+    width: 128px !important;
+    vertical-align: top !important;
+}
+
+.thumbnail-value {
+    display: inline-table;
+    min-height: 118px;
+    vertical-align: middle;
+    height: 100%;
+    width: 100%;
+}
