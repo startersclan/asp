@@ -18,10 +18,10 @@
                     <th class="checkbox-column">
                         <input id="select-all" type="checkbox">
                     </th>
-                    <th style="width: 12%">Date</th>
+                    <th style="width: 11%">Date</th>
                     <th style="width: 20%">Server Name</th>
-                    <th style="width: 40%">Reason Failed</th>
-                    <th style="width: 18%">Snapshot File Name</th>
+                    <th style="width: 38%">Reason Failed</th>
+                    <th style="width: 22%">Snapshot File Name</th>
                     <th>Actions</th>
                 </tr>
             </thead>

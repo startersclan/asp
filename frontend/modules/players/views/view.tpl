@@ -735,7 +735,7 @@
             <tbody>
             {mapData}
                 <tr>
-                    <td>{name}</td>
+                    <td><a href="/ASP/mapinfo/view/{id}" class="black-link">{name}</a></td>
                     <td>{time}</td>
                     <td>{wins}</td>
                     <td>{losses}</td>
@@ -815,9 +815,13 @@
                         {/missing_awards}
                         </ul>
                         <div class="progressbar">
-                            <div class="mws-progressbar-val ui-progressbar ui-widget ui-widget-content ui-corner-all" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="56">
+                            <div class="mws-progressbar-val ui-progressbar ui-widget ui-widget-content ui-corner-all"
+                                 role="progressbar"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100"
+                                 aria-valuenow="{percent_complete}">
                                 <div class="ui-progressbar-value ui-widget-header ui-corner-left" style="width: {percent_complete}%;">
-                                    <span style="display: inline;">{percent_complete}%</span>
+                                    <span style="display: inline; font-weight: bold;">{percent_complete}%</span>
                                 </div>
                             </div>
                         </div>

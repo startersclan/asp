@@ -1,13 +1,13 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<!-- Title and Icon -->
+    <title>BF2 Private Stats - Login Page</title>
+    <link rel="icon" type="image/png" href="/ASP/frontend/images/icons/bf2.png">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
     <!-- Viewport Metatag -->
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-
-	<!-- Required Stylesheets -->
-	<link rel="icon" type="image/png" href="/ASP/frontend/images/bf2_icon.png">
 
     <!-- Required Stylesheets -->
     <link rel="stylesheet" type="text/css" href="/ASP/frontend/css/bootstrap.min.css" media="screen">
@@ -29,9 +29,6 @@
 
     <!-- Login Script -->
     <script type="text/javascript" src="/ASP/frontend/js/login.js"></script>
-
-	<title>BF2 Private Stats - Login Page</title>
-
 </head>
 
 <body>
