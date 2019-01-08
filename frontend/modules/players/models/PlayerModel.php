@@ -1188,11 +1188,11 @@ SQL;
                 $percent = 100;
 
             // Get the time to completion, based on our score per minute
-            $ttc = $needed / ($spm / 60);
+            $ttc = $needed / max($spm / 60, 0.1);
 
             // Get our days to completion time, based on our Join date, Last battle, and average Points per day
             $span = TimeSpan::FromSeconds($lastonline - $joined);
-            $days = max(1, $span->getWholeDays());
+            $days = max($span->getWholeDays(), 1);
             $spd = round($score / $days, 0);
 
             // Set array variables
