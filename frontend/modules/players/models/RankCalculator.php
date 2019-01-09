@@ -1,7 +1,4 @@
 <?php
-
-use System\Battlefield2;
-
 /**
  * BF2Statistics ASP Framework
  *
@@ -11,6 +8,8 @@ use System\Battlefield2;
  *
  */
 
+use System\Battlefield2;
+
 class RankCalculator
 {
     /**
@@ -19,7 +18,7 @@ class RankCalculator
     protected $pdo;
 
     /**
-     * @var \System\Collections\Dictionary
+     * @var array
      */
     protected $ranks;
 
@@ -207,8 +206,7 @@ class RankCalculator
     /**
      * Generates the Missing Awards description message, based on what awards are missing
      *
-     * @param $rankName
-     * @param array $missingAwards
+     * @param string $rankName
      * @param bool $prevRank
      *
      * @return string
@@ -221,6 +219,6 @@ class RankCalculator
             ? "You are not yet eligible for the advanced rank of <strong>{$rankName}</strong> because you are missing the awards: "
             : "You are missing the awards:";
 
-        return $message; // . $string . '.';
+        return $message;
     }
 }

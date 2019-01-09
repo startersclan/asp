@@ -60,7 +60,7 @@
 </div>
 <div class="mws-panel grid_3">
     <div class="mws-panel-header">
-        <span><i class="icon-chart"></i> Win / Loss Ratio</span>
+        <span><i class="icon-chart"></i> Team Win / Loss Ratio</span>
     </div>
     <div class="mws-panel-body">
         <div class="mws-panel-content">
@@ -76,10 +76,10 @@
         <table class="mws-datatable-fn mws-table">
             <thead>
             <tr>
-                <th style="width: 5%">ID</th>
-                <th>Folder Name</th>
-                <th>Display Name</th>
-                <th>Total Score</th>
+                <th style="width: 5%">PID</th>
+                <th>Name</th>
+                <th>Country</th>
+                <th>Total Map Score</th>
                 <th>Total Time Played</th>
                 <th style="width: 9%">Games Played</th>
                 <th style="width: 9%">Total Kills</th>
@@ -88,8 +88,8 @@
             </tr>
             </thead>
             <tody>
-                {maps}
-                    <tr id="tr-map-{id}">
+                {players}
+                    <tr id="tr-player-{id}">
                         <td>{id}</td>
                         <td>{name}</td>
                         <td>{displayname}</td>
@@ -109,7 +109,7 @@
                         </span>
                         </td>
                     </tr>
-                {/maps}
+                {/players}
             </tody>
         </table>
     </div>

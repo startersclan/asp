@@ -113,7 +113,7 @@ namespace System
 
 /*
 | ---------------------------------------------------------------
-| Parse SNAPSHOT
+| Parse JSON
 | ---------------------------------------------------------------
 */
 
@@ -130,11 +130,43 @@ namespace System
     $data = json_decode($rawdata, true);
     if ($data == null)
     {
-        $LogWriter->logError("SNAPSHOT data invalid. JSON error code: ". json_last_error());
-        die(_ERR_RESPONSE . "SNAPSHOT Data Incomplete");
+        $code = json_last_error();
+        switch ($code)
+        {
+            case JSON_ERROR_NONE:
+                $message = 'No errors';
+                break;
+            case JSON_ERROR_DEPTH:
+                $message = 'Maximum stack depth exceeded';
+                break;
+            case JSON_ERROR_STATE_MISMATCH:
+                $message = 'Underflow or the modes mismatch';
+                break;
+            case JSON_ERROR_CTRL_CHAR:
+                $message = 'Unexpected control character found';
+                break;
+            case JSON_ERROR_SYNTAX:
+                $message = (strpos($data, '\mapname\\') !== false)
+                    ? 'Detected old SNAPSHOT format'
+                    : 'Syntax error, malformed JSON';
+                break;
+            case JSON_ERROR_UTF8:
+                $message = 'Malformed UTF-8 characters, possibly incorrectly encoded';
+                break;
+            default:
+                $message = 'Unknown error';
+                break;
+        }
+
+        $LogWriter->logError("SNAPSHOT Data Invalid: {$message} (code: {$code})");
+        die(_ERR_RESPONSE . "SNAPSHOT Data Invalid");
     }
 
-    // Parse Snapshot
+/*
+| ---------------------------------------------------------------
+| Parse SNAPSHOT
+| ---------------------------------------------------------------
+*/
     $snapshot = null;
     try
     {
