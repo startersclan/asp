@@ -429,7 +429,7 @@ SQL;
                     $row['kills'],
                     $row['deaths'],
                     $row['time'],
-                    $row['rank_id'],
+                    $row['rank'],
                     strtoupper($row['country'])
                 );
             }

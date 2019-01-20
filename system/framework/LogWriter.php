@@ -3,19 +3,19 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2018, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
-namespace System;
 
+namespace System;
 use System\IO\FileStream;
 
 /**
  * LogWritter Class, inspired by KLogger
  *
  * @author      Steven Wilson
- * @package     Asp
+ * @package     System
  */
 class LogWriter
 {

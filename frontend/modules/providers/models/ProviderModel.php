@@ -3,14 +3,14 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2018, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
 
+use System\BF2\Player;
 use System\Keygen\Keygen;
 use System\Net\IPAddress;
-use System\Player;
 
 /**
  * Server Model

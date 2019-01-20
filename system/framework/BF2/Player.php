@@ -3,14 +3,19 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2018, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
-namespace System;
-
+namespace System\BF2;
+use System\AwardData;
+use System\StatsData;
 use System\Collections\Dictionary;
 
+/**
+ * Class Player
+ * @package System\BF2
+ */
 class Player
 {
     /**

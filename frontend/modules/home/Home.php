@@ -3,14 +3,12 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2018, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
 use System\Controller;
 use System\Config;
-use System\IO\Directory;
-use System\IO\Path;
 use System\View;
 
 /**

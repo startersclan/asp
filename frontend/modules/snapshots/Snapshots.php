@@ -3,7 +3,7 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2018, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
@@ -130,12 +130,6 @@ class Snapshots extends Controller
 
             // Tell the client of the success
             $this->sendJsonResponse(true, $message);
-        }
-        catch (SecurityException $e)
-        {
-            $fileName = Path::GetFilename($file);
-            $message = sprintf("Failed to process snapshot (%s)!\n\n%s", $fileName, $e->getMessage());
-            $this->sendJsonResponse(false, $message);
         }
         catch (IOException $e)
         {

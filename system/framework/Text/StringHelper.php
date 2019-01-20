@@ -3,15 +3,28 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2018, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
 
-namespace System;
+namespace System\Text;
 
 class StringHelper
 {
+    /**
+     * Returns a value indicating whether a specified substring occurs within a string.
+     *
+     * @param string $haystack
+     * @param string $needle
+     *
+     * @return bool
+     */
+    public static function Contains($haystack, $needle)
+    {
+        return (strpos($haystack, $needle) !== false);
+    }
+
     /**
      * Cuts a string to the specified length, while maintaining full words.
      *

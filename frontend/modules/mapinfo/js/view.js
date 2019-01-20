@@ -2,6 +2,67 @@
 
     $(document).ready(function() {
 
+        // Variables
+        var mapId = parseInt($("#mapId").html());
+
+        // DataTables
+        $("table#topPlayers").DataTable({
+            pageLength: 25,
+            pagingType: "full_numbers",
+            processing: false,
+            serverSide: true,
+            info: false,
+            ajax: {
+                url: "/ASP/mapinfo/topPlayerList",
+                type: "POST",
+                data: function ( d ) {
+                    return $.extend( {}, d, {
+                        ajax: true,
+                        mapId: mapId
+                    });
+                },
+                beforeSend: function() {
+                    $('.loading-cell').css('background-image', 'url(/ASP/frontend/images/core/alerts/loading.gif)');
+                },
+                complete: function(jqXHR, textStatus) {
+                    if (textStatus === "success")
+                        $('.loading-cell').css('background-image', 'url(/ASP/frontend/images/core/alerts/tick-circle.png)');
+                    else
+                        $('.loading-cell').css('background-image', 'url(/ASP/frontend/images/core/alerts/cross-circle.png)');
+                }
+            },
+            order: [[ 5, "desc" ]], // Order by global score
+            columns: [
+                { "data": "check" },
+                { "data": "id" },
+                { "data": "rank" },
+                { "data": "name" },
+                { "data": "country" },
+                { "data": "score" },
+                { "data": "time" },
+                { "data": "games" },
+                { "data": "kills" },
+                { "data": "deaths" },
+                { "data": "actions" }
+            ],
+            columnDefs: [
+                { "searchable": false, "orderable": false, "targets": 0 },
+                { "searchable": false, "orderable": false, "targets": 1 },
+                { "searchable": false, "orderable": false, "targets": 2 },
+                { "searchable": true, "orderable": false, "targets": 3 },
+                { "searchable": false, "orderable": false, "targets": 4 },
+                { "searchable": false, "targets": 5 },
+                { "searchable": false, "targets": 6 },
+                { "searchable": false, "targets": 7 },
+                { "searchable": false, "targets": 8 },
+                { "searchable": false, "targets": 9 },
+                { "searchable": false, "orderable": false, "targets": 10 }
+            ]
+        }).on( 'draw.dt', function () {
+            //noinspection JSUnresolvedVariable
+            $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
+        });
+
         // Ajax and form Validation
         // noinspection JSJQueryEfficiency
         var validator = $("#mws-validate").validate({

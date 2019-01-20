@@ -7,9 +7,15 @@
  * License:      GNU GPL v3
  *
  */
-
+namespace System\BF2;
 use System\Battlefield2;
+use System\Database;
+use System\IO\Path;
 
+/**
+ * Class RankCalculator
+ * @package System\BF2
+ */
 class RankCalculator
 {
     /**
@@ -28,10 +34,10 @@ class RankCalculator
     public function __construct()
     {
         // Fetch database connection
-        $this->pdo = System\Database::GetConnection('stats');
+        $this->pdo = Database::GetConnection('stats');
 
         // Load ranks
-        $this->ranks = include \System\IO\Path::Combine(SYSTEM_PATH, 'config', 'ranks.php');
+        $this->ranks = include Path::Combine(SYSTEM_PATH, 'config', 'ranks.php');
     }
 
     /**
@@ -41,7 +47,7 @@ class RankCalculator
      * @param int $count
      *
      * @return array|bool
-     * @throws Exception
+     * @throws \Exception
      */
     public function getNextRanks($playerId, $count)
     {
@@ -210,7 +216,7 @@ class RankCalculator
      * @param bool $prevRank
      *
      * @return string
-     * @throws Exception
+     * @throws \Exception
      */
     protected function generateMissingDesc($rankName, $prevRank)
     {

@@ -3,15 +3,18 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2018, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
 
 namespace System;
-
 use System\IO\Path;
 
+/**
+ * Class AwardData
+ * @package System
+ */
 class AwardData
 {
     /**
@@ -21,7 +24,7 @@ class AwardData
 
     /**
      *
-     * @var BackendAward[] An array of backend earned awards
+     * @var BF2\BackendAward[] An array of backend earned awards
      */
     public static $BackendAwards = array();
 

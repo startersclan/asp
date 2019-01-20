@@ -7,10 +7,12 @@
  * License:      GNU GPL v3
  *
  */
-
 namespace System;
 
-
+/**
+ * Class TimeHelper
+ * @package System
+ */
 class TimeHelper
 {
     /**

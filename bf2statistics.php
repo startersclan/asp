@@ -21,7 +21,6 @@ namespace System
 {
     use Exception;
     use SecurityException;
-    use System\Config;
     use System\Collections\Dictionary;
     use System\IO\File;
     use System\IO\FileStream;
@@ -282,7 +281,7 @@ namespace System
                 'server_id' => $snapshot->serverId,
                 'timestamp' => time(),
                 'filename' => Path::GetFilenameWithoutExtension($fileName),
-                'reason' => StringHelper::SubStrWords($e->getMessage(), 128)
+                'reason' => Text\StringHelper::SubStrWords($e->getMessage(), 128)
             ]);
         }
 

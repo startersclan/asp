@@ -22,6 +22,9 @@ class Mapinfo extends Controller
     /** @var MapinfoModel */
     protected $model;
 
+    /** @var MapinfoAjaxModel */
+    protected $ajaxModel;
+
     /**
      * @protocol    ANY
      * @request     /ASP/mapinfo
@@ -82,16 +85,17 @@ class Mapinfo extends Controller
 
         // Lowercase name for map image
         $map['lcname'] = strtolower($map['name']);
-        //die('<pre>'. var_export($map, true) .'</pre>');
 
         // Load view
         $view = new View('map_details', 'mapinfo');
         $view->set('map', $map);
 
         // Attach needed stylesheets
+        $view->attachStylesheet("/ASP/frontend/modules/mapinfo/css/view.css");
         $view->attachStylesheet("/ASP/frontend/css/icons/icol16.css");
 
         // Attach needed scripts for the form
+        $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");
         $view->attachScript("/ASP/frontend/js/jquery.form.js");
         $view->attachScript("/ASP/frontend/js/validate/jquery.validate-min.js");
         $view->attachScript("/ASP/frontend/js/flot/jquery.flot.min.js");
@@ -146,6 +150,39 @@ class Mapinfo extends Controller
             $pdo = System\Database::GetConnection('stats');
             $this->sendJsonResponse(false, 'Query Failed! '. $e->getMessage(), ['lastQuery' => $pdo->lastQuery]);
             die;
+        }
+    }
+
+    /**
+     * @protocol    POST
+     * @request     /ASP/mapinfo/topPlayerList
+     * @output      json
+     */
+    public function postTopPlayerList()
+    {
+        // Require a database connection
+        $this->requireDatabase(true);
+
+        // Attach Model
+        $this->loadModel('MapinfoAjaxModel', 'mapinfo', 'ajaxModel');
+
+        try
+        {
+            // Grab mapId
+            $postData = new Dictionary(false, $_POST);
+            $mapId = (int)$postData['mapId'];
+
+            // Fetch top players list
+            $data = $this->ajaxModel->getTopMapPlayersById($mapId, $_POST);
+            echo json_encode($data);
+        }
+        catch (Exception $e)
+        {
+            // Log Exception
+            System::LogException($e);
+
+            // Send error message to client
+            echo json_encode(['error' => $e->getMessage()]);
         }
     }
 }

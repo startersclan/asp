@@ -3,7 +3,7 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2018, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
@@ -344,6 +344,11 @@ class Database extends Controller
         // We require a database!
         $this->requireDatabase(true);
 
+        // Dont let this time out!
+        ignore_user_abort(true);
+        set_time_limit(180);
+
+        // Wrap in a try catch
         try
         {
             // Load model, and call method

@@ -1,5 +1,6 @@
 <div class="mws-panel grid_2">
     <div class="mws-panel-header">
+        <span id="mapId" style="display: none">{map.id}</span>
         <span><i class="icon-map-marker"></i> {map.displayname}</span>
     </div>
     <div class="mws-panel-body no-padding" style="text-align: center">
@@ -73,44 +74,22 @@
         <span><i class="icon-flag"></i> Player Hall of Fame</span>
     </div>
     <div class="mws-panel-body no-padding">
-        <table class="mws-datatable-fn mws-table">
+        <table id="topPlayers" class="mws-datatable-fn mws-table">
             <thead>
-            <tr>
-                <th style="width: 5%">PID</th>
-                <th>Name</th>
-                <th>Country</th>
-                <th>Total Map Score</th>
-                <th>Total Time Played</th>
-                <th style="width: 9%">Games Played</th>
-                <th style="width: 9%">Total Kills</th>
-                <th style="width: 9%">Total Deaths</th>
-                <th style="width: 5%">Actions</th>
-            </tr>
+                <tr>
+                    <th style="width: 3%"><span class="loading-cell"></span></th>
+                    <th style="width: 5%">PID</th>
+                    <th style="width: 5%">Rank</th>
+                    <th>Name</th>
+                    <th>Country</th>
+                    <th>Total Map Score</th>
+                    <th>Total Time Played</th>
+                    <th style="width: 9%">Games Played</th>
+                    <th style="width: 9%">Total Kills</th>
+                    <th style="width: 9%">Total Deaths</th>
+                    <th style="width: 5%">Actions</th>
+                </tr>
             </thead>
-            <tody>
-                {players}
-                    <tr id="tr-player-{id}">
-                        <td>{id}</td>
-                        <td>{name}</td>
-                        <td>{displayname}</td>
-                        <td>{score}</td>
-                        <td data-sort="{time}">{time_display}</td>
-                        <td>{count}</td>
-                        <td>{kills}</td>
-                        <td>{deaths}</td>
-                        <td>
-                        <span class="btn-group">
-                            <a id="go-map-{id}" href="/ASP/mapinfo/view/{id}"  rel="tooltip" title="View Map" class="btn btn-small">
-                                <i class="icon-eye-open"></i>
-                            </a>
-                            <a id="edit-map-{id}" href="#"  rel="tooltip" title="Edit Map Name" class="btn btn-small">
-                                <i class="icon-pencil"></i>
-                            </a>
-                        </span>
-                        </td>
-                    </tr>
-                {/players}
-            </tody>
         </table>
     </div>
 </div>

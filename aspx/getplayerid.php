@@ -19,8 +19,8 @@
 
 // Namespace
 namespace System;
-
 use PDO;
+use System\BF2\Player;
 
 // No direct access
 defined("BF2_ADMIN") or die("No Direct Access");

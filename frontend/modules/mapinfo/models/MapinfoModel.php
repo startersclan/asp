@@ -8,6 +8,7 @@
  *
  */
 use System\Database;
+use System\TimeHelper;
 
 class MapinfoModel
 {
@@ -172,6 +173,56 @@ SQL;
 
             return true;
         }
+    }
+
+    /**
+     * Gets the top X players for a provided map ID
+     *
+     * @param int $mapId
+     * @param int $count
+     * @param bool $format
+     *
+     * @return array
+     */
+    public function getTopMapPlayersById($mapId, $count, $format)
+    {
+        $pdo = Database::GetConnection('stats');
+        $query = <<<SQL
+SELECT 
+  m.player_id AS `id`,
+  p.name,
+  p.country,
+  p.rank_id,
+  m.time,  
+  SUM(h.score) AS `score`,
+  SUM(h.kills) AS `kills`,
+  SUM(h.deaths) AS `deaths`,
+  COUNT(h.player_id) AS `games`
+FROM player_map AS m
+  JOIN player AS p on m.player_id = p.id
+  JOIN round AS r ON r.map_id = m.map_id
+  JOIN player_round_history AS h on r.id = h.round_id AND h.player_id = m.player_id
+WHERE m.map_id = $mapId
+GROUP BY h.player_id
+ORDER BY `score` DESC
+LIMIT $count
+SQL;
+
+        $players = [];
+        $rows = $pdo->query($query);
+        while ($row = $rows->fetch())
+        {
+            if ($format)
+            {
+                $row['score_string'] = number_format($row['score']);
+                $row['kills_string'] = number_format($row['kills']);
+                $row['deaths_string'] = number_format($row['deaths']);
+                $row['games_string'] = number_format($row['games']);
+                $row['time_string'] = TimeHelper::SecondsToHms($row['time']);
+            }
+            $players[] = $row;
+        }
+        return $players;
     }
 
     private function secondsToTime($seconds)

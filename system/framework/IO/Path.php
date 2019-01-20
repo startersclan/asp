@@ -3,12 +3,18 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2018, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
 namespace System\IO;
 
+/**
+ * Performs operations on String instances that contain file or directory path information.
+ * These operations are performed in a cross-platform manner.
+ *
+ * @package System\IO
+ */
 class Path
 {
     /**

@@ -8,11 +8,11 @@
  *
  */
 use System\Battlefield2;
+use System\BF2\Player;
 use System\Collections\Dictionary;
 use System\Controller;
 use System\IO\Directory;
 use System\IO\Path;
-use System\Player;
 use System\Response;
 use System\View;
 
@@ -91,7 +91,6 @@ class Players extends Controller
 
         // Attach Model
         $this->loadModel("PlayerModel", 'players');
-        $this->loadModel("RankCalculator", 'players');
 
         // Require database connection
         $this->requireDatabase();

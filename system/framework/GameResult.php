@@ -9,6 +9,8 @@
  */
 
 namespace System;
+use System\BF2\Player;
+use System\BF2\ObjectStat;
 
 abstract class GameResult
 {

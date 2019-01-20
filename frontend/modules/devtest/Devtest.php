@@ -8,7 +8,7 @@
  *
  */
 
-use System\Net\IPAddress;
+use System\BF2\RankCalculator;
 
 /**
  * A Dev testing module
@@ -31,8 +31,7 @@ class Devtest extends \System\Controller
 
     public function ranks()
     {
-        $this->loadModel('RankCalculator', 'players', 'model');
-
+        $this->model = new RankCalculator();
         \System\Debug::Dump($this->model->getNextRanks(2900126, 22));
     }
 

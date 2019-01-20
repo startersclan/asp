@@ -3,18 +3,16 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2018, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
 use System\Collections\Dictionary;
-use System\Database;
-use System\Database\UpdateOrInsertQuery;
 use System\IO\Directory;
 use System\IO\File;
 use System\IO\Path;
 use System\Snapshot;
-use System\StringHelper;
+use System\Text\StringHelper;
 
 /**
  * Snapshots Model
@@ -149,7 +147,6 @@ SQL;
      *  the snapshot data is incomplete.
      * @throws IOException thrown if there is a problem moving the snapshot file to the
      *  processed folder.
-     * @throws SecurityException if the snapshot has an invalid AuthId
      */
     public function importSnapshot($file, $ignoreAuthorization, &$message)
     {
@@ -161,7 +158,44 @@ SQL;
 
         // Ensure we can parse json
         if ($data == null)
-            throw new Exception("Unable to decode json from snapshot: " . $file);
+        {
+            $code = json_last_error();
+            switch ($code)
+            {
+                case JSON_ERROR_NONE:
+                    $message = 'No errors';
+                    break;
+                case JSON_ERROR_DEPTH:
+                    $message = 'Maximum stack depth exceeded';
+                    break;
+                case JSON_ERROR_STATE_MISMATCH:
+                    $message = 'Underflow or the modes mismatch';
+                    break;
+                case JSON_ERROR_CTRL_CHAR:
+                    $message = 'Unexpected control character found';
+                    break;
+                case JSON_ERROR_SYNTAX:
+                    $message = (strpos($data, '\mapname\\') !== false)
+                        ? 'Detected old SNAPSHOT format'
+                        : 'Syntax error, malformed JSON';
+                    break;
+                case JSON_ERROR_UTF8:
+                    $message = 'Malformed UTF-8 characters, possibly incorrectly encoded';
+                    break;
+                default:
+                    $message = 'Unknown error';
+                    break;
+            }
+
+            // Create Message
+            $string = new \System\Text\StringBuilder();
+            $string->appendLine("Unable to decode json from snapshot!");
+            $string->appendLine();
+            $string->appendLine("Error Message: " . $message);
+            $string->appendLine("Error Code: " . $code);
+            $string->appendLine("Snapshot: " . $file);
+            throw new Exception($string->toString());
+        }
 
         // Create snapshot
         $data = new Dictionary(false, $data);

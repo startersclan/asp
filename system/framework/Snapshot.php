@@ -3,7 +3,7 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2018, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
@@ -12,11 +12,16 @@ namespace System;
 
 use Exception;
 use SecurityException;
+use System\BF2\Player;
 use System\Collections\Dictionary;
 use System\Database\UpdateOrInsertQuery;
 use System\IO\Path;
 use System\Net\IPAddress;
 
+/**
+ * Class Snapshot
+ * @package System
+ */
 class Snapshot extends GameResult
 {
     /**
@@ -308,7 +313,11 @@ class Snapshot extends GameResult
         {
             // Wrap in a transaction to speed things up
             $connection->beginTransaction();
+
+            // Define variables
             $start = microtime(true);
+            $ignoreBots = (bool)Config::Get('stats_ignore_ai');
+            $minGameTime = (int)Config::Get('stats_min_player_game_time');
 
             // ********************************
             // Process RoundInfo
@@ -390,15 +399,55 @@ class Snapshot extends GameResult
             // ********************************
             foreach ($this->players as $player)
             {
-                // Player meets min round time or are we ignoring AI?
-                if ($player->roundTime < Config::Get('stats_min_player_game_time') || $player->isAi && Config::Get('stats_ignore_ai'))
+                // Write log
+                $this->logWriter->logNotice("Processing Player (%d)", $player->id);
+
+                // ********************************
+                // Process Player Victims
+                // ********************************
+                // Always log victims, whether Bot or Player
+                $this->logWriter->logDebug("Processing Player Victim Data (%d)", $player->id);
+                $query = new UpdateOrInsertQuery($connection, 'player_kill');
+                $query->where('attacker', '=', $player->id);
+                $query2 = new UpdateOrInsertQuery($connection, 'player_kill_history');
+                $query2->set('attacker', '=', $player->id);
+                $query2->set('round_id', '=', $roundId);
+                foreach ($player->victims as $pid => $count)
+                {
+                    // Update main stats record
+                    $query->where('victim', '=', $pid);
+                    $query->set('count', '+', $count);
+                    $query->execute();
+
+                    // Add to History
+                    $query2->set('victim', '=', $pid);
+                    $query2->set('count', '=', $count);
+                    $query2->executeInsert();
+                }
+
+                // Ignoring AI bots?
+                if ($player->isAi && $ignoreBots)
+                {
+                    $this->logWriter->logDebug("Skipping Bot player Stats Data (%d)", $player->id);
                     continue;
+                }
+
+                // Player meets min round time?
+                if ($player->roundTime < $minGameTime)
+                {
+                    $this->logWriter->logDebug("Player does not meet minimum round game time... Skipping (%d)", $player->id);
+                    continue;
+                }
+
+                // ********************************
+                // Process Player Data
+                // ********************************
+
+                // Write log
+                $this->logWriter->logDebug("Processing Player Data (%d)", $player->id);
 
                 // Define some variables
                 $onWinningTeam = $player->team == $this->winningTeam;
-
-                // Write log
-                $this->logWriter->logNotice("Processing Player (%d)", $player->id);
 
                 // Run player check through BattleSpy
                 $this->battleSpy->analyze($player);
@@ -556,28 +605,6 @@ class Snapshot extends GameResult
                 }
 
                 // ********************************
-                // Process Player Kills
-                // ********************************
-                $this->logWriter->logDebug("Processing Kill Data (%d)", $player->id);
-                $query = new UpdateOrInsertQuery($connection, 'player_kill');
-                $query->where('attacker', '=', $player->id);
-                $query2 = new UpdateOrInsertQuery($connection, 'player_kill_history');
-                $query2->set('attacker', '=', $player->id);
-                $query2->set('round_id', '=', $roundId);
-                foreach ($player->victims as $pid => $count)
-                {
-                    // Update main stats record
-                    $query->where('victim', '=', $pid);
-                    $query->set('count', '+', $count);
-                    $query->execute();
-
-                    // Add to History
-                    $query2->set('victim', '=', $pid);
-                    $query2->set('count', '=', $count);
-                    $query2->executeInsert();
-                }
-
-                // ********************************
                 // Process Player Kit Data
                 // ********************************
                 $this->logWriter->logDebug("Processing Kit Data (%d)", $player->id);
@@ -608,7 +635,11 @@ class Snapshot extends GameResult
                 // ********************************
                 $this->logWriter->logDebug("Processing Map Data (%d)", $player->id);
                 $query = new UpdateOrInsertQuery($connection, 'player_map');
+                $query->set('score', '+', $player->roundScore);
                 $query->set('time', '+', $player->roundTime);
+                $query->set('kills', '+', $player->kills);
+                $query->set('deaths', '+', $player->deaths);
+                $query->set('games', '+', 1);
                 $query->set('wins', '+', $onWinningTeam ? 1 : 0);
                 $query->set('losses', '+', $onWinningTeam ? 0 : 1);
                 $query->set('bestscore', 'g', $player->roundScore);
@@ -769,7 +800,7 @@ class Snapshot extends GameResult
                 $this->logWriter->logDebug("Saving server updated information");
                 $query = new UpdateOrInsertQuery($connection, 'server');
                 $query->set('provider_id', '=', $this->providerId);
-                $query->set('name', '=', StringHelper::SubStrWords($this->serverName, 100));
+                $query->set('name', '=', Text\StringHelper::SubStrWords($this->serverName, 100));
                 $query->set('gameport', '=', $this->serverPort);
                 $query->set('queryport', '=', $this->queryPort);
                 $query->set('lastupdate', 'g', time());

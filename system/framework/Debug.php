@@ -10,7 +10,10 @@
 
 namespace System;
 
-
+/**
+ * Class Debug
+ * @package System
+ */
 class Debug
 {
     public static function Dump($item)
