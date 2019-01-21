@@ -19,8 +19,8 @@ use System\View;
 /**
  * Player Model
  *
- * @package Models
- * @subpackage Players
+ * @package Players
+ * @subpackage Models
  */
 class PlayerModel
 {

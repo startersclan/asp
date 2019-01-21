@@ -79,7 +79,11 @@ class PlayerAjaxModel
                     return number_format($d);
                 }
             ],
-            ['db' => 'country', 'dt' => 'country'],
+            ['db' => 'country', 'dt' => 'country',
+                'formatter' => function( $d, $row ) {
+                    return "<img class='center flag' src=\"/ASP/frontend/images/flags/{$d}.png\">";
+                }
+            ],
             ['db' => 'joined', 'dt' => 'joined',
                 'formatter' => function( $d, $row ) {
                     $i = (int)$d;

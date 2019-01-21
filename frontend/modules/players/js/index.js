@@ -26,6 +26,7 @@
             pagingType: "full_numbers",
             processing: false,
             serverSide: true,
+            autoWidth: false,
             ajax: {
                 url: "/ASP/players/list",
                 type: "POST",
@@ -48,14 +49,14 @@
                         $('.loading-cell').css('background-image', 'url(/ASP/frontend/images/core/alerts/cross-circle.png)');
                 }
             },
-            order: [[ 4, "desc" ]], // Order by global score
+            order: [[ 5, "desc" ]], // Order by global score
             columns: [
                 { "data": "check" },
                 { "data": "id" },
                 { "data": "rank" },
                 { "data": "name" },
-                { "data": "score" },
                 { "data": "country" },
+                { "data": "score" },
                 { "data": "joined" },
                 { "data": "online" },
                 { "data": "permban" },

@@ -586,6 +586,7 @@ class Snapshot extends GameResult
                     // If the player ended the game as this army, update with round info
                     if ($player->armyId == $id)
                     {
+                        $query->set('score', '+', $player->roundScore);
                         $query->set('wins', '+', $onWinningTeam);
                         $query->set('losses', '+', (!$onWinningTeam));
                         $query->set('best', 'g', $player->roundScore);

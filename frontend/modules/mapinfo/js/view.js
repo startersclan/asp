@@ -6,7 +6,7 @@
         var mapId = parseInt($("#mapId").html());
 
         // DataTables
-        $("table#topPlayers").DataTable({
+        var table = $("table#topPlayers").DataTable({
             pageLength: 25,
             pagingType: "full_numbers",
             processing: false,
@@ -61,6 +61,10 @@
         }).on( 'draw.dt', function () {
             //noinspection JSUnresolvedVariable
             $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
+        }).on( 'order.dt search.dt', function () {
+            table.column(0, { search:'applied', order:'applied' }).nodes().each(function (cell, i) {
+                cell.innerHTML = i+1;
+            });
         });
 
         // Ajax and form Validation

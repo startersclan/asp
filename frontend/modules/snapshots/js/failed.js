@@ -9,7 +9,8 @@
         var Table = $(".mws-datatable-fn").DataTable({
             pagingType: "full_numbers",
             bSort: false,
-            bPaginate: false
+            bPaginate: false,
+            autoWidth: false
         });
 
         // Delete Selected Click

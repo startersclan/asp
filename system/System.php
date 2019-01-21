@@ -183,8 +183,9 @@ class System
             // Check for an ajax request, and answer accordingly
             if (Request::IsAjax())
             {
-                // Respond in a commonly expected format for this admin panel
-                echo json_encode(['success' => false, 'message' => "Login session has expired! Please refresh the page and login again."]);
+                // Respond in a commonly expected format for this admin panel and DataTables
+                $message = "Login session has expired! Please refresh the page and login again.";
+                echo json_encode(['success' => false, 'message' => $message, 'error' => $message]);
             }
             else
             {

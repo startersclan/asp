@@ -15,7 +15,7 @@ use System\View;
 /**
  * Mapinfo Module Controller
  *
- * @package Modules
+ * @package Mapinfo
  */
 class Mapinfo extends Controller
 {

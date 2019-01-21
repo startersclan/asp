@@ -9,6 +9,7 @@
             processing: false,
             serverSide: true,
             order: [[ 1, "desc" ]],
+            autoWidth: false,
             ajax: {
                 url: "/ASP/roundinfo/list",
                 type: "POST",

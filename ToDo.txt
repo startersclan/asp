@@ -3,9 +3,7 @@ Must Do's:
  - Add more global player statistics, like Kit statistics (pie chart), weapon statistics etc etc
 
 Nice To Have's:
- - Map statistics (mapinfo/view/:id) displaying win/loss/tie pie chart, and top played servers and players
  - Snapshot module face lift. Ability to view round details of a round (from a snapshot) before it
     is saved into the database (requiring manual admin authorization).
  - Create a system where a round played with too many BattleSpy flags will not be saved, but rather have to be
     sanctioned after review by the stats admin before being processed into the database.
- - Page /player/view/:id => Add next 3 ranks progress like Bf2sclone had

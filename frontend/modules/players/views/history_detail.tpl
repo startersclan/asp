@@ -150,7 +150,7 @@
 </div>
 <div class="mws-panel grid_3">
     <div class="mws-panel-header">
-        <span><i class="icon-book"></i> Round Information</span>
+        <span> Round Information</span>
     </div>
     <div class="mws-panel-body no-padding">
         <ul class="mws-summary clearfix">

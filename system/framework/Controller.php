@@ -140,6 +140,8 @@ abstract class Controller
     {
         $params['success'] = $success;
         $params['message'] = $message;
+        if (!$success)
+            $params['error'] = $message;
         echo json_encode($params, JSON_PRETTY_PRINT);
     }
 }

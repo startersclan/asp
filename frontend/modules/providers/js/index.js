@@ -5,7 +5,8 @@
         // Data Tables
         var Table = $(".mws-datatable-fn").DataTable({
             pagingType: "full_numbers",
-            bSort: false
+            bSort: false,
+            autoWidth: false
         }).on( 'draw.dt', function () {
             //noinspection JSUnresolvedVariable
             $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });

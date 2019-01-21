@@ -71,7 +71,7 @@
 </div>
 <div class="mws-panel grid_8">
     <div class="mws-panel-header">
-        <span><i class="icon-flag"></i> Player Hall of Fame</span>
+        <span><i class="icon-flag"></i> Top Players</span>
     </div>
     <div class="mws-panel-body no-padding">
         <table id="topPlayers" class="mws-datatable-fn mws-table">
@@ -80,7 +80,7 @@
                     <th style="width: 3%"><span class="loading-cell"></span></th>
                     <th style="width: 5%">PID</th>
                     <th style="width: 5%">Rank</th>
-                    <th>Name</th>
+                    <th style="width: 25%">Name</th>
                     <th>Country</th>
                     <th>Total Map Score</th>
                     <th>Total Time Played</th>

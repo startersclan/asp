@@ -27,7 +27,8 @@ if (!function_exists('build_navigation'))
         $task = $GLOBALS['controller'];
         $system = array('config', 'install', 'database');
         $players = array('players');
-        $server = array('providers', 'servers', 'mapinfo', 'snapshots', 'roundinfo');
+        $server = array('providers', 'servers', 'snapshots', 'roundinfo');
+        $statistics = array('mapinfo', 'stats');
         $game = array('gamedata');
 
         // Create navigation class
@@ -81,7 +82,6 @@ if (!function_exists('build_navigation'))
             $group->append('/ASP/snapshots', 'Authorize Snapshots');
             $group->append('/ASP/snapshots/failed', 'Failed Snapshots');
             $group->append('/ASP/roundinfo', 'Round History');
-            $group->append('/ASP/mapinfo', 'Map Statistics');
             $navigation->append($group);
 
             // BattleSpy
@@ -90,6 +90,15 @@ if (!function_exists('build_navigation'))
             $group = new NavigationItem($title, "#", "icon-eye-open", $task == "battlespy");
             $group->append('/ASP/battlespy', 'View Reports');
             $group->append('/ASP/battlespy/config', 'Edit Configuration');
+            $navigation->append($group);
+
+            // Add Statistics Links
+            $group = new NavigationItem("Global Statistics", "#", "icon-stats", in_array($task, $statistics));
+            $group->append('/ASP/stats/armies', 'Army Statistics');
+            $group->append('/ASP/stats/kits', 'Kit Statistics');
+            $group->append('/ASP/mapinfo', 'Map Statistics');
+            $group->append('/ASP/stats/weapons', 'Weapon Statistics');
+            $group->append('/ASP/stats/vehicles', 'Vehicle Statistics');
             $navigation->append($group);
 
             // Add Game Data Links

@@ -82,7 +82,7 @@ FROM player_round_history AS ph
   LEFT JOIN server AS s ON h.server_id = s.id
   LEFT JOIN game_mod AS g on h.mod_id = g.id
   LEFT JOIN game_mode AS gm on h.gamemode_id = gm.id
-  LEFT JOIN `rank` AS r2 on p.rank_id = r2.id
+  LEFT JOIN `rank` AS r2 on ph.rank_id = r2.id
 WHERE player_id={$pid} AND round_id={$rid}
 SQL;
         return $this->pdo->query($query)->fetch();

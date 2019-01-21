@@ -14,6 +14,11 @@ DROP VIEW IF EXISTS `player_weapon_view`;
 DROP VIEW IF EXISTS `round_history_view`;
 DROP VIEW IF EXISTS `player_history_view`;
 DROP VIEW IF EXISTS `player_awards_view`;
+DROP VIEW IF EXISTS `player_map_top_players_view`;
+DROP VIEW IF EXISTS `top_player_army_view`;
+DROP VIEW IF EXISTS `top_player_kit_view`;
+DROP VIEW IF EXISTS `top_player_vehicle_view`;
+DROP VIEW IF EXISTS `top_player_weapon_view`;
 DROP PROCEDURE IF EXISTS `generate_rising_star`;
 DROP PROCEDURE IF EXISTS `create_player`;
 DROP TABLE IF EXISTS `battlespy_message`;
@@ -732,6 +737,27 @@ CREATE OR REPLACE VIEW `player_weapon_view` AS
   SELECT `weapon_id`, `player_id`, `time`, `kills`, `deaths`, `fired`, `hits`, COALESCE((`hits` * 1.0) / `fired`, 0) AS `accuracy`
   FROM `player_weapon`;
 
+CREATE OR REPLACE VIEW `top_player_army_view` AS
+  SELECT pk.*, p.name, p.country, p.rank_id
+  FROM `player_army` AS pk
+    JOIN player AS p on pk.player_id = p.id;
+
+CREATE OR REPLACE VIEW `top_player_weapon_view` AS
+  SELECT pk.*, p.name, p.country, p.rank_id, COALESCE((`hits` * 1.0) / GREATEST(`fired`, 1), 0) AS `accuracy`,
+    COALESCE((pk.kills * 1.0) / GREATEST(pk.deaths, 1), 0) AS `ratio`
+  FROM `player_weapon` AS pk
+    JOIN player AS p on pk.player_id = p.id;
+
+CREATE OR REPLACE VIEW `top_player_kit_view` AS
+  SELECT pk.*, p.name, p.country, p.rank_id, COALESCE((pk.kills * 1.0) / GREATEST(pk.deaths, 1), 0) AS `ratio`
+  FROM `player_kit` AS pk
+    JOIN player AS p on pk.player_id = p.id;
+
+CREATE OR REPLACE VIEW `top_player_vehicle_view` AS
+  SELECT pk.*, p.name, p.country, p.rank_id, COALESCE((pk.kills * 1.0) / GREATEST(pk.deaths, 1), 0) AS `ratio`
+  FROM `player_vehicle` AS pk
+    JOIN player AS p on pk.player_id = p.id;
+
 CREATE OR REPLACE VIEW `player_awards_view` AS
   SELECT a.award_id AS `id`, a.player_id AS `pid`, MAX(r.time_end) AS `earned`, MIN(r.time_end) AS `first`, COUNT(`level`) AS `level`
   FROM player_award AS a
@@ -753,6 +779,11 @@ CREATE OR REPLACE VIEW `player_history_view` AS
     LEFT JOIN round AS rh ON ph.round_id = rh.id
     LEFT JOIN server ON rh.server_id = server.id
     LEFT JOIN map AS mi ON rh.map_id = mi.id;
+
+CREATE OR REPLACE VIEW `player_map_top_players_view` AS
+  SELECT m.map_id, m.player_id, m.time, m.score, m.kills, m.deaths, m.games, p.name, p.country, p.rank_id
+  FROM player_map AS m
+    JOIN player AS p on m.player_id = p.id;
 
 -- --------------------------------------------------------
 -- Create Procedures

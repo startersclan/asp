@@ -57,9 +57,9 @@
                     <th style="width: 3%"><span class="loading-cell"></span></th>
                     <th style="width: 7%">PID</th>
                     <th style="width: 5%">Rank</th>
-                    <th>Name</th>
-                    <th>Global Score</th>
+                    <th style="width: 20%">Name</th>
                     <th>Country</th>
+                    <th>Global Score</th>
                     <th>Join Date</th>
                     <th>Last Seen</th>
                     <th style="width: 5%">Status</th>

@@ -14,3 +14,7 @@ img.center {
 .no-search .select2-search {
     display:none
 }
+img.flag {
+    height: 16px;
+    width: 22px;
+}

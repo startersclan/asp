@@ -8,6 +8,7 @@
 
         // Data Tables
         $(".mws-datatable-fn").DataTable({
+            autoWidth: false,
             pagingType: "full_numbers",
             columnDefs: [
                 { "searchable": false, "orderable": false, "targets": 8 }

@@ -53,7 +53,11 @@ class MapinfoAjaxModel
             ],
             ['db' => 'player_id', 'dt' => 'id'],
             ['db' => 'name', 'dt' => 'name'],
-            ['db' => 'country', 'dt' => 'country'],
+            ['db' => 'country', 'dt' => 'country',
+                'formatter' => function( $d, $row ) {
+                    return "<img class='center flag' src=\"/ASP/frontend/images/flags/{$d}.png\">";
+                }
+            ],
             ['db' => 'rank_id', 'dt' => 'rank',
                 'formatter' => function( $d, $row ) {
                     return "<img class='center' src=\"/ASP/frontend/images/ranks/rank_{$d}.gif\">";
