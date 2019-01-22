@@ -79,6 +79,10 @@ else
     }
     else
     {
+        // Remove any spaces. This can happen when using an nick prefix!
+        $split = explode(" ", $nick);
+        $nick = $split[count($split)-1];
+
         // Ensure the player is using our services, and is not banned!
         if (strtolower($nick) != strtolower($player['name']))
         {

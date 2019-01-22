@@ -261,7 +261,7 @@ class StatsAjaxModel
             ['db' => 'accuracy', 'dt' => 'accuracy',
                 'formatter' => function( $d, $row ) {
                     // Get player ratio
-                    $fired = (int)$row['fired'];
+                    $fired = number_format((int)$row['fired']);
                     $percent = ($d * 100);
                     return "<span style=\"border-bottom: 1px dotted #000;\" rel=\"tooltip\" title=\"Shots Fired: $fired\">$percent%</span>";
                 }

@@ -29,6 +29,39 @@ class Devtest extends \System\Controller
         echo '<pre>' . var_export($data, true) . '</pre>';
     }
 
+    public function fixMapNames()
+    {
+        // Require a database connection
+        $this->requireDatabase(true);
+
+        // Fetch database connection
+        $pdo = System\Database::GetConnection('stats');
+
+        // Replace all underscores with a space
+        $pdo->exec("UPDATE `map` SET `displayname` = REPLACE(`displayname`, '_', ' ')");
+
+        // Now capitalize each letter of each word in the display name
+        $select = $pdo->prepare("SELECT * FROM `map`");
+        $select->setFetchMode(PDO::FETCH_ASSOC);
+        $select->execute();
+
+        // Use a prepared query
+        $update = $pdo->prepare("UPDATE `map` SET `displayname`=:column WHERE `id`=:id");
+        while ($data = $select->fetch())
+        {
+            $id = (int)$data['id'];
+            $column = $data['displayname'];
+            $column = ucwords(strtolower($column)); // Capitalize each word
+
+            $update->bindParam(':id', $id, PDO::PARAM_INT);
+            $update->bindParam(':column', $column, PDO::PARAM_STR);
+            $update->execute();
+        }
+
+        echo 'Completed... Redirecting';
+        header( "refresh:3;url=/ASP/" );
+    }
+
     public function ranks()
     {
         $this->model = new RankCalculator();
