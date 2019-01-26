@@ -7,6 +7,15 @@
  * License:      GNU GPL v3
  *
  */
+
+/**
+ * ------------------------------------------------------------------
+ * Return rank structure array
+ * ------------------------------------------------------------------
+ *
+ * Defines information to obtain each rank, which is used by the
+ * System\BF2\RankCalculator class to display the next player rank ups.
+ */
 return array(
     0 => array(
         'title' => 'Private',

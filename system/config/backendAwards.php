@@ -13,13 +13,32 @@ namespace System\BF2;
  * ------------------------------------------------------------------
  * Define common criteria functions
  * ------------------------------------------------------------------
+ *
+ * These common functions are used to determine if a player is eligible
+ * to receive a backend award
  */
 
+/**
+ * Special Forces Ribbon Method
+ *
+ * @param array $row The AwardCriteria resulting row
+ * @param int $timesAwarded the number of times this award has been awarded
+ *
+ * @return bool true if the player is eligible to receive the award, false otherwise
+ */
 $sRibbonCriteria = function($row, $timesAwarded)
 {
     return ($timesAwarded == 0 && $row['result'] > 180000);
 };
 
+/**
+ * Vanilla BF2 Medal Criteria
+ *
+ * @param array $row The AwardCriteria resulting row
+ * @param int $timesAwarded the number of times this award has been awarded
+ *
+ * @return bool true if the player is eligible to receive the award, false otherwise
+ */
 $vServiceMedalCriteria = function($row, $timesAwarded)
 {
     $level = $timesAwarded + 1;
@@ -29,6 +48,14 @@ $vServiceMedalCriteria = function($row, $timesAwarded)
     return ($best >= (100 * $level) && $time >= (100 * $level) && $wins >= (100 * $level));
 };
 
+/**
+ * Special Forces Medal Criteria
+ *
+ * @param array $row The AwardCriteria resulting row
+ * @param int $timesAwarded the number of times this award has been awarded
+ *
+ * @return bool true if the player is eligible to receive the award, false otherwise
+ */
 $xServiceMedalCriteria = function($row, $timesAwarded)
 {
     $level = $timesAwarded + 1;

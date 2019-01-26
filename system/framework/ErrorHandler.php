@@ -203,6 +203,7 @@ class ErrorHandler
             $data = array(
                 'success' => false,
                 'message' => "A PHP {$mode} was thrown during this request",
+                'error' => "A PHP {$mode} was thrown during this request",
                 'errorData' => array(
                     'exception' => $isException,
                     'level' => $level,

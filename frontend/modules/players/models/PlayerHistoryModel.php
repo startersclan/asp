@@ -618,10 +618,10 @@ SQL;
             // Favorite victim?
             if ($count > $faVictim['count'])
             {
-                $data['id'] = $pid;
-                $data['name'] = $row['name'];
-                $data['rank'] = $row['rank_id'];
-                $data['count'] = $count;
+                $faVictim['id'] = $pid;
+                $faVictim['name'] = $row['name'];
+                $faVictim['rank'] = $row['rank_id'];
+                $faVictim['count'] = $count;
             }
 
             $victims[] = [
@@ -651,10 +651,10 @@ SQL;
             // Favorite victim?
             if ($count > $woEnemy['count'])
             {
-                $data['id'] = $pid;
-                $data['name'] = $row['name'];
-                $data['rank'] = $row['rank_id'];
-                $data['count'] = $count;
+                $woEnemy['id'] = $pid;
+                $woEnemy['name'] = $row['name'];
+                $woEnemy['rank'] = $row['rank_id'];
+                $woEnemy['count'] = $count;
             }
 
             $enemies[] = [
