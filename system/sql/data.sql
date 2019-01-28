@@ -230,13 +230,13 @@ INSERT INTO `game_mode`(`id`, `name`) VALUES (99, 'Unknown');
 --
 -- Create default provider
 --
-INSERT INTO `stats_provider` VALUES (1, 112950, 'GGB6Vj70Nmf98nm7', 'Local Stats Provider', 0, 0);
+INSERT INTO `stats_provider` VALUES (1, 112950, 'GGB6Vj70Nmf98nm7', 'Local Stats Provider', 0, 0, 0);
 INSERT INTO `stats_provider_auth_ip` VALUES (1, '127.0.0.1');
 
 --
 -- Create default local server
 --
-INSERT INTO `server` VALUES (1, 1, 'Local Server', '127.0.0.1', 16567, 29900, 0, 0);
+INSERT INTO `server` VALUES (1, 1, 'Local Server', '127.0.0.1', 16567, 29900, 0, 0, 0);
 
 --
 -- Dumping data for table `_version`
