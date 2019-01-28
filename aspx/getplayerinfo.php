@@ -54,7 +54,10 @@ if ($pid == 0 || empty($info))
 }
 else
 {
-    // BFHQ Request
+    /**
+     * BFHQ Request
+     * @request too long!
+     */
     if (stringStartsWith($info, "per*,cmb*"))
     {
         // Fetch Player Data
@@ -95,11 +98,11 @@ else
                 'wdsk' => $row['deathstreak'],
                 'tvcr' => 0, // Top Victim
                 'topr' => 0, // Top Opponent
-                'klpm' => @number_format(60 * ($row['kills'] / $row['time']), 2, '.', ''), // Kills per min
-                'dtpm' => @number_format(60 * ($row['deaths'] / $row['time']), 2, '.', ''), // Deaths per min
-                'ospm' => @number_format(60 * ($row['score'] / $row['time']), 2, '.', ''), // Score per min
-                'klpr' => @number_format($row['kills'] / $row['rounds'], 2, '.', ''), // Kill per round
-                'dtpr' => @number_format($row['deaths'] / $row['rounds'], 2, '.', ''), // Deaths per round
+                'klpm' => @number_format(60 * ($row['kills'] / max(1, $row['time'])), 2, '.', ''), // Kills per min
+                'dtpm' => @number_format(60 * ($row['deaths'] / max(1, $row['time'])), 2, '.', ''), // Deaths per min
+                'ospm' => @number_format(60 * ($row['score'] / max(1, $row['time'])), 2, '.', ''), // Score per min
+                'klpr' => @number_format($row['kills'] / max(1, $row['rounds']), 2, '.', ''), // Kill per round
+                'dtpr' => @number_format($row['deaths'] / max(1, $row['rounds']), 2, '.', ''), // Deaths per round
                 'twsc' => $row['teamscore'],
                 'cpcp' => $row['captures'],
                 'cacp' => $row['captureassists'],
@@ -189,7 +192,10 @@ else
             $Response->send();
         }
     }
-    // Server Request
+    /**
+     * Server Request
+     * @request /ASP/getplayerinfo.aspx?pid=<PID>&info=rank,ktm-,dfcp,rpar,vtm-,bksk,scor,wdsk,wkl-,heal,dsab,cdsc,tsql,tsqm,wins,vkl-,twsc,time,kill,rsup,tcdr,de-,vac-
+     */
     elseif (stringStartsWith($info, "rank") && stringEndsWith($info, "vac-"))
     {
         // NOTE: xpack and bf2 have same return
@@ -269,13 +275,13 @@ SQL;
                 switch ($i)
                 {
                     case 17:
-                        $Output['de-6'] = $roww['fired'];
+                        $Output['de-6'] = $roww['deployed'];
                         break;
                     case 16:
-                        $Output['de-8'] = $roww['fired'];
+                        $Output['de-8'] = $roww['deployed'];
                         break;
                     case 15:
-                        $Output['de-7'] = $roww['fired'];
+                        $Output['de-7'] = $roww['deployed'];
                         break;
                 }
             }
@@ -345,7 +351,10 @@ SQL;
         $Response->writeHeaderDataArray($Output);
         $Response->send();
     }
-    // Time info
+    /**
+     * Time info - Used to display favorite kit, weapon, vehicle and map times for BFHQ
+     * @request /ASP/getplayerinfo.aspx?pid=<PID>&info=ktm-,vtm-,wtm-,mtm-&kit=0&vehicle=0&weapon=0&map=0
+     */
     elseif ($info == 'ktm-,vtm-,wtm-,mtm-')
     {
         $kit = isset($_GET['kit']) ? (int)$_GET['kit'] : 0;
@@ -394,7 +403,10 @@ SQL;
         $Response->writeDataLine($pid, $name, $kitt, $vehiclet, $weapont, $mapt);
         $Response->send();
     }
-    // Map info (added support for mbs- & mws-)
+    /**
+     * Map info - Gets time, wins and losses for each of the vanilla maps
+     * @request /ASP/getplayerinfo.aspx?pid=<PID>&info=mtm-,mwn-,mls-
+     */
     elseif (stringStartsWith($info, 'mtm-,mwn-,mls-'))
     {
         // Make sure Player exists
@@ -517,6 +529,10 @@ SQL;
         $Response->writeHeaderDataArray($Output);
         $Response->send();
     }
+    /**
+     * Not used anymore with the implementation of getrankinfo.aspx ??
+     * @request /ASP/getplayerinfo.aspx?pid=2900080&info=rank
+     */
     elseif ($info == 'rank')
     {
         $query = "SELECT `id`, `name`, `rank_id`, `chng`, `decr` FROM `player` WHERE `id` = {$pid}";
@@ -733,7 +749,7 @@ function addTacticalData(&$Output, $pid)
     while ($row = $result->fetch())
     {
         $i = ((int)$row['weapon_id']) - 10;
-        $Output["de-$i"] = (int)$row['fired'];
+        $Output["de-$i"] = (int)$row['deployed'];
     }
 }
 

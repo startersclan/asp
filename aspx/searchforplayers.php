@@ -89,7 +89,9 @@ else
     {
         $num = 1;
         while ($row = $result->fetch())
+        {
             $Response->writeDataLine($num++, $row['id'], $row['name'], $row['score']);
+        }
     }
 
     $Response->send();

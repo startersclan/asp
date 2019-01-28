@@ -37,13 +37,13 @@ $id = (isset($_GET['id'])) ? $_GET['id'] : '';
 $pid = (isset($_GET['pid'])) ? (int)$_GET['pid'] : 0;
 
 // Optional parameters
-$after = (isset($_GET['after'])) ? (int)$_GET['after'] : 0;
+$after = (isset($_GET['after'])) ? (int)$_GET['after'] : 19;
 $before = (isset($_GET['before'])) ? (int)$_GET['before'] : 0;
 $pos = (isset($_GET['pos'])) ? (int)$_GET['pos'] : 1;
 $min = ($pos - 1) - $before;
 $max = $after + 1;
 
-// Correction
+// Negative correction
 if ($min < 0) $min = 0;
 if ($max < 0) $max = 0;
 
@@ -71,6 +71,9 @@ else
             $Response->writeDataLine($result->fetchColumn(), time());
             $Response->writeHeaderLine("n", "pid", "nick", "score", "totaltime", "playerrank", "countrycode");
 
+            /**
+             * @request /ASP/getleaderboard.aspx?type=score&id=overall&pos=1&before=0&after=19
+             */
             if (!$pid)
             {
                 $query = "SELECT id, name, rank_id, country, time, score FROM player WHERE score > 0
@@ -89,6 +92,10 @@ else
                     );
                 }
             }
+            /**
+             * Searching by PID
+             * @request /ASP/getleaderboard.aspx?pid=<PID>&type=score&id=overall
+             */
             else
             {
                 $query = "SELECT id, name, rank_id, country, time, score FROM player WHERE id = {$pid}";
@@ -115,6 +122,9 @@ else
             $Response->writeDataLine($result->fetchColumn(), time());
             $Response->writeHeaderLine("n", "pid", "nick", "coscore", "cotime", "playerrank", "countrycode");
 
+            /**
+             * @request /ASP/getleaderboard.aspx?type=score&id=commander&pos=1&before=0&after=19
+             */
             if ($pid == 0)
             {
                 $query = "SELECT id, name, rank_id, country, cmdtime, cmdscore FROM player WHERE cmdscore > 0"
@@ -133,6 +143,10 @@ else
                     );
                 }
             }
+            /**
+             * Searching by PID
+             * @request /ASP/getleaderboard.aspx?pid=<PID>&type=score&id=commander
+             */
             else
             {
                 $query = "SELECT id, name, rank_id, country, cmdtime, cmdscore FROM player WHERE id = {$pid}";
@@ -159,6 +173,9 @@ else
             $Response->writeDataLine($result->fetchColumn(), time());
             $Response->writeHeaderLine("n", "pid", "nick", "teamscore", "totaltime", "playerrank", "countrycode");
 
+            /**
+             * @request /ASP/getleaderboard.aspx?type=score&id=team&pos=1&before=0&after=19
+             */
             if ($pid == 0)
             {
                 $query = "SELECT id, name, rank_id, country, time, teamscore FROM player WHERE teamscore > 0
@@ -177,6 +194,10 @@ else
                     );
                 }
             }
+            /**
+             * Searching by PID
+             * @request /ASP/getleaderboard.aspx?pid=<PID>&type=score&id=team
+             */
             else
             {
                 $query = "SELECT id, name, rank_id, country, time, teamscore FROM player WHERE id = {$pid}";
@@ -203,7 +224,10 @@ else
             $Response->writeDataLine($result->fetchColumn(), time());
             $Response->writeHeaderLine("n", "pid", "nick", "score", "totalkills", "totaltime", "playerrank", "countrycode");
 
-            if (!$pid)
+            /**
+             * @request /ASP/getleaderboard.aspx?type=score&id=combat&pos=1&before=0&after=19
+             */
+            if ($pid == 0)
             {
                 $query = "SELECT id, name, rank_id, country, time, kills, skillscore FROM player WHERE skillscore > 0
 				    ORDER BY skillscore DESC LIMIT " . $min . ", " . $max;
@@ -222,6 +246,10 @@ else
                     );
                 }
             }
+            /**
+             * Searching by PID
+             * @request /ASP/getleaderboard.aspx?pid=<PID>&type=score&id=combat
+             */
             else
             {
                 $query = "SELECT id, name, rank_id, country, time, kills, skillscore FROM player WHERE id = {$pid}";
@@ -244,16 +272,21 @@ else
             }
         }
     }
-    # Need weekly score calculations!
+    /**
+     * Need weekly score calculations!
+     *
+     * @todo Implement properly
+     */
     elseif ($type == 'risingstar')
     {
         // Check if the result set is expired
         if (Config::Get('stats_risingstar_refresh') < time())
         {
-            // Call the proceedure to fill the risingstar table
-            $connection->exec("CALL `generate_rising_star`");
             Config::Set('stats_risingstar_refresh', time() + (86400 * 7));
             Config::Save();
+
+            // Call the proceedure to fill the risingstar table
+            $connection->exec("CALL `generate_rising_star`");
         }
 
         // Grab total count
@@ -262,7 +295,10 @@ else
         $Response->writeDataLine($total, time());
         $Response->writeHeaderLine("n", "pid", "nick", "weeklyscore", "totaltime", "date", "playerrank", "countrycode");
 
-        if (!$pid)
+        /**
+         * @request /ASP/getleaderboard.aspx?type=risingstar&pos=1&before=0&after=19
+         */
+        if ($pid == 0)
         {
             $query = <<<SQL
 SELECT pos, player_id, weeklyscore, p.name, p.rank_id, p.country, p.joined, p.time
@@ -285,6 +321,10 @@ SQL;
                 );
             }
         }
+        /**
+         * Searching by PID
+         * @request /ASP/getleaderboard.aspx?pid=<PID>&type=risingstar
+         */
         else
         {
             // Ensure Player exists by PID
@@ -329,7 +369,9 @@ SQL;
         $Response->writeDataLine($result->fetchColumn(), time());
         $Response->writeHeaderLine("n", "pid", "nick", "killswith", "deathsby", "timeplayed", "playerrank", "countrycode");
 
-        // Non-PID serach
+        /**
+         * @request /ASP/getleaderboard.aspx?type=kit&id=0&pos=1&before=0&after=19
+         */
         if ($pid == 0)
         {
             $query = <<<SQL
@@ -355,7 +397,11 @@ SQL;
                 );
             }
         }
-        else // Searching by PID
+        /**
+         * Searching by PID
+         * @request /ASP/getleaderboard.aspx?pid=<PID>&type=kit&id=0
+         */
+        else
         {
             // Ensure Player exists by PID
             $query = "SELECT `id`, `name`, `rank_id`, `country` FROM player WHERE id={$pid} LIMIT 1";
@@ -407,7 +453,10 @@ SQL;
         $Response->writeDataLine($result->fetchColumn(), time());
         $Response->writeHeaderLine("n", "pid", "nick", "killswith", "deathsby", "timeused", "playerrank", "countrycode");
 
-        if (!$pid)
+        /**
+         * @request /ASP/getleaderboard.aspx?type=vehicle&id=0&pos=1&before=0&after=19
+         */
+        if ($pid == 0)
         {
             $query = <<<SQL
 SELECT 
@@ -434,7 +483,11 @@ SQL;
                 );
             }
         }
-        else // Searching by PID
+        /**
+         * Searching by PID
+         * @request /ASP/getleaderboard.aspx?pid=<PID>&type=vehicle&id=0
+         */
+        else
         {
             // Ensure Player exists by PID
             $query = "SELECT `id`, `name`, `rank_id`, `country` FROM player WHERE id={$pid} LIMIT 1";
@@ -487,7 +540,10 @@ SQL;
         # NOTE: EA typo (deathsby=detahsby)
         $Response->writeHeaderLine("n", "pid", "nick", "killswith", "detahsby", "timeused", "accuracy", "playerrank", "countrycode");
 
-        if (!$pid)
+        /**
+         * @request /ASP/getleaderboard.aspx?type=weapon&id=0&pos=1&before=0&after=19
+         */
+        if ($pid == 0)
         {
             $query = <<<SQL
 SELECT 
@@ -518,7 +574,11 @@ SQL;
                 );
             }
         }
-        else // Searching by PID
+        /**
+         * Searching by PID
+         * @request /ASP/getleaderboard.aspx?pid=<PID>&type=weapon&id=0
+         */
+        else
         {
             // Ensure Player exists by PID
             $query = "SELECT `id`, `name`, `rank_id`, `country` FROM player WHERE id={$pid} LIMIT 1";
