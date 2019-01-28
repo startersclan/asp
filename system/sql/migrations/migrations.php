@@ -30,9 +30,16 @@ return [
     ],
     "3.0.4" => [
         "comment" => "Added lastseen column to server, and lastupdate to stats_provider tables.",
-        "up" => null,
-        "up_string" => "",
+        "up" => "30050",
+        "up_string" => "3.0.5",
         "down" => "30030",
         "down_string" => "3.0.3",
+    ],
+    "3.0.5" => [
+        "comment" => "Adjusted `round_history_view` to add provider_id.",
+        "up" => null,
+        "up_string" => "",
+        "down" => "30040",
+        "down_string" => "3.0.4",
     ]
 ];

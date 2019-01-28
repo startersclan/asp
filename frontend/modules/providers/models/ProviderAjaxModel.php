@@ -1,4 +1,7 @@
 <?php
+
+use System\DataTables;
+
 /**
  * BF2Statistics ASP Framework
  *
@@ -8,9 +11,7 @@
  *
  */
 
-use System\DataTables;
-
-class ServerAjaxModel
+class ProviderAjaxModel
 {
     /**
      * @var \System\Database\DbConnection The stats database connection
@@ -18,7 +19,7 @@ class ServerAjaxModel
     protected $pdo;
 
     /**
-     * ServerAjaxModel constructor.
+     * ProviderAjaxModel constructor.
      */
     public function __construct()
     {
@@ -27,9 +28,9 @@ class ServerAjaxModel
     }
 
     /**
-     * This method retrieves the played rounds by server id for DataTables
+     * This method retrieves the played rounds by provider id for DataTables
      *
-     * @param int $id the server ID
+     * @param int $id the provider ID
      * @param array $data The GET or POSTS data for DataTables
      *
      * @return array
@@ -50,6 +51,8 @@ class ServerAjaxModel
                 }
             ],
             ['db' => 'map', 'dt' => 'map'],
+            ['db' => 'server_name', 'dt' => 'server'],
+            ['db' => 'provider_id', 'dt' => 'provider_id'],
             ['db' => 'winner', 'dt' => 'winner',
                 'formatter' => function( $d, $row ) {
                     $id = (int)$d;
@@ -88,6 +91,6 @@ class ServerAjaxModel
             ],
         ];
 
-        return DataTables::FetchData($data, $this->pdo, 'round_history_view', 'id', $columns, 'server_id = '. (int)$id);
+        return DataTables::FetchData($data, $this->pdo, 'round_history_view', 'id', $columns, 'provider_id = '. (int)$id);
     }
 }

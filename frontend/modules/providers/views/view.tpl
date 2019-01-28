@@ -18,10 +18,12 @@
                 <a id="unplasma-provider" href="#" class="btn" <?php echo ({provider.plasma} == 1) ? '' : ' style="display: none"'; ?>>
                     <i class="icol-sort"></i> Un-Plasma
                 </a>
+                <a href="/ASP/providers/history/{provider.id}" class="btn"><i class="icol-clock"></i> Round History</a>
                 <a id="auth-addresses" href="#" class="btn dropdown-toggle" data-toggle="dropdown">
                     <i class="icol-cog"></i> Options
                     <span class="caret"></span>
                 </a>
+
                 <ul id="dropdown" class="dropdown-menu pull-right" data-toggle="dropdown">
                     <li><a id="edit-details" href="#"><i class="icol-pencil"></i> Edit Details</a></li>
                     <li><a id="edit-addresses" href="#"><i class="icol-application-osx-terminal"></i> Edit IP Addresses</a></li>

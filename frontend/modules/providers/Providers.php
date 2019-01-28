@@ -21,6 +21,9 @@ class Providers extends Controller
      */
     protected $providerModel;
 
+    /** @var ProviderAjaxModel */
+    protected $ajaxModel;
+
     /**
      * @protocol    ANY
      * @request     /ASP/providers
@@ -135,6 +138,79 @@ class Providers extends Controller
 
         // Send output
         $view->render();
+    }
+
+    /**
+     * @protocol    GET
+     * @request     /ASP/providers/history/$id
+     * @output      HTML
+     *
+     * @param int $id The server ID
+     */
+    public function getHistory($id = 0)
+    {
+        // Ensure correct format for ID
+        $id = (int)$id;
+        if ($id == 0)
+        {
+            Response::Redirect('providers');
+            die;
+        }
+
+        // Require database
+        $this->requireDatabase();
+
+        // Load view
+        $view = new View('history', 'providers');
+        $view->set('providerId', $id);
+
+        // Attach needed scripts for the form
+        $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");
+        $view->attachScript("/ASP/frontend/modules/providers/js/history.js");
+
+        // Attach needed stylesheets
+        $view->attachStylesheet("/ASP/frontend/modules/players/css/links.css");
+
+        // Send output
+        $view->render();
+    }
+
+    /**
+     * @protocol    POST
+     * @request     /ASP/providers/history
+     * @output      json
+     */
+    public function postHistory($id = 0)
+    {
+        // Make sure we aren't logging into this page
+        if ($_POST['action'] !== 'list')
+        {
+            $this->getHistory($id);
+            return;
+        }
+
+        // Require a database connection
+        $this->requireDatabase(true);
+
+        // Attach Model
+        $this->loadModel('ProviderAjaxModel', 'providers', 'ajaxModel');
+
+        // Get provider id
+        $providerId = (int)$_POST['providerId'];
+
+        try
+        {
+            $data = $this->ajaxModel->getRoundList($providerId, $_POST);
+            echo json_encode($data);
+        }
+        catch (Exception $e)
+        {
+            // Log Exception
+            System::LogException($e);
+
+            // Send error message to client
+            echo json_encode(['error' => $e->getMessage()]);
+        }
     }
 
     /**
