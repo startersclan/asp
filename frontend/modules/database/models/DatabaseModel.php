@@ -11,6 +11,7 @@
 use System\Collections\Dictionary;
 use System\Database;
 use System\Database\SqlFileParser;
+use System\Database\UpdateOrInsertQuery;
 use System\IO\Directory;
 use System\IO\File;
 use System\IO\Path;
@@ -84,9 +85,11 @@ class DatabaseModel
             $size = $row["Data_length"] + $row["Index_length"];
             $return[] = [
                 'name' => $row['Name'],
-                'size' => $this->toFilesize($size),
+                'size' => $size,
+                'filesize' => $this->toFilesize($size),
                 'rows' => number_format($rowCount),
-                'avg_row_length' => $this->toFilesize($row['Avg_row_length']),
+                'avg_row_filesize' => $this->toFilesize($row['Avg_row_length']),
+                'avg_row_length' => $row['Avg_row_length'],
                 'engine' => $row['Engine']
             ];
         }
@@ -194,7 +197,12 @@ class DatabaseModel
             // Reset auto increments
             $pdo->exec("ALTER TABLE `player` AUTO_INCREMENT = 2900000;");
             $pdo->exec("ALTER TABLE `server` AUTO_INCREMENT = 1;");
+            $pdo->exec("ALTER TABLE `stats_provider` AUTO_INCREMENT = 1;");
             $pdo->exec("ALTER TABLE `round` AUTO_INCREMENT = 1;");
+            $pdo->exec("ALTER TABLE `failed_snapshot` AUTO_INCREMENT = 1;");
+            $pdo->exec("ALTER TABLE `risingstar` AUTO_INCREMENT = 1;");
+            $pdo->exec("ALTER TABLE `battlespy_report` AUTO_INCREMENT = 1;");
+            $pdo->exec("ALTER TABLE `battlespy_message` AUTO_INCREMENT = 1;");
 
             // Process each upgrade only if the version is newer
             foreach (self::$BackupTables as $table)
@@ -224,11 +232,21 @@ class DatabaseModel
 
     /**
      * Clears all *STATS* related data from the stats database
+     *
+     * @param bool $preserveAccounts if true, accounts in the players table will remain
+     * @param bool $preserveProviders if true, all provider information will remain
+     * @param bool $preserveServers if true, all server information will remain
+     *
+     * @throws Exception
      */
-    public function clearStatsTables()
+    public function clearStatsTables($preserveAccounts = false, $preserveProviders = false, $preserveServers = false)
     {
         // Grab database
         $pdo = Database::GetConnection('stats');
+
+        // Check sanity
+        if ($preserveServers && !$preserveProviders)
+            throw new ArgumentException('Cannot delete stats_providers but not servers!');
 
         try
         {
@@ -238,14 +256,91 @@ class DatabaseModel
             // Clear old stuff
             foreach (self::$ClearTables as $table)
             {
-                /** @noinspection SqlResolve */
-                $pdo->exec("DELETE FROM `{$table}`;");
+                if ($table == 'player' && $preserveAccounts)
+                {
+                    // Reset all player stats
+                    $query = new UpdateOrInsertQuery($pdo, 'player');
+                    $query->set('time', '=', 0);
+                    $query->set('rounds', '=', 0);
+                    $query->set('rank_id', '=', 0);
+                    $query->set('score', '=', 0);
+                    $query->set('cmdscore', '=', 0);
+                    $query->set('skillscore', '=', 0);
+                    $query->set('teamscore', '=', 0);
+                    $query->set('kills', '=', 0);
+                    $query->set('wins', '=', 0);
+                    $query->set('losses', '=', 0);
+                    $query->set('deaths', '=', 0);
+                    $query->set('captures', '=', 0);
+                    $query->set('captureassists', '=', 0);
+                    $query->set('neutralizes', '=', 0);
+                    $query->set('neutralizeassists', '=', 0);
+                    $query->set('defends', '=', 0);
+                    $query->set('damageassists', '=', 0);
+                    $query->set('heals', '=', 0);
+                    $query->set('revives', '=', 0);
+                    $query->set('resupplies', '=', 0);
+                    $query->set('repairs', '=', 0);
+                    $query->set('targetassists', '=', 0);
+                    $query->set('driverspecials', '=', 0);
+                    $query->set('teamkills', '=', 0);
+                    $query->set('teamdamage', '=', 0);
+                    $query->set('teamvehicledamage', '=', 0);
+                    $query->set('suicides', '=', 0);
+                    $query->set('cmdtime', '=', 0);
+                    $query->set('sqltime', '=', 0);
+                    $query->set('sqmtime', '=', 0);
+                    $query->set('lwtime', '=', 0);
+                    $query->set('timepara', '=', 0);
+                    $query->set('mode0', '=', 0);
+                    $query->set('mode1', '=', 0);
+                    $query->set('mode2', '=', 0);
+                    $query->set('bestscore', '=', 0);
+                    $query->set('deathstreak', '=', 0);
+                    $query->set('killstreak', '=', 0);
+                    $query->executeUpdate();
+                }
+                else if ($table == 'stats_provider' && $preserveProviders)
+                {
+                    $query = new UpdateOrInsertQuery($pdo, 'stats_provider');
+                    $query->set('lastupdate', '=', 0);
+                    $query->executeUpdate();
+                }
+                else if ($table == 'server' && $preserveServers)
+                {
+                    $query = new UpdateOrInsertQuery($pdo, 'server');
+                    $query->set('lastupdate', '=', 0);
+                    $query->executeUpdate();
+                }
+                else
+                {
+                    /** @noinspection SqlResolve */
+                    $pdo->exec("DELETE FROM `{$table}`;");
+                }
             }
 
             // Reset auto increments
-            $pdo->exec("ALTER TABLE `player` AUTO_INCREMENT = 29000000;");
-            $pdo->exec("ALTER TABLE `server` AUTO_INCREMENT = 1;");
             $pdo->exec("ALTER TABLE `round` AUTO_INCREMENT = 1;");
+            $pdo->exec("ALTER TABLE `failed_snapshot` AUTO_INCREMENT = 1;");
+            $pdo->exec("ALTER TABLE `risingstar` AUTO_INCREMENT = 1;");
+            $pdo->exec("ALTER TABLE `battlespy_report` AUTO_INCREMENT = 1;");
+            $pdo->exec("ALTER TABLE `battlespy_message` AUTO_INCREMENT = 1;");
+
+            // Only reset auto increment on the player table if we deleted everything
+            if (!$preserveAccounts)
+            {
+                $pdo->exec("ALTER TABLE `player` AUTO_INCREMENT = 2900000;");
+            }
+
+            if (!$preserveProviders)
+            {
+                $pdo->exec("ALTER TABLE `stats_provider` AUTO_INCREMENT = 1;");
+            }
+
+            if (!$preserveServers)
+            {
+                $pdo->exec("ALTER TABLE `server` AUTO_INCREMENT = 1;");
+            }
 
             // Commit changes
             $pdo->commit();

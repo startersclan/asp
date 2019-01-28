@@ -18,9 +18,9 @@
                 {tables}
                 <tr>
                     <td>{name}</td>
-                    <td>{size}</td>
+                    <td data-order="{size}">{filesize}</td>
                     <td>{rows}</td>
-                    <td>{avg_row_length}</td>
+                    <td data-order="{avg_row_length}">{avg_row_filesize}</td>
                     <td>{engine}</td>
                 </tr>
                 {/tables}

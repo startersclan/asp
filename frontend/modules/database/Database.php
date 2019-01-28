@@ -244,7 +244,12 @@ class Database extends Controller
     {
         // Create view
         $view = new View('clear', 'database');
+
+        // Attach needed scripts for the form
+        $view->attachScript("/ASP/frontend/js/jquery.form.js");
         $view->attachScript("/ASP/frontend/modules/database/js/clear.js");
+
+        // Draw
         $view->render();
     }
 
@@ -273,7 +278,15 @@ class Database extends Controller
         {
             // Load model, and call method
             $this->loadModel('DatabaseModel', 'database');
-            $this->databaseModel->clearStatsTables();
+
+            // Convert to dictionary
+            $data = new \System\Collections\Dictionary(true, $_POST);
+            $acnts = $data->getValueOrDefault('accounts', 'off');
+            $provs = $data->getValueOrDefault('providers', 'off');
+            $servs = $data->getValueOrDefault('servers', 'off');
+
+            // Process
+            $this->databaseModel->clearStatsTables($acnts == 'on', $provs == 'on', $servs == 'on');
 
             // Tell the client that we were successful
             $this->sendJsonResponse(true, 'Stats Data Cleared Successfully!');

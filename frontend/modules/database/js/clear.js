@@ -18,58 +18,50 @@
             });
         }
 
-        $("#clear").on('click', function(){
-            // Show dialog form
-            $("#ajax-dialog").dialog("option", { modal: true, position: 'center center' }).dialog("open");
+        // Ajax Form
+        // noinspection JSJQueryEfficiency
+        $("#clearDatabase").ajaxForm({
+            data: { ajax: true },
+            beforeSubmit: function () {
+                // Show dialog form
+                $("#ajax-dialog").dialog("option", { modal: true, position: 'center center' }).dialog("open");
+                return true;
+            },
+            success: function (response) {
+                // Parse the JSON response
+                var result = jQuery.parseJSON(response);
+                if (result.success === true) {
+                    $('#jui-global-message')
+                        .attr('class', 'alert success')
+                        .html(result.message)
+                        .append('<span class="close-bt"></span>')
+                        .slideDown(500);
+                }
+                else {
+                    $('#jui-global-message')
+                        .attr('class', 'alert error')
+                        .html(result.message)
+                        .append('<span class="close-bt"></span>')
+                        .slideDown(500);
+                }
 
-            // Disable button
-            $("#clear").prop('disabled', true);
+                // Close dialog
+                $("#ajax-dialog").dialog("close");
+            },
+            error: function() {
+                $('#jui-message')
+                    .attr('class', 'alert error')
+                    .html('AJAX Error! Please check the console log.')
+                    .append('<span class="close-bt"></span>')
+                    .slideDown(500);
 
-            // Tell the backend to perform the backup
-            $.post( "/ASP/database/clear", { action: "clear", ajax: true })
-                .done(function( data ) {
-                    // Parse response
-                    var result = jQuery.parseJSON(data);
-                    if (result.success === false) {
-                        $('#jui-global-message')
-                            .attr('class', 'alert error')
-                            .html(result.message)
-                            .append('<span class="close-bt"></span>')
-                            .slideDown(500);
-                    }
-                    else {
-                        $('#jui-global-message')
-                            .attr('class', 'alert success')
-                            .html(result.message)
-                            .append('<span class="close-bt"></span>')
-                            .slideDown(500);
-                    }
+                // Close dialog
+                $("#ajax-dialog").dialog("close");
+            },
+            complete: function () {
 
-                    // Close dialog
-                    $("#ajax-dialog").dialog("close");
-                })
-                .fail(function( jqXHR ) {
-                    var result = jQuery.parseJSON(jqXHR.responseText);
-                    if (result != null)
-                    {
-                        $('#jui-global-message')
-                            .attr('class', 'alert error')
-                            .html(result.message)
-                            .append('<span class="close-bt"></span>')
-                            .slideDown(500);
-                    }
-                    else
-                    {
-                        $('#jui-global-message')
-                            .attr('class', 'alert error')
-                            .html("An Error Occurred. Please check the ASP error log for details.")
-                            .append('<span class="close-bt"></span>')
-                            .slideDown(500);
-                    }
-
-                    // Close dialog
-                    $("#ajax-dialog").dialog("close");
-                });
+            },
+            timeout: 30000
         });
 
     });
