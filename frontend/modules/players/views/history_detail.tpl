@@ -6,7 +6,7 @@
         <div class="table-container">
             <div class="left">
                 <img style="height: 96px;" src="/ASP/frontend/images/maps/{round.lc_mapname}.png"/>
-                <span style="font-weight: bold; font-size: large; margin-left: 15px;">{round.mapname}</span>
+                <span style="font-weight: bold; font-size: large; margin-left: 15px;">{round.map_display_name}</span>
             </div>
             <div class="center">
                 <div class="table-container">

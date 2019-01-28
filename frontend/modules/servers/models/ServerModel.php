@@ -125,9 +125,10 @@ SQL;
     {
         $id = (int)$id;
         $query = <<<SQL
-SELECT s.*, p.name AS provider_name, p.authorized AS provider_authorized, p.plasma 
+SELECT s.*, p.name AS provider_name, p.authorized AS provider_authorized, p.plasma, COUNT(r.id) AS `snapshots`
 FROM `server` AS s
   LEFT JOIN stats_provider AS p on s.provider_id = p.id
+  LEFT JOIN round AS r on s.id = r.server_id
 WHERE s.id={$id}
 SQL;
         $server = $this->pdo->query($query)->fetch();

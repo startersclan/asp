@@ -51,7 +51,7 @@
             <li>
                 <span class="key"><i class="icon-history-2"></i> Last Seen</span>
                 <span class="val">
-					<span class="text-nowrap">{server.last_update}</span>
+					<span class="text-nowrap">{server.last_seen}</span>
 				</span>
             </li>
             <li>
@@ -68,7 +68,7 @@
 </div>
 <div class="mws-panel grid_3 mws-collapsible">
     <div class="mws-panel-header">
-        <span><i class="icon-business-card"></i> Stats Provider Information</span>
+        <span><i class="icon-business-card"></i> Server Ranked Information</span>
     </div>
     <div class="mws-panel-toolbar">
         <div class="btn-toolbar">
@@ -97,6 +97,22 @@
                 <span class="key"><i class="icon-pushpin"></i> Plasma Server</span>
                 <span class="val">
                     <label id="plasma" class="label label-{server.plasma_badge}">{server.plasma_text}</label>
+				</span>
+            </li>
+            <li>
+                <span class="key" ><i class="icon-retweet"></i>
+                    <span style="border-bottom: 1px dotted #000;" rel="tooltip" data-placement="right" title="Ranked Games by this Server">Games Processed</span>
+                </span>
+                <span class="val">
+					<span class="text-nowrap">{server.snapshots}</span>
+				</span>
+            </li>
+            <li>
+                <span class="key"><i class="icon-history-2"></i>
+                    <span style="border-bottom: 1px dotted #000;" rel="tooltip" data-placement="right" title="By this server">Last Ranked Game</span>
+                </span>
+                <span class="val">
+					<span class="text-nowrap">{server.last_update}</span>
 				</span>
             </li>
         </ul>

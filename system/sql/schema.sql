@@ -167,6 +167,7 @@ CREATE TABLE `stats_provider` (
   `name` VARCHAR(100) DEFAULT NULL,                   -- Provider name
   `authorized` TINYINT(1) NOT NULL DEFAULT 0,         -- Auth Token is allowed to post stats data to the ASP
   `plasma` TINYINT(1) NOT NULL DEFAULT 0,             -- Plasma all of their servers?
+  `lastupdate` INT UNSIGNED NOT NULL DEFAULT 0,       -- Timestamp of the last ranked game posted
   PRIMARY KEY(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -192,8 +193,9 @@ CREATE TABLE `server` (
   `ip` VARCHAR(46) NOT NULL DEFAULT '',               -- IP Address
   `gameport` SMALLINT UNSIGNED DEFAULT 16567,
   `queryport` SMALLINT UNSIGNED NOT NULL DEFAULT 29900,
-  `lastupdate` INT UNSIGNED NOT NULL DEFAULT 0,
+  `lastupdate` INT UNSIGNED NOT NULL DEFAULT 0,       -- Timestamp of the last ranked game posted
   `online` TINYINT(1) NOT NULL DEFAULT 0,             -- Is currently online, updated by MasterServer
+  `lastseen` INT UNSIGNED NOT NULL DEFAULT 0,         -- Timestamp last seen by the MasterServer
   PRIMARY KEY(`id`),
   FOREIGN KEY(`provider_id`) REFERENCES stats_provider(`id`),
   CONSTRAINT `unique_ip_port` UNIQUE (`ip`, `queryport`)

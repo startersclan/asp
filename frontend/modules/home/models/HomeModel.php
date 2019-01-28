@@ -57,6 +57,10 @@ class HomeModel
         $q = $this->pdo->query("SHOW TABLE STATUS");
         while ($row = $q->fetch())
         {
+            // Views will return null here
+            if ($row["Data_length"] == null)
+                continue;
+
             $size += $row["Data_length"] + $row["Index_length"];
         }
         return $size;

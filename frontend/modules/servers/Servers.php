@@ -103,7 +103,8 @@ class Servers extends Controller
             die;
         }
 
-        // Set last seen
+        // Additional information to display
+        $server['last_seen'] = TimeHelper::FormatDifference((int)$server['lastseen'], time());
         $server['last_update'] = TimeHelper::FormatDifference((int)$server['lastupdate'], time());
         $server['server_auth_badge'] = ($server['server_authorized']) ? 'success' : 'important';
         $server['server_auth_text'] = ($server['server_authorized']) ? 'Authorized Stats Server' : 'Unauthorized Stats Server';

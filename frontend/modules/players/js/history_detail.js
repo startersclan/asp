@@ -24,7 +24,7 @@
         $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
 
         // Enable popovers
-        $("[rel=popover]").popover({html: true});
+        $("[rel=popover]").popover({ html: true });
 
         // Kill Death Ratio Chart
         if ($("#mws-pie-1").length > 0) {

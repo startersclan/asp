@@ -241,4 +241,4 @@ INSERT INTO `server` VALUES (1, 1, 'Local Server', '127.0.0.1', 16567, 29900, 0,
 --
 -- Dumping data for table `_version`
 --
-INSERT INTO `_version`(`updateid`, `version`) VALUES (30030, '3.0.3');
+INSERT INTO `_version`(`updateid`, `version`) VALUES (30040, '3.0.4');

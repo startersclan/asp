@@ -804,10 +804,26 @@ class Snapshot extends GameResult
                 $query->set('name', '=', Text\StringHelper::SubStrWords($this->serverName, 100));
                 $query->set('gameport', '=', $this->serverPort);
                 $query->set('queryport', '=', $this->queryPort);
-                $query->set('lastupdate', 'g', time());
+                $query->set('lastupdate', '=', time());
                 $query->where('id', '=', $this->serverId);
                 $query->executeUpdate();
             }
+            else
+            {
+                $query = new UpdateOrInsertQuery($connection, 'server');
+                $query->set('lastupdate', '=', time());
+                $query->where('id', '=', $this->serverId);
+                $query->executeUpdate();
+            }
+
+            // ********************************
+            // Process ProviderInfo
+            // ********************************
+            $this->logWriter->logDebug("Updating stats provider information");
+            $query = new UpdateOrInsertQuery($connection, 'stats_provider');
+            $query->set('lastupdate', '=', time());
+            $query->where('id', '=', $this->providerId);
+            $query->executeUpdate();
 
             // ********************************
             // Save BattleSpy Reports

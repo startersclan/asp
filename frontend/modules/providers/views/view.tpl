@@ -72,6 +72,12 @@
                 {/addresses}
 				</span>
             </li>
+            <li>
+                <span class="key"><i class="icon-history-2"></i> Last Ranked Game</span>
+                <span class="val">
+					<span class="text-nowrap">{provider.last_update}</span>
+				</span>
+            </li>
         </ul>
     </div>
 </div>
@@ -82,7 +88,7 @@
         <span><i class="icon-graph"></i> Games Processed</span>
     </div>
     <div class="mws-panel-body">
-        <div id="mws-line-chart" style="width:100%; height:210px; "></div>
+        <div id="mws-line-chart" style="width:100%; height:255px; "></div>
         <div class="mws-form-row">
             <div style="text-align: center; margin-top: 15px">
                 <div class="mws-form-item">
@@ -107,12 +113,13 @@
             <tr>
                 <th style="width: 4%">Id</th>
                 <th>Server Name</th>
-                <th style="width: 12%">Server IP Address</th>
+                <th style="width: 11%">Server IP Address</th>
                 <th style="width: 7%">Game Port</th>
                 <th style="width: 7%">Query Port</th>
                 <th style="width: 8%">Address Status</th>
+                <th style="width: 12%">Last Ranked Game</th>
                 <th style="width: 6%">Games</th>
-                <th style="width: 7%">Actions</th>
+                <th style="width: 6%">Actions</th>
             </tr>
             </thead>
             <tbody>
@@ -124,6 +131,7 @@
                     <td>{gameport}</td>
                     <td>{queryport}</td>
                     <td><span class="badge badge-{auth_badge}">{auth_text}</span></td>
+                    <td data-order="{lastupdate}">{last_update}</td>
                     <td>{snapshots}</td>
                     <td>
                     <span class="btn-group">

@@ -11,6 +11,7 @@
 use System\Collections\Dictionary;
 use System\Controller;
 use System\Response;
+use System\TimeHelper;
 use System\View;
 
 class Providers extends Controller
@@ -94,6 +95,7 @@ class Providers extends Controller
         }
 
         // Set last seen
+        $provider['last_update'] = TimeHelper::FormatDifference((int)$provider['lastupdate'], time());
         $provider['auth_badge'] = ($provider['authorized']) ? 'success' : 'important';
         $provider['auth_text'] = ($provider['authorized']) ? 'Authorized' : 'Not Authorized';
         $provider['plasma_badge'] = ($provider['plasma']) ? 'success' : 'inactive';

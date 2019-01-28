@@ -11,6 +11,7 @@
 use System\BF2\Player;
 use System\Keygen\Keygen;
 use System\Net\IPAddress;
+use System\TimeHelper;
 
 /**
  * Server Model
@@ -684,7 +685,7 @@ SQL;
             $addresses[] = $row['address'];
         }
 
-        // Add authorized tag per server
+        // Add additional tags per server
         for ($i = 0; $i < count($servers); $i++)
         {
             $serverIp = IPAddress::Parse($servers[$i]['ip']);
@@ -700,6 +701,8 @@ SQL;
             }
 
             $servers[$i]['authorized'] = ($auth) ? 1 : 0;
+            $servers[$i]['last_seen'] = TimeHelper::FormatDifference((int)$servers[$i]['lastseen'], time());
+            $servers[$i]['last_update'] = TimeHelper::FormatDifference((int)$servers[$i]['lastupdate'], time());
         }
 
         return $servers;

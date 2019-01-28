@@ -18,9 +18,21 @@
         $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
 
         // Data Tables
-        var Table = $(".mws-datatable-fn").DataTable({
+        var table = $(".mws-datatable-fn").DataTable({
             pagingType: "full_numbers",
-            bSort: false
+            bSort: true,
+            order: [[ 0, "asc" ]], // Order by id
+            columnDefs: [
+                { "searchable": false, "orderable": true, "targets": 0 },
+                { "searchable": true, "orderable": false, "targets": 1 },
+                { "searchable": false, "orderable": false, "targets": 2 },
+                { "searchable": false, "orderable": false, "targets": 3 },
+                { "searchable": false, "orderable": false, "targets": 4 },
+                { "searchable": false, "orderable": false, "targets": 5 },
+                { "searchable": false, "orderable": true, "targets": 6 },
+                { "searchable": false, "orderable": true, "targets": 7 },
+                { "searchable": false, "orderable": false, "targets": 8 }
+            ]
         }).on( 'draw.dt', function () {
             //noinspection JSUnresolvedVariable
             $.fn.tooltip && $('[rel="tooltip"]').tooltip({ "delay": { show: 500, hide: 0 } });
@@ -605,7 +617,7 @@
                                             }
                                             else {
                                                 // Remove each row
-                                                Table.row( selectedRowNode ).remove().draw();
+                                                table.row( selectedRowNode ).remove().draw();
                                             }
                                         })
                                         .fail(function( jqXHR ) {
