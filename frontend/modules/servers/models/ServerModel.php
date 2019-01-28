@@ -9,6 +9,8 @@
  */
 use GameQ\GameQ;
 use System\BF2\Player;
+use System\Collections\Dictionary;
+use System\IO\Path;
 use System\Net\IPAddress;
 use System\TimeHelper;
 
@@ -34,6 +36,9 @@ class ServerModel
      * @var int Time stamp of two weeks ago
      */
     private static $TwoWeekAgo = 0;
+
+    /** @var Dictionary */
+    private static $Abbreviations = null;
 
     /**
      * ServerModel constructor.
@@ -389,83 +394,31 @@ SQL;
      *
      * @return bool
      */
-    public function getArmy(&$name, &$flag)
+    public function getArmyFromAbbreviation(&$name, &$flag)
     {
-        switch (strtolower($name))
+        // Load abbreviations if we haven't already
+        if (self::$Abbreviations == null)
         {
-            case "mec":
-                $flag = 1;
-                $name = "Middle Eastern Coalition";
-                return true;
+            $abvs = include Path::Combine(SYSTEM_PATH, 'config', 'armyAbbreviationMap.php');
+            self::$Abbreviations = new Dictionary(true, $abvs);
+        }
 
-            case "usmc":
-            case "us":
-            case "usa":
-                $flag = 0;
-                $name = "United States Marine Corps";
-                return true;
+        // lowercase name
+        $name = strtolower($name);
 
-            case "ch":
-                $flag = 2;
-                $name = "People's Liberation Army";
-                return true;
-
-            case "seal":
-                $flag = 0;
-                $name = "Seals";
-                return true;
-
-            case "sas":
-                $flag = 4;
-                $name = "SAS";
-                return true;
-
-            case "spetz":
-                $flag = 5;
-                $name = "Spetsnaz";
-                return true;
-
-            case "mecsf":
-                $flag = 1;
-                $name =  "Middle Eastern Coalition SF";
-                return true;
-
-            case "chinsurgent":
-            case "rebels":
-                $flag = 7;
-                $name = "Rebels";
-                return true;
-
-            case "meinsurgent":
-            case "insurgents":
-                $flag = 8;
-                $name = "Insurgents";
-                return true;
-
-            case "eu":
-                $flag = 9;
-                $name = "European Union";
-                return true;
-
-            case "ger":
-                $flag = 10;
-                $name = "German Forces";
-                return true;
-
-            case "ukr":
-                $flag = 12;
-                $name = "Ukrainian Forces";
-                return true;
-
-            case "un":
-                $flag = 13;
-                $name = "United Nations";
-                return true;
-
-            default:
-                $flag = -1;
-                return false;
-                break;
+        // Check if abbreviation is mapped
+        if (self::$Abbreviations->containsKey($name))
+        {
+            $data = self::$Abbreviations[$name];
+            $name = $data['name'];
+            $flag = $data['flag'];
+            return true;
+        }
+        else
+        {
+            $flag = -1;
+            $name = "Unknown";
+            return false;
         }
     }
 

@@ -60,7 +60,6 @@
 					<span class="text-nowrap">
                         <label id="status" class="label label-inactive">Loading...</label>
                     </span>
-                     , <label id="plasma" class="label label-{server.server_auth_badge}">{server.server_auth_text}</label>
 				</span>
             </li>
         </ul>
@@ -90,7 +89,7 @@
             <li>
                 <span class="key"><i class="icon-check"></i> Ranked Status</span>
                 <span class="val">
-					<label id="authorized" class="label label-{server.provider_auth_badge}">{server.provider_auth_text}</label>
+					<label id="authorized" class="label label-{server.server_auth_badge}">{server.server_auth_text}</label>
 				</span>
             </li>
             <li>

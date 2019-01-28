@@ -107,9 +107,7 @@ class Servers extends Controller
         $server['last_seen'] = TimeHelper::FormatDifference((int)$server['lastseen'], time());
         $server['last_update'] = TimeHelper::FormatDifference((int)$server['lastupdate'], time());
         $server['server_auth_badge'] = ($server['server_authorized']) ? 'success' : 'important';
-        $server['server_auth_text'] = ($server['server_authorized']) ? 'Authorized Stats Server' : 'Unauthorized Stats Server';
-        $server['provider_auth_badge'] = ($server['provider_authorized']) ? 'success' : 'important';
-        $server['provider_auth_text'] = ($server['provider_authorized']) ? 'Authorized' : 'Not Authorized';
+        $server['server_auth_text'] = ($server['server_authorized']) ? 'Authorized' : 'Not Authorized';
         $server['plasma_badge'] = ($server['plasma']) ? 'success' : 'inactive';
         $server['plasma_text'] = ($server['plasma']) ? 'Yes' : 'No';
 
@@ -341,18 +339,28 @@ class Servers extends Controller
 
         // Try and get team 1's real name and flag
         $name = $result['server']['bf2_team1'];
-        if ($this->serverModel->getArmy($name, $flag))
+        if ($this->serverModel->getArmyFromAbbreviation($name, $flag))
         {
             $view->set('team1name', $name);
             $view->set('team1flag', $flag);
         }
+        else
+        {
+            $view->set('team1name', $result['server']['bf2_team1']);
+            $view->set('team1flag', -1);
+        }
 
         // Try and get team 2's real name and flag
         $name = $result['server']['bf2_team2'];
-        if ($this->serverModel->getArmy($name, $flag))
+        if ($this->serverModel->getArmyFromAbbreviation($name, $flag))
         {
             $view->set('team2name', $name);
             $view->set('team2flag', $flag);
+        }
+        else
+        {
+            $view->set('team2name', $result['server']['bf2_team2']);
+            $view->set('team2flag', -1);
         }
 
         // Send output
