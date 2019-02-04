@@ -55,6 +55,20 @@ class Config
     }
 
     /**
+     * Returns the variable ($key) value in the config file.
+     *
+     * @param string $key variable name. Value is returned
+     * @param mixed $default the default value to return if the key doesn't exist
+     *
+     * @return mixed
+     */
+    public static function GetOrDefault($key, $default)
+    {
+        // Check if the variable exists
+        return (array_key_exists($key, self::$data)) ? self::$data[$key] : $default;
+    }
+
+    /**
      * Returns all variable keys and values in the config file.
      *
      * @return array
@@ -113,12 +127,14 @@ class Config
             }
 
             // Check for array values (admin_hosts, game_hosts, and stats_local_pids)
-            elseif ($key == 'admin_hosts' || $key == 'game_hosts' || $key == 'stats_local_pids')
+            elseif ($key == 'admin_hosts' || $key == 'game_hosts' || $key == 'stats_local_pids' || $key == 'battlespy_weapons')
             {
                 $val_r = (!is_array($val)) ? explode("\n", $val) : $val;
                 $val_s = "";
                 foreach ($val_r as $item)
-                    $val_s .= "'" . trim($item) . "',";
+                {
+                    $val_s .=  (is_int($item)) ? "{$item}," : "'" . trim($item) . "',";
+                }
 
                 $cfg .= "\$$key = array(" . substr($val_s, 0, -1) . ");\n";
             }

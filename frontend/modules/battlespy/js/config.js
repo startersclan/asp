@@ -56,6 +56,12 @@
                     required: true,
                     digits: true,
                     min: 0
+                },
+                cfg__battlespy_max_accuracy: {
+                    required: true,
+                    digits: true,
+                    min: 0,
+                    max: 80
                 }
             },
             invalidHandler: function (form, validator) {

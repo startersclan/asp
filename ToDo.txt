@@ -1,9 +1,15 @@
 Must Do's:
  - Add a blacklist option for hiding servers in the server browser.
- - Add more global player statistics, like Kit statistics (pie chart), weapon statistics etc etc
+ - Add more global player statistics
+ --> Kits used Statistics Pie Chart
+ --> Weapon used Statistics Pie Chart
+ --> Vehicle used Statistics Pie Chart
+ --> Vehicle vs Weapon Pie Chart
+ --> Wins by Army Pie Chart
+ --> Expansion / Mod played pie chart
+ --> Top played maps
+ --> Average SPM
 
 Nice To Have's:
- - Snapshot module face lift. Ability to view round details of a round (from a snapshot) before it
-    is saved into the database (requiring manual admin authorization).
  - Create a system where a round played with too many BattleSpy flags will not be saved, but rather have to be
     sanctioned after review by the stats admin before being processed into the database.

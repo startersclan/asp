@@ -406,7 +406,7 @@ class View
             foreach ($variables as $key => $value)
             {
                 // If $value is an array, we need to process it as so
-                if (is_array($value))
+                if (is_array($value) || $value instanceof \ArrayAccess)
                 {
                     // First, we check for array blocks (Foreach blocks), you do so by checking: {/key}
                     // .. if one exists we preg_match the block
@@ -469,7 +469,7 @@ class View
                             if ($replacement === "_PARSER_false_") continue;
 
                             // If our replacement is a array, it will cause an error, so just return "array"
-                            if (is_array($replacement)) $replacement = "array";
+                            if (is_array($replacement) || $value instanceof \ArrayAccess) $replacement = "array";
 
                             // Main replacement
                             $source = str_replace($match[0], $replacement, $source);
@@ -484,7 +484,7 @@ class View
             foreach ($variables as $key => $value)
             {
                 // We don't handle arrays here
-                if (is_array($value)) continue;
+                if (is_array($value) || $value instanceof \ArrayAccess) continue;
 
                 // Find a match for our key, and replace it with value
                 $match = $this->LDelim . $key . $this->RDelim;
@@ -518,7 +518,7 @@ class View
     protected function parseArray($key, $array)
     {
         // Check to see if this is even an array first
-        if (!is_array($array)) return $array;
+        if (!is_array($array) || !($array instanceof \ArrayAccess)) return $array;
 
         // Check if this is a multi-dimensional array
         if (strpos($key, '.') !== false)
@@ -594,7 +594,7 @@ class View
         foreach ($val as $key => $value)
         {
             // if value isn't an array, then we just replace {value} with string
-            if (is_array($value))
+            if (is_array($value) || $value instanceof \ArrayAccess)
                 // Parse our block. This will catch nested blocks and arrays as well
                 $block = $this->parse($match, $value);
             else

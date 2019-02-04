@@ -41,6 +41,7 @@
                 { "data": "rank" },
                 { "data": "name" },
                 { "data": "country" },
+                { "data": "score" },
                 { "data": "time" },
                 { "data": "kills" },
                 { "data": "deaths" },
@@ -56,7 +57,8 @@
                 { "searchable": false, "targets": 5 },
                 { "searchable": false, "targets": 6 },
                 { "searchable": false, "targets": 7 },
-                { "searchable": false, "orderable": false, "targets": 8 }
+                { "searchable": false, "targets": 8 },
+                { "searchable": false, "orderable": false, "targets": 9 }
             ]
         }).on( 'draw.dt', function () {
             //noinspection JSUnresolvedVariable

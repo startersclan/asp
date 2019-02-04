@@ -135,6 +135,11 @@ class Config extends Controller
                         Cfg::Set($key[1], explode(',', $val));
                         continue;
                     }
+                    else if (is_array($val))
+                    {
+                        Cfg::Set($key[1], array_values($val));
+                        continue;
+                    }
 
                     Cfg::Set($key[1], $val);
                 }

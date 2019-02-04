@@ -223,6 +223,27 @@ abstract class GameResult
     }
 
     /**
+     * Gets a list of players in the snapshot, separated into a 2-dimensional array by ArmyID
+     *
+     * @return array [ armyID => [ System\BF2\Player ] ]
+     */
+    public function getPlayersByArmy()
+    {
+        $players = [];
+        $list = $this->players;
+
+        // Sort players by score
+        usort($list, function($a, $b) { return $b['roundScore'] - $a['roundScore']; });
+
+        foreach ($list as $player)
+        {
+            $players[$player->armyId][] = $player;
+        }
+
+        return $players;
+    }
+
+    /**
      * Fetches a list of vehicles that were used this round, and their respective top player.
      *
      * @return array [ vehicleName => [ 'id', 'pid', 'name', 'rank', 'team', 'kills', 'deaths', 'time', 'roadKills' ] ]
@@ -246,6 +267,7 @@ abstract class GameResult
                         'team' => $player->armyId,
                         'kills' => $data->kills,
                         'deaths' => $data->deaths,
+                        'score' => $data->score,
                         'time' => $data->time,
                         'time_string' => TimeHelper::SecondsToHms($data->time),
                         'roadKills' => $data->roadKills
@@ -281,6 +303,7 @@ abstract class GameResult
                         'team' => $player->armyId,
                         'kills' => $data->kills,
                         'deaths' => $data->deaths,
+                        'score' => $data->score,
                         'time' => $data->time,
                         'time_string' => TimeHelper::SecondsToHms($data->time)
                     ];
@@ -362,8 +385,46 @@ abstract class GameResult
             }
         }
 
-        usort($commanders, function($a, $b) { return $a['score'] - $b['score']; });
+        usort($commanders, function($a, $b) { return $b['score'] - $a['score']; });
         return $commanders;
+    }
+
+    /**
+     * Returns a list of earned awards in this game
+     *
+     * @return array [
+     *      index => [ 'award_id', 'award_name', 'award_type', 'award_level', 'player_id', 'player_rank', 'player_name' ] ]
+     */
+    public function getEarnedAwards()
+    {
+        // Fetch the round awards
+        $awards = [];
+        foreach ($this->players as $player)
+        {
+            foreach ($player->earnedAwards as $id => $level)
+            {
+                // Get our award type.
+                $isMedal = ($id > 2000000 && $id < 3000000);
+                $isBadge = ($id < 2000000);
+
+                $type = 0; // ribbon
+                if ($isBadge) $type = 1;
+                if ($isMedal) $type = 2;
+
+                $awards[] = [
+                    'award_id' => $id,
+                    'award_name' => Battlefield2::GetAwardName($id, $level),
+                    'award_type' => $type,
+                    'award_level' => $level,
+                    'player_id' => $player->id,
+                    'player_name' => $player->name,
+                    'player_rank' => $player->rank,
+                    'player_team' => $player->armyId
+                ];
+            }
+        }
+
+        return $awards;
     }
 
     /**
@@ -378,10 +439,17 @@ abstract class GameResult
      */
     private function _isPlayerBetter(ObjectStat $data, $best)
     {
+        if ($data->score > $best['score'])
+            return true;
+        else if ($data->score < $best['score'])
+            return false;
+
+        /** Scores Match, try kills
         if ($data->kills > $best['kills'])
             return true;
         else if ($data->kills < $best['kills'])
             return false;
+         */
 
         /** Kills Match, try deaths */
 

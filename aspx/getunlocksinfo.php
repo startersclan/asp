@@ -17,6 +17,13 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+/**
+ * This provides details of the players unlocked weapons.
+ *
+ * Accepted URL Parameters:
+ * @param int $pid Unique player ID
+ */
+
 // Namespace
 namespace System;
 

@@ -136,4 +136,72 @@ class StatsData
             }
         }
     }
+
+    /**
+     * Fetches the army name by Id, or false if it does not exist
+     *
+     * @param int $id The item id
+     *
+     * @return bool|string The name of the army, or false if it does not exist
+     */
+    public static function GetArmyNameById($id)
+    {
+        // Only load data if it has not been loaded yet
+        if (self::$NumArmies == 0) self::Load();
+
+        // Get max index, to prevent an index out of bounds error
+        $maxIndex = self::$NumArmies - 1;
+        return ($id > $maxIndex) ? false : self::$ArmyNames[$id];
+    }
+
+    /**
+     * Fetches the kit name by Id, or false if it does not exist
+     *
+     * @param int $id The item id
+     *
+     * @return bool|string The name of the kit, or false if it does not exist
+     */
+    public static function GetKitNameById($id)
+    {
+        // Only load data if it has not been loaded yet
+        if (self::$NumArmies == 0) self::Load();
+
+        // Get max index, to prevent an index out of bounds error
+        $maxIndex = self::$NumKits - 1;
+        return ($id > $maxIndex) ? false : self::$KitNames[$id];
+    }
+
+    /**
+     * Fetches the weapon name by Id, or false if it does not exist
+     *
+     * @param int $id The item id
+     *
+     * @return bool|string The name of the weapon, or false if it does not exist
+     */
+    public static function GetWeaponNameById($id)
+    {
+        // Only load data if it has not been loaded yet
+        if (self::$NumArmies == 0) self::Load();
+
+        // Get max index, to prevent an index out of bounds error
+        $maxIndex = self::$NumWeapons - 1;
+        return ($id > $maxIndex) ? false : self::$WeaponNames[$id];
+    }
+
+    /**
+     * Fetches the vehicle name by Id, or false if it does not exist
+     *
+     * @param int $id The item id
+     *
+     * @return bool|string The name of the vehicle, or false if it does not exist
+     */
+    public static function GetVehicleNameById($id)
+    {
+        // Only load data if it has not been loaded yet
+        if (self::$NumVehicles == 0) self::Load();
+
+        // Get max index, to prevent an index out of bounds error
+        $maxIndex = self::$NumVehicles - 1;
+        return ($id > $maxIndex) ? false : self::$VehicleNames[$id];
+    }
 }

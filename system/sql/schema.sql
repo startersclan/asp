@@ -468,6 +468,7 @@ CREATE TABLE `player_kit` (
   `player_id` INT UNSIGNED NOT NULL,
   `kit_id` TINYINT UNSIGNED NOT NULL,
   `time` INT UNSIGNED NOT NULL DEFAULT 0,
+  `score` INT NOT NULL DEFAULT 0,
   `kills` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `deaths` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`player_id`,`kit_id`),
@@ -568,6 +569,7 @@ CREATE TABLE `player_vehicle` (
   `player_id` INT UNSIGNED NOT NULL,
   `vehicle_id` TINYINT UNSIGNED NOT NULL,
   `time` INT UNSIGNED NOT NULL DEFAULT 0,
+  `score` INT NOT NULL DEFAULT 0,
   `kills` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `deaths` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `roadkills` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
@@ -589,6 +591,7 @@ CREATE TABLE `player_weapon` (
   `player_id` INT UNSIGNED NOT NULL,
   `weapon_id` TINYINT UNSIGNED NOT NULL,
   `time` INT UNSIGNED NOT NULL DEFAULT 0,
+  `score` INT NOT NULL DEFAULT 0,
   `kills` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `deaths` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
   `fired` INT UNSIGNED NOT NULL DEFAULT 0,
@@ -628,6 +631,7 @@ CREATE TABLE `player_kit_history` (
   `round_id` INT UNSIGNED NOT NULL,
   `kit_id` TINYINT UNSIGNED NOT NULL,
   `time` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+  `score` SMALLINT NOT NULL DEFAULT 0,
   `kills` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `deaths` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY(`player_id`,`round_id`,`kit_id`),
@@ -660,6 +664,7 @@ CREATE TABLE `player_vehicle_history` (
   `round_id` INT UNSIGNED NOT NULL,
   `vehicle_id` TINYINT UNSIGNED NOT NULL,
   `time` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `score` SMALLINT NOT NULL DEFAULT 0,
   `kills` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `deaths` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `roadkills` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
@@ -678,6 +683,7 @@ CREATE TABLE `player_weapon_history` (
   `round_id` INT UNSIGNED NOT NULL,
   `weapon_id` TINYINT UNSIGNED NOT NULL,
   `time` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `score` SMALLINT NOT NULL DEFAULT 0,
   `kills` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `deaths` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   `fired` MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
@@ -746,7 +752,7 @@ CREATE OR REPLACE VIEW `top_player_army_view` AS
 
 CREATE OR REPLACE VIEW `top_player_weapon_view` AS
   SELECT pk.*, p.name, p.country, p.rank_id, COALESCE((`hits` * 1.0) / GREATEST(`fired`, 1), 0) AS `accuracy`,
-    COALESCE((pk.kills * 1.0) / GREATEST(pk.deaths, 1), 0) AS `ratio`
+                                             COALESCE((pk.kills * 1.0) / GREATEST(pk.deaths, 1), 0) AS `ratio`
   FROM `player_weapon` AS pk
     JOIN player AS p on pk.player_id = p.id;
 
@@ -768,9 +774,9 @@ CREATE OR REPLACE VIEW `player_awards_view` AS
 
 CREATE OR REPLACE VIEW `round_history_view` AS
   SELECT h.id AS `id`, mi.displayname AS `map`, h.time_end AS `round_end`, h.team1_army_id AS `team1`,
-    h.team2_army_id AS `team2`, h.winner AS `winner`, s.name AS `server_name`, s.id AS `server_id`, s.provider_id,
-    GREATEST(h.tickets1, h.tickets2) AS `tickets`,
-    (SELECT COUNT(*) FROM player_round_history AS prh WHERE prh.round_id = h.id) AS `players`
+         h.team2_army_id AS `team2`, h.winner AS `winner`, s.name AS `server_name`, s.id AS `server_id`, s.provider_id,
+         GREATEST(h.tickets1, h.tickets2) AS `tickets`,
+         (SELECT COUNT(*) FROM player_round_history AS prh WHERE prh.round_id = h.id) AS `players`
   FROM `round` AS h
     LEFT JOIN map AS mi ON h.map_id = mi.id
     LEFT JOIN `server` AS s ON h.server_id = s.id;

@@ -69,6 +69,16 @@ class Battlespy extends \System\Controller
         $view->set('battlespy_max_target_kills', Config::Get('battlespy_max_target_kills'));
         $view->set('battlespy_max_team_kills', Config::Get('battlespy_max_team_kills'));
         $view->set('battlespy_max_awards', Config::Get('battlespy_max_awards'));
+        $view->set('battlespy_max_accuracy', Config::GetOrDefault('battlespy_max_accuracy', 50));
+
+        // Attach Model
+        $this->loadModel('BattlespyModel', 'battlespy', 'model');
+
+        // Attach weapons
+        $weapons = $this->model->getWeaponsConfig();
+        $view->set('weaponsCount', count($weapons));
+        $view->set('weapons', $weapons);
+
 
         // Attach needed scripts for the form
         $view->attachScript("/ASP/frontend/js/jquery.form.js");

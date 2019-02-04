@@ -82,6 +82,48 @@ class Snapshots extends Controller
     }
 
     /**
+     * @protocol    GET
+     * @request     /ASP/snapshots/view/@snapshotFileName
+     * @output      html
+     *
+     * @param string $snapshotFileName the filename without extension
+     */
+    public function view($snapshotFileName = null)
+    {
+        // Load model
+        $this->loadModel('SnapshotsModel', 'snapshots');
+
+        // Load view
+        $view = new View('view', 'snapshots');
+
+        // Sanitize filename
+        $snapshotFileName = str_replace(['.json', '/', '\\'], '', $snapshotFileName);
+
+        // Load info
+        $filePath = Path::Combine(SYSTEM_PATH, 'snapshots', 'unauthorized', $snapshotFileName . '.json');
+        if (!File::Exists($filePath))
+        {
+            \System\Response::Redirect('snapshots');
+            die;
+        }
+
+        // Load snapshot into view
+        $this->snapshotsModel->loadSnapshotIntoView($filePath, $view);
+
+        // Attach needed scripts for the form
+        $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");
+        $view->attachScript("/ASP/frontend/modules/snapshots/js/view.js");
+
+        // Attach needed stylesheets
+        $view->attachStylesheet("/ASP/frontend/css/icons/icol16.css");
+        $view->attachStylesheet("/ASP/frontend/css/icons/icol32.css");
+        $view->attachStylesheet("/ASP/frontend/modules/roundinfo/css/view.css");
+
+        // Send output
+        $view->render();
+    }
+
+    /**
      * @protocol    POST
      * @request     /ASP/snapshots/accept
      * @output      json

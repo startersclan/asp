@@ -37,9 +37,16 @@ return [
     ],
     "3.0.5" => [
         "comment" => "Adjusted `round_history_view` to add provider_id.",
-        "up" => null,
-        "up_string" => "",
+        "up" => "30060",
+        "up_string" => "3.0.6",
         "down" => "30040",
         "down_string" => "3.0.4",
+    ],
+    "3.0.6" => [
+        "comment" => "Added score columns to vehicles and kits.",
+        "up" => null,
+        "up_string" => "",
+        "down" => "30050",
+        "down_string" => "3.0.5",
     ]
 ];

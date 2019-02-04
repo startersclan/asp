@@ -95,7 +95,7 @@ class Snapshot extends GameResult
         StatsData::Load();
 
         // Check snapshot version!
-        if (Version::LessThan($snapshotData['version'], "3.0"))
+        if (Version::LessThan($snapshotData['version'], "3.1"))
             throw new Exception("Incompatible snapshot version: ". $snapshotData['version']);
 
         // Server data
@@ -618,6 +618,7 @@ class Snapshot extends GameResult
                 {
                     // Update main stats record
                     $query->set('time', '+', $object->time);
+                    $query->set('score', '+', $object->score);
                     $query->set('kills', '+', $object->kills);
                     $query->set('deaths', '+', $object->deaths);
                     $query->where('kit_id', '=', $object->id);
@@ -626,6 +627,7 @@ class Snapshot extends GameResult
                     // Add to History
                     $query2->set('kit_id', '=', $object->id);
                     $query2->set('time', '=', $object->time);
+                    $query2->set('score', '=', $object->score);
                     $query2->set('kills', '=', $object->kills);
                     $query2->set('deaths', '=', $object->deaths);
                     $query2->executeInsert();
@@ -662,6 +664,7 @@ class Snapshot extends GameResult
                 {
                     // Update main stats record
                     $query->set('time', '+', $object->time);
+                    $query->set('score', '+', $object->score);
                     $query->set('kills', '+', $object->kills);
                     $query->set('deaths', '+', $object->deaths);
                     $query->set('roadkills', '+', $object->roadKills);
@@ -671,6 +674,7 @@ class Snapshot extends GameResult
                     // Add to History
                     $query2->set('vehicle_id', '=', $object->id);
                     $query2->set('time', '=', $object->time);
+                    $query2->set('score', '=', $object->score);
                     $query2->set('kills', '=', $object->kills);
                     $query2->set('deaths', '=', $object->deaths);
                     $query2->set('roadkills', '=', $object->roadKills);
@@ -690,6 +694,7 @@ class Snapshot extends GameResult
                 {
                     // Update main stats record
                     $query->set('time', '+', $object->time);
+                    $query->set('score', '+', $object->score);
                     $query->set('kills', '+', $object->kills);
                     $query->set('deaths', '+', $object->deaths);
                     $query->set('fired', '+', $object->fired);
@@ -701,6 +706,7 @@ class Snapshot extends GameResult
                     // Add to History
                     $query2->set('weapon_id', '=', $object->id);
                     $query2->set('time', '=', $object->time);
+                    $query2->set('score', '=', $object->score);
                     $query2->set('kills', '=', $object->kills);
                     $query2->set('fired', '=', $object->fired);
                     $query2->set('hits', '=', $object->hits);

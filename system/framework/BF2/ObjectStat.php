@@ -14,7 +14,7 @@ namespace System\BF2;
  *
  * @package System\BF2
  */
-class ObjectStat
+class ObjectStat implements \ArrayAccess
 {
     /**
      * @var int The object id
@@ -25,6 +25,11 @@ class ObjectStat
      * @var int The time in seconds played with this object
      */
     public $time = 0;
+
+    /**
+     * @var int The total score earned with this object
+     */
+    public $score = 0;
 
     /**
      * @var int The number of kills with this object
@@ -55,4 +60,67 @@ class ObjectStat
      * @var int The number of times this object was deployed
      */
     public $deployed = 0;
+
+    /**
+     * Whether a offset exists
+     *
+     * @param string $offset An offset to check for.
+     *
+     * @return boolean true on success or false on failure.
+     *
+     * The return value will be casted to boolean if non-boolean was returned.
+     *
+     */
+    public function offsetExists($offset)
+    {
+        return property_exists($this, $offset);
+    }
+
+    /**
+     * Offset to retrieve
+     *
+     * @param string $offset The offset to retrieve.
+     *
+     * @return mixed Can return all value types.
+     */
+    public function offsetGet($offset)
+    {
+        if (!$this->offsetExists($offset))
+        {
+            throw new \ArgumentOutOfRangeException("The given offset was not present in the object: {$offset}");
+        }
+
+        return $this->{$offset};
+    }
+
+    /**
+     * Offset to set
+     *
+     * @param string $offset The offset to assign the value to.
+     *
+     * @param mixed $value The value to set.
+     *
+     * @return void
+     */
+    public function offsetSet($offset, $value)
+    {
+        if (!$this->offsetExists($offset))
+        {
+            throw new \ArgumentOutOfRangeException("The given offset was not present in the object: {$offset}");
+        }
+
+        $this->{$offset} = $value;
+    }
+
+    /**
+     * Method un-used
+     *
+     * @deprecated This method does not do anything
+     *
+     * @param string $offset The offset to unset.
+     */
+    public function offsetUnset($offset)
+    {
+
+    }
 }

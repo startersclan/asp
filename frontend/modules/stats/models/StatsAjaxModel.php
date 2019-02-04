@@ -158,6 +158,11 @@ class StatsAjaxModel
                     return TimeHelper::SecondsToHms($i);
                 }
             ],
+            ['db' => 'score', 'dt' => 'score',
+                'formatter' => function( $d, $row ) {
+                    return number_format($d);
+                }
+            ],
             ['db' => 'ratio', 'dt' => 'ratio',
                 'formatter' => function( $d, $row ) {
                     // Get player ratio
@@ -250,7 +255,7 @@ class StatsAjaxModel
                     $deaths = (int)$row['deaths'];
 
                     $den = $this->getDenominator($kills, $deaths);
-                    $ratio = ($den == 0) ? "0/0" : ($kills / $den) . '/' . ($deaths / $den);;
+                    $ratio = ($den == 0) ? "0/0" : ($kills / $den) . '/' . ($deaths / $den);
                     $color = ($d > 0.99) ? "green" : "red";
 
                     $d = number_format($d, 2);
@@ -337,6 +342,11 @@ class StatsAjaxModel
                     return TimeHelper::SecondsToHms($i);
                 }
             ],
+            ['db' => 'score', 'dt' => 'score',
+                'formatter' => function( $d, $row ) {
+                    return number_format($d);
+                }
+            ],
             ['db' => 'ratio', 'dt' => 'ratio',
                 'formatter' => function( $d, $row ) {
                     // Get player ratio
@@ -344,7 +354,7 @@ class StatsAjaxModel
                     $deaths = (int)$row['deaths'];
 
                     $den = $this->getDenominator($kills, $deaths);
-                    $ratio = ($den == 0) ? "0/0" : ($kills / $den) . '/' . ($deaths / $den);;
+                    $ratio = ($den == 0) ? "0/0" : ($kills / $den) . '/' . ($deaths / $den);
                     $color = ($d > 0.99) ? "green" : "red";
 
                     $d = number_format($d, 2);

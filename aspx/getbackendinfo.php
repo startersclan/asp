@@ -17,6 +17,12 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+/**
+ * Simply provides a list of the weapon unlocks.
+ *
+ * Accepted URL Parameters: None
+ */
+
 // Namespace
 namespace System;
 use System\Cache\CacheManager;

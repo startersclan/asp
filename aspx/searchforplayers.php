@@ -17,6 +17,16 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+/**
+ * Accepted URL Parameters:
+ *
+ * @param string $nick part of or a full nickname
+ * @param string $where (optional) "a" (any), "b" (begin's with), "e" (end's with), "x" (exactly)
+ * @param string $sort (optional) "a" (alpha/numeric), "r" (reverse), if not set, sorted by ASCII worth
+ *
+ * @example searchforplayers.aspx?nick=[xxxx]&where=b&sort=a
+ */
+
 // Namespace
 namespace System;
 use System\BF2\Player;

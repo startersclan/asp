@@ -113,12 +113,12 @@
                         </label>
                         <div class="mws-form-item">
                             <div class="small">
-                                <input type="text" id="s3"
+                                <input type="text" id="s4"
                                        class="required mws-spinner"
                                        name="cfg__battlespy_max_team_kills"
                                        value="{battlespy_max_team_kills}"
                                        title="">
-                                <label for="s3" class="error" generated="true" style="display:none"></label>
+                                <label for="s4" class="error" generated="true" style="display:none"></label>
                             </div>
                         </div>
                     </div>
@@ -133,20 +133,57 @@
                         </label>
                         <div class="mws-form-item">
                             <div class="small">
-                                <input type="text" id="s3"
+                                <input type="text" id="s5"
                                        class="required mws-spinner"
                                        name="cfg__battlespy_max_awards"
                                        value="{battlespy_max_awards}"
                                        title="">
-                                <label for="s3" class="error" generated="true" style="display:none"></label>
+                                <label for="s5" class="error" generated="true" style="display:none"></label>
                             </div>
+                        </div>
+                    </div>
+                    <div class="mws-form-row">
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
+                               data-original-title="Max Weapon Accuracy"
+                               data-content="Sets the maximum weapon accuracy a player can achieve in a round without being flagged. At least 3 bullets must be fired.">
+                            Max Weapon Accuracy:
+                        </label>
+                        <div class="mws-form-item">
+                            <div class="small">
+                                <input type="text" id="s6"
+                                       class="required mws-spinner"
+                                       name="cfg__battlespy_max_accuracy"
+                                       value="{battlespy_max_accuracy}"
+                                       title="">
+                                <label for="s6" class="error" generated="true" style="display:none"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mws-form-row">
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
+                               data-original-title="Max Accuracy Weapons"
+                               data-content="Sets which weapons can be flagged with max accuracy.">
+                            Max Accuracy Weapons:
+                        </label>
+                        <div class="mws-form-item">
+                            <select class="small" multiple="multiple" size="{weaponsCount}" name="cfg__battlespy_weapons[]">
+                            {weapons}
+                                <option value="{id}" {selected}>{name}</option>
+                            {/weapons}
+                            </select>
                         </div>
                     </div>
                 </fieldset>
             </div>
             <div class="mws-button-row">
                 <input type="submit" value="Submit" class="btn btn-danger">
-                <input type="reset" value="Reset" class="btn ">
+                <input type="reset" value="Reset" class="btn">
             </div>
         </form>
         <div id="mws-jui-dialog">

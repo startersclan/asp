@@ -16,7 +16,7 @@ use System\Collections\Dictionary;
  * Class Player
  * @package System\BF2
  */
-class Player
+class Player implements \ArrayAccess
 {
     /**
      * @var string A regular expression for BF2 player name validation
@@ -258,6 +258,7 @@ class Player
                 // Create new object stat
                 $object = new ObjectStat();
                 $object->id = (int)$obj['id'];
+                $object->score = (int)$obj['score'];
                 $object->time = (int)$obj['time'];
                 $object->kills = (int)$obj['kills'];
                 $object->deaths = (int)$obj['deaths'];
@@ -275,6 +276,7 @@ class Player
                 // Create new object stat
                 $object = new ObjectStat();
                 $object->id = (int)$obj['id'];
+                $object->score = (int)$obj['score'];
                 $object->time = (int)$obj['time'];
                 $object->kills = (int)$obj['kills'];
                 $object->deaths = (int)$obj['deaths'];
@@ -320,5 +322,73 @@ class Player
         {
             $this->victims[$player['id']] = (int)$player['count'];
         }
+    }
+
+    /**
+     * Whether a offset exists
+     *
+     * @param string $offset An offset to check for.
+     *
+     * @return boolean true on success or false on failure.
+     *
+     * The return value will be casted to boolean if non-boolean was returned.
+     *
+     */
+    public function offsetExists($offset)
+    {
+        return property_exists($this, $offset);
+    }
+
+    /**
+     * Offset to retrieve
+     *
+     * @param string $offset The offset to retrieve.
+     *
+     * @return mixed Can return all value types.
+     */
+    public function offsetGet($offset)
+    {
+        if (!$this->offsetExists($offset))
+        {
+            throw new \ArgumentOutOfRangeException("The given offset was not present in the object: {$offset}");
+        }
+
+        return $this->{$offset};
+    }
+
+    /**
+     * Offset to set
+     *
+     * @param string $offset The offset to assign the value to.
+     *
+     * @param mixed $value The value to set.
+     *
+     * @return void
+     */
+    public function offsetSet($offset, $value)
+    {
+        if (!$this->offsetExists($offset))
+        {
+            throw new \ArgumentOutOfRangeException("The given offset was not present in the object: {$offset}");
+        }
+
+        $this->{$offset} = $value;
+    }
+
+    /**
+     * Method un-used
+     *
+     * @deprecated This method does not do anything
+     *
+     * @param string $offset The offset to unset.
+     */
+    public function offsetUnset($offset)
+    {
+
+    }
+
+    public function __toString()
+    {
+        return "PlayerClass";
     }
 }

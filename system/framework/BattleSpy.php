@@ -68,9 +68,14 @@ class BattleSpy
     const FLAG_PLAYER_TEAMKILLS = 7;
 
     /**
+     * @var int Excessive Weapon Accuracy Flag
+     */
+    const FLAG_PLAYER_ACCURACY = 8;
+
+    /**
      * @var array
      */
-    protected $notifications;
+    protected $notifications = [];
 
     /**
      * @var DbConnection The database connection
@@ -118,6 +123,11 @@ class BattleSpy
     protected $maxAwards = 0;
 
     /**
+     * @var int Gets or sets the maximum weapon accuracy
+     */
+    protected $maxWeaponAcc = 0;
+
+    /**
      * BattleSpy constructor.
      *
      * @param DbConnection $connection
@@ -138,6 +148,9 @@ class BattleSpy
         $this->maxTargetKills = (int)Config::Get('battlespy_max_target_kills');
         $this->maxTeamKills = (int)Config::Get('battlespy_max_team_kills');
         $this->maxAwards = (int)Config::Get('battlespy_max_awards');
+
+        // Added in later release
+        $this->maxWeaponAcc = (int)Config::GetOrDefault('battlespy_max_accuracy', 50);
     }
 
     /**
@@ -167,7 +180,7 @@ class BattleSpy
                 // Report player for having too high of a SPM
                 $severity = ($spm > $double) ? 3 : (($spm > $plus50p) ? 2 : 1);
                 $message = sprintf("Player Score per Min (%.3f) exceeds threshold of (%.3f)", $spm, $this->maxSPM);
-                $this->report($player->id, $message, self::FLAG_PLAYER_SPM, $severity);
+                $this->report($player, $message, self::FLAG_PLAYER_SPM, $severity);
             }
         }
 
@@ -184,7 +197,7 @@ class BattleSpy
                 // Report player for having too high of a KPM
                 $severity = ($spm > $double) ? 3 : (($spm > $plus50p) ? 2 : 1);
                 $message = sprintf("Player Kills per Min (%.3f) exceeds threshold of (%.3f)", $kpm, $this->maxKPM);
-                $this->report($player->id, $message, self::FLAG_PLAYER_KILLS, $severity);
+                $this->report($player, $message, self::FLAG_PLAYER_KILLS, $severity);
             }
         }
 
@@ -202,7 +215,7 @@ class BattleSpy
                     // Report player for having too many kills on a single player
                     $severity = ($count > $double) ? 3 : (($count > $plus50p) ? 2 : 1);
                     $message = sprintf("Player to Player Kills (%d) on victim Player (%d) exceeds threshold of (%d)", $count, $pid, $this->maxTargetKills);
-                    $this->report($player->id, $message, self::FLAG_PLAYER_TARGET_KILLS, $severity);
+                    $this->report($player, $message, self::FLAG_PLAYER_TARGET_KILLS, $severity);
                 }
             }
         }
@@ -214,7 +227,7 @@ class BattleSpy
             if ($awardCount > $this->maxAwards)
             {
                 $message = "Player Award Count (%d) exceeds threshold of (%d)";
-                $this->report($player->id, sprintf($message, $awardCount, $this->maxAwards), self::FLAG_PLAYER_AWARDS, 1);
+                $this->report($player, sprintf($message, $awardCount, $this->maxAwards), self::FLAG_PLAYER_AWARDS, 1);
             }
         }
 
@@ -230,17 +243,44 @@ class BattleSpy
                 // Report player for having too many team kills
                 $severity = ($player->teamKills > $double) ? 3 : (($player->teamKills > $plus50p) ? 2 : 1);
                 $message = sprintf("Player Team Kills (%d) exceeds threshold of (%d)", $player->teamKills, $this->maxTeamKills);
-                $this->report($player->id, $message, self::FLAG_PLAYER_TEAMKILLS, $severity);
+                $this->report($player, $message, self::FLAG_PLAYER_TEAMKILLS, $severity);
             }
         }
 
         /** Check weapon accuracy */
+        if ($this->maxWeaponAcc > 0)
+        {
+            $weapons = Config::GetOrDefault('battlespy_weapons', []);
+            foreach ($player->weaponData as $weapon)
+            {
+                // We must fire at least three bullets
+                if ($weapon->fired < 3 || !in_array($weapon->id, $weapons)) continue;
+
+                // Get accuracy
+                $accuracy = round($weapon->hits / $weapon->fired, 3) * 100;
+                if ($accuracy > $this->maxWeaponAcc)
+                {
+                    // Determine severity
+                    $plus50p = $this->maxWeaponAcc + 10;
+                    $double = $this->maxWeaponAcc + 15;
+
+                    // Report player for having too many team kills
+                    $name = StatsData::GetWeaponNameById($weapon->id);
+                    $severity = ($accuracy > $double) ? 3 : (($accuracy > $plus50p) ? 2 : 1);
+                    $message = sprintf(
+                        "Player Weapon Accuracy with a (%s) of (%d%%) exceeds threshold of (%d%%). %d shots were fired.",
+                        $name, $accuracy, $this->maxWeaponAcc, $weapon->fired
+                    );
+                    $this->report($player, $message, self::FLAG_PLAYER_ACCURACY, $severity);
+                }
+            }
+        }
     }
 
     /**
      * Adds a report message to the list of reports
      *
-     * @param int $playerId The offending player ID
+     * @param Player $player The offending player
      * @param string $message The message that describes the player offense
      * @param int $flagCode The constant flag code of the offense
      * @param int $severity The severity level of the offense, in a range of 1 to 3,
@@ -248,14 +288,26 @@ class BattleSpy
      *
      * @return void
      */
-    public function report($playerId, $message, $flagCode, $severity)
+    public function report(Player $player, $message, $flagCode, $severity)
     {
         $this->notifications[] = [
-            'player_id' => $playerId,
+            'player_id' => $player->id,
+            'player_name' => $player->name,
+            'player_rank' => $player->rank,
             'flag' => $flagCode,
             'severity' => min(abs($severity), 3),
             'message' => $message
         ];
+    }
+
+    /**
+     * Fetches the current list of report messages
+     *
+     * @return array
+     */
+    public function getMessages()
+    {
+        return $this->notifications;
     }
 
     /**
@@ -284,7 +336,10 @@ class BattleSpy
             // Insert messages
             foreach ($this->notifications as $report)
             {
-                $query->setArray($report, '=');
+                $query->set('player_id', '=', $report['player_id']);
+                $query->set('flag', '=', $report['flag']);
+                $query->set('severity', '=', $report['severity']);
+                $query->set('message', '=', $report['message']);
                 $query->executeInsert();
             }
 

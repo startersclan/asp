@@ -25,6 +25,7 @@
                 <th>Map Played</th>
                 <th>Players</th>
                 <th>Date</th>
+                <th style="width: 7px;">Actions</th>
             </tr>
             </thead>
             <tbody>
@@ -39,6 +40,16 @@
                     <td>{map}</td>
                     <td>{players}</td>
                     <td>{date}</td>
+                    <td>
+                        <span class="btn-group">
+                            <a id="view-btn-{name}" href="/ASP/snapshots/view/{name}" target="_blank" rel="tooltip" title="View Snapshot" class="btn btn-small">
+                                <i class="icon-eye-open"></i>
+                            </a>
+                            <a id="delete-btn-{name}" href="#" rel="tooltip" title="Delete Snapshot" class="btn btn-small">
+                                <i class="icon-trash"></i>
+                            </a>
+                        </span>
+                    </td>
                 </tr>
             {/snapshots}
             </tbody>

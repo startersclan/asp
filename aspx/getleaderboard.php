@@ -17,6 +17,48 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+/**
+ * Accepted URL Parameters:
+ *
+ * Lookup player's rank:
+ *
+ * @param int $pid Unique player ID
+ * @param string $nick Unique player nickname
+ * @param string $type "score", "kit", "vehicle", "weapon"
+ * @param string|int $id (see example params below)
+ * <example>
+ *  $type == "score" -> "overall", "combat", "commander", "team"
+ *  $type == "kit" -> 0-6
+ *  $type == "vehicle" -> 0-6
+ *  $type == "weapon" -> 0-8
+ *  $type == "army" -> 0-2
+ *  $type == "map" -> 0-2
+ * </example>
+ *
+ * Get top N players by score:
+ *
+ * @param string $type "score", "timeplayed", "risingstar"
+ * @param string $id "overall", "combat", "commander", "team"
+ * @param int $before (optional)
+ * @param int $after (optional)
+ * @param int $pos (optional)
+ *
+ * Example URLs:
+ *  - Scores, Overall: getleaderboard.aspx?type=score&id=overall&pos=1&before=0&after=19
+ *  - Scores, Rising Star: getleaderboard.aspx?type=risingstar&pos=1&before=0&after=19
+ *  - Scores, Commander: getleaderboard.aspx?type=score&id=commander&pos=1&before=0&after=19
+ *  - Scores, Teamwork: getleaderboard.aspx?type=score&id=team&pos=1&before=0&after=19
+ *  - Scores, Combat: getleaderboard.aspx?type=score&id=combat&pos=1&before=0&after=19
+ *  - Kits, replace X with kit id: getleaderboard.aspx?type=kit&id=X&pos=1&before=0&after=19
+ *  - Vehicles, replace X with vehicle id: getleaderboard.aspx?type=vehicle&id=X&pos=1&before=0&after=19
+ *  - Kit equipment, replace X with weapon id: getleaderboard.aspx?type=weapon&id=X&pos=1&before=0&after=19
+ *
+ * @remarks The client adds 20 to the "pos" value, for the next batch of players to display, on pressing next, the rest
+ * stays the same, so for second page, pos would be 21. The client always sends two questions to the server, one is the
+ * above, the other is sent before that one, is a query for the players position, that looks like this for the
+ * overall score: "/ASP/getleaderboard.aspx?pid=PID&type=score&id=overall".
+ */
+
 // Namespace
 namespace System;
 

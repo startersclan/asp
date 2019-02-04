@@ -3,7 +3,7 @@
         <span><i class="icon-map-marker"></i> {round.map_display_name}</span>
     </div>
     <div class="mws-panel-body no-padding" style="text-align: center">
-        <img src="/ASP/frontend/images/maps/{round.name}.png">
+        <img src="/ASP/frontend/images/maps/{round.mapname}.png">
     </div>
 </div>
 <div class="mws-panel grid_3">
@@ -62,15 +62,15 @@
     <div class="mws-panel-body">
         <div class="table-container">
             <div class="left">
-                <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team1_army_id}.png"/>
+                <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team1ArmyId}.png"/>
                 <br />
                 {round.team1name}
             </div>
             <div class="center">
-                <span style="font-weight: 900; font-size: 32px;">{round.tickets1} : {round.tickets2}</span>
+                <span style="font-weight: 900; font-size: 32px;">{round.team1Tickets} : {round.team2Tickets}</span>
             </div>
             <div class="right">
-                <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team2_army_id}.png"/>
+                <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team2ArmyId}.png"/>
                 <br />
                 {round.team2name}
             </div>
@@ -93,7 +93,7 @@
                 <span class="val">
 					<span class="text-nowrap">
                         <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{first_place.rank}.gif"/>
-                        <a href="/ASP/players/history/{first_place.id}/{round.id}">{first_place.name}</a>
+                        <a href="/ASP/players/view/{first_place.id}">{first_place.name}</a>
                         <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{first_place.team}.png"/>
                     </span>
 				</span>
@@ -105,7 +105,7 @@
                 <span class="val">
 					<span class="text-nowrap">
                         <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{second_place.rank}.gif"/>
-                        <a href="/ASP/players/history/{second_place.id}/{round.id}">{second_place.name}</a>
+                        <a href="/ASP/players/view/{second_place.id}">{second_place.name}</a>
                         <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{second_place.team}.png"/>
                     </span>
 				</span>
@@ -117,7 +117,7 @@
                 <span class="val">
 					<span class="text-nowrap">
                         <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{third_place.rank}.gif"/>
-                        <a href="/ASP/players/history/{third_place.id}/{round.id}">{third_place.name}</a>
+                        <a href="/ASP/players/view/{third_place.id}">{third_place.name}</a>
                         <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{third_place.team}.png"/>
                     </span>
 				</span>
@@ -125,15 +125,52 @@
         </ul>
     </div>
 </div>
+<div class="mws-panel grid_8">
+    <div class="mws-panel-header">
+        <span><i class="icon-eye-open"></i> BattleSpy Report Messages</span>
+    </div>
+    <div class="mws-panel-body no-padding">
+        <table id="battlespy" class="mws-datatable-fn mws-table">
+            <thead>
+            <tr>
+                <th style="width: 7%">Severity</th>
+                <th style="width: 5%">Rank</th>
+                <th>Player Name</th>
+                <th style="width: 60%">Message</th>
+                <th style="width: 5%">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {battlespy_messages}
+                <tr>
+                    <td data-sort="{severity}">
+                        <span class="badge badge-{badge}">{severity_name}</span>
+                    </td>
+                    <td><img class="center" src="/ASP/frontend/images/ranks/rank_{player_rank}.gif"></td>
+                    <td>{player_name}</td>
+                    <td>{message}</td>
+                    <td>
+                        <span class="btn-group">
+                            <a id="go-btn" href="/ASP/players/view/{player_id}" rel="tooltip" title="View Player" class="btn btn-small">
+                                <i class="icon-eye-open"></i>
+                            </a>
+                        </span>
+                    </td>
+                </tr>
+            {/battlespy_messages}
+            </tbody>
+        </table>
+    </div>
+</div>
 <div class="mws-panel grid_4 mws-collapsible clear">
     <div class="mws-panel-header">
         <span>
-            <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team1_army_id}.png"/>
+            <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team1ArmyId}.png"/>
             {round.team1name}
         </span>
     </div>
     <div class="mws-panel-body no-padding">
-        <table id="team2" class="mws-table">
+        <table id="team2" class="mws-table custom-sort">
             <thead>
             <tr>
                 <th style="width: 7%">Rank</th>
@@ -149,23 +186,19 @@
             <tbody>
             {players1}
                 <tr>
-                    <td><img class="center" src="/ASP/frontend/images/ranks/rank_{rank_id}.gif"/></td>
-                    <?php if ({player_id} == 0): ?>
-                    <td>{name}</td>
-                    <?php else: ?>
+                    <td><img class="center" src="/ASP/frontend/images/ranks/rank_{rank}.gif"/></td>
                     <td>
-                        <a href="/ASP/players/history/{player_id}/{round.id}"
+                        <a href="/ASP/players/view/{id}"
                            rel="tooltip"
                            data-placement="right"
-                           title="Click to view Player Round Details">
+                           title="Click to view Player">
                             {name}
                         </a>
                     </td>
-                    <?php endif ?>
-                    <td>{score}</td>
-                    <td>{skillscore}</td>
-                    <td>{teamscore}</td>
-                    <td>{cmdscore}</td>
+                    <td>{roundScore}</td>
+                    <td>{skillScore}</td>
+                    <td>{teamScore}</td>
+                    <td>{commandScore}</td>
                     <td>{kills}</td>
                     <td>{deaths}</td>
                 </tr>
@@ -177,12 +210,12 @@
 <div class="mws-panel grid_4 mws-collapsible">
     <div class="mws-panel-header">
         <span>
-            <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team2_army_id}.png"/>
+            <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team2ArmyId}.png"/>
             {round.team2name}
         </span>
     </div>
     <div class="mws-panel-body no-padding">
-        <table id="team1" class="mws-table">
+        <table id="team1" class="mws-table custom-sort">
             <thead>
             <tr>
                 <th style="width: 7%">Rank</th>
@@ -198,23 +231,19 @@
             <tbody>
             {players2}
                 <tr>
-                    <td><img class="center" src="/ASP/frontend/images/ranks/rank_{rank_id}.gif"/></td>
-                    <?php if ({player_id} == 0): ?>
-                    <td>{name}</td>
-                    <?php else: ?>
+                    <td><img class="center" src="/ASP/frontend/images/ranks/rank_{rank}.gif"/></td>
                     <td>
-                        <a href="/ASP/players/history/{player_id}/{round.id}"
+                        <a href="/ASP/players/view/{id}"
                            rel="tooltip"
                            data-placement="right"
-                           title="Click to view Player Round Details">
+                           title="Click to view Player">
                             {name}
                         </a>
                     </td>
-                    <?php endif ?>
-                    <td>{score}</td>
-                    <td>{skillscore}</td>
-                    <td>{teamscore}</td>
-                    <td>{cmdscore}</td>
+                    <td>{roundScore}</td>
+                    <td>{skillScore}</td>
+                    <td>{teamScore}</td>
+                    <td>{commandScore}</td>
                     <td>{kills}</td>
                     <td>{deaths}</td>
                 </tr>
@@ -230,17 +259,17 @@
     <div class="mws-panel-body no-padding">
         <ul class="mws-summary clearfix">
             {topSkillPlayers}
-            <li>
-                <span class="key">{category}</span>
-                <span class="val">
+                <li>
+                    <span class="key">{category}</span>
+                    <span class="val">
 					<span class="text-nowrap">
                         <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{rank}.gif"/>
-                        <a href="/ASP/players/history/{id}/{round.id}">{name}</a>
+                        <a href="/ASP/players/view/{id}">{name}</a>
                         <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/armies/small/{team}.png"/>
                         ({value})
                     </span>
 				</span>
-            </li>
+                </li>
             {/topSkillPlayers}
         </ul>
     </div>
@@ -252,17 +281,17 @@
     <div class="mws-panel-body no-padding">
         <ul class="mws-summary clearfix">
             {topKitPlayers}
-            <li>
-                <span class="key">{iteration.key}</span>
-                <span class="val">
+                <li>
+                    <span class="key">{iteration.key}</span>
+                    <span class="val">
                     <span class="text-nowrap">
                         <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{rank}.gif"/>
-                        <a href="/ASP/players/history/{pid}/{round.id}">{name}</a>
+                        <a href="/ASP/players/view/{pid}">{name}</a>
                         <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/armies/small/{team}.png"/>
                         ({score}) - [{time_string}] {kills} kills, {deaths} deaths
                     </span>
                 </span>
-            </li>
+                </li>
             {/topKitPlayers}
         </ul>
     </div>
@@ -274,9 +303,9 @@
     <div class="mws-panel-body no-padding">
         <ul class="mws-summary clearfix">
             {topVehiclePlayers}
-            <li>
-                <span class="key">{iteration.key}</span>
-                <span class="val">
+                <li>
+                    <span class="key">{iteration.key}</span>
+                    <span class="val">
                     <span class="text-nowrap">
                         <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{rank}.gif"/>
                         <a href="/ASP/players/history/{pid}/{round.id}">{name}</a>
@@ -284,7 +313,7 @@
                         ({score}) - [{time_string}] {kills} kills, {deaths} deaths
                     </span>
                 </span>
-            </li>
+                </li>
             {/topVehiclePlayers}
         </ul>
     </div>
@@ -296,16 +325,16 @@
     <div class="mws-panel-body no-padding">
         <ul class="mws-summary clearfix">
             {commanders}
-            <li>
+                <li>
                 <span class="key" style="width: 250px">
                     <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{team}.png"/>
                     <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{rank}.gif"/>
-                    <a href="/ASP/players/history/{id}/{round.id}">{name}</a>
+                    <a href="/ASP/players/view/{id}">{name}</a>
                 </span>
-                <span class="val">
+                    <span class="val">
                     <span class="text-nowrap">{score} points [{time_string}]</span>
                 </span>
-            </li>
+                </li>
             {/commanders}
         </ul>
     </div>
@@ -317,31 +346,31 @@
     <div class="mws-panel-body no-padding">
         <ul class="mws-summary clearfix">
             {awards}
-            <li>
+                <li>
                 <span class="key" style="width: 250px">
-                    <?php if ({type} == 0): ?>
+                    <?php if ({award_type} == 0): ?>
                     <img style="margin: -2px 0 0 0; max-height: 24px;" src="/ASP/frontend/images/icons/ribbon.png"/>
-                    <?php elseif ({type} == 1): ?>
-                    <img style="margin: -2px 0 0 0; max-height: 24px;" src="/ASP/frontend/images/icons/badge_{level}.png"/>
-                    <?php elseif ({type} == 2): ?>
+                    <?php elseif ({award_type} == 1): ?>
+                    <img style="margin: -2px 0 0 0; max-height: 24px;" src="/ASP/frontend/images/icons/badge_{award_level}.png"/>
+                    <?php elseif ({award_type} == 2): ?>
                     <img style="margin: -2px 0 0 0; max-height: 24px;" src="/ASP/frontend/images/icons/medal.png"/>
-                    <?php elseif ({type} == 3): ?>
+                    <?php elseif ({award_type} == 3): ?>
                     <img style="margin: -2px 0 0 0; max-height: 24px;" src="/ASP/frontend/images/icons/award_star_gold.png"/>
-                    <?php elseif ({type} == 4): ?>
+                    <?php elseif ({award_type} == 4): ?>
                     <img style="margin: -2px 0 0 0; max-height: 24px;" src="/ASP/frontend/images/icons/award_star_silver.png"/>
-                    <?php elseif ({type} == 5): ?>
+                    <?php elseif ({award_type} == 5): ?>
                     <img style="margin: -2px 0 0 0; max-height: 24px;" src="/ASP/frontend/images/icons/award_star_bronze.png"/>
                     <?php endif ?>
-                    {name}
+                    {award_name}
                 </span>
-                <span class="val">
+                    <span class="val">
                     <span class="text-nowrap">
-                        <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{rank}.gif"/>
-                        <a href="/ASP/players/history/{player_id}/{round.id}">{player_name}</a>
-                        <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{team}.png"/>
+                        <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{player_rank}.gif"/>
+                        <a href="/ASP/players/{player_id}">{player_name}</a>
+                        <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{player_team}.png"/>
                     </span>
                 </span>
-            </li>
+                </li>
             {/awards}
         </ul>
     </div>

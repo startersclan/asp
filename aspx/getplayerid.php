@@ -17,6 +17,13 @@
 	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+/**
+ * Used by the BF2 Server only.
+ *
+ * Accepted URL Parameters:
+ * @param string $name Unique player Name
+ */
+
 // Namespace
 namespace System;
 use PDO;

@@ -1,0 +1,36 @@
+.table-container{
+    display: flex;
+    align-items: center;
+}
+
+div.left{
+    text-align: left;
+    display:table-cell;
+    width:33.33vw;
+}
+
+div.center{
+    text-align: center;
+    display:table-cell;
+    width:33.33vw;
+}
+
+div.right{
+    text-align: right;
+    display:table-cell;
+    width:33.33vw;
+}
+
+img.center {
+    display: block;
+    margin: 0 auto;
+}
+
+.mws-table tr td a:link {
+    color: #000000;
+}
+
+.mws-table tr td a:visited {
+    color: #000000;
+    text-decoration: underline;
+}

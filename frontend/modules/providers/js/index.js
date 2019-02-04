@@ -114,7 +114,7 @@
                             result.providerName,
                             result.authId,
                             0,
-                            '<span id="tr-auth-' + id + '" class="badge badge-success">Yes</span>',
+                            '<span id="tr-auth-' + id + '" class="badge badge-success">Authorized</span>',
                             '<span id="tr-plasma-' + id + '" class="badge badge-inactive">No</span>',
                             '<span class="btn-group"> \
                                 <a id="go-btn" href="/ASP/provider/view/' + id + '" rel="tooltip" title="View Provider" class="btn btn-small"><i class="icon-eye-open"></i></a>\
@@ -207,7 +207,7 @@
                         }
                         else {
                             // Update html and button displays
-                            $('#tr-auth-' + id).attr('class', 'badge badge-important').html('No');
+                            $('#tr-auth-' + id).attr('class', 'badge badge-important').html('Not Authorized');
                             $('#unauth-btn-' + id).hide();
                             $('#auth-btn-' + id).show();
                         }
@@ -247,7 +247,7 @@
                         }
                         else {
                             // Update html and button displays
-                            $('#tr-auth-' + id).attr('class', 'badge badge-success').html('Yes');
+                            $('#tr-auth-' + id).attr('class', 'badge badge-success').html('Authorized');
                             $('#auth-btn-' + id).hide();
                             $('#unauth-btn-' + id).show();
                         }
@@ -378,7 +378,7 @@
                         // Remove each row
                         $.each(checkValues, function (key, value) {
                             // Update html and button displays
-                            $('#tr-auth-' + value).attr('class', 'badge badge-important').html('No');
+                            $('#tr-auth-' + value).attr('class', 'badge badge-important').html('Not Authorized');
                             $('#auth-btn-' + value).show();
                             $('#unauth-btn-' + value).hide();
                         });
@@ -438,7 +438,7 @@
                         // Remove each row
                         $.each(checkValues, function (key, value) {
                             // Update html and button displays
-                            $('#tr-auth-' + value).attr('class', 'badge badge-success').html('Yes');
+                            $('#tr-auth-' + value).attr('class', 'badge badge-success').html('Authorized');
                             $('#unauth-btn-' + value).show();
                             $('#auth-btn-' + value).hide();
                         });

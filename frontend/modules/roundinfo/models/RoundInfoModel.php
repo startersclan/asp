@@ -139,7 +139,6 @@ SQL;
         try
         {
             $roundId = (int)$roundId;
-            //echo '<pre>' . var_export($this->getTopKitPlayers($roundId), true) . '</pre>'; die;
 
             // Skill Players
             $view->set('topSkillPlayers', $this->getTopSkillPlayers($players));
@@ -206,14 +205,14 @@ SQL;
      *
      * @param int $roundId
      *
-     * @return array [ kitName => [ 'id', 'pid', 'name', 'rank', 'team', 'kills', 'deaths', 'time' ] ]
+     * @return array [ kitName => [ 'id', 'pid', 'name', 'rank', 'team', 'kills', 'deaths', 'score', 'time' ] ]
      */
     protected function getTopKitPlayers($roundId)
     {
         $return = [];
 
         $query = <<<SQL
-SELECT h.kills, h.deaths, h.time, h.kit_id, h.player_id, p.name, r.rank_id, r.army_id
+SELECT h.score, h.kills, h.deaths, h.time, h.kit_id, h.player_id, p.name, r.rank_id, r.army_id
 FROM player_kit_history AS h 
   LEFT JOIN player AS p ON p.id = h.player_id
   LEFT JOIN player_round_history AS r ON (r.round_id = h.round_id AND h.player_id = r.player_id)
@@ -221,7 +220,6 @@ WHERE h.round_id=$roundId
 SQL;
 
         $rows = $this->pdo->query($query)->fetchAll();
-        //echo '<pre>' . var_export($rows, true) . '</pre>'; die;
         foreach ($rows as $data)
         {
             $id = (int)$data['kit_id'];
@@ -236,6 +234,7 @@ SQL;
                     'team' => $data['army_id'],
                     'kills' => $data['kills'],
                     'deaths' => $data['deaths'],
+                    'score' => $data['score'],
                     'time' => $data['time'],
                     'time_string' => TimeHelper::SecondsToHms($data['time'])
                 ];
@@ -250,14 +249,14 @@ SQL;
      *
      * @param $roundId
      *
-     * @return array [ vehicleName => [ 'id', 'pid', 'name', 'rank', 'team', 'kills', 'deaths', 'time', 'roadKills' ] ]
+     * @return array [ vehicleName => [ 'id', 'pid', 'name', 'rank', 'team', 'kills', 'deaths', 'time', 'score', 'roadKills' ] ]
      */
     public function getTopVehiclePlayers($roundId)
     {
         $return = [];
 
         $query = <<<SQL
-SELECT h.kills, h.deaths, h.time, h.vehicle_id, h.player_id, h.roadkills, p.name, r.rank_id, r.army_id
+SELECT h.score, h.kills, h.deaths, h.time, h.vehicle_id, h.player_id, h.roadkills, p.name, r.rank_id, r.army_id
 FROM player_vehicle_history AS h 
   LEFT JOIN player AS p ON h.player_id = p.id 
   LEFT JOIN player_round_history AS r ON (r.round_id = h.round_id AND h.player_id = r.player_id)
@@ -279,6 +278,7 @@ SQL;
                     'team' => $data['army_id'],
                     'kills' => $data['kills'],
                     'deaths' => $data['deaths'],
+                    'score' => $data['score'],
                     'time' => $data['time'],
                     'time_string' => TimeHelper::SecondsToHms($data['time']),
                     'roadkills' => $data['roadkills']
@@ -315,7 +315,7 @@ SQL;
             }
         }
 
-        usort($commanders, function($a, $b) { return $a['score'] - $b['score']; });
+        usort($commanders, function($a, $b) { return $b['score'] - $a['score']; });
         return $commanders;
     }
 
@@ -331,9 +331,9 @@ SQL;
      */
     private function isPlayerBetter(array $data, array $best)
     {
-        if ($data['kills'] > $best['kills'])
+        if ($data['score'] > $best['score'])
             return true;
-        else if ($data['kills'] < $best['kills'])
+        else if ($data['score'] < $best['score'])
             return false;
 
         /** Kills Match, try deaths */
@@ -343,7 +343,7 @@ SQL;
         else if ($data['deaths'] > $best['deaths'])
             return false;
 
-        /** Deaths and Kills Match, try time played */
+        /** Deaths and Score Match, try time played */
 
         if ($data['time'] > $best['time'])
             return true;

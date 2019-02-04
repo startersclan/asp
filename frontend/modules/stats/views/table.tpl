@@ -285,8 +285,9 @@
                 <tr>
                     <th style="width: 3%"><span class="loading-cell"></span></th>
                     <th style="width: 5%">Rank</th>
-                    <th style="width: 40%">Name</th>
+                    <th style="width: 35%">Name</th>
                     <th style="width: 10%">Country</th>
+                    <th>Score</th>
                     <th>Time</th>
                     <th>Kills</th>
                     <th>Deaths</th>

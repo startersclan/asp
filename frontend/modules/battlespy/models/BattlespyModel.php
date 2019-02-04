@@ -236,13 +236,66 @@ SQL;
         }
     }
 
+    /**
+     * Removes the specified BattleSpy report from the database
+     *
+     * @param int $id The report id
+     *
+     * @return bool
+     */
     public function deleteReportById($id)
     {
+        // Prepare statement
+        $stmt = $this->pdo->prepare("DELETE FROM battlespy_message WHERE id=:id");
+
+        // Bind value and run query
+        $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
+        return $stmt->execute();
 
     }
 
+    /**
+     * Removes the specified BattleSpy report message from the database
+     *
+     * @param int $id The report message id
+     *
+     * @return bool
+     */
     public function deleteMessageById($id)
     {
+        // Prepare statement
+        $stmt = $this->pdo->prepare("DELETE FROM battlespy_report WHERE id=:id");
 
+        // Bind value and run query
+        $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+
+    /**
+     * Fetches an array of weapons, and their config selection for flagging weapon accuracy
+     *
+     * @return array
+     */
+    public function getWeaponsConfig()
+    {
+        $return = [];
+        $query = "SELECT * FROM weapon WHERE is_equipment = 0 AND is_explosive = 0";
+        $result = $this->pdo->query($query);
+
+        // Load weapons config
+        $weapons = array_map('intval', \System\Config::GetOrDefault('battlespy_weapons', []));
+
+        // build our return array
+        while ($row = $result->fetch())
+        {
+            $id = (int)$row['id'];
+            $return[] = [
+                'id' => $id,
+                'name' => $row['name'],
+                'selected' => (in_array($id, $weapons)) ? 'selected="selected"' : ''
+            ];
+        }
+
+        return $return;
     }
 }
