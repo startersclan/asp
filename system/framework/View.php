@@ -518,7 +518,7 @@ class View
     protected function parseArray($key, $array)
     {
         // Check to see if this is even an array first
-        if (!is_array($array) || !($array instanceof \ArrayAccess)) return $array;
+        if (!is_array($array) && !($array instanceof \ArrayAccess)) return $array;
 
         // Check if this is a multi-dimensional array
         if (strpos($key, '.') !== false)

@@ -12,7 +12,7 @@
             pagingType: "full_numbers",
             processing: false,
             serverSide: true,
-            info: false,
+            info: true,
             autoWidth: false,
             ajax: {
                 url: "/ASP/stats/topWeaponPlayers",
@@ -34,7 +34,7 @@
                         $('.loading-cell').css('background-image', 'url(/ASP/frontend/images/core/alerts/cross-circle.png)');
                 }
             },
-            order: [[ 4, "desc" ]], // Order by time
+            order: [[ 5, "desc" ], [ 4, "desc" ]], // Order by kills, then time
             columns: [
                 { "data": "check" },
                 { "data": "rank" },

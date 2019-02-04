@@ -31,7 +31,7 @@
                         $('.loading-cell').css('background-image', 'url(/ASP/frontend/images/core/alerts/cross-circle.png)');
                 }
             },
-            order: [[ 5, "desc" ]], // Order by global score
+            order: [[ 5, "desc" ], [ 6, "desc" ]], // Order by score and time
             columns: [
                 { "data": "check" },
                 { "data": "id" },

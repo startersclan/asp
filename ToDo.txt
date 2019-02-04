@@ -1,4 +1,6 @@
 Must Do's:
+ - Add growl messages to do rising star every week, and change SMOC
+ --- Add module to preform duties
  - Add a blacklist option for hiding servers in the server browser.
  - Add more global player statistics
  --> Kits used Statistics Pie Chart
