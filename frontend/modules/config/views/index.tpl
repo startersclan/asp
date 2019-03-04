@@ -1,7 +1,7 @@
 <div id="js_message" class="alert loading" style="display: none;"></div>
 <div class="mws-panel grid_8">
     <div class="mws-panel-header">
-        <span><i class="icon-tools"></i> Edit Config</span>
+        <span><i class="icon-tools"></i> Edit System Configuration</span>
     </div>
     <div id="mws-jui-dialog">
         <div class="mws-dialog-inner"><p>HI</p></div>
@@ -19,6 +19,119 @@
                             configurations, please edit the "python/bf2/BF2StatisticsConfig.py" file on your game server.
                             <b>Hover over each field's label to get a description of each setting.</b>
                         </p>
+                    </div>
+                </fieldset>
+
+                <!-- Admin Config -->
+                <fieldset class="mws-form-inline">
+                    <legend>Admin Config</legend>
+                    <div class="mws-form-row">
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
+                               data-original-title="Admin Panel Username"
+                               data-content="Username for access to BF2 Stats Admin System. NOTE: You will be forced to re-logon after this has been saved.">
+                            Admin Username:
+                        </label>
+                        <div class="mws-form-item">
+                            <input type="text" class="small required" name="cfg__admin_user" value="{config.admin_user}" title="">
+                        </div>
+                    </div>
+                    <div class="mws-form-row">
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
+                               data-original-title="Admin Panel Password"
+                               data-content="Password for access to BF2 Stats Admin System. NOTE: You will be forced to re-logon after this has been saved.">
+                            Admin Password:
+                        </label>
+                        <div class="mws-form-item">
+                            <input type="password" class="small required" name="cfg__admin_pass" value="{config.admin_pass}" title="">
+                        </div>
+                    </div>
+                    <div class="mws-form-row">
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
+                               data-original-title="Admin Panel IP Whitelist"
+                               data-content="Authorised IP Addresses for Admin System (Localhost is ALWAYS enabled). Enter one IP Address per line. CIDR (x.x.x.x/y) notation is supported.">
+                            Auth. Admin Ips:
+                        </label>
+                        <div class="mws-form-item">
+                            <input class="small required"
+                                    style="width: 100% !important;"
+                                    name="cfg__admin_hosts"
+                                    value="<?php echo join(',', \System\Config::Get('admin_hosts')); ?>"
+                                    title=""
+                                    data-role="tagsinput"
+                            >
+                        </div>
+                    </div>
+                    <div class="mws-form-row">
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
+                               data-original-title="Admin Timezone"
+                               data-content="Sets the timezone to use for date methods.">
+                            Admin Timezone:
+                        </label>
+                        <div class="mws-form-item">
+                            <select class="mws-select2 small" name="cfg__admin_timezone" title="">
+                                <?php
+                                    foreach($timezones as $region => $list)
+                                {
+                                print '<optgroup label="' . $region . '">' . "\n";
+                                    foreach ($list as $timezone => $name)
+                                    {
+                                    $selected = ($timezone == $config['admin_timezone']) ? " selected='selected'" : "";
+                                    print '<option value="'. $timezone .'"'. $selected .'>'. $name .'</option>' . "\n";
+                                    }
+                                    print '</optgroup>' . "\n";
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mws-form-row">
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
+                               data-original-title="Stats Logging Level"
+                               data-content="Stats Debug Logging Level (Includes all message above selected option).">
+                            Stats Logging:
+                        </label>
+                        <div class="mws-form-item">
+                            <select class="small" name="cfg__debug_lvl" title="">
+                                <option value="0" <?php if('{config.debug_lvl}' == '0') echo 'selected="selected"'; ?>>Security (0)</option>
+                                <option value="1" <?php if('{config.debug_lvl}' == '1') echo 'selected="selected"'; ?>>Errors (1)</option>
+                                <option value="2" <?php if('{config.debug_lvl}' == '2') echo 'selected="selected"'; ?>>Warning (2)</option>
+                                <option value="3" <?php if('{config.debug_lvl}' == '3') echo 'selected="selected"'; ?>>Notice (3)</option>
+                                <option value="4" <?php if('{config.debug_lvl}' == '4') echo 'selected="selected"'; ?>>Detailed (4)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mws-form-row">
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
+                               data-original-title="Stats API Access"
+                               data-content="Sets the access level for the stats aspx calls.">
+                            Stats API Access:
+                        </label>
+                        <div class="mws-form-item">
+                            <select class="small" name="cfg__stats_strict_api" title="">
+                                <option value="0" <?php if('{config.stats_strict_api}' == '0') echo 'selected="selected"'; ?>>Public</option>
+                                <option value="1" <?php if('{config.stats_strict_api}' == '1') echo 'selected="selected"'; ?>>
+                                Restricted to BF2 Client and Servers only
+                                </option>
+                            </select>
+                        </div>
                     </div>
                 </fieldset>
 
@@ -224,20 +337,23 @@
                     </div>
                 </fieldset>
 
-                <!-- Admin Config -->
+                <!-- Special Tasks Config -->
                 <fieldset class="mws-form-inline">
-                    <legend>Admin Config</legend>
+                    <legend>Stats Admin Config</legend>
                     <div class="mws-form-row">
                         <label class="mws-form-label"
                                rel="popover"
                                data-trigger="hover"
                                data-placement="right"
-                               data-original-title="Admin Panel Username"
-                               data-content="Username for access to BF2 Stats Admin System. NOTE: You will be forced to re-logon after this has been saved.">
-                            Admin Username:
+                               data-original-title="Rising Star Leaderboard Interval"
+                               data-content="Indicates the number of days between Rising Star leaderboard updates.">
+                            Rising Star Interval:
                         </label>
                         <div class="mws-form-item">
-                            <input type="text" class="small required" name="cfg__admin_user" value="{config.admin_user}" title="">
+                            <div class="small">
+                                <input type="text" id="s31" name="cfg__stats_risingstar_interval" class="required mws-spinner" value="{config.stats_risingstar_interval}" title="Number of Days">
+                                <label for="s31" class="error" generated="true" style="display:none"></label>
+                            </div>
                         </div>
                     </div>
                     <div class="mws-form-row">
@@ -245,12 +361,15 @@
                                rel="popover"
                                data-trigger="hover"
                                data-placement="right"
-                               data-original-title="Admin Panel Password"
-                               data-content="Password for access to BF2 Stats Admin System. NOTE: You will be forced to re-logon after this has been saved.">
-                            Admin Password:
+                               data-original-title="SMOC Selection Interval"
+                               data-content="Indicates the number of days between Sergeant Major of the Corps selections.">
+                            SMOC Selection Interval:
                         </label>
                         <div class="mws-form-item">
-                            <input type="password" class="small required" name="cfg__admin_pass" value="{config.admin_pass}" title="">
+                            <div class="small">
+                                <input type="text" id="s32" name="cfg__stats_smoc_interval" class="required mws-spinner" value="{config.stats_smoc_interval}" title="Number of Days">
+                                <label for="s32" class="error" generated="true" style="display:none"></label>
+                            </div>
                         </div>
                     </div>
                     <div class="mws-form-row">
@@ -258,82 +377,15 @@
                                rel="popover"
                                data-trigger="hover"
                                data-placement="right"
-                               data-original-title="Admin Panel IP Whitelist"
-                               data-content="Authorised IP Addresses for Admin System (Localhost is ALWAYS enabled). Enter one IP Address per line. CIDR (x.x.x.x/y) notation is supported.">
-                            Auth. Admin Ips:
+                               data-original-title="4-Star General Selection Interval"
+                               data-content="Indicates the number of days between 4-Star General selections.">
+                            4-Star Selection Interval:
                         </label>
                         <div class="mws-form-item">
-                            <input
-                                class="small required"
-                                style="width: 100% !important;"
-                                name="cfg__admin_hosts"
-                                value="<?php echo join(',', \System\Config::Get('admin_hosts')); ?>"
-                                title=""
-                                data-role="tagsinput"
-                            >
-                        </div>
-                    </div>
-                    <div class="mws-form-row">
-                        <label class="mws-form-label"
-                               rel="popover"
-                               data-trigger="hover"
-                               data-placement="right"
-                               data-original-title="Admin Timezone"
-                               data-content="Sets the timezone to use for date methods.">
-                            Admin Timezone:
-                        </label>
-                        <div class="mws-form-item">
-                            <select class="mws-select2 small" name="cfg__admin_timezone" title="">
-                                <?php
-                                    foreach($timezones as $region => $list)
-                                    {
-                                        print '<optgroup label="' . $region . '">' . "\n";
-                                        foreach ($list as $timezone => $name)
-                                        {
-                                            $selected = ($timezone == $config['admin_timezone']) ? " selected='selected'" : "";
-                                            print '<option value="'. $timezone .'"'. $selected .'>'. $name .'</option>' . "\n";
-                                        }
-                                        print '</optgroup>' . "\n";
-                                    }
-                                ?>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="mws-form-row">
-                        <label class="mws-form-label"
-                               rel="popover"
-                               data-trigger="hover"
-                               data-placement="right"
-                               data-original-title="Stats Logging Level"
-                               data-content="Stats Debug Logging Level (Includes all message above selected option).">
-                            Stats Logging:
-                        </label>
-                        <div class="mws-form-item">
-                            <select class="small" name="cfg__debug_lvl" title="">
-                                <option value="0" <?php if('{config.debug_lvl}' == '0') echo 'selected="selected"'; ?>>Security (0)</option>
-                                <option value="1" <?php if('{config.debug_lvl}' == '1') echo 'selected="selected"'; ?>>Errors (1)</option>
-                                <option value="2" <?php if('{config.debug_lvl}' == '2') echo 'selected="selected"'; ?>>Warning (2)</option>
-                                <option value="3" <?php if('{config.debug_lvl}' == '3') echo 'selected="selected"'; ?>>Notice (3)</option>
-                                <option value="4" <?php if('{config.debug_lvl}' == '4') echo 'selected="selected"'; ?>>Detailed (4)</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="mws-form-row">
-                        <label class="mws-form-label"
-                               rel="popover"
-                               data-trigger="hover"
-                               data-placement="right"
-                               data-original-title="Stats API Access"
-                               data-content="Sets the access level for the stats aspx calls.">
-                            Stats API Access:
-                        </label>
-                        <div class="mws-form-item">
-                            <select class="small" name="cfg__stats_strict_api" title="">
-                                <option value="0" <?php if('{config.stats_strict_api}' == '0') echo 'selected="selected"'; ?>>Public</option>
-                                <option value="1" <?php if('{config.stats_strict_api}' == '1') echo 'selected="selected"'; ?>>
-                                    Restricted to BF2 Client and Servers only
-                                </option>
-                            </select>
+                            <div class="small">
+                                <input type="text" id="s33" name="cfg__stats_general_interval" class="required mws-spinner" value="{config.stats_general_interval}" title="Number of Days">
+                                <label for="s33" class="error" generated="true" style="display:none"></label>
+                            </div>
                         </div>
                     </div>
                 </fieldset>

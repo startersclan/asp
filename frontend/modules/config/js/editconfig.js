@@ -52,6 +52,24 @@ $(document).ready(function() {
                     required: true,
                     min: 602,
                     digits: true
+                },
+                cfg__stats_risingstar_interval: {
+                    required: true,
+                    min: 0,
+                    max: 365,
+                    digits: true
+                },
+                cfg__stats_smoc_interval: {
+                    required: true,
+                    min: 0,
+                    max: 365,
+                    digits: true
+                },
+                cfg__stats_general_interval: {
+                    required: true,
+                    min: 0,
+                    max: 365,
+                    digits: true
                 }
             },
             invalidHandler: function (form, validator) {

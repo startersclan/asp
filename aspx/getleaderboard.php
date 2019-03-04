@@ -316,25 +316,13 @@ else
     }
     /**
      * Need weekly score calculations!
-     *
-     * @todo Implement properly
      */
     elseif ($type == 'risingstar')
     {
-        // Check if the result set is expired
-        if (Config::Get('stats_risingstar_refresh') < time())
-        {
-            Config::Set('stats_risingstar_refresh', time() + (86400 * 7));
-            Config::Save();
-
-            // Call the proceedure to fill the risingstar table
-            $connection->exec("CALL `generate_rising_star`");
-        }
-
         // Grab total count
         $query = "SELECT COUNT(player_id) FROM risingstar";
         $total = (int)$connection->query($query)->fetchColumn(0);
-        $Response->writeDataLine($total, time());
+        $Response->writeDataLine($total, Config::Get('stats_risingstar_refresh'));
         $Response->writeHeaderLine("n", "pid", "nick", "weeklyscore", "totaltime", "date", "playerrank", "countrycode");
 
         /**
@@ -355,7 +343,7 @@ SQL;
                     $row['pos'],
                     $row['player_id'],
                     trim($row['name']),
-                    $row['weeklyscore'],
+                    round($row['weeklyscore'] / 10000, 2), // Convert to percentage
                     $row['time'],
                     date('m/d/y h:i:00 A', $row['joined']),
                     $row['rank_id'],
@@ -393,7 +381,7 @@ SQL;
                 $result['pos'],
                 $player['id'],
                 trim($player['name']),
-                $result['weeklyscore'],
+                round($result['weeklyscore'] / 10000, 2), // Convert to percentage
                 $player['time'],
                 date('m/d/y h:i:00 A', $player['joined']),
                 $player['rank_id'],

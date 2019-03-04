@@ -28,6 +28,7 @@ if (!function_exists('build_navigation'))
         $system = array('config', 'install', 'database');
         $players = array('players');
         $server = array('providers', 'servers', 'snapshots', 'roundinfo');
+        $service = array('service');
         $statistics = array('mapinfo', 'stats');
         $game = array('gamedata');
 
@@ -39,8 +40,8 @@ if (!function_exists('build_navigation'))
         $navigation->append($group);
 
         // Add System Links
-        $group = new NavigationItem("System", "#", "icon-tools", in_array($task, $system));
-        $group->append('/ASP/config', 'System Configuration');
+        $group = new NavigationItem("System", "#", "icon-cogs", in_array($task, $system));
+        $group->append('/ASP/config', 'Edit Configuration');
         $group->append('/ASP/install', 'System Installation');
 
         // Adjust navigation items based on a few variables
@@ -70,13 +71,20 @@ if (!function_exists('build_navigation'))
             $group->append('/ASP/database/restore', 'Restore Database');
             $navigation->append($group);
 
+            // Add Statistics Links
+            $group = new NavigationItem("Maintenance", "#", "icon-tools", in_array($task, $service));
+            $group->append('/ASP/service/risingstar', 'Rising Star Leaderboard');
+            $group->append('/ASP/service/smoc', 'Sergeant Major of the Corp');
+            $group->append('/ASP/service/general', '4-Star General Selection');
+            $navigation->append($group);
+
             // Add Player Links
             $group = new NavigationItem("Player Manager", "/ASP/players", "icon-users", in_array($task, $players));
             $navigation->append($group);
 
             // Add Server Admin Links
             $snapshots = ($ss > 0) ? '<span class="mws-nav-tooltip" title="Unauthorized Snapshots">' . $ss . '</span>' : '';
-            $group = new NavigationItem("Server Admin" . $snapshots, "#", "icon-business-card", in_array($task, $server));
+            $group = new NavigationItem("Stats Admin" . $snapshots, "#", "icon-business-card", in_array($task, $server));
             $group->append('/ASP/providers', 'Manage Ranked Providers');
             $group->append('/ASP/servers', 'View Registered Servers');
             $group->append('/ASP/snapshots', 'Authorize Snapshots');

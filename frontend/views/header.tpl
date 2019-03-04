@@ -40,6 +40,11 @@
     <script type="text/javascript" src="/ASP/frontend/js/bootstrap/bootstrap.min.js"></script>
     {VIEW_JS}
 	<script type="text/javascript" src="/ASP/frontend/js/mws.js"></script>
+
+	<!-- Alert Scripts -->
+	<link rel="stylesheet" type="text/css" href="/ASP/frontend/js/jgrowl/jquery.jgrowl.css" media="screen">
+	<script type="text/javascript" src="/ASP/frontend/js/jgrowl/jquery.jgrowl-min.js"></script>
+	<script type="text/javascript" src="/ASP/frontend/modules/service/js/alerts.js"></script>
 </head>
 <body>
 	<!-- Header -->

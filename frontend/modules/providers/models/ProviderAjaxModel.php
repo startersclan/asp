@@ -1,7 +1,4 @@
 <?php
-
-use System\DataTables;
-
 /**
  * BF2Statistics ASP Framework
  *
@@ -10,6 +7,7 @@ use System\DataTables;
  * License:      GNU GPL v3
  *
  */
+use System\DataTables;
 
 class ProviderAjaxModel
 {

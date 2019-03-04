@@ -44,9 +44,16 @@ return [
     ],
     "3.0.6" => [
         "comment" => "Added score columns to vehicles and kits.",
-        "up" => null,
-        "up_string" => "",
+        "up" => "30070",
+        "up_string" => "3.0.7",
         "down" => "30050",
         "down_string" => "3.0.5",
+    ],
+    "3.0.7" => [
+        "comment" => "Removed Rising Star procedure and added new Rising Star view.",
+        "up" => null,
+        "up_string" => "",
+        "down" => "30060",
+        "down_string" => "3.0.6",
     ]
 ];

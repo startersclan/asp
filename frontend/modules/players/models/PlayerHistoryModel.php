@@ -326,7 +326,7 @@ SQL;
 
             // Add kit data
             $data[] = [
-                'name' => StatsData::$KitNames[$id],
+                'name' => StatsData::GetKitNameById($id),
                 'kills' => $row['kills'],
                 'deaths' => $row['deaths'],
                 'time' => TimeHelper::SecondsToHms($row['time']),
@@ -418,7 +418,7 @@ SQL;
 
             // Add vehicle data
             $data[] = [
-                'name' => StatsData::$VehicleNames[$id],
+                'name' => StatsData::GetVehicleNameById($id),
                 'kills' => $row['kills'],
                 'deaths' => $row['deaths'],
                 'roadKills' => $row['roadkills'],
@@ -522,7 +522,7 @@ SQL;
 
             // Add vehicle data
             $data[] = [
-                'name' => StatsData::$WeaponNames[$id],
+                'name' => StatsData::GetWeaponNameById($id),
                 'kills' => $row['kills'],
                 'deaths' => $row['deaths'],
                 'hits' => $row['hits'],
@@ -605,7 +605,7 @@ SELECT p.id, pkh.count, p.name, rh.rank_id
 FROM player_kill_history AS pkh 
   LEFT JOIN player_round_history AS rh ON (pkh.victim = rh.player_id AND pkh.round_id = rh.round_id)
   LEFT JOIN player AS p ON pkh.victim = p.id
-WHERE attacker=$playerId AND pkh.round_id=$roundId
+WHERE pkh.round_id=$roundId AND pkh.attacker=$playerId
 SQL;
         $rowData = $this->pdo->query($query)->fetchAll();
 
@@ -638,7 +638,7 @@ SELECT p.id, pkh.count, p.name, rh.rank_id
 FROM player_kill_history AS pkh 
   LEFT JOIN player_round_history AS rh ON (pkh.attacker = rh.player_id AND pkh.round_id = rh.round_id)
   LEFT JOIN player AS p ON pkh.attacker = p.id
-WHERE victim=$playerId AND pkh.round_id=$roundId
+WHERE pkh.round_id=$roundId AND pkh.victim=$playerId
 SQL;
         $rowData = $this->pdo->query($query)->fetchAll();
 
@@ -688,7 +688,7 @@ SQL;
         $query = <<<SQL
 SELECT award_id, a.type, level 
 FROM player_award 
-  JOIN award a ON player_award.award_id = a.id 
+  JOIN award AS a ON player_award.award_id = a.id 
 WHERE player_id=$playerId AND round_id=$roundId
 SQL;
         $rowData = $this->pdo->query($query)->fetchAll();

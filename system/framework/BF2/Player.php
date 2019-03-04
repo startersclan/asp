@@ -19,7 +19,9 @@ use System\Collections\Dictionary;
 class Player implements \ArrayAccess
 {
     /**
-     * @var string A regular expression for BF2 player name validation
+     * @var string A regular expression for BF2 player name validation or sanitization
+     *
+     * @example $sanitized = preg_replace("/[^". Player::NAME_REGEX ."]/" '', trim($nick));
      */
     const NAME_REGEX = 'A-Za-z0-9_\.<>=\-\s\@\{\}\*\|\[\]\(\)';
 

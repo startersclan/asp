@@ -649,9 +649,9 @@ CREATE TABLE `player_kill_history` (
   `attacker` INT UNSIGNED NOT NULL,
   `victim` INT UNSIGNED NOT NULL,
   `count` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-  PRIMARY KEY(`attacker`,`round_id`,`victim`),
-  FOREIGN KEY(`attacker`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  PRIMARY KEY(`round_id`,`attacker`,`victim`),
   FOREIGN KEY(`round_id`) REFERENCES round(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`attacker`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`victim`) REFERENCES player(`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -793,6 +793,11 @@ CREATE OR REPLACE VIEW `player_map_top_players_view` AS
   FROM player_map AS m
     JOIN player AS p on m.player_id = p.id;
 
+CREATE OR REPLACE VIEW `rising_star_view` AS
+  SELECT pos, player_id, weeklyscore, p.name, p.rank_id, p.country, p.joined, p.time
+  FROM risingstar AS r
+    LEFT JOIN player AS p ON player_id = p.id;
+
 -- --------------------------------------------------------
 -- Create Procedures
 -- --------------------------------------------------------
@@ -809,26 +814,6 @@ CREATE PROCEDURE `create_player`(
     INSERT INTO player(`id`, `name`, `password`, `country`, `lastip`, `rank_id`)
       VALUES(pid, playerName, playerPassword, countryCode, ipAddress, 0);
     SELECT pid;
-  END $$
-
-CREATE PROCEDURE `generate_rising_star`()
-  BEGIN
-    -- Get timestamp from a week ago
-    DECLARE lastweek INT;
-    SET lastweek = UNIX_TIMESTAMP() - (86400 * 7);
-
-    -- Delete all rising star rows
-    DELETE FROM `risingstar`;
-    ALTER TABLE `risingstar` AUTO_INCREMENT = 1;
-
-    -- Fill Rising Star Table
-    INSERT INTO `risingstar`(player_id, weeklyscore)
-      SELECT player_id, sum(h.score) AS weeklyscore
-      FROM player_round_history AS h
-        JOIN round r ON h.round_id = r.id
-      WHERE r.time_end >= lastweek AND score > 0
-      GROUP BY player_id
-      ORDER BY weeklyscore DESC;
   END $$
 
 delimiter ;

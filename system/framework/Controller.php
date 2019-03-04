@@ -133,7 +133,7 @@ abstract class Controller
      * with ASP ajax responses.
      *
      * @param bool $success Indicates whether the expected result was successful
-     * @param string $message The result message to send to the client
+     * @param string|string[] $message The result message to send to the client
      * @param array $params Additional data to pass in the response (key => value)
      */
     protected function sendJsonResponse($success, $message, $params = [])
