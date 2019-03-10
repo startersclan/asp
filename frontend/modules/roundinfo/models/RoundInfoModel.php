@@ -94,6 +94,14 @@ SQL;
         while ($row = $result->fetch())
         {
             $armyId = (int)$row['army_id'];
+
+            // calculate spm and format time
+            $time = (int)$row['time'];
+            $score = (int)$row['score'];
+            $row['spm'] = ($time > 0 && $score > 0) ? round($score / ($time / 60), 2) : "0.00";
+            $row['time_formatted'] = TimeHelper::SecondsToHms($time);
+
+            // Assign player to the proper team
             if ($armyId == $round['team1_army_id'])
             {
                 $players1[] = $row;

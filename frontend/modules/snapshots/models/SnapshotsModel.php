@@ -220,6 +220,7 @@ SQL;
         $players = $snapshot->getPlayersByArmy();
         $view->set('players1', $players[$snapshot->team1ArmyId]);
         $view->set('players2', $players[$snapshot->team2ArmyId]);
+        $view->set('players', $snapshot->players);
 
         // Skill Players
         $players = [];

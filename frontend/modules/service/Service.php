@@ -191,7 +191,7 @@ class Service extends Controller
             {
                 $spanNext = TimeSpan::FromSeconds($next - time());
                 $message = 'The Rising Star Leaderboard update is past due';
-                $message .= ($last > 0 && $spanNext->getWholeHours() > 0)
+                $message .= ($last > 0 && $spanNext->getWholeHours() > 1)
                     ? ' by ' . $spanNext->toString('%e days and %y hours')
                     : '!';
                 $messages[] = ['Attention Required!', $message, '/ASP/service/risingstar'];
@@ -208,7 +208,7 @@ class Service extends Controller
             {
                 $spanNext = TimeSpan::FromSeconds($next - time());
                 $message = 'Selection of the next Sergeant Major of the Corps is past due';
-                $message .= ($last > 0 && $spanNext->getWholeHours() > 0)
+                $message .= ($last > 0 && $spanNext->getWholeHours() > 1)
                     ? ' by ' . $spanNext->toString('%e days and %y hours')
                     : '!';
                 $messages[] = ['Attention Required!', $message, '/ASP/service/smoc'];
@@ -225,7 +225,7 @@ class Service extends Controller
             {
                 $spanNext = TimeSpan::FromSeconds($next - time());
                 $message = 'Selection of the next 4-Star General is past due';
-                $message .= ($last > 0 && $spanNext->getWholeHours() > 0)
+                $message .= ($last > 0 && $spanNext->getWholeHours() > 1)
                     ? ' by ' . $spanNext->toString('%e days and %y hours')
                     : '!';
                 $messages[] = ['Attention Required!', $message, '/ASP/service/general'];

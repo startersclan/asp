@@ -11,6 +11,7 @@ namespace System\BF2;
 use System\AwardData;
 use System\StatsData;
 use System\Collections\Dictionary;
+use System\TimeHelper;
 
 /**
  * Class Player
@@ -180,6 +181,10 @@ class Player implements \ArrayAccess
      */
     public $earnedAwards = array();
 
+    public $timeFormatted = '';
+
+    public $scorePerMin = 0.00;
+
     /**
      * Player constructor.
      *
@@ -239,6 +244,11 @@ class Player implements \ArrayAccess
         $this->teamKills = (int)$playerData["tmkl"];
         $this->teamDamage = (int)$playerData["tmdg"];
         $this->teamVehicleDamage = (int)$playerData["tmvd"];
+
+        $this->scorePerMin = ($this->roundTime > 0 && $this->roundScore > 0)
+            ? round($this->roundScore / ($this->roundTime / 60), 2)
+            : 0.00;
+        $this->timeFormatted = TimeHelper::SecondsToHms($this->roundTime);
 
         // Add parachute
         $this->timeParachute = (int)$playerData["tvp"];

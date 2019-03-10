@@ -34,3 +34,9 @@ img.center {
     color: #000000;
     text-decoration: underline;
 }
+
+.ui-tabs .ui-tabs-nav li.ui-tabs-active {
+    background-image: -webkit-linear-gradient(top, #f7f7f7, #cccccc);
+    background-image: -moz-linear-gradient(top, #f7f7f7, #cccccc);
+    background-image: linear-gradient(to bottom, #f7f7f7, #cccccc);
+}

@@ -125,104 +125,166 @@
         </ul>
     </div>
 </div>
-<div class="mws-panel grid_4 mws-collapsible clear">
-    <div class="mws-panel-header">
-        <span>
-            <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team1_army_id}.png"/>
-            {round.team1name}
-        </span>
-    </div>
-    <div class="mws-panel-body no-padding">
-        <table id="team2" class="mws-table">
-            <thead>
-            <tr>
-                <th style="width: 7%">Rank</th>
-                <th>Name</th>
-                <th style="width: 10%">Score</th>
-                <th style="width: 10%">SS</th>
-                <th style="width: 10%">TS</th>
-                <th style="width: 10%">CS</th>
-                <th style="width: 10%">K</th>
-                <th style="width: 10%">D</th>
-            </tr>
-            </thead>
-            <tbody>
-            {players1}
-                <tr>
-                    <td><img class="center" src="/ASP/frontend/images/ranks/rank_{rank_id}.gif"/></td>
-                    <?php if ({player_id} == 0): ?>
-                    <td>{name}</td>
-                    <?php else: ?>
-                    <td>
-                        <a href="/ASP/players/history/{player_id}/{round.id}"
-                           rel="tooltip"
-                           data-placement="right"
-                           title="Click to view Player Round Details">
-                            {name}
-                        </a>
-                    </td>
-                    <?php endif ?>
-                    <td>{score}</td>
-                    <td>{skillscore}</td>
-                    <td>{teamscore}</td>
-                    <td>{cmdscore}</td>
-                    <td>{kills}</td>
-                    <td>{deaths}</td>
-                </tr>
-            {/players1}
-            </tbody>
-        </table>
+
+<div class="mws-panel grid_8">
+    <div class="mws-tabs">
+        <ul>
+            <li>
+                <a href="#tab-1">
+                    <span>
+                        <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team1_army_id}.png"/>
+                        All Players
+                        <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team2_army_id}.png"/>
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a href="#tab-2">
+                    <span>
+                        <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team1_army_id}.png"/>
+                         {round.team1name}
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a href="#tab-3">
+                    <span>
+                        <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team2_army_id}.png"/>
+                        {round.team2name}
+                    </span>
+                </a>
+            </li>
+        </ul>
+        <div id="tab-1" class="mws-panel-body no-padding">
+            <table id="all" class="mws-datatable-fn mws-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%">Rank</th>
+                        <th>Name</th>
+                        <th style="width: 5%">Team</th>
+                        <th style="width: 7%">Score</th>
+                        <th style="width: 7%">Time</th>
+                        <th style="width: 7%">SPM</th>
+                        <th style="width: 7%">Kills</th>
+                        <th style="width: 7%">Deaths</th>
+                        <th style="width: 10%">Skill Score</th>
+                        <th style="width: 10%">Team Score</th>
+                        <th style="width: 10%">Cmd Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {players}
+                    <tr>
+                        <td><img class="center" src="/ASP/frontend/images/ranks/rank_{rank_id}.gif"/></td>
+                        <td>
+                            <a href="/ASP/players/history/{player_id}/{round.id}"
+                               rel="tooltip"
+                               data-placement="right"
+                               title="Click to view Player Round Details">
+                                {name}
+                            </a>
+                        </td>
+                        <td><img class="center" src="/ASP/frontend/images/armies/small/{army_id}.png"/></td>
+                        <td>{score}</td>
+                        <td data-order="{time}">{time_formatted}</td>
+                        <td>{spm}</td>
+                        <td>{skillscore}</td>
+                        <td>{teamscore}</td>
+                        <td>{cmdscore}</td>
+                        <td>{kills}</td>
+                        <td>{deaths}</td>
+                    </tr>
+                {/players}
+                </tbody>
+            </table>
+        </div>
+        <div id="tab-2" class="mws-panel-body no-padding">
+            <table id="team1" class="mws-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%">Rank</th>
+                        <th>Name</th>
+                        <th style="width: 7%">Score</th>
+                        <th style="width: 7%">Time</th>
+                        <th style="width: 7%">SPM</th>
+                        <th style="width: 7%">Kills</th>
+                        <th style="width: 7%">Deaths</th>
+                        <th style="width: 10%">Skill Score</th>
+                        <th style="width: 10%">Team Score</th>
+                        <th style="width: 10%">Cmd Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {players1}
+                    <tr>
+                        <td><img class="center" src="/ASP/frontend/images/ranks/rank_{rank_id}.gif"/></td>
+                        <td>
+                            <a href="/ASP/players/history/{player_id}/{round.id}"
+                               rel="tooltip"
+                               data-placement="right"
+                               title="Click to view Player Round Details">
+                                {name}
+                            </a>
+                        </td>
+                        <td>{score}</td>
+                        <td data-order="{time}">{time_formatted}</td>
+                        <td>{spm}</td>
+                        <td>{skillscore}</td>
+                        <td>{teamscore}</td>
+                        <td>{cmdscore}</td>
+                        <td>{kills}</td>
+                        <td>{deaths}</td>
+                    </tr>
+                {/players1}
+                </tbody>
+            </table>
+        </div>
+        <div id="tab-3" class="mws-panel-body no-padding">
+            <table id="team2" class="mws-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%">Rank</th>
+                        <th>Name</th>
+                        <th style="width: 7%">Score</th>
+                        <th style="width: 7%">Time</th>
+                        <th style="width: 7%">SPM</th>
+                        <th style="width: 7%">Kills</th>
+                        <th style="width: 7%">Deaths</th>
+                        <th style="width: 10%">Skill Score</th>
+                        <th style="width: 10%">Team Score</th>
+                        <th style="width: 10%">Cmd Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {players2}
+                    <tr>
+                        <td><img class="center" src="/ASP/frontend/images/ranks/rank_{rank_id}.gif"/></td>
+                        <td>
+                            <a href="/ASP/players/history/{player_id}/{round.id}"
+                               rel="tooltip"
+                               data-placement="right"
+                               title="Click to view Player Round Details">
+                                {name}
+                            </a>
+                        </td>
+                        <td>{score}</td>
+                        <td data-order="{time}">{time_formatted}</td>
+                        <td>{spm}</td>
+                        <td>{skillscore}</td>
+                        <td>{teamscore}</td>
+                        <td>{cmdscore}</td>
+                        <td>{kills}</td>
+                        <td>{deaths}</td>
+                    </tr>
+                {/players2}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
-<div class="mws-panel grid_4 mws-collapsible">
-    <div class="mws-panel-header">
-        <span>
-            <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{round.team2_army_id}.png"/>
-            {round.team2name}
-        </span>
-    </div>
-    <div class="mws-panel-body no-padding">
-        <table id="team1" class="mws-table">
-            <thead>
-            <tr>
-                <th style="width: 7%">Rank</th>
-                <th>Name</th>
-                <th style="width: 10%">Score</th>
-                <th style="width: 10%">SS</th>
-                <th style="width: 10%">TS</th>
-                <th style="width: 10%">CS</th>
-                <th style="width: 10%">K</th>
-                <th style="width: 10%">D</th>
-            </tr>
-            </thead>
-            <tbody>
-            {players2}
-                <tr>
-                    <td><img class="center" src="/ASP/frontend/images/ranks/rank_{rank_id}.gif"/></td>
-                    <?php if ({player_id} == 0): ?>
-                    <td>{name}</td>
-                    <?php else: ?>
-                    <td>
-                        <a href="/ASP/players/history/{player_id}/{round.id}"
-                           rel="tooltip"
-                           data-placement="right"
-                           title="Click to view Player Round Details">
-                            {name}
-                        </a>
-                    </td>
-                    <?php endif ?>
-                    <td>{score}</td>
-                    <td>{skillscore}</td>
-                    <td>{teamscore}</td>
-                    <td>{cmdscore}</td>
-                    <td>{kills}</td>
-                    <td>{deaths}</td>
-                </tr>
-            {/players2}
-            </tbody>
-        </table>
-    </div>
-</div>
+
+<div class="clear"></div>
+
 <div class="mws-panel grid_4 mws-collapsible" style="min-width: 330px">
     <div class="mws-panel-header">
         <span><i class="icon-pacman"></i> Top Player Scores</span>

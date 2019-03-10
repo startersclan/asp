@@ -86,6 +86,7 @@ class Roundinfo extends Controller
         // Attach round information to view
         $view = new View('view', 'roundinfo');
         $view->set('round', $round['round']);
+        $view->set('players', $round['players']);
         $view->set('players1', $round['players1']);
         $view->set('players2', $round['players2']);
 
