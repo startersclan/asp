@@ -188,11 +188,11 @@
                         <td>{score}</td>
                         <td data-order="{time}">{time_formatted}</td>
                         <td>{spm}</td>
+                        <td>{kills}</td>
+                        <td>{deaths}</td>
                         <td>{skillscore}</td>
                         <td>{teamscore}</td>
                         <td>{cmdscore}</td>
-                        <td>{kills}</td>
-                        <td>{deaths}</td>
                     </tr>
                 {/players}
                 </tbody>
@@ -229,11 +229,11 @@
                         <td>{score}</td>
                         <td data-order="{time}">{time_formatted}</td>
                         <td>{spm}</td>
+                        <td>{kills}</td>
+                        <td>{deaths}</td>
                         <td>{skillscore}</td>
                         <td>{teamscore}</td>
                         <td>{cmdscore}</td>
-                        <td>{kills}</td>
-                        <td>{deaths}</td>
                     </tr>
                 {/players1}
                 </tbody>
@@ -270,11 +270,11 @@
                         <td>{score}</td>
                         <td data-order="{time}">{time_formatted}</td>
                         <td>{spm}</td>
+                        <td>{kills}</td>
+                        <td>{deaths}</td>
                         <td>{skillscore}</td>
                         <td>{teamscore}</td>
                         <td>{cmdscore}</td>
-                        <td>{kills}</td>
-                        <td>{deaths}</td>
                     </tr>
                 {/players2}
                 </tbody>

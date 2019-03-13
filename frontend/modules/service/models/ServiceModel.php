@@ -91,9 +91,19 @@ class ServiceModel
     }
 
     /**
-     * Clears out the current Rising Star table, and rebuilds it from scratch
+     * Clears out the current Rising Star table, and rebuilds it from scratch.
+     *
+     * Rising star is calculated by comparing a player's career score per minute,
+     * and comparing that against all the score per minute the player has achieved
+     * over the last 7 days.
+     *
+     * This process is performed for each player who has scored at least 10 points in
+     * their career, have played for at least 2 weeks, and have played a game in the
+     * last 7 days.
+     *
+     * @return void
      */
-    public function generateRisingStar()
+    public function buildRisingStarTable()
     {
         // Create a list of players
         $players = new Dictionary();

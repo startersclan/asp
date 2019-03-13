@@ -83,6 +83,57 @@ class Service extends Controller
     }
 
     /**
+     * @protocol    ANY
+     * @request     /ASP/service/smoc
+     * @output      html
+     */
+    public function smoc()
+    {
+        // Grab database connection
+        $this->requireDatabase();
+
+        // Load model
+        $this->loadModel('ServiceModel', 'service');
+
+        // Load view
+        $view = new View('smoc', 'service');
+
+        // Attach needed scripts for the form
+        $view->attachScript("/ASP/frontend/js/jquery.form.js");
+        $view->attachScript("/ASP/frontend/js/datatables/jquery.dataTables.js");
+        $view->attachScript("/ASP/frontend/modules/service/js/smoc.js");
+
+        // Attach needed stylesheets
+        $view->attachStylesheet("/ASP/frontend/modules/service/css/general.css");
+
+        // Get last refresh and next refresh times
+        $interval = Config::GetOrDefault('stats_smoc_interval', 7);
+        $last = Config::Get('stats_smoc_refresh');
+        $next = $last + (86400 * $interval);
+        $isDue = ($next < time());
+
+        // Create time spans
+        $spanNext = TimeSpan::FromSeconds($next - time())->toString('%e days, %y hours');
+        if ($isDue)
+        {
+            $spanNext .= " ago";
+            $view->set('next_color', 'red');
+        }
+        else
+        {
+            $view->set('next_color', 'black');
+        }
+
+        // Set view variables
+        $view->set('last', TimeHelper::FormatDifference($last, time()));
+        $view->set('next', $spanNext);
+        $view->set('records', $this->serviceModel->getNumOfEligibleSergeantMajors());
+
+        // Send output
+        $view->render();
+    }
+
+    /**
      * @protocol    POST
      * @request     /ASP/service/list
      * @output      json
@@ -144,11 +195,16 @@ class Service extends Controller
             switch ($_POST['action'])
             {
                 case "risingstar":
-                    $this->serviceModel->generateRisingStar();
+                    // Make Sure Script doesn't timeout even if the user disconnects!
+                    set_time_limit(180);
+                    ignore_user_abort(true);
 
                     // Save config
                     Config::Set('stats_risingstar_refresh', time());
                     Config::Save();
+
+                    // Build table
+                    $this->serviceModel->buildRisingStarTable();
 
                     // Send response
                     $this->sendJsonResponse(true, "Action Completed");

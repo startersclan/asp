@@ -20,7 +20,7 @@
             bPaginate: true,
             bFilter: true,
             bInfo: true,
-            order: [[ 3, "desc" ]],
+            order: [[ 3, "desc" ], [ 8, "desc" ], [ 7, "asc" ]],
             columnDefs: [
                 { "orderable": false, "targets": 0 }
             ]
@@ -34,7 +34,7 @@
             bPaginate: true,
             bFilter: true,
             bInfo: true,
-            order: [[ 2, "desc" ]],
+            order: [[ 2, "desc" ], [ 7, "desc" ], [ 6, "asc" ]],
             columnDefs: [
                 { "orderable": false, "targets": 0 }
             ]
