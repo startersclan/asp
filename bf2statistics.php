@@ -55,7 +55,7 @@ namespace System
     {
         header("Content-Type: text/plain; charset=utf-8");
         header('HTTP/1.1 403 Forbidden');
-        die(_ERR_RESPONSE . "You are not authorised to access this page.");
+        die(_ERR_RESPONSE . "You are not authorized to access this page.");
     }
 
     // Make Sure Script doesn't timeout even if the user disconnects!

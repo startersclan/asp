@@ -13,8 +13,8 @@
  * linking of files, Also define ROOT and system paths
  */
 define('BF2_ADMIN', true);
-define('CODE_VERSION', '3.0.3');
-define('CODE_VERSION_DATE', '2019-3-12');
+define('CODE_VERSION', '3.0.4');
+define('CODE_VERSION_DATE', '2021-4-4');
 define('DB_EXPECTED_VERSION', '3.0.7');
 define('DS', DIRECTORY_SEPARATOR);
 define('ROOT', __DIR__);

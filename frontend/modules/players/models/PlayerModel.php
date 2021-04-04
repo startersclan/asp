@@ -108,8 +108,8 @@ class PlayerModel
      */
 
     /**
-     * Deletes all bot records from the player table, and all associated
-     * records from the other stats tables
+     * Deletes all bot records from the player table that have a play time of 0, 
+	 * and all associated records from the other stats tables.
      *
      * @return int The number of rows affected by the last SQL statement
      */

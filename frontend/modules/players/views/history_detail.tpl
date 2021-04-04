@@ -209,6 +209,7 @@
         </ul>
     </div>
 </div>
+<div class="clear"></div>
 <?php if ($advanced): ?>
 <div class="mws-panel grid_2">
     <div class="mws-panel-header">
