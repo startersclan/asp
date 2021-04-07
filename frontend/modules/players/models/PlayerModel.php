@@ -920,7 +920,7 @@ class PlayerModel
         $result = $this->pdo->query("SELECT u.`id` AS `id`, u.`desc` AS `desc`, k.name AS `kit` FROM `unlock` AS u JOIN kit AS k on u.kit_id = k.id ORDER BY u.`id` ASC");
         while ($row = $result->fetch())
         {
-            $unlockStatus->add($row['id'], array(false, $row['desc'], $row['kit'], 0));
+            $unlockStatus[$row['id']] = [false, $row['desc'], $row['kit'], 0];
         }
 
         // Get players current unlocks
@@ -928,18 +928,24 @@ class PlayerModel
         $result = $this->pdo->query($query);
         while ($row = $result->fetch())
         {
-            $unlockStatus[$row['unlock_id']][0] = true;
-            $unlockStatus[$row['unlock_id']][3] = $row['timestamp'];
+            // Dictionary array values are not referenced, so we must Get then Set
+            $item = $unlockStatus[$row['unlock_id']];
+            $item[0] = true;
+            $item[3] = $row['timestamp'];
+
+            // IMPORTANT! Dictionary values are not referenced, so we must Set the
+            // full array value again after changing any values!
+            $unlockStatus[$row['unlock_id']] = $item;
         }
 
-        foreach ($unlockStatus->toArray() as $uid => $unlock)
+        foreach ($unlockStatus as $uid => $unlock)
         {
             $data = [
                 'id' => $uid,
                 'level' => ($unlock[0] == true) ? "1" : "0",
                 'name' => $unlock[1],
                 'kit' => $unlock[2],
-                'time' => ($unlock[0] == true) ? date('F jS, Y g:i A T', (int)$unlock[3]) : "Never"
+                'timestamp' => ($unlock[0] == true) ? date('F jS, Y g:i A T', (int)$unlock[3]) : "Never"
             ];
 
             $viewData[] = $data;

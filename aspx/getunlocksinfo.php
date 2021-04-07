@@ -110,12 +110,14 @@ else
                 }
 
                 // Check unlock requirements
-                foreach ($unlockChecks->toArray() as $required => $want)
+                foreach ($unlockChecks as $required => $want)
                 {
-                    // A simple disable if the required unlock is not earned
+                    // Need to remove unlocks that require other unlocks to
+                    // be selected, otherwise BF2 will offer the unlock regardless
+                    // if the required unlock has been selected
                     if ($unlockStatus[$required] != 's')
                     {
-                        $unlockStatus[$want] = 'n';
+                        $unlockStatus->remove($want);
                     }
                 }
 

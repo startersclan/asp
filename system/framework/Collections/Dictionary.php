@@ -3,7 +3,7 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2021, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
@@ -392,6 +392,6 @@ class Dictionary implements \IteratorAggregate, \ArrayAccess, \Countable, \Seria
      */
     public function getIterator()
     {
-        return new \ArrayIterator($this);
+        return new \ArrayIterator($this->data);
     }
 }

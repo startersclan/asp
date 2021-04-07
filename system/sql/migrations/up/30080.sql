@@ -41,8 +41,8 @@ INSERT IGNORE INTO `unlock` VALUES (555, 6, 'gbrif_l96a1', 'L96A1');
 --
 -- Insert default
 --
-INSERT INTO `unlock_requirement`(`parent_id`, `child_id`) VALUES (88, 22);
-INSERT INTO `unlock_requirement`(`parent_id`, `child_id`) VALUES (99, 33);
+INSERT INTO `unlock_requirement`(`parent_id`, `child_id`) VALUES (22, 88);
+INSERT INTO `unlock_requirement`(`parent_id`, `child_id`) VALUES (33, 99);
 INSERT INTO `unlock_requirement`(`parent_id`, `child_id`) VALUES (44, 111);
 INSERT INTO `unlock_requirement`(`parent_id`, `child_id`) VALUES (55, 222);
 INSERT INTO `unlock_requirement`(`parent_id`, `child_id`) VALUES (66, 333);
