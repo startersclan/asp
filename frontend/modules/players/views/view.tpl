@@ -625,6 +625,7 @@
             <li><a href="#tab-1">Badges</a></li>
             <li><a href="#tab-2">Medals</a></li>
             <li><a href="#tab-3">Ribbons</a></li>
+            <li><a href="#tab-4">Unlocks</a></li>
         </ul>
         <div id="tab-1">
             <ul class="thumbnails mws-gallery">
@@ -711,6 +712,35 @@
                     </li>
                     <?php endif ?>
                 {/ribbons}
+            </ul>
+        </div>
+        <div id="tab-4">
+            <ul class="thumbnails mws-gallery">
+                {unlocks}
+                    <?php if ({level} != 0): ?>
+                    <li>
+                    <span class="thumbnail"
+                          rel="popover"
+                          data-trigger="hover"
+                          data-placement="bottom"
+                          data-original-title="{name}"
+                          data-content="<div><b>Kit Name</b>: {kit}</div><div><b>Earned</b>: {timestamp}</div>">
+                        <img src="/ASP/frontend/images/unlocks/color/{id}.png"/>
+                    </span>
+                    </li>
+                    <?php else: ?>
+                    <li>
+                        <span class="thumbnail"
+                              rel="popover"
+                              data-trigger="hover"
+                              data-placement="bottom"
+                              data-original-title="{name}"
+                              data-content="<div><b>Kit Name</b>: {kit}</div><div><b>Earned</b>: Player has not selected this unlock yet! </div>">
+                            <img src="/ASP/frontend/images/unlocks/grey/{id}.png"/>
+                        </span>
+                    </li>
+                    <?php endif ?>
+                {/unlocks}
             </ul>
         </div>
     </div>

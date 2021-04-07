@@ -51,9 +51,16 @@ return [
     ],
     "3.0.7" => [
         "comment" => "Removed Rising Star procedure and added new Rising Star view.",
-        "up" => null,
-        "up_string" => "",
+        "up" => "30080",
+        "up_string" => "3.0.8",
         "down" => "30060",
         "down_string" => "3.0.6",
+    ],
+    "3.0.8" => [
+        "comment" => "Added the unlock_requirement table.",
+        "up" => null,
+        "up_string" => "",
+        "down" => "30070",
+        "down_string" => "3.0.7",
     ]
 ];

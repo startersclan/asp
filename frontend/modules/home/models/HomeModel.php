@@ -58,7 +58,7 @@ class HomeModel
         while ($row = $q->fetch())
         {
             // Views will return null here
-            if ($row["Data_length"] == null)
+            if (!isset($row["Data_length"]) || $row["Data_length"] == null)
                 continue;
 
             $size += $row["Data_length"] + $row["Index_length"];
@@ -119,6 +119,30 @@ class HomeModel
         return (int)$this->pdo->query($query)->fetchColumn(0);
     }
 
+    /**
+     * @return int Returns the total number of players who registered this week
+     */
+    public function getNumNewPlayersThisWeek()
+    {
+        $query = "SELECT COUNT(id) FROM player WHERE joined > " . self::$OneWeekAgo;
+        return (int)$this->pdo->query($query)->fetchColumn(0);
+    }
+
+    /**
+     * @return int Returns the total number of players who registered last week
+     */
+    public function getNumNewPlayersLastWeek()
+    {
+        $a = self::$OneWeekAgo;
+        $b = self::$TwoWeekAgo;
+
+        $query = "SELECT COUNT(id) FROM player WHERE joined BETWEEN $a AND $b";
+        return (int)$this->pdo->query($query)->fetchColumn(0);
+    }
+
+    /**
+     * @return int Returns the total number of servers
+     */
     public function getNumServers()
     {
         return (int)$this->pdo->query("SELECT COUNT(id) FROM server")->fetchColumn(0);
@@ -150,7 +174,32 @@ class HomeModel
      *
      * @return array
      */
-    public function getChartData()
+    public function getRankDistChartData()
+    {
+        $playerCount = $this->getNumPlayers();
+        $output = array('ranks' => ['name' => [], 'count' => []]);
+        $query = "SELECT id, name FROM rank ORDER BY id ASC";
+
+        $i = 0;
+        $result = $this->pdo->query(trim($query));
+        while ($row = $result->fetch())
+        {
+            $query2 = "SELECT COUNT(rank_id) FROM player WHERE rank_id=". $row['id'];
+            $count = $this->pdo->query($query2)->fetchColumn();
+            $output['ranks']['name'][] = array($i, $row['name']);
+            $output['ranks']['count'][] = array($i++, $count);
+        }
+
+        // return chart data
+        return $output;
+    }
+
+    /**
+     * Fetches the chart data for the Home page
+     *
+     * @return array
+     */
+    public function getGamesPlayedChartData()
     {
         $output = array(
             'week' => ['y' => [], 'x' => []],

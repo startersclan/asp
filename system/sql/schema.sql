@@ -45,11 +45,13 @@ DROP TABLE IF EXISTS `player_round_history`;
 DROP TABLE IF EXISTS `player`;
 DROP TABLE IF EXISTS `weapon`;
 DROP TABLE IF EXISTS `vehicle`;
+DROP TABLE IF EXISTS `unlock_requirement`;
 DROP TABLE IF EXISTS `unlock`;
 DROP TABLE IF EXISTS `round_history`;
 DROP TABLE IF EXISTS `round`;
 DROP TABLE IF EXISTS `game_mod`;
 DROP TABLE IF EXISTS `game_mode`;
+DROP TABLE IF EXISTS `failed_snapshot`;
 DROP TABLE IF EXISTS `server_auth_ip`;
 DROP TABLE IF EXISTS `server`;
 DROP TABLE IF EXISTS `stats_provider_auth_ip`;
@@ -248,6 +250,18 @@ CREATE TABLE `unlock` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
+-- Table structure for table `unlock_requirement`
+--
+
+CREATE TABLE `unlock_requirement` (
+  `parent_id` SMALLINT UNSIGNED,
+  `child_id` SMALLINT UNSIGNED,
+  PRIMARY KEY(`parent_id`, `child_id`),
+  FOREIGN KEY(`parent_id`) REFERENCES `unlock`(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(`child_id`) REFERENCES `unlock`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
 -- Table structure for table `vehicle`
 --
 
@@ -276,9 +290,9 @@ CREATE TABLE `weapon` (
 CREATE TABLE `failed_snapshot` (
   `id` INT UNSIGNED AUTO_INCREMENT,                      -- Row ID
   `server_id` SMALLINT UNSIGNED NOT NULL,
-  `timestamp` INT UNSIGNED NOT NULL DEFAULT 0,  -- Snapshot award short name, case sensitive
-  `filename` VARCHAR(128),             -- Full name of the award, human readable
-  `reason`  VARCHAR(128),              -- 0 = ribbon, 1 = Badge, 2 = medal
+  `timestamp` INT UNSIGNED NOT NULL DEFAULT 0,  --
+  `filename` VARCHAR(128),             --
+  `reason`  VARCHAR(128),              --
   PRIMARY KEY(`id`),
   FOREIGN KEY(`server_id`) REFERENCES server(`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

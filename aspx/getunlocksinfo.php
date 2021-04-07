@@ -28,6 +28,8 @@
 namespace System;
 
 // No direct access
+use System\Collections\Dictionary;
+
 defined("BF2_ADMIN") or die("No Direct Access");
 
 // Prepare output
@@ -57,7 +59,7 @@ else
     {
         case 0:
             // Get Player Data
-            $row = $connection->query("SELECT `name`, `score`, `rank_id` FROM `player` WHERE `id` = {$pid}")->fetch();
+            $row = $connection->query("SELECT `name`, `rank_id` FROM `player` WHERE `id` = {$pid}")->fetch();
             if (empty($row))
             {
                 $Response->writeHeaderLine("pid", "nick", "asof");
@@ -71,32 +73,67 @@ else
             {
                 // Cast to an int
                 $rank = (int)$row['rank_id'];
+                $name = $row['name'];
 
                 // Determine Earned Unlocks due to Rank
-                $unlocks = getRankUnlocks($rank);
+                $totalPlayerUnlockCount = getUnlockCountByRank($rank);
 
                 // Determine Bonus Unlocks due to Kit Badges
-                $unlocks += getBonusUnlocks($pid, $rank, $connection);
+                $totalPlayerUnlockCount += getBonusUnlockCountByBadges($pid, $rank, $connection);
 
-                // Check Used Unlocks
-                $query = "SELECT COUNT(`player_id`) AS `count` FROM `player_unlock` WHERE `player_id` = {$pid}";
-                $used = (int)$connection->query($query)->fetchColumn(0);
+                // Player used unlocks
+                $usedCount = 0;
 
-                // Determine available unlocks count
-                $available = max(0, ($unlocks - $used));
+                // Get all current unlocks, and set the status to locked by default
+                $unlockStatus = new Dictionary();
+                $result = $connection->query("SELECT `id` FROM `unlock` ORDER BY `id` ASC");
+                while ($row = $result->fetch())
+                {
+                    $unlockStatus->add($row['id'], 'n');
+                }
 
-                // Prepare output
-                $Response->writeHeaderLine("pid", "nick", "asof");
-                $Response->writeDataLine($pid, $row['name'], time());
-                $Response->writeHeaderLine("enlisted", "officer");
-                $Response->writeDataLine($available, 0);
-                $Response->writeHeaderLine("id", "state");
+                // Get all unlock requirements
+                $unlockChecks = new Dictionary();
+                $result = $connection->query("SELECT `parent_id`, `child_id` FROM `unlock_requirement`");
+                while ($row = $result->fetch())
+                {
+                    $unlockChecks->add($row['parent_id'], $row['child_id']);
+                }
 
                 // Get players current unlocks
                 $query = "SELECT unlock_id FROM `player_unlock` WHERE `player_id`={$pid} ORDER BY `unlock_id` ASC";
                 $result = $connection->query($query);
                 while ($row = $result->fetch())
-                    $Response->writeDataLine($row['unlock_id'], 's');
+                {
+                    $usedCount++;
+                    $unlockStatus[$row['unlock_id']] = 's';
+                }
+
+                // Check unlock requirements
+                foreach ($unlockChecks->toArray() as $required => $want)
+                {
+                    // A simple disable if the required unlock is not earned
+                    if ($unlockStatus[$required] != 's')
+                    {
+                        $unlockStatus[$want] = 'n';
+                    }
+                }
+
+                // Determine available unlocks count
+                $available = max(0, ($totalPlayerUnlockCount - $usedCount));
+
+                // Prepare output
+                $Response->writeHeaderLine("pid", "nick", "asof");
+                $Response->writeDataLine($pid, $name, time());
+                $Response->writeHeaderLine("enlisted", "officer");
+                $Response->writeDataLine($available, 0);
+                $Response->writeHeaderLine("id", "state");
+
+                // Append output
+                foreach ($unlockStatus->toArray() as $unlockId => $status)
+                {
+                    $Response->writeDataLine($unlockId, $status);
+                }
 
                 // Send response
                 $Response->send();
@@ -135,33 +172,13 @@ else
 }
 
 /**
- * This method analysis a players current unlocks, and determines if
- * the qualify for / earned a special forces unlock
- *
- * @param int $want The wanted SF unlock ID
- * @param int $need The needed vanilla unlock to have the $want unlock
- * @param string[] $unlocks An array of current unlocks
- * @param \System\AspResponse $Response The response object
- */
-function checkUnlock($want, $need, $unlocks, AspResponse $Response)
-{
-    // Only if the vanilla unlock is unlocked
-    if (isset($unlocks[$need]) && $unlocks[$need] == 's')
-    {
-        // Has the SF unlocked been used?
-        $keep = (isset($unlocks[$want]) && $unlocks[$want] == 's') ? 's' : 'n';
-        $Response->writeDataLine($want, $keep);
-    }
-}
-
-/**
  * This method returns the number of unlocks due to rank
  *
  * @param int $rank The players current rank
  *
  * @return int The amount of unlocks due to rank
  */
-function getRankUnlocks($rank)
+function getUnlockCountByRank($rank)
 {
     // Determine Earned Unlocks due to Rank
     if ($rank >= 9)
@@ -208,7 +225,7 @@ function getRankUnlocks($rank)
  *
  * @return int
  */
-function getBonusUnlocks($pid, $rank, $connection)
+function getBonusUnlockCountByBadges($pid, $rank, $connection)
 {
     // Check if Minimum Rank Unlocks obtained
     if ($rank < Config::Get('game_unlocks_bonus_min'))

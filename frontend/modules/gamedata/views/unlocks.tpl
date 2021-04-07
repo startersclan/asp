@@ -19,6 +19,7 @@
                 <th>Name</th>
                 <th>Description</th>
                 <th>Kit</th>
+                <th>Required Unlock</th>
                 <th style="width: 7%;">Actions</th>
             </tr>
             </thead>
@@ -29,6 +30,7 @@
                     <td>{name}</td>
                     <td>{desc}</td>
                     <td>{kitname}</td>
+                    <td>{reqname}</td>
                     <td>
                         <span class="btn-group">
                             <a id="edit-{id}" href="#"  rel="tooltip" title="Edit Award" class="btn btn-small"><i class="icon-pencil"></i></a>
@@ -76,6 +78,17 @@
                     {kits}
                         <option value="{id}">{name}</option>
                     {/kits}
+                    </select>
+                </div>
+            </div>
+            <div class="mws-form-row">
+                <label class="mws-form-label">Requires Unlock</label>
+                <div class="mws-form-item">
+                    <select id="unlockRequired" name="unlockRequired" class="large required" title="">
+                        <option value="0">None</option>
+                        {unlocks}
+                            <option value="{id}">{name}</option>
+                        {/unlocks}
                     </select>
                 </div>
             </div>

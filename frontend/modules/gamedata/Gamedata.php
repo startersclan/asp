@@ -172,6 +172,21 @@ class Gamedata extends Controller
         $unlocks = $pdo->query("SELECT u.*, k.name AS `kitname` FROM `unlock` AS u INNER JOIN `kit` AS k ON k.id = u.kit_id ORDER BY `id`")->fetchAll();
         $kits = $pdo->query("SELECT `id`, `name` FROM `kit` ORDER BY `id`")->fetchAll();
 
+        // Get all unlock requirements
+        $unlockChecks = new Dictionary();
+        $result = $pdo->query("SELECT ur.parent_id, ur.child_id AS child_id, u.name AS parent_name FROM `unlock_requirement` AS ur JOIN `unlock` AS u ON ur.parent_id = u.id");
+        while ($row = $result->fetch())
+        {
+            $unlockChecks->add($row['child_id'], $row['parent_name']);
+        }
+
+        // Modify unlocks array to include requirements
+        for ($i = 0; $i < count($unlocks); $i++)
+        {
+            $id = $unlocks[$i]['id'];
+            $unlocks[$i]['reqname'] = ($unlockChecks->containsKey($id) ? $unlockChecks[$id] : "None");
+        }
+
         // Load view
         $view = new View('unlocks', 'gamedata');
         $view->set('unlocks', $unlocks);
@@ -465,14 +480,29 @@ class Gamedata extends Controller
             ];
             $name = $pdo->quoteIdentifier('name');
 
+            // Fetch required unlock name
+            $reqName = "None";
+            $req = (int)$items['unlockRequired'];
+            if ($req != 0)
+            {
+                $reqName = $pdo->query("SELECT {$name} FROM `unlock` WHERE id=". $req)->fetchColumn(0);
+            }
+
             // Switch on our action base
             switch ($_POST['action'])
             {
                 case 'add':
                     $pdo->insert('unlock', $data);
 
+                    // Do we have a required unlock constraint?
+                    if ($req != 0)
+                    {
+                        $pdo->insert('unlock_requirement', ['parent_id' => $req, 'child_id' => $data['id']]);
+                    }
+
                     // Get kit name
-                    $data['kit'] = $pdo->query("SELECT {$name} FROM kit WHERE id=". $data['kit'])->fetchColumn(0);
+                    $data['kit'] = $pdo->query("SELECT {$name} FROM kit WHERE id=". $data['kit_id'])->fetchColumn(0);
+                    $data['reqname'] = $reqName;
                     $data['success'] = true;
                     $data['mode'] = 'add';
                     echo json_encode($data);
@@ -480,8 +510,18 @@ class Gamedata extends Controller
                 case 'edit':
                     $pdo->update('unlock', $data, ['id' => (int)$items['originalId']]);
 
+                    // Always empty this!
+                    $pdo->delete('unlock_requirement', ['child_id' => $data['id']]);
+
+                    // Do we have a required unlock constraint?
+                    if ($req != 0)
+                    {
+                        $pdo->insert('unlock_requirement', ['parent_id' => $req, 'child_id' => $data['id']]);
+                    }
+
                     // Get kit name
-                    $data['kit'] = $pdo->query("SELECT {$name} FROM kit WHERE id=". $data['kit'])->fetchColumn(0);
+                    $data['kit'] = $pdo->query("SELECT {$name} FROM kit WHERE id=". $data['kit_id'])->fetchColumn(0);
+                    $data['reqname'] = $reqName;
                     $data['success'] = true;
                     $data['mode'] = 'edit';
                     echo json_encode($data);

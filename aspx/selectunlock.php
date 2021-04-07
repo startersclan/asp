@@ -62,10 +62,10 @@ else
         $rank = (int)$rank;
 
         // Determine Earned Unlocks due to Rank
-        $unlocks = getRankUnlocks($rank);
+        $unlocks = getUnlockCountByRank($rank);
 
         // Determine Bonus Unlocks due to Kit Badges
-        $unlocks += getBonusUnlocks($pid, $rank, $connection);
+        $unlocks += getBonusUnlockCountByBadges($pid, $rank, $connection);
 
         // Check Used Unlocks
         $query = "SELECT COUNT(`player_id`) AS `count` FROM `player_unlock` WHERE `player_id` = {$pid}";
@@ -77,7 +77,8 @@ else
         // Finally, if the user HAS available unlocks, let them choose this one
         if ($available > 0)
         {
-            $connection->exec("INSERT INTO player_unlock VALUES ($pid, $id)");
+            $time = time();
+            $connection->exec("INSERT INTO player_unlock VALUES ($pid, $id, $time)");
             $Response->writeLine("OK");
             $Response->send();
         }
@@ -103,7 +104,7 @@ else
  *
  * @return int The amount of unlocks due to rank
  */
-function getRankUnlocks($rank)
+function getUnlockCountByRank($rank)
 {
     // Determine Earned Unlocks due to Rank
     if ($rank >= 9)
@@ -150,7 +151,7 @@ function getRankUnlocks($rank)
  *
  * @return int
  */
-function getBonusUnlocks($pid, $rank, $connection)
+function getBonusUnlockCountByBadges($pid, $rank, $connection)
 {
     // Check if Minimum Rank Unlocks obtained
     if ($rank < Config::Get('game_unlocks_bonus_min'))

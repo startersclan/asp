@@ -123,6 +123,7 @@ class Players extends Controller
         $this->playerModel->attachVehicleData($id, $view);
         $this->playerModel->attachWeaponData($id, $view);
         $this->playerModel->attachAwardData($id, $view);
+        $this->playerModel->attachUnlockData($id, $view);
         $this->playerModel->attachMapData($id, $view);
         $this->playerModel->attachTopVictimAndOpp($id, $view);
         $this->playerModel->attachTopPlayedServers($id, $view);

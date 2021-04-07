@@ -149,6 +149,10 @@ class Config
         // Copy the current config file for backup
         File::Copy(self::$configFile, self::$configFile . '.bak');
 
+        // Allow the file to move before starting a new IO operation
+        // This was on Issue on a Windows 10 machine using Wamp
+        sleep(1);
+
         // Write the new config values to the new config
         return File::WriteAllText(self::$configFile, $cfg);
     }

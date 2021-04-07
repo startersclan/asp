@@ -177,6 +177,18 @@ INSERT INTO `unlock` VALUES (444, 0, 'eurif_fnp90', 'P90');
 INSERT INTO `unlock` VALUES (555, 6, 'gbrif_l96a1', 'L96A1');
 
 --
+-- Dumping data for table `unlock_requirement`
+--
+INSERT INTO `unlock_requirement`(`parent_id`, `child_id`) VALUES (88, 22);
+INSERT INTO `unlock_requirement`(`parent_id`, `child_id`) VALUES (99, 33);
+INSERT INTO `unlock_requirement`(`parent_id`, `child_id`) VALUES (44, 111);
+INSERT INTO `unlock_requirement`(`parent_id`, `child_id`) VALUES (55, 222);
+INSERT INTO `unlock_requirement`(`parent_id`, `child_id`) VALUES (66, 333);
+INSERT INTO `unlock_requirement`(`parent_id`, `child_id`) VALUES (11, 444);
+INSERT INTO `unlock_requirement`(`parent_id`, `child_id`) VALUES (77, 555);
+
+
+--
 -- Dumping data for table `vehicle`
 --
 
@@ -249,3 +261,4 @@ INSERT INTO `_version`(`updateid`, `version`) VALUES (30040, '3.0.4');
 INSERT INTO `_version`(`updateid`, `version`) VALUES (30050, '3.0.5');
 INSERT INTO `_version`(`updateid`, `version`) VALUES (30060, '3.0.6');
 INSERT INTO `_version`(`updateid`, `version`) VALUES (30070, '3.0.7');
+INSERT INTO `_version`(`updateid`, `version`) VALUES (30080, '3.0.8');

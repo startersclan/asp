@@ -37,7 +37,18 @@
 
 	<a class="mws-stat" href="/ASP/players">
 		<!-- Statistic Icon (edit to change icon) -->
-		<span class="mws-stat-icon icol32-user-green"></span>
+		<span class="mws-stat-icon icol32-user-add"></span>
+
+		<!-- Statistic Content -->
+		<span class="mws-stat-content">
+			<span class="mws-stat-title">New Players (7 days)</span>
+			<span class="mws-stat-value{new_player_raise}">{num_new_players}</span>
+		</span>
+	</a>
+
+	<a class="mws-stat" href="/ASP/players">
+		<!-- Statistic Icon (edit to change icon) -->
+		<span class="mws-stat-icon icol32-status-away"></span>
 
 		<!-- Statistic Content -->
 		<span class="mws-stat-content">
@@ -123,5 +134,14 @@
 				</span>
 			</li>
 		</ul>
+	</div>
+</div>
+
+<div class="mws-panel grid_8">
+	<div class="mws-panel-header">
+		<span><i class="icon-rating3"></i> Player Rank Distribution</span>
+	</div>
+	<div class="mws-panel-body">
+		<div id="mws-dashboard-chart2" style="height: 430px; margin: auto 20px;"></div>
 	</div>
 </div>

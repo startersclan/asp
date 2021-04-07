@@ -31,10 +31,10 @@ class DatabaseModel
      * @remarks Order is important here (foreign keys)!
      */
     protected static $BackupTables = [
-        'army', 'award', 'kit', 'rank', 'vehicle', 'weapon', 'unlock', 'map', 'stats_provider',
-        'stats_provider_auth_ip', 'server', 'game_mod', 'game_mode', 'round', 'failed_snapshot',
-        'player', 'player_army', 'player_award', 'player_weapon', 'player_kit', 'player_kill',
-        'player_map', 'player_vehicle', 'player_unlock', 'player_army_history',
+        'army', 'award', 'kit', 'rank', 'vehicle', 'weapon', 'unlock', 'unlock_requirement', 'map',
+        'stats_provider', 'stats_provider_auth_ip', 'server', 'game_mod', 'game_mode', 'round',
+        'failed_snapshot', 'player', 'player_army', 'player_award', 'player_weapon', 'player_kit',
+        'player_kill', 'player_map', 'player_vehicle', 'player_unlock', 'player_army_history',
         'player_round_history', 'player_kill_history', 'player_kit_history', 'player_rank_history',
         'player_weapon_history', 'player_vehicle_history', 'battlespy_report', 'battlespy_message'
     ];

@@ -19,6 +19,7 @@
 
         // Data Table
         var Table = $(".mws-datatable-fn").DataTable({
+            pageLength: 25,
             pagingType: "full_numbers"
         }).on( 'draw.dt', function () {
             // Add tooltips to dynamically added rows
@@ -107,6 +108,7 @@
                 $('input[name="unlockDesc"]').val("");
                 $('input[name="unlockId"]').val("");
                 $("#unlockKit").val(0);
+                $("#unlockRequired").val(0);
 
                 // Show dialog form
                 $("#editor-form").dialog("option", {
@@ -145,6 +147,7 @@
                             result.name,
                             result.desc,
                             result.kit,
+                            result.reqname,
                             '<span class="btn-group"> \
                                 <a id="edit-' + id + '" href="#"  rel="tooltip" title="Edit Unlock" class="btn btn-small"><i class="icon-pencil"></i></a> \
                                 <a id="delete-' + id + '" href="#" rel="tooltip" title="Delete Unlock" class="btn btn-small"><i class="icon-trash"></i></a> \
@@ -152,12 +155,30 @@
                         ]).draw().node();
 
                         $( rowNode ).attr('id', 'tr-unlock-' + id);
+
+                        $('#unlockRequired').append($('<option>', {
+                            value: result.id,
+                            text : result.name
+                        }));
                     }
                     else if (result.mode === 'edit') {
                         selectedRowNode.find('td:eq(0)').html(result.id);
                         selectedRowNode.find('td:eq(1)').html(result.name);
                         selectedRowNode.find('td:eq(2)').html(result.desc);
                         selectedRowNode.find('td:eq(3)').html(result.kit);
+                        selectedRowNode.find('td:eq(4)').html(result.reqname);
+
+                        // Extract the old unlock ID
+                        var ssid = selectedRowNode.attr('id').split("-");
+                        var oldId = ssid[2];
+
+                        // Update row id also
+                        selectedRowNode.attr('id', 'tr-unlock-' + result.id);
+
+                        // Update the select option value
+                        $('#unlockRequired').find('[value="' + oldId + '"]').prop({
+                            value: result.id
+                        });
                     }
 
                     // Close dialog
@@ -211,6 +232,7 @@
             var name = selectedRowNode.find('td:eq(1)').html();
             var desc = htmlDecode( selectedRowNode.find('td:eq(2)').html() );
             var kit = selectedRowNode.find('td:eq(3)').html();
+            var req = selectedRowNode.find('td:eq(4)').html();
 
             if (action === 'edit') {
 
@@ -228,6 +250,7 @@
                 $('input[name="unlockDesc"]').val(desc);
                 $('input[name="unlockId"]').val(id);
                 $("#unlockKit").find("option:contains(" + kit + ")").prop("selected", "selected");
+                $("#unlockRequired").find("option:contains(" + req + ")").prop("selected", "selected");
 
                 // Show dialog form
                 $("#editor-form").dialog("option", {
@@ -265,6 +288,9 @@
                                             else {
                                                 // Update html and button displays
                                                 Table.row( selectedRowNode ).remove().draw();
+
+                                                // Remove option
+                                                $('#unlockRequired').find('[value="' + id + '"]').remove();
                                             }
                                         })
                                         .fail(function( jqXHR ) {
