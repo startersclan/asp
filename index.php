@@ -13,9 +13,9 @@
  * linking of files, Also define ROOT and system paths
  */
 define('BF2_ADMIN', true);
-define('CODE_VERSION', '3.0.5');
-define('CODE_VERSION_DATE', '2021-4-5');
-define('DB_EXPECTED_VERSION', '3.0.8');
+define('CODE_VERSION', '3.1.0');
+define('CODE_VERSION_DATE', '2021-4-14');
+define('DB_EXPECTED_VERSION', '3.1.0');
 define('DS', DIRECTORY_SEPARATOR);
 define('ROOT', __DIR__);
 define('SYSTEM_PATH', ROOT . DS . 'system');

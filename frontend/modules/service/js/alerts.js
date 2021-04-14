@@ -5,7 +5,7 @@
         var pathname = window.location.pathname;
 
         // Don't show alerts if we are in the Service Module
-        if( $.fn.jGrowl && pathname.indexOf("ASP/service/") == -1 ) {
+        if( $.fn.jGrowl && pathname.indexOf("ASP/service/") === -1 ) {
             // Get service alerts
             $.ajax({
                 type: "POST",

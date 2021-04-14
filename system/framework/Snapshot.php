@@ -3,7 +3,7 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2021, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
@@ -15,6 +15,7 @@ use SecurityException;
 use System\BF2\Player;
 use System\Collections\Dictionary;
 use System\Database\UpdateOrInsertQuery;
+use System\IO\File;
 use System\IO\Path;
 use System\Net\IPAddress;
 
@@ -311,6 +312,9 @@ class Snapshot extends GameResult
         // Put the whole thing in a try block, and rollback on error
         try
         {
+            // Allow un-committed reads
+            //$connection->exec('SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED');
+
             // Wrap in a transaction to speed things up
             $connection->beginTransaction();
 
@@ -318,6 +322,8 @@ class Snapshot extends GameResult
             $start = microtime(true);
             $ignoreBots = (bool)Config::Get('stats_ignore_ai');
             $minGameTime = (int)Config::Get('stats_min_player_game_time');
+            $promosReqComplete = (bool)Config::GetOrDefault('stats_rank_complete', 0);
+            $awardsReqComplete = (bool)Config::Get('stats_awds_complete');
 
             // ********************************
             // Process RoundInfo
@@ -350,10 +356,12 @@ class Snapshot extends GameResult
             foreach ($this->players as $player)
             {
                 // Check if player exists, and get banned information and best scores
-                $sql = "SELECT lastip, country, rank_id, killstreak, deathstreak, bestscore, permban, bantime FROM player WHERE id=%d LIMIT 1";
+                $sql = "SELECT score, time, lastip, country, rank_id, killstreak, deathstreak, bestscore, permban, bantime FROM player WHERE id=%d LIMIT 1";
                 $row = $connection->query(sprintf($sql, $player->id))->fetch();
 
-                // If player does not exist, stop here!
+                // !! If player does not exist, stop here !!
+                // We do not want incomplete data inside our database, and we are not
+                // adding players in this way to our database!
                 if (empty($row))
                 {
                     // Is this a Cross Service Exploitation?
@@ -449,6 +457,9 @@ class Snapshot extends GameResult
                 // Define some variables
                 $onWinningTeam = $player->team == $this->winningTeam;
 
+                // Grab existing player data
+                $row = $this->playerData[$player->id];
+
                 // Run player check through BattleSpy
                 $this->battleSpy->analyze($player);
 
@@ -492,9 +503,6 @@ class Snapshot extends GameResult
                 $query->set('mode1', '+', ($this->gameMode == 1));
                 $query->set('mode2', '+', ($this->gameMode == 2));
 
-                // Grab existing player data
-                $row = $this->playerData[$player->id];
-
                 // Set wins / losses
                 if (!$wasDrawRound)
                 {
@@ -503,11 +511,45 @@ class Snapshot extends GameResult
                 }
 
                 // Correct rank if needed
-                $rank = (int)$row['rank_id'];
-                if ($rank > $player->rank && $rank != 11 && $rank != 21)
+                $databaseRank = (int)$row['rank_id'];
+                if (!$player->completedRound && $promosReqComplete)
                 {
-                    $player->rank = $rank;
-                    $this->logWriter->logNotice("Rank correction ({$player->id}), Using database rank ({$rank})");
+                    // Player did not complete round when it is required
+                    // for a promotion. Reset rank
+                    $player->rank = $databaseRank;
+                    $query->set('rank_id', '=', $databaseRank);
+                }
+                else if ($databaseRank != $player->rank)
+                {
+                    // Was the player promoted this round?
+                    if ($player->rank > $databaseRank)
+                    {
+                        // Verify promotion
+                        $globalScore = (int)$row['score'];
+                        $globalTime = (int)$row['time'];
+
+                        // Let BFHQ know the player has been promoted if verified, so the player
+                        // gets a promotion notification
+                        if ($this->battleSpy->verifyPromotion($player, $globalScore, $globalTime))
+                        {
+                            $query->set('chng', '=', 1);
+                            $query->set('decr', '=', 0);
+                        }
+                        else
+                        {
+                            // Reset them to database rank
+                            $player->rank = $databaseRank;
+                            $query->set('rank_id', '=', $databaseRank);
+                            $this->logWriter->logNotice("Rank correction ({$player->id}), Using database rank ({$databaseRank})");
+                        }
+                    }
+                    else
+                    {
+                        // A player cannot be demoted in a round... so fix this
+                        $player->rank = $databaseRank;
+                        $query->set('rank_id', '=', $databaseRank);
+                        $this->logWriter->logNotice("Rank correction ({$player->id}), Using database rank ({$databaseRank})");
+                    }
                 }
 
                 // Calculate best killstreak/deathstreak
@@ -718,7 +760,7 @@ class Snapshot extends GameResult
                 // Process Player Awards Data
                 // ********************************
                 $this->logWriter->logDebug("Processing Award Data (%d)", $player->id);
-                if ($player->completedRound || !Config::Get('stats_awds_complete'))
+                if ($player->completedRound || !$awardsReqComplete)
                 {
                     // Add Backend awards to player
                     foreach (AwardData::$BackendAwards as $award)

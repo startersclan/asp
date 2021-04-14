@@ -132,7 +132,7 @@ else
                 $Response->writeHeaderLine("id", "state");
 
                 // Append output
-                foreach ($unlockStatus->toArray() as $unlockId => $status)
+                foreach ($unlockStatus as $unlockId => $status)
                 {
                     $Response->writeDataLine($unlockId, $status);
                 }

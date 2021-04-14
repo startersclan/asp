@@ -112,7 +112,7 @@
                 <div class="mws-form-row">
                     <label id="passwordLabel" class="mws-form-label">Update Password</label>
                     <div class="mws-form-item">
-                        <input type="text" name="playerPassword" class="large" title="">
+                        <input type="text" name="playerPassword" class="large" title="" autocomplete="off">
                     </div>
                 </div>
                 <div class="mws-form-row">

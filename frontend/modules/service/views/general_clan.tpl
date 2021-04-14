@@ -1,14 +1,14 @@
 <div id="jui-global-message" class="alert" style="display: none;"></div>
 <div class="mws-panel grid_5">
     <div class="mws-panel-header">
-        <span><i class="icon-rating3"></i> Current Sergeant Major of the Corps</span>
+        <span><i class="icon-star"></i> Current 4-Star General</span>
     </div>
     <div class="mws-panel-body no-padding">
         <table id="player-table" style="width: 100%;">
             <tr>
                 <td id="rank" style="width: 320px">
                     <span class="thumbnail">
-                        <img src="/ASP/frontend/images/ranks/large2/rank_11.png">
+                        <img src="/ASP/frontend/images/ranks/large2/rank_21.png">
                     </span>
                 </td>
                 <td style="max-width: 99%">
@@ -68,7 +68,7 @@
 </div>
 <div class="mws-panel grid_3">
     <div class="mws-panel-header">
-        <span><i class="icon-book"></i> Sergeant Major of the Corps Summary</span>
+        <span><i class="icon-book"></i> 4-Star General Summary</span>
     </div>
     <div class="mws-panel-body no-padding">
         <ul class="mws-summary clearfix">
@@ -101,7 +101,7 @@
 </div>
 <div class="mws-panel grid_8">
     <div class="mws-panel-header">
-        <span><i class="icon-users"></i> Eligible Sergeant Majors List</span>
+        <span><i class="icon-users"></i> Eligible 4-Star General List</span>
     </div>
     <div class="mws-panel-toolbar">
         <div class="btn-toolbar">
@@ -115,18 +115,18 @@
     <div class="mws-panel-body no-padding">
         <table class="mws-datatable-fn mws-table">
             <thead>
-                <tr>
-                    <th style="width: 3%"><span class="loading-cell"></span></th>
-                    <th style="width: 5%">Rank</th>
-                    <th style="width: 20%">Name</th>
-                    <th>Country</th>
-                    <th>Global Score</th>
-                    <th>Score Per Min.</th>
-                    <th>Rising Star Score</th>
-                    <th>Games Played (7 days)</th>
-                    <th>Last Seen</th>
-                    <th style="width: 7%">Actions</th>
-                </tr>
+            <tr>
+                <th style="width: 3%"><span class="loading-cell"></span></th>
+                <th style="width: 5%">Rank</th>
+                <th style="width: 20%">Name</th>
+                <th>Country</th>
+                <th>Global Score</th>
+                <th>Score Per Min.</th>
+                <th>Rising Star Score</th>
+                <th>Games Played (7 days)</th>
+                <th>Last Seen</th>
+                <th style="width: 7%">Actions</th>
+            </tr>
             </thead>
         </table>
     </div>
@@ -139,7 +139,7 @@
             <img src="/ASP/frontend/images/core/loading32.gif" />
             <br />
             <br />
-            Rebuilding SMOC Eligibility DataTable... Please allow up to 60 seconds for this process to complete.
+            Rebuilding 4-Star General Eligibility DataTable... Please allow up to 60 seconds for this process to complete.
             <br />
             <br />
             <span style="color: red; ">DO NOT</span> refresh this window.
@@ -152,7 +152,7 @@
     <div class="mws-dialog-inner">
         <div id="jui-local-message" class="alert" style="display: none;"></div>
         <p id="question">
-            Are you sure you want to promote <span id="selectPlayerName"></span> as the next Sergeant Major of the Corps?
+            Are you sure you want to promote <span id="selectPlayerName"></span> as the next 4-Star General?
         </p>
     </div>
 </div>

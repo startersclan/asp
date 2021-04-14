@@ -223,14 +223,14 @@
                                rel="popover"
                                data-trigger="hover"
                                data-placement="right"
-                               data-original-title="Rank Checking"
-                               data-content="Enable Rank Checking? Leave off, unless you are having problems with ranks being reset to 0.">
-                            Rank Checking:
+                               data-original-title="Promotions Require Round Completion"
+                               data-content="If enabled, a player must complete the round to have his promotion to a higher rank accepted.">
+                            Promotions Require Round Completion:
                         </label>
                         <div class="mws-form-item">
-                            <select class="small" name="cfg__stats_rank_check" title="">
-                                <option value="1" <?php if('{config.stats_rank_check}' == '1') echo 'selected="selected"'; ?>>Enabled</option>
-                                <option value="0" <?php if('{config.stats_rank_check}' == '0') echo 'selected="selected"'; ?>>Disabled</option>
+                            <select class="small" name="cfg__stats_rank_complete" title="">
+                                <option value="1" <?php if('{config.stats_rank_complete}' == '1') echo 'selected="selected"'; ?>>Enabled</option>
+                                <option value="0" <?php if('{config.stats_rank_complete}' == '0') echo 'selected="selected"'; ?>>Disabled</option>
                             </select>
                         </div>
                     </div>
@@ -386,6 +386,22 @@
                                 <input type="text" id="s33" name="cfg__stats_general_interval" class="required mws-spinner" value="{config.stats_general_interval}" title="Number of Days">
                                 <label for="s33" class="error" generated="true" style="display:none"></label>
                             </div>
+                        </div>
+                    </div>
+                    <div class="mws-form-row">
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
+                               data-original-title="4-Star General Selection Mode"
+                               data-content="Defines how the stats system will treat promotions to 4-star general.">
+                            4-Star Selection Mode:
+                        </label>
+                        <div class="mws-form-item">
+                            <select class="small" name="cfg__stats_general_mode" title="" disabled="disabled">
+                                <option value="0" <?php if('{config.stats_general_mode}' == '0') echo 'selected="selected"'; ?>>Clan Mode (Only 1 4-star General at a time)</option>
+                                <option value="1" <?php if('{config.stats_general_mode}' == '1') echo 'selected="selected"'; ?>>EA Mode (Many 4-Star Generals)</option>
+                            </select>
                         </div>
                     </div>
                 </fieldset>

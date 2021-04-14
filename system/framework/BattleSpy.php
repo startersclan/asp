@@ -3,15 +3,17 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2021, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
 
 namespace System;
 use System\BF2\Player;
+use System\Collections\Dictionary;
 use System\Database\DbConnection;
 use System\Database\UpdateOrInsertQuery;
+use System\IO\Path;
 
 /**
  * BattleSpy Anti-Cheat Analyzer
@@ -23,6 +25,7 @@ use System\Database\UpdateOrInsertQuery;
  * - Excessive kills on a single player
  * - Excessive total kills in the round
  * - Excessive awards earned by a single player in the round
+ * - Invalid promotion received
  * </pre>
  *
  * BattleSpy will never ban or suspend players. This system will
@@ -73,6 +76,11 @@ class BattleSpy
     const FLAG_PLAYER_ACCURACY = 8;
 
     /**
+     * @var int Invalid rank promotion
+     */
+    const FLAG_PLAYER_PROMOTION = 9;
+
+    /**
      * @var array
      */
     protected $notifications = [];
@@ -96,6 +104,11 @@ class BattleSpy
      * @var bool Indicates whether BattleSpy is enabled
      */
     protected $enabled = false;
+
+    /**
+     * @var bool Indicates whether BattleSpy rank checking is enabled
+     */
+    protected $rankCheck = false;
 
     /**
      * @var int Gets or Sets the maximum score per minute threshold
@@ -128,6 +141,11 @@ class BattleSpy
     protected $maxWeaponAcc = 0;
 
     /**
+     * @var Dictionary
+     */
+    protected $rankData = null;
+
+    /**
      * BattleSpy constructor.
      *
      * @param DbConnection $connection
@@ -143,6 +161,7 @@ class BattleSpy
 
         // Load configuration
         $this->enabled = ((int)Config::Get('battlespy_enable') != 0);
+        $this->rankCheck = ((int)Config::Get('battlespy_rank_check') != 0);
         $this->maxSPM = (float)Config::Get('battlespy_max_spm');
         $this->maxKPM = (float)Config::Get('battlespy_max_kpm');
         $this->maxTargetKills = (int)Config::Get('battlespy_max_target_kills');
@@ -151,6 +170,13 @@ class BattleSpy
 
         // Added in later release
         $this->maxWeaponAcc = (int)Config::GetOrDefault('battlespy_max_accuracy', 50);
+
+        // Load rank data
+        if ($this->rankCheck)
+        {
+            $rankData = include Path::Combine(SYSTEM_PATH, 'config', 'ranks.php');
+            $this->rankData = new Dictionary(false, $rankData);
+        }
     }
 
     /**
@@ -275,6 +301,69 @@ class BattleSpy
                 }
             }
         }
+    }
+
+    /**
+     * Analyzes a players rank to check for promotion cheating, and applies
+     * an internal report if the player is found to be cheating. This method
+     * should only be called when a promotion happened in a round.
+     *
+     * @param Player $player The player object from the snapshot
+     * @param int $globalScore The players global score currently in the database
+     * @param int $globalTime The players global time played currently in the database
+     *
+     * @return bool true if the rank is verified, false otherwise
+     */
+    public function verifyPromotion(Player $player, $globalScore, $globalTime)
+    {
+        // Just return true if disabled
+        if (!$this->enabled || !$this->rankCheck) return true;
+
+        // Verify ranks points
+        if ($this->rankData->tryGetValue($player->rank, $rank))
+        {
+            // Is this a backend awarded rank?
+            if ($rank['backend'])
+            {
+                // Prepare message...
+                $message = "Player was promoted to '%s' erroneously: Backend awarded rank.";
+                $this->report($player, sprintf($message, $rank['name']), self::FLAG_PLAYER_PROMOTION, 3);
+                return false;
+            }
+            else if ($player->isAi)
+            {
+                // Stop here for bots, we only are checking special ranks for them
+                return true;
+            }
+
+            // Get current score after round completion
+            $globalScore += $player->roundScore;
+            $globalTime += $player->roundTime;
+
+            // Check points
+            if ($globalScore < $rank['points'])
+            {
+                // Prepare message...
+                $message = "Player was promoted to '%s' erroneously: Not enough points.";
+                $this->report($player, sprintf($message, $rank['name']), self::FLAG_PLAYER_PROMOTION, 2);
+                return false;
+            }
+
+            // Check time played
+            if ($globalTime < $rank['time'])
+            {
+                // Prepare message...
+                $message = "Player was promoted to '%s' erroneously: Not enough time played.";
+                $this->report($player, sprintf($message, $rank['name']), self::FLAG_PLAYER_PROMOTION, 2);
+                return false;
+            }
+
+            // If we are here, we are good
+            return true;
+        }
+
+        // Rank doesn't exist?
+        return false;
     }
 
     /**

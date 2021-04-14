@@ -492,6 +492,7 @@
             // Always have the user confirm his action here!
             var tr = $(this).closest('tr');
             var name = tr.find('td:eq(3)').html();
+            var email = $("#playerEmail_" + id).html();
 
             if (action === 'edit') {
 
@@ -507,7 +508,7 @@
                 // Set form values
                 $('input[name="playerName"]').val(name);
                 $('input[name="playerPassword"]').val("").rules('remove', 'required');
-                $('input[name="playerEmail"]').val("").rules('remove', 'required');
+                $('input[name="playerEmail"]').val(email).rules('remove', 'required');
 
                 // Update labels
                 $('#emailLabel').html('Update Email');
@@ -519,8 +520,9 @@
                 $("#rankSelect").val(rank);
 
                 // Select users country
-                var cntry = tr.find('td:eq(5)').html();
-                $("select.mws-select2").val(cntry).change();
+                var cntryHtml = tr.find('td:eq(4)').html();
+                var country =  cntryHtml.filename();
+                $("select.mws-select2").val(country).change();
 
                 // Show dialog form
                 $("#add-player-form").dialog("option", {

@@ -38,5 +38,8 @@
         // noinspection JSUnresolvedVariable
         $.fn.tabs && $(".mws-tabs").tabs();
 
+        // Enable popovers
+        $("[rel=popover]").popover({html: true});
+
     });
 })(jQuery, window, document);

@@ -47,6 +47,22 @@
                                rel="popover"
                                data-trigger="hover"
                                data-placement="right"
+                               data-original-title="Promotion Verification"
+                               data-content="Sets whether to verify player promotions based on global score and time played after each round.">
+                            Promotion Verification:
+                        </label>
+                        <div class="mws-form-item">
+                            <select class="small" name="cfg__battlespy_rank_check" title="">
+                                <option value="1" <?php if('{battlespy_rank_check}' == '1') echo 'selected="selected"'; ?>>Yes</option>
+                                <option value="0" <?php if('{battlespy_rank_check}' == '0') echo 'selected="selected"'; ?>>No</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mws-form-row">
+                        <label class="mws-form-label"
+                               rel="popover"
+                               data-trigger="hover"
+                               data-placement="right"
                                data-original-title="Max Score Per Minute"
                                data-content="Sets the maximum score per minute a player can achieve in a round without being flagged.">
                             Max Score Per Min:

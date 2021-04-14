@@ -1,4 +1,9 @@
 <?php
+/**
+ * This file returns an array of database revision data. Each time the database schema updates,
+ * an entry will be added to this file by the developer. The ASP then reads this file to determine
+ * the file name and versioning data when updating the database schema.
+ */
 return [
     "3.0.0" => [
         "comment" => "Default Database Schema",
@@ -58,9 +63,16 @@ return [
     ],
     "3.0.8" => [
         "comment" => "Added the unlock_requirement table.",
-        "up" => null,
-        "up_string" => "",
+        "up" => "30100",
+        "up_string" => "3.1.0",
         "down" => "30070",
         "down_string" => "3.0.7",
+    ],
+    "3.1.0" => [
+        "comment" => "Added the 'eligible_' tables for easy sorting when selecting a SMOC or General.",
+        "up" => null,
+        "up_string" => "",
+        "down" => "30080",
+        "down_string" => "3.0.8",
     ]
 ];

@@ -3,8 +3,10 @@
     <div class="mws-panel-header">
         <span><i class="icon-camera"></i> Server Sponsor Logo</span>
     </div>
-    <div class="mws-panel-body no-padding" style="text-align: center">
-        <img id="server-image" src="/ASP/frontend/images/maps/default.png">
+    <div class="mws-panel-body" style="text-align: center">
+        <span class="thumbnail">
+            <img id="server-image" src="/ASP/frontend/images/maps/default.png" style="max-height: 240px">
+        </span>
     </div>
 </div>
 <div class="mws-panel grid_3 mws-collapsible">

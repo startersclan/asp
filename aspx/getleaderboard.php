@@ -577,7 +577,7 @@ SQL;
         {
             $query = <<<SQL
 SELECT 
-  p.name AS name, p.rank_id AS rank, p.country AS country, 
+  p.name AS name, p.rank_id AS rank_id, p.country AS country, 
   k.player_id AS pid, k.kills AS kills, k.deaths AS deaths, k.time AS `time`, k.hits AS hits, k.fired AS fired
 FROM player_weapon AS k
   INNER JOIN player AS p ON k.player_id = p.id

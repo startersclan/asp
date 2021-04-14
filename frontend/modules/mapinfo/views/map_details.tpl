@@ -3,8 +3,10 @@
         <span id="mapId" style="display: none">{map.id}</span>
         <span><i class="icon-map-marker"></i> {map.displayname}</span>
     </div>
-    <div class="mws-panel-body no-padding" style="text-align: center">
-        <img src="/ASP/frontend/images/maps/{map.lcname}.png">
+    <div class="mws-panel-body" style="text-align: center">
+        <span class="thumbnail">
+            <img src="/ASP/frontend/images/maps/{map.lcname}.png">
+        </span>
     </div>
 </div>
 <div class="mws-panel grid_3">

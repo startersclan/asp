@@ -3,7 +3,7 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2021, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
@@ -14,7 +14,8 @@
  * ------------------------------------------------------------------
  *
  * Defines information to obtain each rank, which is used by the
- * System\BF2\RankCalculator class to display the next player rank ups.
+ * System\BF2\RankCalculator class to display the next player rank ups,
+ * as well as the BattleSpy anti-cheat when verifying promotions.
  */
 return array(
     0 => array(
@@ -22,6 +23,7 @@ return array(
         'points' => 0,
         'time' => 0,
         'skip' => false,
+        'backend' => false,
         'has_rank' => 0,
         'has_awards' => array()
     ),
@@ -30,6 +32,7 @@ return array(
         'points' => 150,
         'time' => 0,
         'skip' => false,
+        'backend' => false,
         'has_rank' => 0,
         'has_awards' => array()
     ),
@@ -38,6 +41,7 @@ return array(
         'points' => 500,
         'time' => 0,
         'skip' => false,
+        'backend' => false,
         'has_rank' => 1,
         'has_awards' => array()
     ),
@@ -46,6 +50,7 @@ return array(
         'points' => 800,
         'time' => 0,
         'skip' => false,
+        'backend' => false,
         'has_rank' => 2,
         'has_awards' => array()
     ),
@@ -54,6 +59,7 @@ return array(
         'points' => 2500,
         'time' => 0,
         'skip' => false,
+        'backend' => false,
         'has_rank' => 3,
         'has_awards' => array()
     ),
@@ -62,6 +68,7 @@ return array(
         'points' => 5000,
         'time' => 0,
         'skip' => false,
+        'backend' => false,
         'has_rank' => 4,
         'has_awards' => array()
     ),
@@ -70,6 +77,7 @@ return array(
         'points' => 8000,
         'time' => 0,
         'skip' => false,
+        'backend' => false,
         'has_rank' => 5,
         'has_awards' => array()
     ),
@@ -78,6 +86,7 @@ return array(
         'points' => 20000,
         'time' => 0,
         'skip' => false,
+        'backend' => false,
         'has_rank' => 6,
         'has_awards' => array()
     ),
@@ -86,6 +95,7 @@ return array(
         'points' => 20000,
         'time' => 0,
         'skip' => false,
+        'backend' => false,
         'has_rank' => 6,
         'has_awards' => array(
             '1031105' => 1, // Engineer Combat Badge
@@ -104,6 +114,7 @@ return array(
         'points' => 50000,
         'time' => 0,
         'skip' => false,
+        'backend' => false,
         'has_rank' => array(7, 8),
         'has_awards' => array()
     ),
@@ -112,6 +123,7 @@ return array(
         'points' => 50000,
         'time' => 0,
         'skip' => false,
+        'backend' => false,
         'has_rank' => array(7, 8),
         'has_awards' => array(
             '1031923' => 1, // Ground Defense
@@ -124,9 +136,10 @@ return array(
     ),
     11 => array(
         'title' => 'Sergeant Major of the Corp',
-        'points' => -1,
+        'points' => 50000,
         'time' => 0,
         'skip' => true,
+        'backend' => true,
         'has_rank' => 10,
         'has_awards' => array()
     ),
@@ -135,6 +148,7 @@ return array(
         'points' => 60000,
         'time' => 0,
         'skip' => false,
+        'backend' => false,
         'has_rank' => array(9, 10, 11),
         'has_awards' => array()
     ),
@@ -143,6 +157,7 @@ return array(
         'points' => 75000,
         'time' => 0,
         'skip' => false,
+        'backend' => false,
         'has_rank' => 12,
         'has_awards' => array()
     ),
@@ -151,6 +166,7 @@ return array(
         'points' => 90000,
         'time' => 0,
         'skip' => false,
+        'backend' => false,
         'has_rank' => 13,
         'has_awards' => array()
     ),
@@ -159,6 +175,7 @@ return array(
         'points' => 115000,
         'time' => 0,
         'skip' => false,
+        'backend' => false,
         'has_rank' => 14,
         'has_awards' => array()
     ),
@@ -167,6 +184,7 @@ return array(
         'points' => 125000,
         'time' => 0,
         'skip' => false,
+        'backend' => false,
         'has_rank' => 15,
         'has_awards' => array()
     ),
@@ -175,14 +193,16 @@ return array(
         'points' => 150000,
         'time' => 0,
         'skip' => false,
+        'backend' => false,
         'has_rank' => 16,
         'has_awards' => array()
     ),
     18 => array(
         'title' => 'Brigadier General',
         'points' => 180000,
-        'time' => 64800,
+        'time' => 3888000,  // In seconds
         'skip' => false,
+        'backend' => false,
         'has_rank' => 17,
         'has_awards' => array(
             '1031105' => 2, // Engineer Combat Badge
@@ -199,8 +219,9 @@ return array(
     19 => array(
         'title' => 'Major General',
         'points' => 180000,
-        'time' => 75000,
+        'time' => 4500000,  // In seconds
         'skip' => false,
+        'backend' => false,
         'has_rank' => 18,
         'has_awards' => array(
             '1031923' => 2, // Ground Defense
@@ -214,8 +235,9 @@ return array(
     20 => array(
         'title' => 'Lieutenant General',
         'points' => 200000,
-        'time' => 86400,
+        'time' => 5184000,  // In seconds
         'skip' => false,
+        'backend' => false,
         'has_rank' => 19,
         'has_awards' => array()
     ),
@@ -224,6 +246,7 @@ return array(
         'points' => 200000,
         'time' => 0,
         'skip' => false,
+        'backend' => true,
         'has_rank' => 20,
         'has_awards' => array()
     ),

@@ -2,8 +2,10 @@
     <div class="mws-panel-header">
         <span><i class="icon-map-marker"></i> {round.map_display_name}</span>
     </div>
-    <div class="mws-panel-body no-padding" style="text-align: center">
-        <img src="/ASP/frontend/images/maps/{round.name}.png">
+    <div class="mws-panel-body" style="text-align: center;">
+        <span class="thumbnail" style="max-height: 210px">
+            <img src="/ASP/frontend/images/maps/{round.name}.png" style="max-height: 210px">
+        </span>
     </div>
 </div>
 <div class="mws-panel grid_3">
@@ -376,35 +378,26 @@
     <div class="mws-panel-header">
         <span><i class="icon-trophy"></i> Player Earned Awards</span>
     </div>
-    <div class="mws-panel-body no-padding">
-        <ul class="mws-summary clearfix">
-            {awards}
+    <div class="mws-panel-body">
+        <ul class="thumbnails mws-gallery">
+        {awards}
             <li>
-                <span class="key" style="width: 250px">
+                <span class="thumbnail"
+                      rel="popover"
+                      data-trigger="hover"
+                      data-placement="bottom"
+                      data-original-title="{name}"
+                      data-content="<div><b>Player</b>: <img style='margin: -3px 0 0 0' src='/ASP/frontend/images/ranks/rank_{rank}.gif'/> {player_name}<img style='margin: -3px 10px 0 5px' src='/ASP/frontend/images/armies/small/{team}.png'/></div>">
                     <?php if ({type} == 0): ?>
-                    <img style="margin: -2px 0 0 0; max-height: 24px;" src="/ASP/frontend/images/icons/ribbon.png"/>
+                    <img src="/ASP/frontend/images/awards/color/ribbons/{id}.png">
                     <?php elseif ({type} == 1): ?>
-                    <img style="margin: -2px 0 0 0; max-height: 24px;" src="/ASP/frontend/images/icons/badge_{level}.png"/>
+                    <img src="/ASP/frontend/images/awards/color/badges/{id}_{level}.png">
                     <?php elseif ({type} == 2): ?>
-                    <img style="margin: -2px 0 0 0; max-height: 24px;" src="/ASP/frontend/images/icons/medal.png"/>
-                    <?php elseif ({type} == 3): ?>
-                    <img style="margin: -2px 0 0 0; max-height: 24px;" src="/ASP/frontend/images/icons/award_star_gold.png"/>
-                    <?php elseif ({type} == 4): ?>
-                    <img style="margin: -2px 0 0 0; max-height: 24px;" src="/ASP/frontend/images/icons/award_star_silver.png"/>
-                    <?php elseif ({type} == 5): ?>
-                    <img style="margin: -2px 0 0 0; max-height: 24px;" src="/ASP/frontend/images/icons/award_star_bronze.png"/>
+                    <img src="/ASP/frontend/images/awards/color/medals/{id}.png">
                     <?php endif ?>
-                    {name}
-                </span>
-                <span class="val">
-                    <span class="text-nowrap">
-                        <img style="margin: -3px 0 0 0" src="/ASP/frontend/images/ranks/rank_{rank}.gif"/>
-                        <a href="/ASP/players/history/{player_id}/{round.id}">{player_name}</a>
-                        <img style="margin: -3px 10px 0 5px" src="/ASP/frontend/images/armies/small/{team}.png"/>
-                    </span>
                 </span>
             </li>
-            {/awards}
+        {/awards}
         </ul>
     </div>
 </div>

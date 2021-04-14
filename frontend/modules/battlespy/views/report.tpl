@@ -4,8 +4,10 @@
         <span><i class="icon-map-marker"></i> {round.map_display_name}</span>
         <span id="reportId" style="display: none">{report.id}</span>
     </div>
-    <div class="mws-panel-body no-padding" style="text-align: center">
-        <img src="/ASP/frontend/images/maps/<?php echo strtolower('{round.name}'); ?>.png">
+    <div class="mws-panel-body" style="text-align: center">
+        <span class="thumbnail">
+            <img src="/ASP/frontend/images/maps/<?php echo strtolower('{round.name}'); ?>.png">
+        </span>
     </div>
 </div>
 <div class="mws-panel grid_3">
