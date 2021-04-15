@@ -3,7 +3,7 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2021, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
@@ -214,7 +214,7 @@ class Service extends Controller
     }
 
     /**
-     * @protocol    ANY
+     * @protocol    GET
      * @request     protected
      * @output      html
      */
@@ -494,7 +494,7 @@ class Service extends Controller
                     ignore_user_abort(true);
 
                     // Save config
-                    Config::Set('stats_smoc_general', time());
+                    Config::Set('stats_general_refresh', time());
                     Config::Save();
 
                     // Build table

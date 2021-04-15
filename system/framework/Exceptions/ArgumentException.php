@@ -2,8 +2,10 @@
 /**
  * BF2Statistics ASP Framework
  *
- * @copyright   2013 - 2018, BF2Statistics.com
- * @license     GNU GPL v3
+ * Author:       Steven Wilson
+ * Copyright:    Copyright (c) 2006-2021, BF2statistics.com
+ * License:      GNU GPL v3
+ *
  */
 
 /**

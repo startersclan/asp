@@ -3,10 +3,11 @@
  * BF2Statistics ASP Framework
  *
  * Author:       Steven Wilson
- * Copyright:    Copyright (c) 2006-2019, BF2statistics.com
+ * Copyright:    Copyright (c) 2006-2021, BF2statistics.com
  * License:      GNU GPL v3
  *
  */
+
 use GameQ\GameQ;
 use System\BF2\Player;
 use System\Collections\Dictionary;
