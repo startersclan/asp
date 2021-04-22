@@ -48,6 +48,26 @@ class HomeModel
     }
 
     /**
+     * Credits to MrNiceGuy for providing this method of fetching the Apache version of the server
+     *
+     * @return string Returns the apache server version
+     */
+    public function getApacheVersion()
+    {
+        if(!function_exists('apache_get_version'))
+        {
+            if(!isset($_SERVER['SERVER_SOFTWARE']) || strlen($_SERVER['SERVER_SOFTWARE']) == 0)
+            {
+                return 'Unknown';
+            }
+
+            return $_SERVER["SERVER_SOFTWARE"];
+        }
+
+        return apache_get_version();
+    }
+
+    /**
      * @return int Returns the database size in bytes
      */
     public function getStatsDataSize()

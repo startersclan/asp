@@ -40,7 +40,7 @@ class Home extends Controller
         $view = new View('index', 'home');
         $view->set('php_version', PHP_VERSION);
         $view->set('server_name', php_uname('s'));
-        $view->set('server_version', apache_get_version());
+        $view->set('server_version', $this->homeModel->getApacheVersion());
         $view->set('last_login', date('F jS, Y g:i A T', Config::Get('admin_last_login')));
 
         // Get database version, and size. Convert size to MB

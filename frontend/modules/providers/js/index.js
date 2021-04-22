@@ -113,7 +113,8 @@
                             result.providerId,
                             result.providerName,
                             result.authId,
-                            0,
+                            result.authToken,
+                            '0',
                             '<span id="tr-auth-' + id + '" class="badge badge-success">Authorized</span>',
                             '<span id="tr-plasma-' + id + '" class="badge badge-inactive">No</span>',
                             '<span class="btn-group"> \

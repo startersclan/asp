@@ -334,6 +334,7 @@ SQL;
             // Prepare statement
             $stmt = $this->pdo->prepare("DELETE FROM server WHERE provider_id=:id");
             $stmt2 = $this->pdo->prepare("DELETE FROM stats_provider_auth_ip WHERE provider_id=:id");
+            $stmt3 = $this->pdo->prepare("DELETE FROM stats_provider WHERE id=:id");
             foreach ($ids as $providerId)
             {
                 // Ignore the all!
@@ -351,6 +352,10 @@ SQL;
                 // Bind value and run query
                 $stmt->bindValue(':id', (int)$providerId, PDO::PARAM_INT);
                 $stmt->execute();
+
+                // Bind value and run query
+                $stmt3->bindValue(':id', (int)$providerId, PDO::PARAM_INT);
+                $stmt3->execute();
             }
 
             // Commit?
