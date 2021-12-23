@@ -102,7 +102,7 @@ class ProviderModel
      *
      * @throws ArgumentException
      */
-    public function addProvider($name, $authorized = false, &$authID, &$authToken)
+    public function addProvider($name, $authorized, &$authID, &$authToken)
     {
         // Check length of server name
         $name = preg_replace("/[^". Player::NAME_REGEX ."]/", '', trim($name));
