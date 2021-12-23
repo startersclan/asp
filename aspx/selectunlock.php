@@ -77,8 +77,7 @@ else
         // Finally, if the user HAS available unlocks, let them choose this one
         if ($available > 0)
         {
-            $time = time();
-            $connection->exec("INSERT INTO player_unlock VALUES ($pid, $id, $time)");
+            $connection->exec("INSERT INTO player_unlock VALUES ($pid, $id)");
             $Response->writeLine("OK");
             $Response->send();
         }
@@ -98,7 +97,8 @@ else
 }
 
 /**
- * This method returns the number of unlocks due to rank
+ * This method returns the number of unlocks the player should
+ * have due to the specified rank id
  *
  * @param int $rank The players current rank
  *
