@@ -1,0 +1,111 @@
+version: '2.2'
+services:
+  init-container:
+    image: alpine:latest
+    volumes:
+      - ./src:/src
+      - backups-volume:/src/ASP/system/backups
+      - cache-volume:/src/ASP/system/cache
+      - logs-volume:/src/ASP/system/logs
+      - snapshots-volume:/src/ASP/system/snapshots
+      - db-volume:/var/lib/mysql
+    entrypoint:
+      - /bin/sh
+    command:
+      - -c
+      - |
+          set -eu
+
+          echo "Granting nginx and php read permissions"
+          find /src -type f -exec chmod +r {} \;
+          find /src -type d -exec chmod +x {} \; # Ensure nginx and php have permissions to read directories
+
+          echo "Granting php write permissions"
+          find /src/ASP/system/backups -type d -exec chmod 777 {} \;
+          find /src/ASP/system/backups -type f -exec chmod 666 {} \;
+
+          find /src/ASP/system/config -type d -exec chmod 777 {} \;
+          find /src/ASP/system/config -type f -exec chmod 666 {} \;
+
+          find /src/ASP/system/cache -type d -exec chmod 777 {} \;
+          find /src/ASP/system/cache -type f -exec chmod 666 {} \;
+
+          find /src/ASP/system/logs -type d -exec chmod 777 {} \;
+          find /src/ASP/system/logs -type f -exec chmod 666 {} \;
+
+          mkdir -p /src/ASP/system/snapshots/failed
+          mkdir -p /src/ASP/system/snapshots/processed
+          mkdir -p /src/ASP/system/snapshots/unauthorized
+          mkdir -p /src/ASP/system/snapshots/unprocessed
+          find /src/ASP/system/snapshots -type d -exec chmod 777 {} \;
+          find /src/ASP/system/snapshots -type f -exec chmod 666 {} \;
+
+          echo "Granting db write permissions"
+          chown -R 999:999 /var/lib/mysql
+
+  nginx:
+    image: nginx:1.21-alpine
+    volumes:
+      - ./src:/src
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - 80:80
+    networks:
+      - default
+    depends_on:
+      - init-container
+      - php
+
+  php:
+    build:
+      dockerfile: Dockerfile.php.dev
+    volumes:
+      - ./src:/src
+      - ./config/php/conf.d/php.ini:/usr/local/etc/php/conf.d/php.ini:ro
+      - backups-volume:/src/ASP/system/backups
+      - cache-volume:/src/ASP/system/cache
+      - logs-volume:/src/ASP/system/logs
+      - snapshots-volume:/src/ASP/system/snapshots
+    networks:
+      - default
+    extra_hosts:
+      # For xdebug to reach the host via `host.docker.internal`. See: https://github.com/moby/moby/pull/40007#issuecomment-578729356 and https://stackoverflow.com/questions/49907308/installing-xdebug-in-docker
+      # If xdebug does not work, you may need to add an iptables rule to the INPUT chain: iptables -A INPUT -i br+ -j ACCEPT
+      - host.docker.internal:host-gateway
+    depends_on:
+      - init-container
+
+  db:
+    image: mariadb:10.8
+    environment:
+      - MARIADB_ROOT_PASSWORD=ascent
+      # - MARIADB_USER=unused
+      # - MARIADB_PASSWORD=unused
+      - MARIADB_DATABASE=bf2stats
+    volumes:
+      - ./src/ASP/system/sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro # Seed the database on the first time. No need to use the dashboard installer.
+      - ./src/ASP/system/sql/data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro # Seed the database on the first time. No need to use the dashboard installer.
+      - db-volume:/var/lib/mysql
+    networks:
+      - default
+    depends_on:
+      - init-container
+
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    environment:
+      - PMA_HOST=db
+    ports:
+      - 8080:80
+    networks:
+      - default
+
+networks:
+  default:
+
+volumes:
+  backups-volume:
+  cache-volume:
+  logs-volume:
+  snapshots-volume:
+  db-volume:

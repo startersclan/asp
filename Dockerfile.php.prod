@@ -1,0 +1,27 @@
+FROM alpine:latest AS build
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM"
+
+# Set permissions for php-fpm-alpine's 'www-data' user
+COPY ./src /src
+WORKDIR /src
+RUN chown -R 82:82 . \
+    && find . -type d -exec chmod 750 {} \; \
+    && find . -type f -exec chmod 640 {} \;
+
+FROM php:7.4-fpm
+
+# opcache
+RUN docker-php-ext-install opcache
+
+# mysql PDO
+RUN docker-php-ext-install pdo pdo_mysql
+
+RUN php -i
+RUN php -m
+
+# Add default configs
+COPY ./config/php/php-fpm.d/php_fpm_exporter.conf /usr/local/etc/php-fpm.d/php_fpm_exporter.conf
+COPY ./config/php/conf.d/php.ini /usr/local/etc/php/conf.d/php.ini
+COPY --from=build /src /src
