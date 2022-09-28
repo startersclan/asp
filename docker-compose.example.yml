@@ -42,7 +42,7 @@ services:
   nginx:
     image: leojonathanoh/asp:nginx
     volumes:
-      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro # Override if needed
     ports:
       - 80:80
     networks:
@@ -75,8 +75,8 @@ services:
       # - MARIADB_PASSWORD=unused
       - MARIADB_DATABASE=bf2stats
     volumes:
-      - ./src/ASP/system/sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro # Seed the database on the first time. No need to use the dashboard installer.
-      - ./src/ASP/system/sql/data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro # Seed the database on the first time. No need to use the dashboard installer.
+      - ./src/ASP/system/sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro # Seed the database on the first run. No need to use the dashboard installer.
+      - ./src/ASP/system/sql/data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro # Seed the database on the first run. No need to use the dashboard installer.
       - db-volume:/var/lib/mysql
     networks:
       - default
@@ -87,6 +87,7 @@ services:
   phpmyadmin:
     image: phpmyadmin:5.2-fpm-alpine
     environment:
+      # - PMA_ABSOLUTE_URI=https://phpmyadmin.example.com # Enable this if behind a reverse proxy
       - PMA_HOST=db
     ports:
       - 8080:80
