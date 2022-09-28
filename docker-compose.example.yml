@@ -1,0 +1,105 @@
+version: '2.2'
+services:
+  init-container:
+    image: alpine:latest
+    volumes:
+      - backups-volume:/src/ASP/system/backups
+      - cache-volume:/src/ASP/system/cache
+      - logs-volume:/src/ASP/system/logs
+      - snapshots-volume:/src/ASP/system/snapshots
+      - db-volume:/var/lib/mysql
+    entrypoint:
+      - /bin/sh
+    command:
+      - -c
+      - |
+          set -eu
+
+          echo "Granting php write permissions"
+          chown -R 82:82 /src/ASP/system/backups
+          find /src/ASP/system/backups -type d -exec chmod 750 {} \;
+          find /src/ASP/system/backups -type f -exec chmod 640 {} \;
+
+          chown -R 82:82 /src/ASP/system/cache
+          find /src/ASP/system/cache -type d -exec chmod 750 {} \;
+          find /src/ASP/system/cache -type f -exec chmod 640 {} \;
+
+          chown -R 82:82 /src/ASP/system/logs
+          find /src/ASP/system/logs -type d -exec chmod 750 {} \;
+          find /src/ASP/system/logs -type f -exec chmod 640 {} \;
+
+          mkdir -p /src/ASP/system/snapshots/failed
+          mkdir -p /src/ASP/system/snapshots/processed
+          mkdir -p /src/ASP/system/snapshots/unauthorized
+          mkdir -p /src/ASP/system/snapshots/unprocessed
+          chown -R 82:82 /src/ASP/system/snapshots
+          find /src/ASP/system/snapshots -type d -exec chmod 750 {} \;
+          find /src/ASP/system/snapshots -type f -exec chmod 640 {} \;
+
+          echo "Granting db write permissions"
+          chown -R 999:999 /var/lib/mysql
+
+  nginx:
+    image: leojonathanoh/asp:nginx
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - 80:80
+    networks:
+      - default
+    depends_on:
+      - init-container
+      - php
+    restart: unless-stopped
+
+  php:
+    image: leojonathanoh/asp:php
+    volumes:
+      - ./config.php:/src/ASP/system/config/config.php # Override if needed
+      - ./config/php/conf.d/php.ini:/usr/local/etc/php/conf.d/php.ini:ro # Override if needed
+      - backups-volume:/src/ASP/system/backups
+      - cache-volume:/src/ASP/system/cache
+      - logs-volume:/src/ASP/system/logs
+      - snapshots-volume:/src/ASP/system/snapshots
+    networks:
+      - default
+    depends_on:
+      - init-container
+    restart: unless-stopped
+
+  db:
+    image: mariadb:10.8
+    environment:
+      - MARIADB_ROOT_PASSWORD=ascent
+      # - MARIADB_USER=unused
+      # - MARIADB_PASSWORD=unused
+      - MARIADB_DATABASE=bf2stats
+    volumes:
+      - ./src/ASP/system/sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro # Seed the database on the first time. No need to use the dashboard installer.
+      - ./src/ASP/system/sql/data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro # Seed the database on the first time. No need to use the dashboard installer.
+      - db-volume:/var/lib/mysql
+    networks:
+      - default
+    depends_on:
+      - init-container
+    restart: unless-stopped
+
+  phpmyadmin:
+    image: phpmyadmin:5.2-fpm-alpine
+    environment:
+      - PMA_HOST=db
+    ports:
+      - 8080:80
+    networks:
+      - default
+    restart: unless-stopped
+
+networks:
+  default:
+
+volumes:
+  backups-volume:
+  cache-volume:
+  logs-volume:
+  snapshots-volume:
+  db-volume:
