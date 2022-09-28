@@ -232,6 +232,7 @@ class System
 
         // Get our MVC route
         $uri = (isset($_GET['uri']) && !empty($_GET['uri'])) ? $_GET['uri'] : 'home';
+        $uri = str_replace('/ASP/', '', $uri);
         $parts = explode('/', $uri);
         $length = count($parts);
         $GLOBALS['controller'] = $controller = ($length > 0) ? $parts[0] : 'home';
