@@ -28,7 +28,7 @@ docker-compose up --build
 # phpmyadmin available at http://localhost:8080. Username: root, password: ascent. See ./config/ASP/config.php config file
 
 # Fix php xdebug not reaching host IDE
-iptables -A INPUT -i br+ -j ACCEPT
+sudo iptables -A INPUT -i br+ -j ACCEPT
 
 # Test routes
 docker-compose -f docker-compose.test.yml up

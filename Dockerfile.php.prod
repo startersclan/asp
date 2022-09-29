@@ -1,4 +1,4 @@
-FROM php:7.4-fpm AS build
+FROM php:7.4-fpm-alpine AS build
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM"
@@ -10,7 +10,7 @@ RUN chown -R www-data:www-data . \
     && find . -type d -exec chmod 750 {} \; \
     && find . -type f -exec chmod 640 {} \;
 
-FROM php:7.4-fpm AS final
+FROM php:7.4-fpm-alpine AS final
 
 # opcache
 RUN docker-php-ext-install opcache
