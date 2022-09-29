@@ -16,15 +16,15 @@ services:
           set -eu
 
           echo "Granting php's 'www-data' user write permissions"
-          chown -R 33:33 /src/ASP/system/backups
+          chown -R 82:82 /src/ASP/system/backups
           find /src/ASP/system/backups -type d -exec chmod 750 {} \;
           find /src/ASP/system/backups -type f -exec chmod 640 {} \;
 
-          chown -R 33:33 /src/ASP/system/cache
+          chown -R 82:82 /src/ASP/system/cache
           find /src/ASP/system/cache -type d -exec chmod 750 {} \;
           find /src/ASP/system/cache -type f -exec chmod 640 {} \;
 
-          chown -R 33:33 /src/ASP/system/logs
+          chown -R 82:82 /src/ASP/system/logs
           find /src/ASP/system/logs -type d -exec chmod 750 {} \;
           find /src/ASP/system/logs -type f -exec chmod 640 {} \;
 
@@ -32,7 +32,7 @@ services:
           mkdir -p /src/ASP/system/snapshots/processed
           mkdir -p /src/ASP/system/snapshots/unauthorized
           mkdir -p /src/ASP/system/snapshots/unprocessed
-          chown -R 33:33 /src/ASP/system/snapshots
+          chown -R 82:82 /src/ASP/system/snapshots
           find /src/ASP/system/snapshots -type d -exec chmod 750 {} \;
           find /src/ASP/system/snapshots -type f -exec chmod 640 {} \;
 

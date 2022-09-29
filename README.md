@@ -63,7 +63,7 @@ docker volume rm asp_db-volume
 Solution: Grant `php`'s `www-data` user write permission for `config.php`.
 
 ```sh
-chown 33:33 ./config/ASP/config.php
+chown 82:82 ./config/ASP/config.php
 chmod 666 ./config/ASP/config.php
 docker-compose restart php
 ```
