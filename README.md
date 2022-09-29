@@ -10,6 +10,11 @@ The new BF2Statistics 3.0 ASP, currently in public Beta. The GameSpy server to m
 
 See [docker-compose.example.yml](docker-compose.example.yml) example showing how to deploy BF2Statistics using `docker-compose`.
 
+Notes:
+- Mount the [`config.php`](./config/ASP/config.php) as read-only for the `php` service so that `ASP` doesn't mutate the config file. The `ASP`'s `System > Edit Configuration` should no longer be used, since we are managing the configuration file. `System > System Tests` will fail for `config.php` since `ASP` expects the file to be writeable, but this may be ignored.
+- Seed the `db` service with `schema.sql` and `data.sql` so that the database is populated on the first run. The `ASP`'s `System > System Installation` doesn't need to be used.
+- Optional: For better security, define `MARIADB_USER` and `MARIADB_PASSWORD` for the `db` service, so that a regular `mariadb` user is created on the first run, instead of using the `root` user. Note that this hasn't been tested, and might break some modules in the `ASP` dashboard.
+
 ## Development
 
 Requires `docker` and `docker-compose`.
@@ -17,14 +22,17 @@ Requires `docker` and `docker-compose`.
 ```sh
 # Start
 docker-compose up --build
-# Dashboard now available at http://localhost/ASP, username: admin, password admin. See ./src/ASP/system/config/config.php configuration file
-# phpmyadmin available at http://localhost:8080. Username: root, password: ascent. See ./src/ASP/system/config/config.php configuration file
+# Dashboard now available at http://localhost/ASP, username: admin, password admin. See ./config/ASP/config.php config file
+# phpmyadmin available at http://localhost:8080. Username: root, password: ascent. See ./config/ASP/config.php config file
 
 # Fix php xdebug not reaching host IDE
 iptables -A INPUT -i br+ -j ACCEPT
 
 # Test routes
 docker-compose -f docker-compose.test.yml up
+
+# Dump the DB
+docker exec -it <db_container> mysqldump -uroot -pascent bf2stats | gzip > bf2stats.sql.gz
 
 # Stop
 docker-compose down
