@@ -18,8 +18,8 @@ services:
           set -eu
 
           echo "Granting nginx and php read permissions"
-          find /src -type f -exec chmod +r {} \;
-          find /src -type d -exec chmod +x {} \; # Ensure nginx and php have permissions to read directories
+          find /src -type d -exec chmod 755 {} \;
+          find /src -type f -exec chmod 644 {} \;
 
           echo "Granting php write permissions"
           find /src/ASP/system/backups -type d -exec chmod 777 {} \;
@@ -67,6 +67,7 @@ services:
       # - ./config/ASP/backendAwards.php:/src/ASP/system/config/backendAwards.php:ro              # Optional: Customize as needed if using a custom mod
       # - ./config/ASP/ranks.php:/src/ASP/system/config/ranks.php:ro                              # Optional: Customize as needed if using a custom mod
       - ./config/php/conf.d/php.ini:/usr/local/etc/php/conf.d/php.ini:ro
+      - ./config/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf:ro
       - backups-volume:/src/ASP/system/backups # This volume is effectively unused since ASP doesn't allow DB backups for a remote DB, but mount it anyway to avoid errors.
       - cache-volume:/src/ASP/system/cache
       - logs-volume:/src/ASP/system/logs

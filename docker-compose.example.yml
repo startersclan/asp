@@ -15,16 +15,16 @@ services:
       - |
           set -eu
 
-          echo "Granting php write permissions"
-          chown -R 82:82 /src/ASP/system/backups
+          echo "Granting php's 'www-data' user write permissions"
+          chown -R 33:33 /src/ASP/system/backups
           find /src/ASP/system/backups -type d -exec chmod 750 {} \;
           find /src/ASP/system/backups -type f -exec chmod 640 {} \;
 
-          chown -R 82:82 /src/ASP/system/cache
+          chown -R 33:33 /src/ASP/system/cache
           find /src/ASP/system/cache -type d -exec chmod 750 {} \;
           find /src/ASP/system/cache -type f -exec chmod 640 {} \;
 
-          chown -R 82:82 /src/ASP/system/logs
+          chown -R 33:33 /src/ASP/system/logs
           find /src/ASP/system/logs -type d -exec chmod 750 {} \;
           find /src/ASP/system/logs -type f -exec chmod 640 {} \;
 
@@ -32,11 +32,11 @@ services:
           mkdir -p /src/ASP/system/snapshots/processed
           mkdir -p /src/ASP/system/snapshots/unauthorized
           mkdir -p /src/ASP/system/snapshots/unprocessed
-          chown -R 82:82 /src/ASP/system/snapshots
+          chown -R 33:33 /src/ASP/system/snapshots
           find /src/ASP/system/snapshots -type d -exec chmod 750 {} \;
           find /src/ASP/system/snapshots -type f -exec chmod 640 {} \;
 
-          echo "Granting db write permissions"
+          echo "Granting db's 'mysql' user write permissions"
           chown -R 999:999 /var/lib/mysql
 
   nginx:
@@ -60,6 +60,7 @@ services:
       # - ./config/ASP/backendAwards.php:/src/ASP/system/config/backendAwards.php:ro              # Optional: Customize as needed if using a custom mod
       # - ./config/ASP/ranks.php:/src/ASP/system/config/ranks.php:ro                              # Optional: Customize as needed if using a custom mod
       - ./config/php/conf.d/php.ini:/usr/local/etc/php/conf.d/php.ini:ro # Customize as needed
+      - ./config/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf:ro # Customize as needed
       - backups-volume:/src/ASP/system/backups # This volume is effectively unused since ASP doesn't allow DB backups for a remote DB, but mount it anyway to avoid errors.
       - cache-volume:/src/ASP/system/cache
       - logs-volume:/src/ASP/system/logs

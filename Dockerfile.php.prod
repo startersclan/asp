@@ -1,16 +1,16 @@
-FROM alpine:latest AS build
+FROM php:7.4-fpm AS build
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM"
 
-# Set permissions for php-fpm-alpine's 'www-data' user
+# Set permissions for 'www-data' user
 COPY ./src /src
 WORKDIR /src
-RUN chown -R 82:82 . \
+RUN chown -R www-data:www-data . \
     && find . -type d -exec chmod 750 {} \; \
     && find . -type f -exec chmod 640 {} \;
 
-FROM php:7.4-fpm
+FROM php:7.4-fpm AS final
 
 # opcache
 RUN docker-php-ext-install opcache
@@ -22,6 +22,7 @@ RUN php -i
 RUN php -m
 
 # Add default configs
-COPY ./config/php/php-fpm.d/php_fpm_exporter.conf /usr/local/etc/php-fpm.d/php_fpm_exporter.conf
-COPY ./config/php/conf.d/php.ini /usr/local/etc/php/conf.d/php.ini
+
 COPY --from=build /src /src
+COPY ./config/php/conf.d/php.ini /usr/local/etc/php/conf.d/php.ini
+COPY ./config/php-fpm.d/www.conf /usr/local/etc/php-fpm.d/www.conf
