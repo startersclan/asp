@@ -126,6 +126,7 @@ jobs:
         platforms: 'linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/s390x'
         push: true
         tags: |
+          ${{ steps.prep.outputs.CI_PROJECT_NAMESPACE }}/${{ steps.prep.outputs.CI_PROJECT_NAME }}:nginx
           ${{ steps.prep.outputs.CI_PROJECT_NAMESPACE }}/${{ steps.prep.outputs.CI_PROJECT_NAME }}:${{ steps.prep.outputs.VARIANT_TAG_WITH_REF }}-nginx
           ${{ steps.prep.outputs.CI_PROJECT_NAMESPACE }}/${{ steps.prep.outputs.CI_PROJECT_NAME }}:${{ steps.prep.outputs.VARIANT_TAG_WITH_REF_AND_SHA_SHORT }}-nginx
         cache-to: type=local,dest=/tmp/.buildx-cache
@@ -140,6 +141,7 @@ jobs:
         platforms: 'linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/s390x'
         push: true
         tags: |
+          ${{ steps.prep.outputs.CI_PROJECT_NAMESPACE }}/${{ steps.prep.outputs.CI_PROJECT_NAME }}:php
           ${{ steps.prep.outputs.CI_PROJECT_NAMESPACE }}/${{ steps.prep.outputs.CI_PROJECT_NAME }}:${{ steps.prep.outputs.VARIANT_TAG_WITH_REF }}-php
           ${{ steps.prep.outputs.CI_PROJECT_NAMESPACE }}/${{ steps.prep.outputs.CI_PROJECT_NAME }}:${{ steps.prep.outputs.VARIANT_TAG_WITH_REF_AND_SHA_SHORT }}-php
         cache-to: type=local,dest=/tmp/.buildx-cache
@@ -154,9 +156,9 @@ jobs:
         platforms: 'linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/s390x'
         push: true
         tags: |
+          ${{ steps.prep.outputs.CI_PROJECT_NAMESPACE }}/${{ steps.prep.outputs.CI_PROJECT_NAME }}:nginx
           ${{ steps.prep.outputs.CI_PROJECT_NAMESPACE }}/${{ steps.prep.outputs.CI_PROJECT_NAME }}:${{ steps.prep.outputs.VARIANT_TAG_WITH_REF }}-nginx
           ${{ steps.prep.outputs.CI_PROJECT_NAMESPACE }}/${{ steps.prep.outputs.CI_PROJECT_NAME }}:${{ steps.prep.outputs.VARIANT_TAG_WITH_REF_AND_SHA_SHORT }}-nginx
-          # ${{ steps.prep.outputs.CI_PROJECT_NAMESPACE }}/${{ steps.prep.outputs.CI_PROJECT_NAME }}:nginx
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache
     - name: Build and push php (release)
@@ -169,9 +171,9 @@ jobs:
         platforms: 'linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/s390x'
         push: true
         tags: |
+          ${{ steps.prep.outputs.CI_PROJECT_NAMESPACE }}/${{ steps.prep.outputs.CI_PROJECT_NAME }}:php
           ${{ steps.prep.outputs.CI_PROJECT_NAMESPACE }}/${{ steps.prep.outputs.CI_PROJECT_NAME }}:${{ steps.prep.outputs.VARIANT_TAG_WITH_REF }}-php
           ${{ steps.prep.outputs.CI_PROJECT_NAMESPACE }}/${{ steps.prep.outputs.CI_PROJECT_NAME }}:${{ steps.prep.outputs.VARIANT_TAG_WITH_REF_AND_SHA_SHORT }}-php
-          ${{ steps.prep.outputs.CI_PROJECT_NAMESPACE }}/${{ steps.prep.outputs.CI_PROJECT_NAME }}:php
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache
 
