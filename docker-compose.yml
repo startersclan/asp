@@ -61,6 +61,7 @@ services:
       dockerfile: Dockerfile.php.dev
     volumes:
       - ./src:/src
+      - ./config/ASP/config.php:/src/ASP/system/config/config.php:ro
       - ./config/php/conf.d/php.ini:/usr/local/etc/php/conf.d/php.ini:ro
       - backups-volume:/src/ASP/system/backups
       - cache-volume:/src/ASP/system/cache
@@ -79,12 +80,13 @@ services:
     image: mariadb:10.8
     environment:
       - MARIADB_ROOT_PASSWORD=ascent
-      # - MARIADB_USER=unused
-      # - MARIADB_PASSWORD=unused
+      # - MARIADB_USER=myuser # Uncomment this if you want to create a regular user
+      # - MARIADB_PASSWORD=mypassword # Uncomment this if you want to create a regular user
       - MARIADB_DATABASE=bf2stats
     volumes:
-      - ./src/ASP/system/sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro # Seed the database on the first time. No need to use the dashboard installer.
-      - ./src/ASP/system/sql/data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro # Seed the database on the first time. No need to use the dashboard installer.
+      # Seed the database on the first run. No need to use the ASP dashboard's installer. Note that the .sql file are executed in alphabetical order of their names.
+      - ./src/ASP/system/sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./src/ASP/system/sql/data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro
       - db-volume:/var/lib/mysql
     networks:
       - default
