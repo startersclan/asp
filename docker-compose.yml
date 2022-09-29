@@ -4,6 +4,7 @@ services:
     image: alpine:latest
     volumes:
       - ./src:/src
+      - ./config/ASP/config.php:/src/ASP/system/config/config.php
       - backups-volume:/src/ASP/system/backups # This volume is effectively unused since ASP doesn't allow DB backups for a remote DB, but mount it anyway to avoid errors.
       - cache-volume:/src/ASP/system/cache
       - logs-volume:/src/ASP/system/logs
@@ -24,11 +25,11 @@ services:
           find /src/ASP/system/backups -type d -exec chmod 777 {} \;
           find /src/ASP/system/backups -type f -exec chmod 666 {} \;
 
-          find /src/ASP/system/config -type d -exec chmod 777 {} \;
-          find /src/ASP/system/config -type f -exec chmod 666 {} \;
-
           find /src/ASP/system/cache -type d -exec chmod 777 {} \;
           find /src/ASP/system/cache -type f -exec chmod 666 {} \;
+
+          find /src/ASP/system/config -type d -exec chmod 777 {} \;
+          find /src/ASP/system/config -type f -exec chmod 666 {} \;
 
           find /src/ASP/system/logs -type d -exec chmod 777 {} \;
           find /src/ASP/system/logs -type f -exec chmod 666 {} \;
@@ -61,7 +62,10 @@ services:
       dockerfile: Dockerfile.php.dev
     volumes:
       - ./src:/src
-      - ./config/ASP/config.php:/src/ASP/system/config/config.php:ro
+      - ./config/ASP/config.php:/src/ASP/system/config/config.php # Main config file. Must be writeable or else ASP will throw an exception. Customize as needed
+      # - ./config/ASP/armyAbbreviationMap.php:/src/ASP/system/config/armyAbbreviationMap.php:ro  # Optional: Customize as needed if using a custom mod
+      # - ./config/ASP/backendAwards.php:/src/ASP/system/config/backendAwards.php:ro              # Optional: Customize as needed if using a custom mod
+      # - ./config/ASP/ranks.php:/src/ASP/system/config/ranks.php:ro                              # Optional: Customize as needed if using a custom mod
       - ./config/php/conf.d/php.ini:/usr/local/etc/php/conf.d/php.ini:ro
       - backups-volume:/src/ASP/system/backups # This volume is effectively unused since ASP doesn't allow DB backups for a remote DB, but mount it anyway to avoid errors.
       - cache-volume:/src/ASP/system/cache

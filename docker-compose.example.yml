@@ -55,7 +55,10 @@ services:
   php:
     image: leojonathanoh/asp:php
     volumes:
-      - ./config/ASP/config.php:/src/ASP/system/config/config.php:ro # Customize as needed.
+      - ./config/ASP/config.php:/src/ASP/system/config/config.php # Main config file. Must be writeable or else ASP will throw an exception. Customize as needed
+      # - ./config/ASP/armyAbbreviationMap.php:/src/ASP/system/config/armyAbbreviationMap.php:ro  # Optional: Customize as needed if using a custom mod
+      # - ./config/ASP/backendAwards.php:/src/ASP/system/config/backendAwards.php:ro              # Optional: Customize as needed if using a custom mod
+      # - ./config/ASP/ranks.php:/src/ASP/system/config/ranks.php:ro                              # Optional: Customize as needed if using a custom mod
       - ./config/php/conf.d/php.ini:/usr/local/etc/php/conf.d/php.ini:ro # Customize as needed
       - backups-volume:/src/ASP/system/backups # This volume is effectively unused since ASP doesn't allow DB backups for a remote DB, but mount it anyway to avoid errors.
       - cache-volume:/src/ASP/system/cache
