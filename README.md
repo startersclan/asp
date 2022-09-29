@@ -1,8 +1,8 @@
 # ASP
 
-[![github-actions](https://github.com/leojonathanoh/ASP/workflows/ci-master-pr/badge.svg)](https://github.com/leojonathanoh/ASP/actions)
-[![github-release](https://img.shields.io/github/v/release/leojonathanoh/ASP?style=flat-square)](https://github.com/leojonathanoh/ASP/releases/)
-[![docker-image-size](https://img.shields.io/docker/image-size/leojonathanoh/ASP/latest)](https://hub.docker.com/r/leojonathanoh/ASP)
+[![github-actions](https://github.com/startersclan/ASP/workflows/ci-master-pr/badge.svg)](https://github.com/startersclan/ASP/actions)
+[![github-release](https://img.shields.io/github/v/release/startersclan/ASP?style=flat-square)](https://github.com/startersclan/ASP/releases/)
+[![docker-image-size](https://img.shields.io/docker/image-size/startersclan/ASP/latest)](https://hub.docker.com/r/startersclan/ASP)
 
 The new BF2Statistics 3.0 ASP, currently in public Beta. The GameSpy server to match is over at https://github.com/BF2Statistics/BattleSpy
 
