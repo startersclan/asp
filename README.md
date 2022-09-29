@@ -13,7 +13,6 @@ See [docker-compose.example.yml](docker-compose.example.yml) example showing how
 Notes:
 - Mount the [`config.php`](./config/ASP/config.php) with write permissions, or else `ASP` dashboard will throw an error. Use `System > Edit Configuration` as reference to customize the config file.
 - Optional: Mount your customized [`armyAbbreviationMap.php`](./config/ASP/armyAbbreviationMap.php), [`backendAwards.php`](./config/ASP/backendAwards.php), and [`ranks.php`](./config/ASP/ranks.php) config files if you are using a customized mod. Unlike `config.php`, they don't need write permissions.
-- Seed the `db` service with `schema.sql` and `data.sql` so that the database is populated on the first run. The `System > System Installation` doesn't need to be used.
 - [Backup the DB](#development) using `mysqldump` instead of the ASP. `System > Backup Stats Database` will not be allowed since the DB is on remote host. This means there is no need for provisioning a `backups-volume` volume.
 - Optional: For better security, define `MARIADB_USER` and `MARIADB_PASSWORD` for the `db` service, so that a regular `mariadb` user is created on the first run, instead of using the `root` user. Note that this hasn't been tested, but it seems to work nicely, although it might break some modules in the `ASP` dashboard if they ruly on `root` privileges (any?).
 
