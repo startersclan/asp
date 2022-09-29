@@ -242,7 +242,7 @@ class System
         // Process DB version messages
         if (DB_VERSION == '0.0.0')
         {
-            View::ShowGlobalMessage('Unable to establish a database connection. If you need to setup the ASP, <a href="/install">Click Here to begin Installation</a>');
+            View::ShowGlobalMessage('Unable to establish a database connection. If you need to setup the ASP, <a href="/ASP/install">Click Here to begin Installation</a>');
         }
         else if (DB_VERSION != DB_EXPECTED_VERSION)
         {
