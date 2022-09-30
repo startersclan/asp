@@ -5,18 +5,19 @@ services:
     environment:
       URLS: |
         http://nginx/ 403
+        http://nginx/.htacecss 401
         http://nginx/ASP/ 200
-        http://nginx/ASP/aspx 403
+        http://nginx/ASP/aspx 401
         http://nginx/ASP/bf2statistics.php 403
         http://nginx/ASP/frontend/css/bootstrap.min.css 200
         http://nginx/ASP/frontend/images/maps/foo.png 200
         http://nginx/ASP/frontend/images/ranks/foo.png 200
         http://nginx/ASP/frontend/images/armies/foo.png 200
         http://nginx/ASP/frontend/css/bootstrap.min.css 200
-        http://nginx/ASP/frontend 403
+        http://nginx/ASP/frontend 401
         http://nginx/ASP/getleaderboard.aspx 200
         http://nginx/ASP/getplayerinfo.aspx 200
-        http://nginx/ASP/system 403
+        http://nginx/ASP/system 401
     networks:
       - bf2-network
     entrypoint:
