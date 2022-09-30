@@ -50,7 +50,7 @@ services:
       - ./src:/src
       - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
-      - 80:80
+      - 8081:80
     networks:
       - bf2-network
     depends_on:
@@ -100,7 +100,7 @@ services:
     environment:
       - PMA_HOST=db
     ports:
-      - 8080:80
+      - 8082:80
     networks:
       - bf2-network
 
