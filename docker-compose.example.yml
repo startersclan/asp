@@ -46,7 +46,7 @@ services:
     ports:
       - 80:80
     networks:
-      - default
+      - bf2-network
     depends_on:
       - init-container
       - php
@@ -66,7 +66,7 @@ services:
       - logs-volume:/src/ASP/system/logs
       - snapshots-volume:/src/ASP/system/snapshots
     networks:
-      - default
+      - bf2-network
     depends_on:
       - init-container
     restart: unless-stopped
@@ -81,7 +81,7 @@ services:
     volumes:
       - db-volume:/var/lib/mysql
     networks:
-      - default
+      - bf2-network
     depends_on:
       - init-container
     restart: unless-stopped
@@ -94,11 +94,12 @@ services:
     ports:
       - 8080:80
     networks:
-      - default
+      - bf2-network
     restart: unless-stopped
 
 networks:
-  default:
+  bf2-network:
+    name: bf2-network
 
 volumes:
   backups-volume:

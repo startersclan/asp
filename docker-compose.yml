@@ -52,7 +52,7 @@ services:
     ports:
       - 80:80
     networks:
-      - default
+      - bf2-network
     depends_on:
       - init-container
       - php
@@ -73,7 +73,7 @@ services:
       - logs-volume:/src/ASP/system/logs
       - snapshots-volume:/src/ASP/system/snapshots
     networks:
-      - default
+      - bf2-network
     extra_hosts:
       # For xdebug to reach the host via `host.docker.internal`. See: https://github.com/moby/moby/pull/40007#issuecomment-578729356 and https://stackoverflow.com/questions/49907308/installing-xdebug-in-docker
       # If xdebug does not work, you may need to add an iptables rule to the INPUT chain: iptables -A INPUT -i br+ -j ACCEPT
@@ -91,7 +91,7 @@ services:
     volumes:
       - db-volume:/var/lib/mysql
     networks:
-      - default
+      - bf2-network
     depends_on:
       - init-container
 
@@ -102,10 +102,11 @@ services:
     ports:
       - 8080:80
     networks:
-      - default
+      - bf2-network
 
 networks:
-  default:
+  bf2-network:
+    name: bf2-network
 
 volumes:
   backups-volume:
