@@ -5,7 +5,7 @@ services:
     environment:
       URLS: |
         http://nginx/ 403
-        http://nginx/.htacecss 401
+        http://nginx/.htaccess 401
         http://nginx/ASP/ 200
         http://nginx/ASP/aspx 401
         http://nginx/ASP/bf2statistics.php 403
@@ -27,7 +27,7 @@ services:
       - |
           set -eu
           echo "$$URLS" | awk NF | while read -r i j; do
-              if wget -q -SO- "$$i" 2>&1 | grep "$$j" > /dev/null; then
+              if wget -q -SO- "$$i" 2>&1 | grep "HTTP/1.1 $$j " > /dev/null; then
                   echo "PASS: $$i"
               else
                   echo "FAIL: $$i"
