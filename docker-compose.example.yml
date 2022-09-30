@@ -87,7 +87,7 @@ services:
     restart: unless-stopped
 
   phpmyadmin:
-    image: phpmyadmin:5.2-fpm-alpine
+    image: phpmyadmin:5.2
     environment:
       # - PMA_ABSOLUTE_URI=https://phpmyadmin.example.com # Enable this if behind a reverse proxy
       - PMA_HOST=db
