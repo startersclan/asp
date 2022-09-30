@@ -22,6 +22,10 @@ services:
           find /src -type f -exec chmod 644 {} \;
 
           echo "Granting php write permissions"
+          chmod 777 /src/ASP/system/config
+          chmod 666 /src/ASP/system/config/config.php
+          chmod 666 /src/ASP/system/config/config.php.bak || true
+
           find /src/ASP/system/backups -type d -exec chmod 777 {} \;
           find /src/ASP/system/backups -type f -exec chmod 666 {} \;
 
@@ -44,20 +48,20 @@ services:
           echo "Granting db write permissions"
           chown -R 999:999 /var/lib/mysql
 
-  nginx:
+  asp-nginx:
     image: nginx:1.21-alpine
     volumes:
       - ./src:/src
-      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/ASP/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - 8081:80
     networks:
       - bf2-network
     depends_on:
       - init-container
-      - php
+      - asp-php
 
-  php:
+  asp-php:
     build:
       dockerfile: Dockerfile.php.dev
     volumes:
@@ -66,8 +70,8 @@ services:
       # - ./config/ASP/armyAbbreviationMap.php:/src/ASP/system/config/armyAbbreviationMap.php:ro  # Optional: Customize as needed if using a custom mod
       # - ./config/ASP/backendAwards.php:/src/ASP/system/config/backendAwards.php:ro              # Optional: Customize as needed if using a custom mod
       # - ./config/ASP/ranks.php:/src/ASP/system/config/ranks.php:ro                              # Optional: Customize as needed if using a custom mod
-      - ./config/php/conf.d/php.ini:/usr/local/etc/php/conf.d/php.ini:ro
-      - ./config/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf:ro
+      - ./config/ASP/php/conf.d/php.ini:/usr/local/etc/php/conf.d/php.ini:ro
+      - ./config/ASP/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf:ro
       - backups-volume:/src/ASP/system/backups # This volume is effectively unused since ASP doesn't allow DB backups for a remote DB, but mount it anyway to avoid errors.
       - cache-volume:/src/ASP/system/cache
       - logs-volume:/src/ASP/system/logs
@@ -85,8 +89,8 @@ services:
     image: mariadb:10.8
     environment:
       - MARIADB_ROOT_PASSWORD=ascent
-      # - MARIADB_USER=myuser # Uncomment this if you want to create a regular user
-      # - MARIADB_PASSWORD=mypassword # Uncomment this if you want to create a regular user
+      # - MARIADB_USER=admin # Uncomment this if you want to create a regular user
+      # - MARIADB_PASSWORD=admin # Uncomment this if you want to create a regular user
       - MARIADB_DATABASE=bf2stats
     volumes:
       - db-volume:/var/lib/mysql
