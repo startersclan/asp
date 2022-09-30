@@ -25,8 +25,8 @@ Notes:
 ```sh
 # Start
 docker-compose up --build
-# Dashboard now available at http://localhost/ASP, username: admin, password admin. See ./config/ASP/config.php config file
-# phpmyadmin available at http://localhost:8080. Username: root, password: ascent. See ./config/ASP/config.php config file
+# Dashboard now available at http://localhost:8081/ASP, username: admin, password admin. See ./config/ASP/config.php config file
+# phpmyadmin available at http://localhost:8082. Username: root, password: ascent. See ./config/ASP/config.php config file
 
 # If xdebug is not working, iptables INPUT chain may be set to DROP on the docker bridge.
 # Execute this to allow php to reach the host machine via the docker0 bridge

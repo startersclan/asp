@@ -44,7 +44,7 @@ services:
     volumes:
       - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro # Customize as needed
     ports:
-      - 80:80
+      - 8081:80
     networks:
       - bf2-network
     depends_on:
@@ -92,7 +92,7 @@ services:
       # - PMA_ABSOLUTE_URI=https://phpmyadmin.example.com # Enable this if behind a reverse proxy
       - PMA_HOST=db
     ports:
-      - 8080:80
+      - 8082:80
     networks:
       - bf2-network
     restart: unless-stopped
