@@ -18,7 +18,7 @@ services:
         http://nginx/ASP/getplayerinfo.aspx 200
         http://nginx/ASP/system 403
     networks:
-      - default
+      - bf2-network
     entrypoint:
       - /bin/sh
     command:
@@ -33,3 +33,7 @@ services:
                   exit 1
               fi
           done
+
+networks:
+  bf2-network:
+    name: bf2-network
