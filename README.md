@@ -10,12 +10,6 @@ The new BF2Statistics 3.0 ASP, currently in public Beta. The GameSpy server to m
 
 See [docker-compose.example.yml](docker-compose.example.yml) example showing how to deploy BF2Statistics using `docker-compose`.
 
-Notes:
-- Mount the [`config.php`](./config/ASP/config.php) with write permissions, or else `ASP` dashboard will throw an error. Use `System > Edit Configuration` as reference to customize the config file.
-- Optional: Mount your customized [`armyAbbreviationMap.php`](./config/ASP/armyAbbreviationMap.php), [`backendAwards.php`](./config/ASP/backendAwards.php), and [`ranks.php`](./config/ASP/ranks.php) config files if you are using a customized mod. Unlike `config.php`, they don't need write permissions.
-- [Backup the DB](#development) using `mysqldump` instead of the ASP. `System > Backup Stats Database` will not be allowed since the DB is on remote host. This means there is no need for provisioning a `backups-volume` volume.
-- Optional: For better security, define `MARIADB_USER` and `MARIADB_PASSWORD` for the `db` service, so that a regular `mariadb` user is created on the first run, instead of using the `root` user. Note that this hasn't been tested, but it seems to work nicely, although it might break some modules in the `ASP` dashboard if they rely on `root` privileges (any at all?).
-
 ## Development
 
 - Install `docker` and `docker-compose`
@@ -38,7 +32,6 @@ docker-compose -f docker-compose.test.yml up
 # Test production builds locally
 docker build -t startersclan/asp:nginx -f Dockerfile.nginx.prod .
 docker build -t startersclan/asp:php -f Dockerfile.php.prod .
-docker-compose -f docker-compose.example.yml up
 
 # Dump the DB
 docker exec $( docker-compose ps | grep db | awk '{print $1}' ) mysqldump -uroot -pascent bf2stats | gzip > bf2stats.sql.gz
