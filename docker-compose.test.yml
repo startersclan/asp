@@ -4,20 +4,20 @@ services:
     image: alpine:latest
     environment:
       URLS: |
-        http://nginx/ 403
-        http://nginx/.htaccess 401
-        http://nginx/ASP/ 200
-        http://nginx/ASP/aspx 401
-        http://nginx/ASP/bf2statistics.php 403
-        http://nginx/ASP/frontend/css/bootstrap.min.css 200
-        http://nginx/ASP/frontend/images/maps/foo.png 200
-        http://nginx/ASP/frontend/images/ranks/foo.png 200
-        http://nginx/ASP/frontend/images/armies/foo.png 200
-        http://nginx/ASP/frontend/css/bootstrap.min.css 200
-        http://nginx/ASP/frontend 401
-        http://nginx/ASP/getleaderboard.aspx 200
-        http://nginx/ASP/getplayerinfo.aspx 200
-        http://nginx/ASP/system 401
+        http://asp-nginx/ 403
+        http://asp-nginx/.htaccess 401
+        http://asp-nginx/ASP/ 200
+        http://asp-nginx/ASP/aspx 401
+        http://asp-nginx/ASP/bf2statistics.php 403
+        http://asp-nginx/ASP/frontend/css/bootstrap.min.css 200
+        http://asp-nginx/ASP/frontend/images/maps/foo.png 200
+        http://asp-nginx/ASP/frontend/images/ranks/foo.png 200
+        http://asp-nginx/ASP/frontend/images/armies/foo.png 200
+        http://asp-nginx/ASP/frontend/css/bootstrap.min.css 200
+        http://asp-nginx/ASP/frontend 401
+        http://asp-nginx/ASP/getleaderboard.aspx 200
+        http://asp-nginx/ASP/getplayerinfo.aspx 200
+        http://asp-nginx/ASP/system 401
     networks:
       - bf2-network
     entrypoint:
