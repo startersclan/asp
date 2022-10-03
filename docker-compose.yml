@@ -64,6 +64,7 @@ services:
   asp-php:
     build:
       dockerfile: Dockerfile.php.dev
+      context: .
     volumes:
       - ./src:/src
       - ./config/ASP/config.php:/src/ASP/system/config/config.php # Main config file. Must be writeable or else ASP will throw an exception. Customize as needed

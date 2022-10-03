@@ -9,13 +9,29 @@ services:
         http://asp-nginx/ASP/ 200
         http://asp-nginx/ASP/aspx 401
         http://asp-nginx/ASP/bf2statistics.php 403
+        http://asp-nginx/ASP/frontend 401
         http://asp-nginx/ASP/frontend/css/bootstrap.min.css 200
         http://asp-nginx/ASP/frontend/images/maps/foo.png 200
         http://asp-nginx/ASP/frontend/images/ranks/foo.png 200
         http://asp-nginx/ASP/frontend/images/armies/foo.png 200
         http://asp-nginx/ASP/frontend/css/bootstrap.min.css 200
-        http://asp-nginx/ASP/frontend 401
+        http://asp-nginx/ASP/createplayer.aspx 200
+        http://asp-nginx/ASP/getawardsinfo.aspx 200
+        http://asp-nginx/ASP/getbackendinfo.aspx 200
         http://asp-nginx/ASP/getleaderboard.aspx 200
+        http://asp-nginx/ASP/getmapinfo.aspx 200
+        http://asp-nginx/ASP/getplayerid.aspx 200
+        http://asp-nginx/ASP/getplayerinfo.aspx 200
+        http://asp-nginx/ASP/getrankinfo.aspx 200
+        http://asp-nginx/ASP/getunlocksinfo.aspx 200
+        http://asp-nginx/ASP/ranknotification.aspx 200
+        http://asp-nginx/ASP/searchforplayers.aspx 200
+        http://asp-nginx/ASP/selectunlock.aspx 200
+        http://asp-nginx/ASP/verifyplayer.aspx 200
+        http://asp-nginx/ASP/index.php 200
+        http://asp-nginx/ASP/ranknotification.aspx 200
+        http://asp-nginx/ASP/searchforplayers.aspx 200
+        http://asp-nginx/ASP/selectunlock.aspx 200
         http://asp-nginx/ASP/getplayerinfo.aspx 200
         http://asp-nginx/ASP/system 401
     networks:
@@ -26,6 +42,22 @@ services:
       - -c
       - |
           set -eu
+
+          echo "Waiting for stack to be ready"
+          s=0
+          while true; do
+              nc -vz -w 1 asp-nginx 80 \
+                  && nc -vz -w 1 asp-php 9000 \
+                  && nc -vz -w 1 db 3306 \
+                  && break || true
+              s=$$(( $$s + 1 ))
+              if [ "$$s" -eq 600 ]; then
+                  exit 1
+              fi
+              echo "Retrying in 3 seconds"
+              sleep 3
+          done
+
           echo "$$URLS" | awk NF | while read -r i j; do
               if wget -q -SO- "$$i" 2>&1 | grep "HTTP/1.1 $$j " > /dev/null; then
                   echo "PASS: $$i"
