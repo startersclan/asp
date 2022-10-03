@@ -2,7 +2,7 @@
 
 This example deploys a stack with `bf2stats` `ASP` v3. If you prefer `bf2stats` v2, see [here](https://github.com/startersclan/bf2stats).
 
-Note that `bf2sclone` doesn't work with `ASP` v3, see [here](#q-query-failed-unknown-column-rank-in-field-list-in-bf2sclone).
+Note that `bf2sclone` `2.2.0` does not work with `ASP` v3, but it is included in this example for demonstrative purposes. The community has tried to [fix it](https://bf2statistics.com/threads/bf2sclone-v3.2972/), but so far none seem to have shared their working changes. Wilson212, the orignal author of BF2Statistics did mention to be working on it, see [here](https://bf2statistics.com/threads/bf2statistics-v3-1-0-full-release.3010/), so we might see it soon.
 
 ## Usage
 
@@ -191,6 +191,7 @@ docker-compose down
 docker volume rm bf2stats_prmasterserver-volume
 docker volume rm bf2stats_traefik-acme-volume
 docker volume rm bf2stats_backups-volume
+docker volume rm bf2stats_cache-volume
 docker volume rm bf2stats_logs-volume
 docker volume rm bf2stats_snapshots-volume
 docker volume rm bf2stats_bf2sclone-cache-volume
