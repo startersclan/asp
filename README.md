@@ -13,7 +13,7 @@ docker pull startersclan/asp:3.1.0-nginx
 docker pull startersclan/asp:3.1.0-php
 ```
 
-See [docker-compose.example.yml](docker-compose.example.yml) example showing how to deploy BF2Statistics using `docker-compose`.
+See [this](docs/full-bf2-stack-example) example showing how to deploy [Battlefield 2 1.5 server](https://github.com/startersclan/docker-bf2/), the [gamespy emulator](https://github.com/startersclan/PRMasterServer), and `bf2stats` using `docker-compose`.
 
 ## Development
 
