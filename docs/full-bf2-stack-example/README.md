@@ -1,8 +1,11 @@
 # Full Battlefield 2 stack example
 
-This example deploys a stack with `bf2stats` `ASP` v3. If you prefer `bf2stats` v2, see [here](https://github.com/startersclan/bf2stats).
+This example deploys a stack with BF2Statistics `ASP` `3.1.0`, which has some known quirks. If you prefer a fully working BF2Statistics v2, see [here](https://github.com/startersclan/bf2stats).
 
-Note that `bf2sclone` `2.2.0` does not work with `ASP` v3, but it is included in this example for demonstrative purposes. The community has tried to [fix it](https://bf2statistics.com/threads/bf2sclone-v3.2972/), but so far none seem to have shared their working changes. Wilson212, the orignal author of BF2Statistics did mention to be working on it, see [here](https://bf2statistics.com/threads/bf2statistics-v3-1-0-full-release.3010/), so we might see it soon.
+Quirks:
+
+- As of BF2Statistics `3.1.0`, the [python files](https://github.com/BF2Statistics/StatsPython) included in the [BF2 1.5 server docker image](https://github.com/startersclan/docker-bf2) fails to send stats snapshots to an `ASP` `nginx` webserver, with `nginx` responding with `499` because the `miniclient` library closes the connection before `nginx` sends the response (See solution [here](https://github.com/startersclan/bf2stats/pull/36)). Also, the python files will fail to initialize if the `ASP` webserver returns `Transfer Encoding: chunked` because `miniclient` cannot handle chunked responses (See solution [here](https://github.com/startersclan/bf2stats/pull/37)).
+- As of BF2Statistics `3.1.0`, there is no `bf2sclone`. The `bf2sclone` `2.2.0` included in this example does not work with BF2Statistics `3.1.0` is only for demonstrative purposes. The community has tried to [fix it](https://bf2statistics.com/threads/bf2sclone-v3.2972/), but so far none seem to have shared their working changes. Wilson212, the original author of BF2Statistics did mention to be working on it, see [here](https://bf2statistics.com/threads/bf2statistics-v3-1-0-full-release.3010/), so we might see it soon.
 
 ## Usage
 
@@ -90,24 +93,24 @@ Click on `System > System Installation` and install the DB using `$db_host`,`$db
 Configure `coredns` to spoof all gamespy DNS in [config/coredns/hosts](config/coredns/hosts), replacing the IP addresses with your machine's external IP address which you specified in Step `2.`. Assuming your external IP is `192.168.1.100`, it should look like:
 
 ```txt
-192.168.0.102 eapusher.dice.se
-192.168.0.102 battlefield2.available.gamespy.com
-192.168.0.102 battlefield2.master.gamespy.com
-192.168.0.102 battlefield2.ms14.gamespy.com
-192.168.0.102 gamestats.gamespy.com
-192.168.0.102 master.gamespy.com
-192.168.0.102 motd.gamespy.com
-192.168.0.102 gpsp.gamespy.com
-192.168.0.102 gpcm.gamespy.com
-192.168.0.102 gamespy.com
-192.168.0.102 bf2web.gamespy.com
+192.168.1.100 eapusher.dice.se
+192.168.1.100 battlefield2.available.gamespy.com
+192.168.1.100 battlefield2.master.gamespy.com
+192.168.1.100 battlefield2.ms14.gamespy.com
+192.168.1.100 gamestats.gamespy.com
+192.168.1.100 master.gamespy.com
+192.168.1.100 motd.gamespy.com
+192.168.1.100 gpsp.gamespy.com
+192.168.1.100 gpcm.gamespy.com
+192.168.1.100 gamespy.com
+192.168.1.100 bf2web.gamespy.com
 ```
 
 Save the file. `coredns` immediately reads the changed file and serves the updated DNS records.
 
 ### 6. Use the DNS server in BF2 clients
 
-Configure your BF2 client machine (and your friends' machines) to use the DNS server (i.e. your local machine) you configured in Step `2.`.
+Configure your BF2 client machine (and your friends' machines) to use the DNS server (i.e. your local machine) you configured in Step `2.`(E.g. `192.168.1.100`).
 
 If you are on different networks, you may use any of [these methods](#background-keeping-battlefield-2-working). Option `3.` is recommended.
 
@@ -131,9 +134,9 @@ docker-compose restart coredns
 
 ### 6. Play
 
-BF2 1.5 clients should be able to connect to your gameserver. Start BF2, click `Create Account`, and once you've logged in, click `MULTIPLAYER > JOIN INTERNET`, click `UPDATE SERVER LIST` and you should see your server listed. Join the server.
+BF2 1.5 clients should be able to connect to your gameserver. Start BF2, click `Create Account`, and once you've logged in, click `CONNECT TO IP`, and in the `IP ADDRESS` box enter the external IP address of the machine you used in Step `2.` (E.g. `192.168.1.100`). Join the server.
 
-If for some reason you don't see it listed, click `CONNECT TO IP`, and in the `IP ADDRESS` box enter the external IP address of the machine you used in Step `2.`. Join the server.
+> You may see your server listed under `MULTIPLAYER > JOIN INTERNET`, when clicking `UPDATE SERVER LIST`, but with a wrong IP address, for instance,`172.16.x.x` instead of being your external IP address `192.168.1.100`. This happens because in our example `docker-compose.yml`, the `bf2` server and `prmasterserver` are linked using a `gamespy-network`, such that `bf2` container registered itself with `prmasterserver` container over `gamespy-network`, so `prmasterserver` listed the `bf2` server's container's IP address instead of the machine's external IP address. To solve this, run both the `bf2` server and `prmasterserver` on host networking, so that they talk to each other over the machine's external interface instead of a docker network.
 
 At the end of the first game, you should see your stats updated at https://bf2sclone.example.com.
 
@@ -150,8 +153,8 @@ At the end of the first game, you should see your stats updated at https://bf2sc
 - In a production setup, you want to make sure:
   - to use a custom domain name
   - to configure `traefik` to be issued an ACME certificate for HTTPS to work for the web endpoints
-  - to run `traefik` on `--network host` so that it preserves client IP addresses, or to use the PROXY protocol
-  - to run `prmasterserver` on `--network host` so that it preserves client IP addresses
+  - to run `traefik` on `--network host` or to use the PROXY protocol, so that it preserves client IP addresses,
+  - to run the `bf2` server and `prmasterserver` on `--network host` so that they: 1) talk to each other over the machine's external interface 2) preserve client IP addresses
   - to use stronger authentication in front of the `ASP` and `phpmyadmin`, which don't have in-built strong authentication
   - to use strong passwords for the `ASP` admin user in [config file](./config/ASP/config.php)
   - to use strong password for the `db` users in `MARIADB_ROOT_PASSWORD`, `MARIADB_USER`, and `MARIADB_PASSWORD`
@@ -164,6 +167,20 @@ These one-liners may be handy for adminstration of the stack.
 ```sh
 # Start
 docker-compose up
+
+# If you are running the BF2 server, PRMasterServer, or traefik on host networking, you may need these iptables rules
+# BF2 server
+iptables -A INPUT -p udp -m udp -m conntrack --ctstate NEW --dport 16567 -j ACCEPT
+iptables -A INPUT -p udp -m udp -m conntrack --ctstate NEW --dport 29900 -j ACCEPT
+# PRMasterServer
+iptables -A INPUT -p tcp -m tcp -m conntrack --ctstate NEW --dport 29900 -j ACCEPT
+iptables -A INPUT -p tcp -m tcp -m conntrack --ctstate NEW --dport 29901 -j ACCEPT
+iptables -A INPUT -p tcp -m tcp -m conntrack --ctstate NEW --dport 28910 -j ACCEPT
+iptables -A INPUT -p udp -m udp -m conntrack --ctstate NEW --dport 27900 -j ACCEPT
+iptables -A INPUT -p udp -m udp -m conntrack --ctstate NEW --dport 29910 -j ACCEPT
+# traefik
+iptables -A INPUT -p udp -m udp -m conntrack --ctstate NEW --dport 80 -j ACCEPT
+iptables -A INPUT -p udp -m udp -m conntrack --ctstate NEW --dport 443 -j ACCEPT
 
 # Attach to the bf2 server console
 docker attach bf2stats_bf2_1
@@ -219,7 +236,7 @@ Cons:
 
 - Difficult to change to another gamespy server
 - Difficult to distribute because it requires installation on each client
-- Trust issues. Binaries may be patched with malicious code
+- Binaries may be patched with malicious code
 
 ### Option 2: Spoof DNS at the DNS server
 
