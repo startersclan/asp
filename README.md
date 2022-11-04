@@ -8,7 +8,7 @@ The new BF2Statistics 3.0 ASP, currently in public Beta. The GameSpy server to m
 
 ## Usage
 
-```
+```sh
 docker pull startersclan/asp:3.1.0-nginx
 docker pull startersclan/asp:3.1.0-php
 ```
