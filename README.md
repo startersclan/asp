@@ -13,20 +13,21 @@ docker pull startersclan/asp:3.1.0-nginx
 docker pull startersclan/asp:3.1.0-php
 ```
 
-See [this](docs/full-bf2-stack-example) example showing how to deploy [Battlefield 2 1.5 server](https://github.com/startersclan/docker-bf2/), the [gamespy emulator](https://github.com/startersclan/PRMasterServer), and `bf2stats` using `docker-compose`.
+See [this](docs/full-bf2-stack-example) example showing how to deploy [Battlefield 2 1.5 server](https://github.com/startersclan/docker-bf2/), [PRMasterserver](https://github.com/startersclan/PRMasterServer) as the master server, and `bf2stats` as the stats web server, using `docker-compose`.
 
 ## Development
 
-- Install `docker` and `docker-compose`
-- Install `vscode` for development. Install `vscode` extensions [`PHP Intelephense`](https://marketplace.visualstudio.com/items?itemName=bmewburn.vscode-intelephense-client) for intellisense, and [xdebug](https://marketplace.visualstudio.com/items?itemName=xdebug.php-debug) and for `php` debugging.
-- To start `php` debugging, press `F5` in `vscode`. Set breakpoints in code, and whenever a page is loaded, `vscode` shows hit breakpoints. To stop debugging, press `shift+F5`.
-
 ```sh
 # Start
-docker-compose up --build
-# Dashboard now available at http://localhost:8081/ASP, username: admin, password admin. See ./config/ASP/config.php config file
-# phpmyadmin available at http://localhost:8082. Username: root, password: ascent. See ./config/ASP/config.php config file
+docker-compose up
+# ASP available at http://localhost:8081/ASP. Username: admin, password admin. See ./config/ASP/config.php
+# phpmyadmin available at http://localhost:8083. Username: root, password: ascent. See ./config/ASP/config.php config file
 
+# Development - Install vscode extensions
+# Once installed, set breakpoints in code, and press F5 to start debugging.
+code --install-extension bmewburn.vscode-intelephense-client # PHP intellisense
+code --install-extension xdebug.php-debug # PHP remote debugging via xdebug
+code --install-extension ms-python.python # Python intellisense
 # If xdebug is not working, iptables INPUT chain may be set to DROP on the docker bridge.
 # Execute this to allow php to reach the host machine via the docker0 bridge
 sudo iptables -A INPUT -i br+ -j ACCEPT
