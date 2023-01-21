@@ -70,7 +70,7 @@ Attaching to bf2stats-asp-nginx-1, bf2stats-asp-php-1, bf2stats-bf2-1, bf2stats-
 
 The full stack is now running:
 
-- Battlefield 2 1.5 server with `bf2stats` `2.3.0` support available on your external IP address on UDP ports `16567` and `29900` on your external IP address
+- Battlefield 2 1.5 server with `bf2stats` `3.x.x` support available on your external IP address on UDP ports `16567` and `29900` on your external IP address
 - Gamespy server [`PRMasterServer`](https://github.com/PRMasterServer) available at your external IP address on TCP ports `29900`, `29901`, `28910`, and UDP ports `27900` and `29910` on your external IP address
 - `coredns` available on your external IP address on UDP port `53` on your external IP address
 - `traefik` (TLS-terminated reverse web proxy) available on port `80` and `443` on your external IP address
@@ -87,6 +87,12 @@ Visit https://asp.example.com/ASP and login using `$admin_user` and `$admin_pass
 > Since traefik hasn't got a valid TLS certificate via `ACME`, it will serve the `TRAEFIK DEFAULT CERT`. The browser will show a security issue when visiting https://asp.example.com, https://bf2sclone.example.com, and https://phpmyadmin.example.com. Simply click "visit site anyway" button to get past the security check.
 
 Click on `System > System Installation` and install the DB using `$db_host`,`$db_port`,`$db_name`,`$db_user`,`$db_pass` you defined in [`config.php`](./config/ASP/config.php). Click `System > System Tests` and `Run System Tests` and all tests should be green, except for the `BF2Statistics Processing` test and the four `.aspx` tests, because we still don't have a Fully Qualified Domain Name (FQDN) with a public DNS record.
+
+Then, restart the BF2 server so that it begins recording stats:
+
+```sh
+docker-compose restart bf2
+```
 
 ### 5. Setup DNS server
 
@@ -151,14 +157,14 @@ At the end of the first game, you should see your stats updated at https://bf2sc
 - Optional: Mount your customized [`armyAbbreviationMap.php`](./config/ASP/armyAbbreviationMap.php), [`backendAwards.php`](./config/ASP/backendAwards.php), and [`ranks.php`](./config/ASP/ranks.php) config files if you are using a customized mod. Unlike `config.php`, they don't need write permissions.
 - [Backup the DB](#scripts) using `mysqldump` instead of the ASP. `System > Backup Stats Database` will not be allowed since the DB is on remote host. This means there is no need for provisioning a `backups-volume` volume.
 - In a production setup, you want to make sure:
-  - to use a custom domain name
+  - to use a custom domain name (FQDN)
   - to configure `traefik` to be issued an ACME certificate for HTTPS to work for the web endpoints
   - to run `traefik` on `--network host` or to use the PROXY protocol, so that it preserves client IP addresses,
-  - to run the `bf2` server and `prmasterserver` on `--network host` so that they: 1) talk to each other over the machine's external interface 2) preserve client IP addresses
+  - to run the `bf2` server and `prmasterserver` on `--network host` so that they: 1) talk to each other over the machine's external interface
   - to use stronger authentication in front of the `ASP` and `phpmyadmin`, which don't have in-built strong authentication
   - to use strong passwords for the `ASP` admin user in [config file](./config/ASP/config.php)
   - to use strong password for the `db` users in `MARIADB_ROOT_PASSWORD`, `MARIADB_USER`, and `MARIADB_PASSWORD`
-  - to use internal networks for the `db` which don't need egress traffic
+  - to use internal networks for the `db` which doesn't need egress traffic
 
 ## Scripts
 
@@ -168,7 +174,7 @@ These one-liners may be handy for adminstration of the stack.
 # Start
 docker-compose up
 
-# If you are running the BF2 server, PRMasterServer, or traefik on host networking, you may need these iptables rules
+# Only if you are running the BF2 server, PRMasterServer, or traefik on host networking, you may need these iptables rules
 # BF2 server
 iptables -A INPUT -p udp -m udp -m conntrack --ctstate NEW --dport 16567 -j ACCEPT
 iptables -A INPUT -p udp -m udp -m conntrack --ctstate NEW --dport 29900 -j ACCEPT
@@ -184,12 +190,6 @@ iptables -A INPUT -p udp -m udp -m conntrack --ctstate NEW --dport 443 -j ACCEPT
 
 # Attach to the bf2 server console
 docker attach bf2stats_bf2_1
-
-# View bf2 server logs
-docker exec -it bf2stats_bf2_1 bash
-cd python/bf2/logs
-cat *.log
-exit
 
 # Copy logs from bf2 server to this folder
 docker cp bf2stats_bf2_1:/server/bf2/python/bf2/logs .
