@@ -217,3 +217,17 @@ jobs:
           tag: ${{ github.ref_name }} # E.g. 'master' or 'v1.2.3'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  update-dockerhub-description:
+    needs: [test, build]
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Docker Hub Description
+      uses: peter-evans/dockerhub-description@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_REGISTRY_USER }}
+        password: ${{ secrets.DOCKERHUB_REGISTRY_PASSWORD }}
+        repository: startersclan/asp
+        short-description: ${{ github.event.repository.description }}
