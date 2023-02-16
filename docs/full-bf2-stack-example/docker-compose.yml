@@ -96,6 +96,7 @@ services:
     restart: unless-stopped
     command:
       - --global.checknewversion=false
+      - --global.sendanonymoususage=false
       # - --log.level=DEBUG
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
