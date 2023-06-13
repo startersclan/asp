@@ -328,7 +328,7 @@ class TimeSpan
             $return .= substr($format, $o, $p);
             if (($o += $p + 2) <= $l)
             {
-                switch ($format{$o - 1})
+                switch ($format[$o - 1])
                 {
                     case 's':
                         $return .= $this->getSeconds();
