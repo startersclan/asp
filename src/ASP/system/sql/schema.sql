@@ -574,6 +574,7 @@ CREATE TABLE `player_rank_history` (
 CREATE TABLE `player_unlock` (
   `player_id` INT UNSIGNED NOT NULL,
   `unlock_id` SMALLINT UNSIGNED NOT NULL,
+  `timestamp` INT UNSIGNED NOT NULL,
   PRIMARY KEY(`player_id`,`unlock_id`),
   FOREIGN KEY(`player_id`) REFERENCES `player`(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY(`unlock_id`) REFERENCES `unlock`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
