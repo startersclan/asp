@@ -77,7 +77,8 @@ else
         // Finally, if the user HAS available unlocks, let them choose this one
         if ($available > 0)
         {
-            $connection->exec("INSERT INTO player_unlock VALUES ($pid, $id)");
+            $time = time();
+            $connection->exec("INSERT INTO player_unlock VALUES ($pid, $id, $time)");
             $Response->writeLine("OK");
             $Response->send();
         }
