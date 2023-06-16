@@ -4,8 +4,8 @@ This example deploys a stack with BF2Statistics `ASP` `3.1.0`, which has some kn
 
 Quirks:
 
-- As of BF2Statistics `3.1.0`, the [python files](https://github.com/BF2Statistics/StatsPython) included in the [BF2 1.5 server docker image](https://github.com/startersclan/docker-bf2) fails to send stats snapshots to an `ASP` `nginx` webserver, with `nginx` responding with `499` because the `miniclient` library closes the connection before `nginx` sends the response (See solution [here](https://github.com/startersclan/bf2stats/pull/36)). Also, the python files will fail to initialize if the `ASP` webserver returns `Transfer Encoding: chunked` because `miniclient` cannot handle chunked responses (See solution [here](https://github.com/startersclan/bf2stats/pull/37)).
-- As of BF2Statistics `3.1.0`, there is no `bf2sclone`. The `bf2sclone` `2.2.0` included in this example does not work with BF2Statistics `3.1.0` is only for demonstrative purposes. The community has tried to [fix it](https://bf2statistics.com/threads/bf2sclone-v3.2972/), but so far none seem to have shared their working changes. Wilson212, the original author of BF2Statistics did mention to be working on it, see [here](https://bf2statistics.com/threads/bf2statistics-v3-1-0-full-release.3010/), so we might see it soon.
+- As of [BF2Statistics `3.1.0`](https://github.com/startersclan/asp), the [python files](https://github.com/startersclan/StatsPython) included in the [BF2 1.5 server docker image](https://github.com/startersclan/docker-bf2) fails to send stats snapshots to an `ASP` `nginx` webserver, with `nginx` responding with `499` because the `miniclient` library closes the connection before `nginx` sends the response (See solution [here](https://github.com/startersclan/bf2stats/pull/36)). Also, the python files will fail to initialize if the `ASP` webserver returns `Transfer Encoding: chunked` because `miniclient` cannot handle chunked responses (See solution [here](https://github.com/startersclan/bf2stats/pull/37)). This should be fixed in `3.2.0`.
+- As of [BF2Statistics `3.1.0`](https://github.com/startersclan/asp), there is no working `bf2sclone`. The `bf2sclone` `2.2.0` included in this example does not work with BF2Statistics `3.1.0`, but is only for demonstrative purposes. The community has tried to [fix it](https://bf2statistics.com/threads/bf2sclone-v3.2972/), but so far none seem to have shared their working changes. Wilson212, the original author of BF2Statistics did mention to be working on it, see [here](https://bf2statistics.com/threads/bf2statistics-v3-1-0-full-release.3010/), so we might see it soon.
 
 ## Usage
 
@@ -242,7 +242,7 @@ Cons:
 
 Pros:
 
-- Most scalable. You configure the DNS server via `DHCP`, so that every client that connects to a `DHCP` server (e.g. router) are configured to use the DNS server. No client configuration needed
+- Most scalable. You configure the DNS server via `DHCP`, so that every client that connects to a `DHCP` server (e.g. router) is configured to use the DNS server. No client configuration needed
 - Easy to change to another gamespy server
 
 Cons:
