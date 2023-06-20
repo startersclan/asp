@@ -128,10 +128,11 @@
                     var rowNode;
 
                     if (result.mode === 'add') {
-                        // Add award to table
+                        // Add mod to table
                         //noinspection JSUnresolvedFunction
                         rowNode = Table.row.add([
-                            result.id,
+                            '', // Change result.id to '' as a placeholder as DataTable jquery library was throwing an error, 
+                            // suspected autoincrement id value is not being pulled from db to update table.
                             result.name,
                             result.longname,
                             '<span id="status-' + id + '" class="badge badge-' + result.status_badge + '}">' + result.status_text + '</span>',
@@ -140,7 +141,7 @@
                             </span>'
                         ]).draw().node();
 
-                        $( rowNode ).attr('id', 'tr-unlock-' + id);
+                        $( rowNode ).attr('id', 'tr-mod-' + id); // Previously set to 'tr-unlock-', changed to 'tr-mod-' so as it's looking for the right table to update.
                     }
                     else if (result.mode === 'edit') {
                         selectedRowNode.find('td:eq(0)').html(result.id);
@@ -149,8 +150,16 @@
                         $('span#status-' + id).attr('class', 'badge badge-' + result.status_badge).html(result.status_text);
                     }
 
+                    // Update the placeholder post-insertion, new entry is placed at the top, 
+                    // ideal behaviour is inserted at the bottom as it is with other pages.
+                    $(rowNode).find('td:first').text(id);
+
                     // Close dialog
                     $("#editor-form").dialog("close");
+
+                    // Reload page (temporary).
+                    // Borrowing code to do a page reload, 'temporary' fix for top of table insertion.
+                    location.reload(); 
                 }
                 else {
                     $('#jui-message').attr('class', 'alert error').html(result.message);
