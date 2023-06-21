@@ -11,11 +11,11 @@
         }
 
         /**
-         * nameRegex : specifies the characters allowed in an unlock name
+         * nameRegex : specifies the characters allowed in a mod name
          */
         $.validator.addMethod("nameRegex", function(value, element) {
             return this.optional(element) || /^[a-z0-9_]+$/i.test(value);
-        }, "Unlock name must contain only letters, numbers, or underscores.");
+        }, "Mod name must contain only letters, numbers, or underscores.");
 
         // Data Table
         var Table = $(".mws-datatable-fn").DataTable({
@@ -40,12 +40,12 @@
             rules: {
                 shortName: {
                     required: true,
-                    maxlength: 32,
+                    maxlength: 24,
                     nameRegex: true
                 },
                 longName: {
                     required: true,
-                    maxlength: 64
+                    maxlength: 48
                 }
             },
             invalidHandler: function (form, validator) {
@@ -113,7 +113,7 @@
         // noinspection JSJQueryEfficiency
         $("#mws-validate").ajaxForm({
             data: { ajax: true },
-            beforeSubmit: function ()
+            beforeSubmit: function () 
             {
                 $('#mws-validate-error').hide();
                 $('#jui-message').attr('class', 'alert loading').html("Submitting form data...").slideDown(200);
@@ -124,36 +124,36 @@
                 // Parse the JSON response
                 var result = jQuery.parseJSON(response);
                 if (result.success === true) {
-                    var id = result.id;
-                    var rowNode;
+                  var id = result.id;
+                  var rowNode;
+              
+                  if (result.mode === 'add') {
+                    // Add mod to table
+                    //noinspection JSUnresolvedFunction
+                    rowNode = Table.row.add([
+                        result.id,
+                        result.name,
+                        result.longname,
+                        '<span id="status-' + id + '" class="badge badge-' + result.status_badge + '}">' + result.status_text + '</span>',
+                        '<span class="btn-group"> \
+                          <a id="edit-' + id + '" href="#"  rel="tooltip" title="Edit Details" class="btn btn-small"><i class="icon-pencil"></i></a> \
+                        </span>'
+                      ]).draw().node();
 
-                    if (result.mode === 'add') {
-                        // Add award to table
-                        //noinspection JSUnresolvedFunction
-                        rowNode = Table.row.add([
-                            result.id,
-                            result.name,
-                            result.longname,
-                            '<span id="status-' + id + '" class="badge badge-' + result.status_badge + '}">' + result.status_text + '</span>',
-                            '<span class="btn-group"> \
-                                <a id="edit-' + id + '" href="#"  rel="tooltip" title="Edit Details" class="btn btn-small"><i class="icon-pencil"></i></a> \
-                            </span>'
-                        ]).draw().node();
-
-                        $( rowNode ).attr('id', 'tr-unlock-' + id);
-                    }
-                    else if (result.mode === 'edit') {
-                        selectedRowNode.find('td:eq(0)').html(result.id);
-                        selectedRowNode.find('td:eq(1)').html(result.name);
-                        selectedRowNode.find('td:eq(2)').html(result.longname);
-                        $('span#status-' + id).attr('class', 'badge badge-' + result.status_badge).html(result.status_text);
-                    }
-
+                    $(rowNode).attr('id', 'tr-mod-' + id);
+                  } 
+                  else if (result.mode === 'edit') {
+                    selectedRowNode.find('td:eq(0)').html(result.id);
+                    selectedRowNode.find('td:eq(1)').html(result.name);
+                    selectedRowNode.find('td:eq(2)').html(result.longname);
+                    $('span#status-' + id).attr('class', 'badge badge-' + result.status_badge).html(result.status_text);
+                  }
+                  
                     // Close dialog
                     $("#editor-form").dialog("close");
                 }
                 else {
-                    $('#jui-message').attr('class', 'alert error').html(result.message);
+                  $('#jui-message').attr('class', 'alert error').html(result.message);
                 }
             },
             error: function(request, status, error) {

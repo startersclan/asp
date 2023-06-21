@@ -608,7 +608,7 @@ class Gamedata extends Controller
             {
                 case 'add':
                     $pdo->insert('game_mod', $data);
-                    $date['id'] = $pdo->lastInsertId('id');
+                    $data['id'] = $pdo->lastInsertId('id');
                     $data['success'] = true;
                     $data['mode'] = 'add';
                     $data['status_badge'] = ($data['authorized']) ? 'success' : 'important';
