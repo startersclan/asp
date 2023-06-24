@@ -70,9 +70,16 @@ return [
     ],
     "3.1.0" => [
         "comment" => "Added the 'eligible_' tables for easy sorting when selecting a SMOC or General.",
-        "up" => null,
-        "up_string" => "",
+        "up" => "30200",
+        "up_string" => "3.2.0",
         "down" => "30080",
         "down_string" => "3.0.8",
+    ],
+    "3.2.0" => [
+        "comment" => "Added timestamp column to the player_unlock table.",
+        "up" => null,
+        "up_string" => "",
+        "down" => "30100",
+        "down_string" => "3.1.0",
     ]
 ];
