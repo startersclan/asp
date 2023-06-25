@@ -1,11 +1,8 @@
 # Full Battlefield 2 stack example
 
-This example deploys a stack with BF2Statistics `ASP` `3.1.0`, which has some known quirks. If you prefer a fully working BF2Statistics v2, see [here](https://github.com/startersclan/bf2stats).
+This example deploys a stack with BF2Statistics `ASP` `3.x.x`.
 
-Quirks:
-
-- As of [BF2Statistics `3.1.0`](https://github.com/startersclan/asp), the [python files](https://github.com/startersclan/StatsPython) included in the [BF2 1.5 server docker image](https://github.com/startersclan/docker-bf2) fails to send stats snapshots to an `ASP` `nginx` webserver, with `nginx` responding with `499` because the `miniclient` library closes the connection before `nginx` sends the response (See solution [here](https://github.com/startersclan/bf2stats/pull/36)). Also, the python files will fail to initialize if the `ASP` webserver returns `Transfer Encoding: chunked` because `miniclient` cannot handle chunked responses (See solution [here](https://github.com/startersclan/bf2stats/pull/37)). This should be fixed in `3.2.0`.
-- As of [BF2Statistics `3.1.0`](https://github.com/startersclan/asp), there is no working `bf2sclone`. The `bf2sclone` `2.2.0` included in this example does not work with BF2Statistics `3.1.0`, but is only for demonstrative purposes. The community has tried to [fix it](https://bf2statistics.com/threads/bf2sclone-v3.2972/), but so far none seem to have shared their working changes. Wilson212, the original author of BF2Statistics did mention to be working on it, see [here](https://bf2statistics.com/threads/bf2statistics-v3-1-0-full-release.3010/), so we might see it soon.
+Note that the `bf2sclone` `2.2.0` included in this example does not work with BF2Statistics `3.x.x`, but is only for demonstrative purposes. The community has tried to [fix it](https://bf2statistics.com/threads/bf2sclone-v3.2972/), but so far none seem to have shared their working changes. Wilson212, the original author of BF2Statistics did mention to be working on it, see [here](https://bf2statistics.com/threads/bf2statistics-v3-1-0-full-release.3010/), so we might see it soon. If you want to have a working `bf2sclone`, use [BF2Statistics `2.x.x`](https://github.com/startersclan/bf2stats) in the meantime.
 
 ## Usage
 
@@ -195,10 +192,10 @@ docker attach bf2stats_bf2_1
 docker cp bf2stats_bf2_1:/server/bf2/python/bf2/logs .
 
 # Dump the DB
-docker exec $( docker-compose ps | grep db | awk '{print $1}' ) mysqldump -uroot -padmin bf2stats | gzip > bf2stats.sql.gz
+docker exec $( docker-compose ps | grep db | awk '{print $1}' ) mysqldump -uroot -pascent bf2stats | gzip > bf2stats.sql.gz
 
 # Restore the DB
-zcat bf2stats.sql.gz | docker exec -i $( docker-compose ps | grep db | awk '{print $1}' ) mysql -uroot -padmin bf2stats
+zcat bf2stats.sql.gz | docker exec -i $( docker-compose ps | grep db | awk '{print $1}' ) mysql -uroot -pascent bf2stats
 
 # Stop
 docker-compose down

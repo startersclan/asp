@@ -1,8 +1,8 @@
 version: '2.2'
 services:
-  # Battlefield 2 1.5 server with bf2stats 3.1.0 python scripts
+  # Battlefield 2 1.5 server with bf2stats 3.2.0 python scripts
   bf2:
-    image: startersclan/docker-bf2:v1.5.3153.0-bf2stats-3.1.0
+    image: startersclan/docker-bf2:v1.5.3153.0-bf2stats-3.2.0
     volumes:
       - ./config/bf2/mods/bf2/ai/aidefault-custom.ai:/server/bf2/mods/bf2/ai/aidefault.ai:ro # Customize bots
       - ./config/bf2/mods/bf2/settings/serversettings-custom.con:/server/bf2/mods/bf2/settings/serversettings.con:ro # Server config
@@ -158,7 +158,7 @@ services:
 
   # The gamespy ASP. The dashboard is available at https://asp.example.com/ASP
   asp-nginx:
-    image: startersclan/asp:3.1.0-nginx
+    image: startersclan/asp:3.2.0-nginx
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=${COMPOSE_PROJECT_NAME?err}_traefik-network"
@@ -187,7 +187,7 @@ services:
     restart: unless-stopped
 
   asp-php:
-    image: startersclan/asp:3.1.0-php
+    image: startersclan/asp:3.2.0-php
     volumes:
       - ./config/ASP/config.php:/src/ASP/system/config/config.php # Main config file. Must be writeable or else ASP will throw an exception. Customize only if needed
       # - ./config/ASP/armyAbbreviationMap.php:/src/ASP/system/config/armyAbbreviationMap.php:ro  # Optional: Customize as needed if using a custom mod

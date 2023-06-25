@@ -9,11 +9,11 @@ The new BF2Statistics 3.0 ASP, currently in public Beta. The GameSpy server to m
 ## Usage
 
 ```sh
-docker pull startersclan/asp:3.1.0-nginx
-docker pull startersclan/asp:3.1.0-php
+docker pull startersclan/asp:3.2.0-nginx
+docker pull startersclan/asp:3.2.0-php
 ```
 
-See [this](docs/full-bf2-stack-example) example showing how to deploy [Battlefield 2 1.5 server](https://github.com/startersclan/docker-bf2/), [PRMasterserver](https://github.com/startersclan/PRMasterServer) as the master server, and `bf2stats` as the stats web server, using `docker-compose`.
+See [this](docs/full-bf2-stack-example) example showing how to deploy [Battlefield 2 1.5 server](https://github.com/startersclan/docker-bf2), [PRMasterserver](https://github.com/startersclan/PRMasterServer) as the master server, and `ASP` as the stats web server, using `docker-compose`.
 
 ## Development
 
