@@ -57,6 +57,14 @@ docker volume rm asp_snapshots-volume
 docker volume rm asp_db-volume
 ```
 
+## Release
+
+```sh
+./scripts/release.sh "3.x.x" "A comment to describe the release"
+git add .
+git commit -m "Chore: Release 3.x.x"
+```
+
 ## FAQ
 
 ### Q: ASP dashboard shows `Parse error: syntax error, unexpected 'admin' (T_STRING) in /src/ASP/system/framework/View.php(346) : eval()'d code on line 153`
