@@ -62,7 +62,7 @@ class Mapinfo extends Controller
     {
         // Ensure correct format for ID
         $id = (int)$id;
-        if ($id == 0)
+        if ($id < 0)
         {
             Response::Redirect('mapinfo');
             return;
