@@ -232,6 +232,50 @@ INSERT INTO `game_mod`(`id`, `name`, `longname`, `authorized`) VALUES (3, 'aix2'
 INSERT INTO `game_mod`(`id`, `name`, `longname`, `authorized`) VALUES (4, 'naw', 'Nations At War', 0);
 
 --
+-- Dumping data for table `map`
+--
+
+-- Middle Eastern Theatre
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (0, 'kubra_dam', 'Kubra Dam');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (1, 'mashtuur_city', 'Mashtuur City');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (2, 'operation_clean_sweep', 'Operation Clean Sweep');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (3, 'zatar_wetlands', 'Zatar Wetlands');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (4, 'strike_at_karkand', 'Zatar Wetlands');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (5, 'sharqi_peninsula', 'Sharqi Peninsula');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (6, 'gulf_of_oman', 'Gulf of Oman');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (10, 'operationsmokescreen', 'Operation Smoke Screen');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (11, 'taraba_quarry', 'Taraba Quarry');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (12, 'road_to_jalalabad', 'Road to Jalalabad');
+
+-- Asian Theatre
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (100, 'daqing_oilfields', 'Daqing Oilfield');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (101, 'dalian_plant', 'Dalian Plant');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (102, 'dragon_valley', 'Dragon Valley');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (103, 'fushe_pass', 'FuShe Pass');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (105, 'songhua_stalemate', 'Songhua Stalemate');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (110, 'greatwall', 'Great Wall');
+
+-- US Theatre
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (200, 'midnight_sun', 'Midnight Sun');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (201, 'operationroadrage', 'Operation Road Rage');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (202, 'operationharvest', 'Operation Harvest');
+
+-- xpack1 Special Forces
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (300, 'devils_perch', 'Devil\'s Perch'); -- ') Comment placed here to fix VSCode syntax issue with apostrophe in displayname
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (301, 'iron_gator', 'Iron Gator');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (302, 'night_flight', 'Night Flight');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (303, 'warlord', 'Warlord');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (304, 'leviathan', 'Leviathan');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (305, 'mass_destruction', 'Mass Destruction');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (306, 'surge', 'Surge');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (307, 'ghost_town', 'Ghost Town');
+
+-- Special maps
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (601, 'wake_island_2007', 'Wake Island 2007');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (602, 'highway_tampa', 'Highway Tampa');
+INSERT INTO `map`(`id`, `name`, `displayname`) VALUES (603, 'operation_blue_pearl', 'Operation Blue Pearl');
+
+--
 -- Dumping data for table `game_mode`
 --
 INSERT INTO `game_mode`(`id`, `name`) VALUES (0, 'Conquest');
