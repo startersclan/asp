@@ -1,4 +1,14 @@
-FROM php:7.4-fpm-alpine
+ARG IMAGE=php:7.4-fpm-alpine
+FROM $IMAGE AS build
+
+# Set permissions for 'www-data' user
+COPY ./src /src
+WORKDIR /src
+RUN chown -R www-data:www-data . \
+    && find . -type d -exec chmod 750 {} \; \
+    && find . -type f -exec chmod 640 {} \;
+
+FROM $IMAGE AS dev
 
 # opcache
 RUN docker-php-ext-install opcache
@@ -9,7 +19,7 @@ RUN docker-php-ext-install pdo pdo_mysql
 # Xdebug: https://stackoverflow.com/questions/46825502/how-do-i-install-xdebug-on-dockers-official-php-fpm-alpine-image
 # PHPIZE_DEPS: autoconf dpkg-dev dpkg file g++ gcc libc-dev make pkgconf re2c
 RUN apk add --no-cache --virtual .build-dependencies $PHPIZE_DEPS \
-    && pecl install xdebug-3.1.5 \
+    && pecl install xdebug-3.1.6 \
     && docker-php-ext-enable xdebug \
     && docker-php-source delete \
     && apk del .build-dependencies
@@ -22,5 +32,20 @@ RUN { \
         echo "xdebug.client_port=9000"; \
     } > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini;
 
-RUN php -i
-RUN php -m
+RUN set -eux; \
+    echo; \
+    php -i; \
+    php -m
+
+# Add default configs
+COPY ./config/ASP/php/conf.d/php.ini /usr/local/etc/php/conf.d/php.ini
+COPY ./config/ASP/php-fpm.d/www.conf /usr/local/etc/php-fpm.d/www.conf
+
+FROM dev AS prod
+
+# Disable xdebug
+RUN set -eux; \
+    rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini; \
+    php -m;
+
+COPY --from=build /src /src

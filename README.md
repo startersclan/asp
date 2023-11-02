@@ -2,7 +2,8 @@
 
 [![github-actions](https://github.com/startersclan/asp/workflows/ci-master-pr/badge.svg)](https://github.com/startersclan/asp/actions)
 [![github-release](https://img.shields.io/github/v/release/startersclan/asp?style=flat-square)](https://github.com/startersclan/asp/releases/)
-[![docker-image-size](https://img.shields.io/docker/image-size/startersclan/asp/nginx)](https://hub.docker.com/r/startersclan/asp)
+[![docker-image-size](https://img.shields.io/docker/image-size/startersclan/asp/master-nginx?label=nginx)](https://hub.docker.com/r/startersclan/asp)
+[![docker-image-size](https://img.shields.io/docker/image-size/startersclan/asp/master-php?label=php)](https://hub.docker.com/r/startersclan/asp)
 
 The new BF2Statistics 3.0 ASP, currently in public Beta. The GameSpy server to match is over at https://github.com/BF2Statistics/BattleSpy
 
@@ -19,7 +20,7 @@ See [this](docs/full-bf2-stack-example) example showing how to deploy [Battlefie
 
 ```sh
 # Start
-docker-compose up
+docker-compose up --build
 # ASP available at http://localhost:8081/ASP. Username: admin, password admin. See ./config/ASP/config.php
 # phpmyadmin available at http://localhost:8083. Username: root, password: ascent. See ./config/ASP/config.php config file
 
@@ -36,8 +37,8 @@ sudo iptables -A INPUT -i br+ -j ACCEPT
 docker-compose -f docker-compose.test.yml up
 
 # Test production builds locally
-docker build -t startersclan/asp:nginx -f Dockerfile.nginx.prod .
-docker build -t startersclan/asp:php -f Dockerfile.php.prod .
+docker build -t startersclan/asp:nginx -f Dockerfile.nginx --target prod .
+docker build -t startersclan/asp:php -f Dockerfile.php --target prod .
 
 # Dump the DB
 docker exec $( docker-compose ps | grep db | awk '{print $1}' ) mysqldump -uroot -pascent bf2stats | gzip > bf2stats.sql.gz

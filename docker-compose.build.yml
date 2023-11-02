@@ -1,0 +1,15 @@
+# This is a docker compose override file, for development builds with caching for CI environments
+services:
+  asp-nginx:
+    build:
+      cache_from:
+        - type=local,src=/tmp/.buildx-cache-web
+      cache_to:
+        - type=local,dest=/tmp/.buildx-cache-web,mode=max
+
+  asp-php:
+    build:
+      cache_from:
+        - type=local,src=/tmp/.buildx-cache-php
+      cache_to:
+        - type=local,dest=/tmp/.buildx-cache-php,mode=max
