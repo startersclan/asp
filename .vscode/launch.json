@@ -11,6 +11,7 @@
             "port": 9000,
             "pathMappings": {
                 "/src": "${workspaceRoot}/src",
+                "/src/ASP/system/config/config.php": "${workspaceRoot}/config/ASP/config.php",
             },
             "xdebugSettings": {
                 "max_data": 10000,
