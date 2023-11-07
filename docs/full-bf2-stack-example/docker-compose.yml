@@ -43,9 +43,6 @@ services:
           - gpsp.gamespy.com
           - gpcm.gamespy.com
           - gamespy.com
-          - bf2web.gamespy.com
-          - gamestats.gamespy.com
-          - eapusher.dice.se
     restart: unless-stopped
 
   # A DNS server to spoof gamespy's DNS records for BF2 clients or servers
@@ -164,6 +161,8 @@ services:
     networks:
       traefik-network:
       bf2-network:
+        aliases:
+          - bf2web.gamespy.com # Spoof gamespy DNS for the BF2 server connected to this network
     restart: unless-stopped
 
   # The DB container
