@@ -30,7 +30,7 @@ sv.tkNumPunishToKick 3
 sv.tkPunishByDefault 0
 sv.votingEnabled 1
 sv.voteTime 90
-sv.minPlayersForVoting 2
+sv.minPlayersForVoting 1
 sv.teamVoteOnly 1
 sv.gameSpyPort 29900
 sv.allowNATNegotiation 0
