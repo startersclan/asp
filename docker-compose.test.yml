@@ -225,5 +225,37 @@ services:
               fi
           done
 
+
+  test-snapshots:
+    profiles:
+      - dev
+      - prod
+    image: alpine:latest
+    volumes:
+      - ./test:/test:ro
+    networks:
+      - bf2-network
+    depends_on:
+      test-ready:
+        condition: service_completed_successfully
+    stop_signal: SIGKILL
+    entrypoint:
+      - /bin/sh
+    command:
+      - -c
+      - |
+          set -eu
+          apk add --no-cache curl
+          for i in test/snapshots/daqing_oilfields_20231107_2212.json test/snapshots/dalian_plant_20231107_2211.json; do
+              RES=$$( set -x; curl -s -A GameSpyHTTP/1.0 -H 'Content-Type: application/json' --data "@$$i" http://asp/ASP/bf2statistics.php )
+              echo "$$RES"; echo
+              if [ "$$( echo "$$RES" | head -c1 )" = 'O' ]; then
+                  echo "PASS: $$i"
+              else
+                  echo "FAIL: $$i"
+                  exit 1
+              fi
+          done
+
 networks:
   bf2-network:
