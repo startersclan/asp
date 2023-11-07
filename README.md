@@ -50,9 +50,9 @@ docker exec -it $( docker-compose ps -q asp ) ls -alR /src/ASP/system/snapshots/
 docker-compose -f docker-compose.test.yml --profile dev up
 
 # Test production builds
-(cd docs/full-bf2-stack-example && docker compose -f docker-compose.yml -f docker-compose.build.prod.yml up --build)
-docker compose -f docker-compose.test.yml --profile prod up
-docker compose -f docker-compose.test.yml --profile dns up
+(cd docs/full-bf2-stack-example && docker-compose -f docker-compose.yml -f docker-compose.build.prod.yml up --build)
+docker-compose -f docker-compose.test.yml --profile prod up
+docker-compose -f docker-compose.test.yml --profile dns up
 
 # Dump the DB
 docker exec $( docker-compose ps | grep db | awk '{print $1}' ) mysqldump -uroot -pascent bf2stats | gzip > bf2stats.sql.gz
