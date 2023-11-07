@@ -2,19 +2,21 @@
 
 [![github-actions](https://github.com/startersclan/asp/workflows/ci-master-pr/badge.svg)](https://github.com/startersclan/asp/actions)
 [![github-release](https://img.shields.io/github/v/release/startersclan/asp?style=flat-square)](https://github.com/startersclan/asp/releases/)
-[![docker-image-size](https://img.shields.io/docker/image-size/startersclan/asp/master-nginx?label=nginx)](https://hub.docker.com/r/startersclan/asp)
-[![docker-image-size](https://img.shields.io/docker/image-size/startersclan/asp/master-php?label=php)](https://hub.docker.com/r/startersclan/asp)
+[![docker-image-size](https://img.shields.io/docker/image-size/startersclan/bf2stats/master?label=asp)](https://hub.docker.com/r/startersclan/asp)
 
 The new BF2Statistics 3.0 ASP, currently in public Beta. The GameSpy server to match is over at https://github.com/BF2Statistics/BattleSpy
 
-## Usage
+## Usage (docker)
 
 ```sh
-docker pull startersclan/asp:3.2.0-nginx
-docker pull startersclan/asp:3.2.0-php
+docker run --rm -it -p 80:80 -e DB_HOST=db -e DB_HOST=db -e DB_PORT=3306 -e DB_NAME=bf2stats -e DB_USER=admin -e DB_PASS=admin startersclan/asp:3.3.0
 ```
 
 See [this](docs/full-bf2-stack-example) example showing how to deploy [Battlefield 2 1.5 server](https://github.com/startersclan/docker-bf2), [PRMasterserver](https://github.com/startersclan/PRMasterServer) as the master server, and `ASP` as the stats web server, using `docker-compose`.
+
+### Upgrading to v2.6.0 from prior versions
+
+See here for [quick instructions](docs/upgrading-docker-images-to-2.6.md).
 
 ## Development
 
@@ -33,12 +35,24 @@ code --install-extension ms-python.python # Python intellisense
 # Execute this to allow php to reach the host machine via the docker0 bridge
 sudo iptables -A INPUT -i br+ -j ACCEPT
 
-# Test routes
-docker-compose -f docker-compose.test.yml up
+# asp - Exec into container
+docker exec -it $( docker-compose ps -q asp ) sh
+# asp - List backups
+docker exec -it $( docker-compose ps -q asp ) ls -al /src/ASP/system/backups
+# asp - List cache
+docker exec -it $( docker-compose ps -q asp ) ls -al /src/ASP/system/cache
+# asp - List logs
+docker exec -it $( docker-compose ps -q asp ) ls -al /src/ASP/system/logs
+# asp - List snapshots
+docker exec -it $( docker-compose ps -q asp ) ls -alR /src/ASP/system/snapshots/
 
-# Test production builds locally
-docker build -t startersclan/asp:nginx -f Dockerfile.nginx --target prod .
-docker build -t startersclan/asp:php -f Dockerfile.php --target prod .
+# Test routes
+docker-compose -f docker-compose.test.yml --profile dev up
+
+# Test production builds
+(cd docs/full-bf2-stack-example && docker compose -f docker-compose.yml -f docker-compose.build.prod.yml up --build)
+docker compose -f docker-compose.test.yml --profile prod up
+docker compose -f docker-compose.test.yml --profile dns up
 
 # Dump the DB
 docker exec $( docker-compose ps | grep db | awk '{print $1}' ) mysqldump -uroot -pascent bf2stats | gzip > bf2stats.sql.gz

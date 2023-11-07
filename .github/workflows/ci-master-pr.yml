@@ -16,31 +16,23 @@ jobs:
       matrix:
         testenv:
           - dev
+          - prod
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Set up Docker Buildx
-      id: buildx
-      uses: docker/setup-buildx-action@v2
+    # This is commented out, so we use the default 'docker' driver instead of the 'docker-container' driver. When using 'docker-container' driver, there appears to be a rate limit on writes on Github CI which causes buildx to fail with error code 17 when it is exporting to cache
+    # - name: Set up Docker Buildx
+    #   id: buildx
+    #   uses: docker/setup-buildx-action@v2
 
-    - name: Cache Docker layers (nginx)
+    - name: Cache Docker layers
       uses: actions/cache@v3
       with:
-        path: /tmp/.buildx-cache-nginx
-        key: ${{ runner.os }}-buildx-nginx-${{ github.sha }}
+        path: /tmp/.buildx-asp-cache-nginx
+        key: ${{ runner.os }}-buildx-asp-${{ github.sha }}
         restore-keys: |
-          ${{ runner.os }}-buildx-nginx-
-          ${{ runner.os }}-buildx-
-
-    - name: Cache Docker layers (php)
-      uses: actions/cache@v3
-      with:
-        path: /tmp/.buildx-cache-php
-        key: ${{ runner.os }}-buildx-php-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-buildx-php-
           ${{ runner.os }}-buildx-
 
     - name: Print buildx and compose
@@ -54,14 +46,21 @@ jobs:
       run: |
         set -eux
         docker compose -f docker-compose.yml -f docker-compose.build.yml up --build -d
-        docker compose -f docker-compose.test.yml up
+        docker compose -f docker-compose.test.yml --profile dev up
+
+    - name: Integration test 1 (prod)
+      if: matrix.testenv == 'prod'
+      run: |
+        set -eux
+        (
+            cd docs/full-bf2-stack-example
+            sed -i '$!N;s@ports:\n      - 53:53.*@@;P;D' docker-compose.yml    # Remove coredns ports because it conflicts with system-resolved on the host
+            docker compose -f docker-compose.yml -f docker-compose.build.prod.yml up --build -d
+        )
+        docker compose -f docker-compose.test.yml --profile prod up
+        docker compose -f docker-compose.test.yml --profile dns up
 
   build:
-    strategy:
-      matrix:
-        variant:
-          - nginx
-          - php
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -91,10 +90,9 @@ jobs:
     - name: Cache Docker layers
       uses: actions/cache@v3
       with:
-        path: /tmp/.buildx-cache-${{ matrix.variant }}
-        key: ${{ runner.os }}-buildx-${{ matrix.variant }}-${{ github.sha }}
+        path: /tmp/.buildx-cache-asp
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
         restore-keys: |
-          ${{ runner.os }}-buildx-${{ matrix.variant }}-
           ${{ runner.os }}-buildx-
 
     # This step generates the docker tags
@@ -108,12 +106,12 @@ jobs:
         # type=ref,event=branch generates tag(s) on branch only. E.g. 'master-<variant>', 'master-abc0123-<variant>'
         # type=ref,event=tag generates tag(s) on tags only. E.g. 'v0.0.0-<variant>', 'v0.0.0-abc0123-<variant>'
         tags: |
-          type=ref,suffix=-${{ matrix.variant }},event=pr
-          type=ref,suffix=-{{sha}}-${{ matrix.variant }},event=pr
-          type=ref,suffix=-${{ matrix.variant }},event=branch
-          type=ref,suffix=-{{sha}}-${{ matrix.variant }},event=branch
-          type=ref,suffix=-${{ matrix.variant }},event=tag
-          type=ref,suffix=-{{sha}}-${{ matrix.variant }},event=tag
+          type=ref,suffix=,event=pr
+          type=ref,suffix=-{{sha}},event=pr
+          type=ref,suffix=,event=branch
+          type=ref,suffix=-{{sha}},event=branch
+          type=ref,suffix=,event=tag
+          type=ref,suffix=-{{sha}},event=tag
         # Disable 'latest' tag
         flavor: |
           latest=false
@@ -131,36 +129,36 @@ jobs:
       if: github.event_name == 'pull_request'
       uses: docker/build-push-action@v3
       with:
-        file: Dockerfile.${{ matrix.variant }}
+        file: Dockerfile
         context: '.'
         target: prod
         platforms: linux/amd64
         push: false
         tags: ${{ steps.meta.outputs.tags }}
-        cache-from: type=local,src=/tmp/.buildx-cache-${{ matrix.variant }}
-        cache-to: type=local,dest=/tmp/.buildx-cache-${{ matrix.variant }}-new,mode=max
+        cache-from: type=local,src=/tmp/.buildx-cache-asp
+        cache-to: type=local,dest=/tmp/.buildx-cache-asp-new,mode=max
 
     - name: Build and push
       # Run on master and tags
       if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
       uses: docker/build-push-action@v3
       with:
-        file: Dockerfile.${{ matrix.variant }}
+        file: Dockerfile
         context: '.'
         target: prod
         platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/s390x
         push: true
         tags: ${{ steps.meta.outputs.tags }}
-        cache-from: type=local,src=/tmp/.buildx-cache-${{ matrix.variant }}
-        cache-to: type=local,dest=/tmp/.buildx-cache-${{ matrix.variant }}-new,mode=max
+        cache-from: type=local,src=/tmp/.buildx-cache-asp
+        cache-to: type=local,dest=/tmp/.buildx-cache-asp-new,mode=max
 
     # Temp fix
     # https://github.com/docker/build-push-action/issues/252
     # https://github.com/moby/buildkit/issues/1896
     - name: Move cache
       run: |
-        rm -rf /tmp/.buildx-cache-${{ matrix.variant }}
-        mv /tmp/.buildx-cache-${{ matrix.variant }}-new /tmp/.buildx-cache-${{ matrix.variant }}
+        rm -rf /tmp/.buildx-cache-asp
+        mv /tmp/.buildx-cache-asp-new /tmp/.buildx-cache-asp
 
   update-draft-release:
     needs: [test, build]

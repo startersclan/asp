@@ -2,11 +2,11 @@
 
 This example deploys a stack with BF2Statistics `ASP` `3.x.x`.
 
-Note that the `bf2sclone` `2.2.0` included in this example does not work with BF2Statistics `3.x.x`, but is only for demonstrative purposes. The community has tried to [fix it](https://bf2statistics.com/threads/bf2sclone-v3.2972/), but so far none seem to have shared their working changes. Wilson212, the original author of BF2Statistics did mention to be working on it, see [here](https://bf2statistics.com/threads/bf2statistics-v3-1-0-full-release.3010/), so we might see it soon. If you want to have a working `bf2sclone`, use [BF2Statistics `2.x.x`](https://github.com/startersclan/bf2stats) in the meantime.
+Note that the `bf2sclone` `2.x.x` does not work with BF2Statistics `3.x.x`, and so it is excluded from this example. The community has tried to [fix it](https://bf2statistics.com/threads/bf2sclone-v3.2972/), but so far none seem to have shared their working changes. Wilson212, the original author of BF2Statistics did mention to be working on it, see [here](https://bf2statistics.com/threads/bf2statistics-v3-1-0-full-release.3010/), so we might see it soon. If you want to have a working `bf2sclone`, use [BF2Statistics `2.x.x`](https://github.com/startersclan/bf2stats) in the meantime.
 
 ## Usage
 
-In this example, we will use the domain name  `example.com`. In production, you should use your own domain name for `traefik` (our TLS-terminating load balancer) to be able to serve HTTPS for the web endpoints: `ASP`, `bf2sclone`, and `phpmyadmin`.
+In this example, we will use the domain name  `example.com`. In production, you should use your own domain name for `traefik` (our TLS-terminating load balancer) to be able to serve HTTPS for the web endpoints: `ASP`, and `phpmyadmin`.
 
 ### 1. Setup hosts file
 
@@ -15,7 +15,6 @@ Add a couple of hostnames to the `hosts` file for the web endpoints:
 ```sh
 # Since we are testing this stack locally, we need these DNS records in the hosts file
 echo '127.0.0.1 asp.example.com' | sudo tee -a /etc/hosts
-echo '127.0.0.1 bf2sclone.example.com' | sudo tee -a /etc/hosts
 echo '127.0.0.1 phpmyadmin.example.com' | sudo tee -a /etc/hosts
 ```
 
@@ -51,18 +50,16 @@ You should see something like:
 
 ```sh
 $ docker-compose up
-[+] Running 10/0
- ⠿ Container bf2stats-prmasterserver-1   Running                                                                                                                                            0.0s
- ⠿ Container bf2stats-phpmyadmin-1       Running                                                                                                                                            0.0s
- ⠿ Container bf2stats-bf2-1              Running                                                                                                                                            0.0s
- ⠿ Container bf2stats-traefik-1          Running                                                                                                                                            0.0s
- ⠿ Container bf2stats-init-container-1   Created                                                                                                                                            0.0s
- ⠿ Container bf2stats-db-1               Running                                                                                                                                            0.0s
- ⠿ Container bf2stats-asp-php-1          Running                                                                                                                                            0.0s
- ⠿ Container bf2stats-bf2sclone-php-1    Running                                                                                                                                            0.0s
- ⠿ Container bf2stats-asp-nginx-1        Running                                                                                                                                            0.0s
- ⠿ Container bf2stats-bf2sclone-nginx-1  Running                                                                                                                                            0.0s
-Attaching to bf2stats-asp-nginx-1, bf2stats-asp-php-1, bf2stats-bf2-1, bf2stats-bf2sclone-nginx-1, bf2stats-bf2sclone-php-1, bf2stats-coredns-1, bf2stats-db-1, bf2stats-init-container-1, bf2stats-phpmyadmin-1, bf2stats-prmasterserver-1, bf2stats-traefik-1
+[+] Running 8/8
+ ✔ Container bf2stats-coredns-1         Created                                                         0.0s
+ ✔ Container bf2stats-init-container-1  Created                                                         0.0s
+ ✔ Container bf2stats-db-1              Created                                                         0.0s
+ ✔ Container bf2stats-phpmyadmin-1      Created                                                         0.0s
+ ✔ Container bf2stats-prmasterserver-1  Created                                                         0.0s
+ ✔ Container bf2stats-traefik-1         Created                                                         0.0s
+ ✔ Container bf2stats-asp-1             Recreated                                                       0.0s
+ ✔ Container bf2stats-bf2-1             Recreated                                                       0.0s
+Attaching to bf2stats-asp-1, bf2stats-bf2-1, bf2stats-coredns-1, bf2stats-db-1, bf2stats-init-container-1, bf2stats-phpmyadmin-1, bf2stats-prmasterserver-1, bf2stats-traefik-1
 ```
 
 The full stack is now running:
@@ -72,7 +69,6 @@ The full stack is now running:
 - `coredns` available on your external IP address on UDP port `53` on your external IP address
 - `traefik` (TLS-terminated reverse web proxy) available on port `80` and `443` on your external IP address
 - `ASP` available at https://asp.example.com on your external IP address.
-- `bf2sclone` available at https://bf2sclone.example.com on your external IP address.
 - `phpmyadmin` available at https://phpmyadmin.example.com on your external IP address.
 
 > If you are behind NAT, you will need to forward all of the above TCP and UDP ports to your external IP address, in order for clients to reach your gameserver and webserver over the internet.
@@ -81,7 +77,7 @@ The full stack is now running:
 
 Visit https://asp.example.com/ASP and login using `$admin_user` and `$admin_pass` defined in its [config file](./config/ASP/config.php).
 
-> Since traefik hasn't got a valid TLS certificate via `ACME`, it will serve the `TRAEFIK DEFAULT CERT`. The browser will show a security issue when visiting https://asp.example.com, https://bf2sclone.example.com, and https://phpmyadmin.example.com. Simply click "visit site anyway" button to get past the security check.
+> Since traefik hasn't got a valid TLS certificate via `ACME`, it will serve the `TRAEFIK DEFAULT CERT`. The browser will show a security issue when visiting https://asp.example.com and https://phpmyadmin.example.com. Simply click "visit site anyway" button to get past the security check.
 
 Click on `System > System Installation` and install the DB using `$db_host`,`$db_port`,`$db_name`,`$db_user`,`$db_pass` you defined in [`config.php`](./config/ASP/config.php). Click `System > System Tests` and `Run System Tests` and all tests should be green, except for the `BF2Statistics Processing` test and the four `.aspx` tests, because we still don't have a Fully Qualified Domain Name (FQDN) with a public DNS record.
 
@@ -96,17 +92,17 @@ docker-compose restart bf2
 Configure `coredns` to spoof all gamespy DNS in [config/coredns/hosts](config/coredns/hosts), replacing the IP addresses with your machine's external IP address which you specified in Step `2.`. Assuming your external IP is `192.168.1.100`, it should look like:
 
 ```txt
-192.168.1.100 eapusher.dice.se
 192.168.1.100 battlefield2.available.gamespy.com
 192.168.1.100 battlefield2.master.gamespy.com
 192.168.1.100 battlefield2.ms14.gamespy.com
-192.168.1.100 gamestats.gamespy.com
 192.168.1.100 master.gamespy.com
 192.168.1.100 motd.gamespy.com
 192.168.1.100 gpsp.gamespy.com
 192.168.1.100 gpcm.gamespy.com
 192.168.1.100 gamespy.com
 192.168.1.100 bf2web.gamespy.com
+192.168.1.100 gamestats.gamespy.com
+192.168.1.100 eapusher.dice.se
 ```
 
 Save the file. `coredns` immediately reads the changed file and serves the updated DNS records.
@@ -146,7 +142,6 @@ At the end of the first game, you should see your stats updated at https://bf2sc
 ### Cheat sheet
 
 - Visit https://asp.example.com/ASP to adminstrate your stats database and gamespy server. Login using `$admin_user` and `$admin_pass` defined in its [config file](./config/ASP/config.php).
-- Visit https://bf2sclone.example.com to view your stats over the web. It's a nice pretty web interface. Your stats will be updated at the end of each gameserver round.
 - Visit https://phpmyadmin.example.com if you want to self-manage your DB (if you know how). Login using user `root` and password `MARIADB_ROOT_PASSWORD` (or `MARIADB_USER` and `MARIADB_PASSWORD`) defined on the `db` service in [docker-compose.yml](./docker-compose.yml)
 - This example includes all the configuration files for each stack component. Customize them to suit your needs.
 - Mount the `ASP` [`config.php`](./config/ASP/config.php) with write permissions, or else `ASP` dashboard will throw an error. Use `System > Edit Configuration` as reference to customize the config file.
@@ -156,7 +151,7 @@ At the end of the first game, you should see your stats updated at https://bf2sc
 - In a production setup, you want to make sure:
   - to use a custom domain name (FQDN)
   - to configure `traefik` to be issued an ACME certificate for HTTPS to work for the web endpoints
-  - to run `traefik` on `--network host` or to use the PROXY protocol, so that it preserves client IP addresses,
+  - to run `traefik` on `--network host` or to use the PROXY protocol, so that it preserves client IP addresses
   - to run the `bf2` server and `prmasterserver` on `--network host` so that they: 1) talk to each other over the machine's external interface
   - to use stronger authentication in front of the `ASP` and `phpmyadmin`, which don't have in-built strong authentication
   - to use strong passwords for the `ASP` admin user in [config file](./config/ASP/config.php)
@@ -206,15 +201,15 @@ docker volume rm bf2stats_prmasterserver-volume
 docker volume rm bf2stats_traefik-acme-volume
 docker volume rm bf2stats_backups-volume
 docker volume rm bf2stats_cache-volume
+docker volume rm bf2stats_config-volume
 docker volume rm bf2stats_logs-volume
 docker volume rm bf2stats_snapshots-volume
-docker volume rm bf2stats_bf2sclone-cache-volume
 docker volume rm bf2stats_db-volume
 ```
 
 ## Background: Keeping Battlefield 2 working
 
-Problem: The Battlefield 2 client and server binaries are hardcoded with gamespy DNS records, e.g. `bf2web.gamespy.com`. Because gamespy has shut down, the DNS records no longer exist on public DNS servers. In order to keep the game's multiplayer working, we need:
+Problem: The Battlefield 2 client and server binaries are hardcoded with gamespy DNS records, e.g. `bf2web.gamespy.com`. Because gamespy has shut down, the DNS records no longer exist on public DNS servers (read more about it [here](https://github.com/startersclan/docker-bf2/master/docs/usage.md#dns-spoofing)). In order to keep the game's multiplayer working, we need:
 
 - A gamespy replacement - solved by `PRMasterServer`
 - DNS resolution for gamespy DNS records - solved by either by: `1.` hex patching the game binaries; `2.` spoofing DNS server responses; `3.` spoofing DNS records via `hosts` file

@@ -15,8 +15,7 @@ services:
       - gamespy-network
       - bf2-network
     depends_on:
-      - asp-nginx
-      - asp-php
+      - asp
     restart: unless-stopped
     tty: true
     stdin_open: true
@@ -33,20 +32,20 @@ services:
       - 27900:27900/udp # Master server
       - 29910:29910/udp # CD key server
     networks:
-      # Spoof all gamespy DNS for the gameserver connected to this network
+      # Spoof all gamespy DNS for the BF2 server connected to this network
       gamespy-network:
         aliases:
-          - eapusher.dice.se
           - battlefield2.available.gamespy.com
           - battlefield2.master.gamespy.com
           - battlefield2.ms14.gamespy.com
-          - gamestats.gamespy.com
           - master.gamespy.com
           - motd.gamespy.com
           - gpsp.gamespy.com
           - gpcm.gamespy.com
           - gamespy.com
           - bf2web.gamespy.com
+          - gamestats.gamespy.com
+          - eapusher.dice.se
     restart: unless-stopped
 
   # A DNS server to spoof gamespy's DNS records for BF2 clients or servers
@@ -57,7 +56,7 @@ services:
   #     ports:
   #       - 192.168.1.100:53:53/udp
   #   Test DNS records to ensure coredns responds with your machine's external IP address. For example:
-  #     nslookup  bf2web.gamespy.com 192.168.1.100
+  #     nslookup bf2web.gamespy.com 192.168.1.100
   #   Response should be:
   #     Server:  192.168.1.100
   #     Address: 192.168.1.100#53
@@ -68,10 +67,12 @@ services:
   coredns:
     image: coredns/coredns:1.9.3
     ports:
-      - 192.168.1.132:53:53/udp
+      - 53:53/udp
     volumes:
       - ./config/coredns/Corefile:/Corefile:ro
       - ./config/coredns/hosts:/hosts:ro
+    networks:
+      - bf2-network
     restart: unless-stopped
     entrypoint:
       - /coredns
@@ -102,21 +103,16 @@ services:
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
-      - "--certificatesresolvers.myresolver.acme.dnschallenge=true"
-      - "--certificatesresolvers.myresolver.acme.dnschallenge.provider=ovh"
-      # - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
-      - "--certificatesresolvers.myresolver.acme.email=postmaster@example.com"
-      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - --certificatesresolvers.myresolver.acme.dnschallenge=true
+      - --certificatesresolvers.myresolver.acme.dnschallenge.provider=ovh
+      # - --certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      - --certificatesresolvers.myresolver.acme.email=postmaster@example.com
+      - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
 
-  # The init container that sets up permissions for the asp and db volumes
+  # The init container that sets up permissions
   init-container:
     image: alpine:latest
     volumes:
-      - ./config/ASP/config.php:/src/ASP/system/config/config.php
-      - backups-volume:/src/ASP/system/database/backups # This volume is effectively unused since ASP doesn't allow DB backups for a remote DB, but mount it anyway to avoid errors.
-      - logs-volume:/src/ASP/system/logs
-      - snapshots-volume:/src/ASP/system/snapshots
-      - bf2sclone-cache-volume:/src/bf2sclone/cache
       - db-volume:/var/lib/mysql
     entrypoint:
       - /bin/sh
@@ -125,136 +121,57 @@ services:
       - |
           set -eu
 
-          echo "Granting ASP php write permissions"
-          chmod 666 /src/ASP/system/config/config.php
-
-          chown -R 82:82 /src/ASP/system/backups
-          find /src/ASP/system/backups -type d -exec chmod 750 {} \;
-          find /src/ASP/system/backups -type f -exec chmod 640 {} \;
-
-          chown -R 82:82 /src/ASP/system/cache
-          find /src/ASP/system/cache -type d -exec chmod 750 {} \;
-          find /src/ASP/system/cache -type f -exec chmod 640 {} \;
-
-          chown -R 82:82 /src/ASP/system/logs
-          find /src/ASP/system/logs -type d -exec chmod 750 {} \;
-          find /src/ASP/system/logs -type f -exec chmod 640 {} \;
-
-          mkdir -p /src/ASP/system/snapshots/failed
-          mkdir -p /src/ASP/system/snapshots/processed
-          mkdir -p /src/ASP/system/snapshots/unauthorized
-          mkdir -p /src/ASP/system/snapshots/unprocessed
-          chown -R 82:82 /src/ASP/system/snapshots
-          find /src/ASP/system/snapshots -type d -exec chmod 750 {} \;
-          find /src/ASP/system/snapshots -type f -exec chmod 640 {} \;
-
-          echo "Granting bf2sclone php write permissions"
-          chown -R 82:82 /src/bf2sclone/cache
-          find /src/bf2sclone/cache -type d -exec chmod 750 {} \;
-          find /src/bf2sclone/cache -type f -exec chmod 640 {} \;
-
-          echo "Granting db's 'mysql' user write permissions"
+          echo "Granting db write permissions"
           chown -R 999:999 /var/lib/mysql
 
   # The gamespy ASP. The dashboard is available at https://asp.example.com/ASP
-  asp-nginx:
-    image: startersclan/asp:3.2.0-nginx
+  asp:
+    image: startersclan/asp:3.2.0
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=${COMPOSE_PROJECT_NAME?err}_traefik-network"
       # traefik v2
       # http
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-asp-gamespy-http.entrypoints=web"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-asp-gamespy-http.rule=Host(`bf2web.gamespy.com`)" # Note: bf2web.gamespy.com doesn't need https
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-asp-gamespy-http.rule=Host(`bf2web.gamespy.com`)" # Note: `bf2web.gamespy.com` doesn't need https. The BF2 client BFHQ, and the BF2 server python files, make a HTTP requests to `bf2web.gamespy.com` with `Host: bf2web.gamespy.com`.
       # http
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-asp-nginx-http.entrypoints=web"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-asp-nginx-http.rule=Host(`asp.example.com`)"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-asp-nginx-http.middlewares=${COMPOSE_PROJECT_NAME?err}-asp-nginx-http-myRedirectScheme" # Redirect http to https
-      - "traefik.http.middlewares.${COMPOSE_PROJECT_NAME?err}-asp-nginx-http-myRedirectScheme.redirectScheme.scheme=https" # Redirect http to https
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-asp-http.entrypoints=web"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-asp-http.rule=Host(`asp.example.com`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-asp-http.middlewares=${COMPOSE_PROJECT_NAME?err}-asp-http-myRedirectScheme" # Redirect http to https
+      - "traefik.http.middlewares.${COMPOSE_PROJECT_NAME?err}-asp-http-myRedirectScheme.redirectScheme.scheme=https" # Redirect http to https
       # https
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-asp-nginx.entrypoints=websecure"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-asp-nginx.tls"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-asp-nginx.rule=Host(`asp.example.com`)"
-      - "traefik.http.services.${COMPOSE_PROJECT_NAME?err}-asp-nginx.loadbalancer.server.port=80"
-    # volumes:
-    #   - ./config/ASP/nginx/nginx.conf:/etc/nginx/nginx.conf:ro # Customize only if needed
-    networks:
-      - traefik-network
-      - bf2-network
-    depends_on:
-      - init-container
-      - asp-php
-    restart: unless-stopped
-
-  asp-php:
-    image: startersclan/asp:3.2.0-php
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-asp.entrypoints=websecure"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-asp.tls="
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-asp.rule=Host(`asp.example.com`)"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME?err}-asp.loadbalancer.server.port=80"
+    environment:
+      # See ./src/ASP/system/config/config.php for all supported env vars
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=bf2stats
+      - DB_USER=admin
+      - DB_PASS=admin
     volumes:
-      - ./config/ASP/config.php:/src/ASP/system/config/config.php # Main config file. Must be writeable or else ASP will throw an exception. Customize only if needed
-      # - ./config/ASP/armyAbbreviationMap.php:/src/ASP/system/config/armyAbbreviationMap.php:ro  # Optional: Customize as needed if using a custom mod
-      # - ./config/ASP/backendAwards.php:/src/ASP/system/config/backendAwards.php:ro              # Optional: Customize as needed if using a custom mod
-      # - ./config/ASP/ranks.php:/src/ASP/system/config/ranks.php:ro                              # Optional: Customize as needed if using a custom mod
-      # - ./config/ASP/php/conf.d/php.ini:/usr/local/etc/php/conf.d/php.ini:ro  # Customize only if needed
-      # - ./config/ASP/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf:ro  # Customize only if needed
       - backups-volume:/src/ASP/system/backups # This volume is effectively unused since ASP doesn't allow DB backups for a remote DB, but mount it anyway to avoid errors.
       - cache-volume:/src/ASP/system/cache
+      - config-volume:/src/ASP/system/config # For a stateful config file
       - logs-volume:/src/ASP/system/logs
       - snapshots-volume:/src/ASP/system/snapshots
     networks:
-      - bf2-network
-    depends_on:
-      - init-container
-    restart: unless-stopped
-
-  # The bf2sclone for viewing BFHQ on the web. It is available at https://bf2sclone.example.com
-  bf2sclone-nginx:
-    image: startersclan/bf2stats:2.3.0-bf2sclone-nginx
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=${COMPOSE_PROJECT_NAME?err}_traefik-network"
-      # traefik v2
-      # http
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-bf2sclone-nginx-http.entrypoints=web"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-bf2sclone-nginx-http.rule=Host(`bf2sclone.example.com`)"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-bf2sclone-nginx-http.middlewares=${COMPOSE_PROJECT_NAME?err}-bf2sclone-nginx-http-myRedirectScheme" # Redirect http to https
-      - "traefik.http.middlewares.${COMPOSE_PROJECT_NAME?err}-bf2sclone-nginx-http-myRedirectScheme.redirectScheme.scheme=https" # Redirect http to https
-      # https
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-bf2sclone-nginx.entrypoints=websecure"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-bf2sclone-nginx.tls"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-bf2sclone-nginx.rule=Host(`bf2sclone.example.com`)"
-      - "traefik.http.services.${COMPOSE_PROJECT_NAME?err}-bf2sclone-nginx.loadbalancer.server.port=80"
-    # volumes:
-    #   - ./config/bf2sclone/nginx/nginx.conf:/etc/nginx/nginx.conf:ro  # Customize only if needed
-    networks:
-      - traefik-network
-      - bf2-network
-    depends_on:
-      - init-container
-      - bf2sclone-php
-    restart: unless-stopped
-
-  bf2sclone-php:
-    image: startersclan/bf2stats:2.3.0-bf2sclone-php
-    volumes:
-      - ./config/bf2sclone/config.inc.php:/src/bf2sclone/config.inc.php:ro  # Main config file. Customize as needed
-      # - ./config/bf2sclone/php/conf.d/php.ini:/usr/local/etc/php/conf.d/php.ini:ro  # Customize only if needed
-      # - ./config/bf2sclone/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf:ro  # Customize only if needed
-      - bf2sclone-cache-volume:/src/bf2sclone/cache
-    networks:
-      - bf2-network
-    depends_on:
-      - init-container
+      traefik-network:
+      bf2-network:
     restart: unless-stopped
 
   # The DB container
   db:
     image: mariadb:10.8
     environment:
-      - MARIADB_ROOT_PASSWORD=ascent # Change this to a strong password
+      - MARIADB_ROOT_PASSWORD=ascent
       - MARIADB_USER=admin
-      - MARIADB_PASSWORD=admin # Change this to a strong password
+      - MARIADB_PASSWORD=admin
       - MARIADB_DATABASE=bf2stats
     volumes:
-      - ./config/db/my.cnf:/etc/my.cnf:ro # Customize as needed
+      - ./config/db/my.cnf:/etc/my.cnf:ro # Config file. Customize as needed
       - db-volume:/var/lib/mysql
     networks:
       - bf2-network
@@ -262,7 +179,7 @@ services:
       - init-container
     restart: unless-stopped
 
-  # The phpmyadmin interface for administrating the DB. It is available at phpmyadmin.example.com
+  # The phpmyadmin interface for administrating the DB. It is available at https://phpmyadmin.example.com
   phpmyadmin:
     image: phpmyadmin:5.2
     labels:
@@ -276,7 +193,7 @@ services:
       - "traefik.http.middlewares.${COMPOSE_PROJECT_NAME?err}-phpmyadmin-http-myRedirectScheme.redirectScheme.scheme=https" # Redirect http to https
       # https
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-phpmyadmin.entrypoints=websecure"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-phpmyadmin.tls"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-phpmyadmin.tls="
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-phpmyadmin.rule=Host(`phpmyadmin.example.com`)"
       - "traefik.http.services.${COMPOSE_PROJECT_NAME?err}-phpmyadmin.loadbalancer.server.port=80"
     environment:
@@ -299,6 +216,7 @@ volumes:
   traefik-acme-volume:
   backups-volume:
   cache-volume:
+  config-volume:
   logs-volume:
   snapshots-volume:
   bf2sclone-cache-volume:

@@ -1,41 +1,14 @@
 version: '2.2'
 services:
-  test-routes:
+  test-ready:
+    profiles:
+      - dev
+      - prod
+      - dns
     image: alpine:latest
-    environment:
-      URLS: |
-        http://asp-nginx/ 403
-        http://asp-nginx/.htaccess 401
-        http://asp-nginx/ASP/ 200
-        http://asp-nginx/ASP/aspx 401
-        http://asp-nginx/ASP/bf2statistics.php 403
-        http://asp-nginx/ASP/frontend 401
-        http://asp-nginx/ASP/frontend/css/bootstrap.min.css 200
-        http://asp-nginx/ASP/frontend/images/maps/foo.png 200
-        http://asp-nginx/ASP/frontend/images/ranks/foo.png 200
-        http://asp-nginx/ASP/frontend/images/armies/foo.png 200
-        http://asp-nginx/ASP/frontend/css/bootstrap.min.css 200
-        http://asp-nginx/ASP/createplayer.aspx 200
-        http://asp-nginx/ASP/getawardsinfo.aspx 200
-        http://asp-nginx/ASP/getbackendinfo.aspx 200
-        http://asp-nginx/ASP/getleaderboard.aspx 200
-        http://asp-nginx/ASP/getmapinfo.aspx 200
-        http://asp-nginx/ASP/getplayerid.aspx 200
-        http://asp-nginx/ASP/getplayerinfo.aspx 200
-        http://asp-nginx/ASP/getrankinfo.aspx 200
-        http://asp-nginx/ASP/getunlocksinfo.aspx 200
-        http://asp-nginx/ASP/ranknotification.aspx 200
-        http://asp-nginx/ASP/searchforplayers.aspx 200
-        http://asp-nginx/ASP/selectunlock.aspx 200
-        http://asp-nginx/ASP/verifyplayer.aspx 200
-        http://asp-nginx/ASP/index.php 200
-        http://asp-nginx/ASP/ranknotification.aspx 200
-        http://asp-nginx/ASP/searchforplayers.aspx 200
-        http://asp-nginx/ASP/selectunlock.aspx 200
-        http://asp-nginx/ASP/getplayerinfo.aspx 200
-        http://asp-nginx/ASP/system 401
     networks:
       - bf2-network
+    stop_signal: SIGKILL
     entrypoint:
       - /bin/sh
     command:
@@ -46,10 +19,10 @@ services:
           echo "Waiting for stack to be ready"
           s=0
           while true; do
-              nc -vz -w 1 asp-nginx 80 \
-                  && nc -vz -w 1 asp-php 9000 \
-                  && nc -vz -w 1 db 3306 \
-                  && break || true
+              nc -vz -w 1 asp 80 \
+                && nc -vz -w 1 asp 9000 \
+                && nc -vz -w 1 db 3306 \
+                && break || true
               s=$$(( $$s + 1 ))
               if [ "$$s" -eq 600 ]; then
                   exit 1
@@ -58,6 +31,57 @@ services:
               sleep 3
           done
 
+  test-routes:
+    profiles:
+      - dev
+      - prod
+    image: alpine:latest
+    environment:
+      URLS: |
+        http://asp/ 403
+        http://asp/.htaccess 401
+        http://asp/ASP/ 200
+        http://asp/ASP/aspx 401
+        http://asp/ASP/bf2statistics.php 403
+        http://asp/ASP/frontend 401
+        http://asp/ASP/frontend/css/bootstrap.min.css 200
+        http://asp/ASP/frontend/images/maps/foo.png 200
+        http://asp/ASP/frontend/images/ranks/foo.png 200
+        http://asp/ASP/frontend/images/armies/foo.png 200
+        http://asp/ASP/frontend/css/bootstrap.min.css 200
+        http://asp/ASP/createplayer.aspx 200
+        http://asp/ASP/getawardsinfo.aspx 200
+        http://asp/ASP/getbackendinfo.aspx 200
+        http://asp/ASP/getleaderboard.aspx 200
+        http://asp/ASP/getmapinfo.aspx 200
+        http://asp/ASP/getplayerid.aspx 200
+        http://asp/ASP/getplayerinfo.aspx 200
+        http://asp/ASP/getrankinfo.aspx 200
+        http://asp/ASP/getunlocksinfo.aspx 200
+        http://asp/ASP/ranknotification.aspx 200
+        http://asp/ASP/searchforplayers.aspx 200
+        http://asp/ASP/selectunlock.aspx 200
+        http://asp/ASP/verifyplayer.aspx 200
+        http://asp/ASP/index.php 200
+        http://asp/ASP/ranknotification.aspx 200
+        http://asp/ASP/searchforplayers.aspx 200
+        http://asp/ASP/selectunlock.aspx 200
+        http://asp/ASP/getplayerinfo.aspx 200
+        http://asp/ASP/system 401
+
+        http://phpmyadmin/ 200
+    networks:
+      - bf2-network
+    depends_on:
+      test-ready:
+        condition: service_completed_successfully
+    stop_signal: SIGKILL
+    entrypoint:
+      - /bin/sh
+    command:
+      - -c
+      - |
+          set -eu
           echo "$$URLS" | awk NF | while read -r i j; do
               if wget -q -SO- "$$i" 2>&1 | grep "HTTP/1.1 $$j " > /dev/null; then
                   echo "PASS: $$i"
@@ -67,6 +91,139 @@ services:
               fi
           done
 
+  test-endpoints:
+    profiles:
+      - prod
+    image: alpine:latest
+    environment:
+      ENDPOINTS: |
+        asp.example.com/ 403
+        asp.example.com/.htaccess 401
+        asp.example.com/ASP/ 200
+        asp.example.com/ASP/aspx 401
+        asp.example.com/ASP/bf2statistics.php 403
+        asp.example.com/ASP/frontend 401
+        asp.example.com/ASP/frontend/css/bootstrap.min.css 200
+        asp.example.com/ASP/frontend/images/maps/foo.png 200
+        asp.example.com/ASP/frontend/images/ranks/foo.png 200
+        asp.example.com/ASP/frontend/images/armies/foo.png 200
+        asp.example.com/ASP/frontend/css/bootstrap.min.css 200
+        asp.example.com/ASP/createplayer.aspx 200
+        asp.example.com/ASP/getawardsinfo.aspx 200
+        asp.example.com/ASP/getbackendinfo.aspx 200
+        asp.example.com/ASP/getleaderboard.aspx 200
+        asp.example.com/ASP/getmapinfo.aspx 200
+        asp.example.com/ASP/getplayerid.aspx 200
+        asp.example.com/ASP/getplayerinfo.aspx 200
+        asp.example.com/ASP/getrankinfo.aspx 200
+        asp.example.com/ASP/getunlocksinfo.aspx 200
+        asp.example.com/ASP/ranknotification.aspx 200
+        asp.example.com/ASP/searchforplayers.aspx 200
+        asp.example.com/ASP/selectunlock.aspx 200
+        asp.example.com/ASP/verifyplayer.aspx 200
+        asp.example.com/ASP/index.php 200
+        asp.example.com/ASP/ranknotification.aspx 200
+        asp.example.com/ASP/searchforplayers.aspx 200
+        asp.example.com/ASP/selectunlock.aspx 200
+        asp.example.com/ASP/getplayerinfo.aspx 200
+        asp.example.com/ASP/system 401
+    network_mode: host
+    depends_on:
+      test-ready:
+        condition: service_completed_successfully
+    stop_signal: SIGKILL
+    entrypoint:
+      - /bin/sh
+    command:
+      - -c
+      - |
+          set -eu
+          apk add --no-cache curl
+          echo "$$ENDPOINTS" | awk NF | while read -r i j; do
+              d=$$( echo "$$i" | cut -d '/' -f1 )
+              if curl --head -skL http://$$i --resolve $$d:80:127.0.0.1 --resolve $$d:443:127.0.0.1 2>&1 | grep -E "^HTTP/(1.1|2) $$j " > /dev/null; then
+                  echo "PASS: $$i"
+              else
+                  echo "FAIL: $$i"
+                  exit 1
+              fi
+          done
+
+  test-interal-dns:
+    profiles:
+      - dns
+    image: alpine:latest
+    environment:
+      DNS: |
+        battlefield2.available.gamespy.com
+        battlefield2.master.gamespy.com
+        battlefield2.ms14.gamespy.com
+        master.gamespy.com
+        motd.gamespy.com
+        gpsp.gamespy.com
+        gpcm.gamespy.com
+        gamespy.com
+        bf2web.gamespy.com
+        gamestats.gamespy.com
+        eapusher.dice.se
+    networks:
+      - bf2-network
+    depends_on:
+      test-ready:
+        condition: service_completed_successfully
+    stop_signal: SIGKILL
+    entrypoint:
+      - /bin/sh
+    command:
+      - -c
+      - |
+          set -eu
+          echo "$$DNS" | awk NF | grep -v '127.0.0' | while read -r h; do
+              if nslookup $$h | grep -v '127.0.0' | grep -E '^Address: [0-9\.]+$$'; then
+                  echo "PASS: $$h"
+              else
+                  echo "FAIL: $$h"
+                  exit 1
+              fi
+          done
+
+  test-coredns:
+    profiles:
+      - dns
+    image: alpine:latest
+    environment:
+      DNS: |
+        192.168.1.100 battlefield2.available.gamespy.com
+        192.168.1.100 battlefield2.master.gamespy.com
+        192.168.1.100 battlefield2.ms14.gamespy.com
+        192.168.1.100 master.gamespy.com
+        192.168.1.100 motd.gamespy.com
+        192.168.1.100 gpsp.gamespy.com
+        192.168.1.100 gpcm.gamespy.com
+        192.168.1.100 gamespy.com
+        192.168.1.100 bf2web.gamespy.com
+        192.168.1.100 gamestats.gamespy.com
+        192.168.1.100 eapusher.dice.se
+    networks:
+      - bf2-network
+    depends_on:
+      test-ready:
+        condition: service_completed_successfully
+    stop_signal: SIGKILL
+    entrypoint:
+      - /bin/sh
+    command:
+      - -c
+      - |
+          set -eu
+          echo "$$DNS" | awk NF | while read -r ip h; do
+              if nslookup $$h coredns | grep -E "^Address: $$ip" > /dev/null; then
+                  echo "PASS: $$h"
+              else
+                  echo "FAIL: $$h"
+                  exit 1
+              fi
+          done
+
 networks:
   bf2-network:
-    name: bf2-network

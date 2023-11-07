@@ -30,7 +30,7 @@ stats_auth_token = '2GS61JLR2WQq2n6N'	# Required to post stats data at the end o
 # ------------------------------------------------------------------------------
 # ASP Stats Backend Web Server
 # ------------------------------------------------------------------------------
-http_backend_addr = 'asp-nginx' # Reach ASP over the `bf2-network` docker network. If your ASP is on another host, use its hostname or domain name here.
+http_backend_addr = 'asp' # Reach ASP over the `bf2-network` docker network. If your ASP is on another host, use its hostname or domain name here.
 http_backend_port = 80
 http_backend_asp = '/ASP/bf2statistics.php'
 
