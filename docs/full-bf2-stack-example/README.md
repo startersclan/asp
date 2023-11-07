@@ -181,10 +181,10 @@ iptables -A INPUT -p udp -m udp -m conntrack --ctstate NEW --dport 80 -j ACCEPT
 iptables -A INPUT -p udp -m udp -m conntrack --ctstate NEW --dport 443 -j ACCEPT
 
 # Attach to the bf2 server console
-docker attach bf2stats_bf2_1
+docker attach asp_bf2_1
 
 # Copy logs from bf2 server to this folder
-docker cp bf2stats_bf2_1:/server/bf2/python/bf2/logs .
+docker cp asp_bf2_1:/server/bf2/python/bf2/logs .
 
 # Dump the DB
 docker exec $( docker-compose ps | grep db | awk '{print $1}' ) mysqldump -uroot -pascent bf2stats | gzip > bf2stats.sql.gz
@@ -197,14 +197,14 @@ docker-compose down
 
 # Cleanup. Warning: This destroys the all data!
 docker-compose down
-docker volume rm bf2stats_prmasterserver-volume
-docker volume rm bf2stats_traefik-acme-volume
-docker volume rm bf2stats_backups-volume
-docker volume rm bf2stats_cache-volume
-docker volume rm bf2stats_config-volume
-docker volume rm bf2stats_logs-volume
-docker volume rm bf2stats_snapshots-volume
-docker volume rm bf2stats_db-volume
+docker volume rm asp_prmasterserver-volume
+docker volume rm asp_traefik-acme-volume
+docker volume rm asp_backups-volume
+docker volume rm asp_cache-volume
+docker volume rm asp_config-volume
+docker volume rm asp_logs-volume
+docker volume rm asp_snapshots-volume
+docker volume rm asp_db-volume
 ```
 
 ## Background: Keeping Battlefield 2 working
