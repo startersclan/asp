@@ -151,6 +151,8 @@ services:
       - DB_NAME=bf2stats
       - DB_USER=admin
       - DB_PASS=admin
+    # ports:
+    #   - 8081:80
     volumes:
       - backups-volume:/src/ASP/system/backups # This volume is effectively unused since ASP doesn't allow DB backups for a remote DB, but mount it anyway to avoid errors.
       - cache-volume:/src/ASP/system/cache
@@ -199,6 +201,8 @@ services:
     environment:
       - PMA_ABSOLUTE_URI=https://phpmyadmin.example.com # Enable this if behind a reverse proxy
       - PMA_HOST=db
+    # ports:
+    #   - 8083:80
     networks:
       - traefik-network
       - bf2-network
