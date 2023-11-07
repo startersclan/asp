@@ -24,8 +24,8 @@ debug_fraglog_enable = 0				# Detailed 'Fragalyzer' Logs (requires existing fold
 # which are NOT to be shared with anyone!
 # ------------------------------------------------------------------------------
 stats_enable = 1
-stats_auth_id = 112960		# Required to post stats data at the end of round.
-stats_auth_token = '2GS61JLR2WQq2n6N'	# Required to post stats data at the end of round.
+stats_auth_id = 112950		# Required to post stats data at the end of round.
+stats_auth_token = 'GGB6Vj70Nmf98nm7'	# Required to post stats data at the end of round.
 
 # ------------------------------------------------------------------------------
 # ASP Stats Backend Web Server
@@ -41,7 +41,7 @@ http_backend_asp = '/ASP/bf2statistics.php'
 # 0 = log only on error sending to backend
 # 1 = all snapshots
 # ------------------------------------------------------------------------------
-snapshot_logging = 0
+snapshot_logging = 1
 snapshot_log_path_sent = 'python/bf2/logs/snapshots/sent' 		# Relative from the BF2 base folder
 snapshot_log_path_unsent = 'python/bf2/logs/snapshots/unsent' 	# Relative from the BF2 base folder
 
