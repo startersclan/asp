@@ -91,6 +91,7 @@ services:
     ports:
       - 80:80
       - 443:443
+      # - 8080:8080 # Uncomment to view traefik dashboard on port 8080
     networks:
       - traefik-public-network
       - traefik-network
@@ -98,6 +99,7 @@ services:
     command:
       - --global.checknewversion=false
       - --global.sendanonymoususage=false
+      # - --api.insecure # Uncomment to view traefik dashboard on port 8080
       # - --log.level=DEBUG
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
