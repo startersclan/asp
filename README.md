@@ -21,6 +21,10 @@ See [here](docs/upgrading-docker-images-to-3.3.md).
 ## Development
 
 ```sh
+# For faster builds, use `docker compose` with docker-container driver instead of `docker-compose`
+docker buildx create --name mybuilder --driver docker-container --use
+# Now use `docker compose` for all commands below. Enjoy.
+
 # Start
 docker-compose up --build
 # ASP available at http://localhost:8081/ASP. Username: admin, password admin. See ./config/ASP/config.php
