@@ -4,4 +4,5 @@
         "*.ai.add": "bat",
         "*.con": "ini",
     },
+    // "editor.trimAutoWhitespace": false
 }
