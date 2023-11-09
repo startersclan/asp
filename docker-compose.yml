@@ -53,6 +53,8 @@ services:
       # - MARIADB_PASSWORD=admin # Uncomment this if you want to create a regular user
       - MARIADB_DATABASE=bf2stats
     volumes:
+      - ./src/ASP/system/sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro # Seed the DB the first time
+      - ./src/ASP/system/sql/data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro # Seed the DB the first time
       - ./config/db/my.cnf:/etc/my.cnf:ro
       - db-volume:/var/lib/mysql
     networks:
