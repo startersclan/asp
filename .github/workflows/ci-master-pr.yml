@@ -55,7 +55,7 @@ jobs:
         (
             cd docs/full-bf2-stack-example
             sed -i '$!N;s@ports:\n      - 53:53.*@@;P;D' docker-compose.yml    # Remove coredns ports because it conflicts with system-resolved on the host
-            docker compose -f docker-compose.yml -f docker-compose.build.prod.yml up --build -d
+            docker compose -f docker-compose.yml -f docker-compose.build.yml up --build -d
         )
         docker compose -f docker-compose.test.yml --profile prod up
         docker compose -f docker-compose.test.yml --profile dns up
