@@ -85,14 +85,19 @@ git commit -m "Chore: Release 3.x.x"
 
 ### Q: ASP dashboard shows `Parse error: syntax error, unexpected 'admin' (T_STRING) in /src/ASP/system/framework/View.php(346) : eval()'d code on line 153`
 
-A: Grant `php`'s `www-data` user write permission for `config.php`.
+A: Grant the PHP user write permission for `./src/ASP/system/config/config.php`.
+
+### Q: Database cannot be backed up using the ASP when the database is not on the same host!!!
+
+A: If you are seeing this in docker, it is expected, since `ASP` and `db` containers are running on different hosts.
+
+It is better to backup the DB on a `cron` schedule using `mysqldump` from another container linked to the `db` container:
 
 ```sh
-chown 82:82 ./config/ASP/config.php
-chmod 666 ./config/ASP/config.php
-docker-compose restart php
+# Dump a DB at host `db`, user `root`, password `ascent`, database `bf2stats`
+mysqldump -hdb -uroot -pascent bf2stats
 ```
 
-### Q: `Xdebug: [Step Debug] Could not connect to debugging client. Tried: host.docker.internal:9000 (through xdebug.client_host/xdebug.client_port)` appears in the php logs
+### Q: `Xdebug: [Step Debug] Could not connect to debugging client. Tried: host.docker.internal:9000 (through xdebug.client_host/xdebug.client_port)` appears in PHP logs on `docker-compose up`
 
-A: The debugger is not running. Press `F5` in `vscode` to start the `php` `xdebug` debugger. If you stopped the debugger, it is safe to ignore this message.
+A: If you are seeing this in development, the PHP debugger is not running. Press `F5` in `vscode` to start the PHP debugger. If you don't need debugging, set `XDEBUG_MODE=off` in `docker-compose.yml` to disable XDebug.
