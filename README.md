@@ -46,25 +46,23 @@ docker exec -it $( docker-compose ps -q asp ) ls -al /src/ASP/system/logs
 # asp - List snapshots
 docker exec -it $( docker-compose ps -q asp ) ls -alR /src/ASP/system/snapshots/
 
-# Test routes
-docker-compose -f docker-compose.test.yml --profile dev up
+# Test
+./test/test.sh dev 1
 
 # Test production builds
-(cd docs/full-bf2-stack-example && docker-compose -f docker-compose.yml -f docker-compose.build.yml up --build)
-docker-compose -f docker-compose.test.yml --profile prod up
-docker-compose -f docker-compose.test.yml --profile dns up
+./test/test.sh prod 1 1
 
 # Dump the DB
-docker exec $( docker-compose ps | grep db | awk '{print $1}' ) mysqldump -uroot -pascent bf2stats | gzip > bf2stats.sql.gz
+docker exec $( docker-compose ps -q db ) mysqldump -uroot -pascent bf2stats | gzip > bf2stats.sql.gz
 
 # Restore the DB
-zcat bf2stats.sql.gz | docker exec -i $( docker-compose ps | grep db | awk '{print $1}' ) mysql -uroot -pascent bf2stats
+zcat bf2stats.sql.gz | docker exec -i $( docker-compose ps -q db ) mysql -uroot -pascent bf2stats
 
 # Stop
 docker-compose down
 
 # Cleanup
-docker-compose down
+docker-compose down --remove-orphans
 docker volume rm asp_backups-volume
 docker volume rm asp_cache-volume
 docker volume rm asp_config-volume

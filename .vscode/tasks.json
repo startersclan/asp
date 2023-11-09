@@ -6,19 +6,19 @@
         {
             "label": "Test (dev)",
             "type": "shell",
-            "command": "docker-compose -f docker-compose.test.yml --profile dev up --force-recreate",
+            "command": "./test/test.sh dev 1",
             "group": "build"
         },
         {
             "label": "Test (prod)",
             "type": "shell",
-            "command": "docker-compose -f docker-compose.test.yml --profile prod up --force-recreate",
+            "command": "./test/test.sh prod 1 1",
             "group": "build"
         },
         {
             "label": "Test (dns)",
             "type": "shell",
-            "command": "docker-compose -f docker-compose.test.yml --profile dns up --force-recreate",
+            "command": "./test/test.sh dns",
             "group": "build"
         },
     ]
