@@ -45,6 +45,8 @@ COPY ./config/ASP/. /
 COPY ./src/ASP/system/config /config.sample
 RUN chmod +x /docker-entrypoint.sh;
 RUN set -eux; \
+    chmod +x /docker-entrypoint.sh; \
+    chmod +x /tail.sh; \
     # Symlink nginx logs
     ln -sfn /dev/stdout /var/log/nginx/access.log; \
     ln -sfn /dev/stderr /var/log/nginx/error.log; \
