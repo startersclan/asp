@@ -44,8 +44,11 @@ RUN set -eux; \
 COPY ./config/ASP/. /
 COPY ./src/ASP/system/config /config.sample
 RUN chmod +x /docker-entrypoint.sh;
-# Disable the built-in php-fpm configs, since we're using our own config
 RUN set -eux; \
+    # Symlink nginx logs
+    ln -sfn /dev/stdout /var/log/nginx/access.log; \
+    ln -sfn /dev/stderr /var/log/nginx/error.log; \
+    # Disable the built-in php-fpm configs, since we're using our own config
     mv -v /usr/local/etc/php-fpm.d/docker.conf /usr/local/etc/php-fpm.d/docker.conf.disabled; \
     mv -v /usr/local/etc/php-fpm.d/www.conf /usr/local/etc/php-fpm.d/www.conf.disabled; \
     mv -v /usr/local/etc/php-fpm.d/zz-docker.conf /usr/local/etc/php-fpm.d/zz-docker.conf.disabled;
