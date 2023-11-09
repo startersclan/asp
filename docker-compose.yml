@@ -21,6 +21,7 @@ services:
       context: .
       target: dev
     environment:
+      # - XDEBUG_MODE=off   # Uncomment to disable xdebug
       # See ./src/ASP/system/config/config.php for all supported env vars
       - DB_HOST=db
       - DB_PORT=3306
