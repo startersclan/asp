@@ -67,6 +67,7 @@ docker-compose down
 docker-compose down
 docker volume rm asp_backups-volume
 docker volume rm asp_cache-volume
+docker volume rm asp_config-volume
 docker volume rm asp_logs-volume
 docker volume rm asp_snapshots-volume
 docker volume rm asp_db-volume
