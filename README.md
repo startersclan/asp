@@ -20,6 +20,8 @@ See [here](docs/upgrading-docker-images-to-3.3.md).
 
 ## Development
 
+To use Docker Compose v2, use `docker compose` instead of `docker-compose`.
+
 ```sh
 # 1. Start
 docker-compose up --build
