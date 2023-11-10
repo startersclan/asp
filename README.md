@@ -9,7 +9,7 @@ The new BF2Statistics 3.0 ASP, currently in public Beta. The GameSpy server to m
 ## Usage (docker)
 
 ```sh
-docker run --rm -it -p 80:80 -e DB_HOST=db -e DB_HOST=db -e DB_PORT=3306 -e DB_NAME=bf2stats -e DB_USER=admin -e DB_PASS=admin startersclan/asp:3.3.0
+docker run --rm -it -p 80:80 -e DB_HOST=db -e DB_PORT=3306 -e DB_NAME=bf2stats -e DB_USER=root -e DB_PASS=ascent startersclan/asp:3.2.0
 ```
 
 See [this](docs/full-bf2-stack-example) example showing how to deploy [Battlefield 2 1.5 server](https://github.com/startersclan/docker-bf2), [PRMasterserver](https://github.com/startersclan/PRMasterServer) as the master server, and `ASP` as the stats web server, using `docker-compose`.
@@ -21,12 +21,12 @@ See [here](docs/upgrading-docker-images-to-3.3.md).
 ## Development
 
 ```sh
-# 1. Start BF2 server, Gamespy server, and bf2stats ASP
+# 1. Start
 docker-compose up --build
 # ASP available at http://localhost:8081/ASP. Username: admin, password admin. See ./config/ASP/config.php
 # phpmyadmin available at http://localhost:8083. Username: root, password: ascent. See ./config/ASP/config.php config file
 
-# 2. Once everything has started, restart the BF2 server to ensure begin recording stats
+# 2. Once everything has started, restart the BF2 server to begin recording stats
 docker-compose restart bf2
 
 # 3. Before launching the BF2 client, spoof gamespy DNS by adding these entries in C:\Windows\system32\drivers\etc\hosts. This is needed for the BF2 client to work correctly.
@@ -46,7 +46,7 @@ docker-compose restart bf2
 # 4. Launch BF2 client and connect to the BF2 server
 # - To use BF2Hub as the Gamespy server, launch BF2.exe, and login to your BF2Hub account, and connect to the BF2 server using MULTIPLAYER > CONNECT TO IP
 # - To use PRMasterserver in docker-compose as the Gamespy server, if you have previously patched BF2.exe using the BF2Hub patcher, you must unpatch BF2.exe. Then launch BF2.exe (do not use BF2Hub), create a new Online account, login, and connect to the BF2 server using MULTIPLAYER > CONNECT TO IP.
-# At the end of a round, the BF2 server will send a stats snapshot to the ASP. View stats in ASP and bf2sclone.
+# At the end of a round, the BF2 server will send a stats snapshot to the ASP. View stats in ASP.
 
 # Development - Install vscode extensions
 # Once installed, set breakpoints in code, and press F5 to start debugging.
@@ -75,6 +75,8 @@ docker exec -it $( docker-compose ps -q asp ) sh
 docker exec -it $( docker-compose ps -q asp ) ls -al /src/ASP/system/backups
 # asp - List cache
 docker exec -it $( docker-compose ps -q asp ) ls -al /src/ASP/system/cache
+# asp - List config
+docker exec -it $( docker-compose ps -q asp ) ls -al /src/ASP/system/config
 # asp - List logs
 docker exec -it $( docker-compose ps -q asp ) ls -al /src/ASP/system/logs
 # asp - List snapshots
@@ -92,7 +94,7 @@ docker exec $( docker-compose ps -q db ) mysqldump -uroot -pascent bf2stats | gz
 # Restore the DB
 zcat bf2stats.sql.gz | docker exec -i $( docker-compose ps -q db ) mysql -uroot -pascent bf2stats
 
-# Stop BF2 server, gamespy server and bf2stats
+# Stop
 docker-compose down
 
 # Cleanup

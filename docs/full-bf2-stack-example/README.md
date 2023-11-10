@@ -186,6 +186,19 @@ docker attach asp_bf2_1
 # Copy logs from bf2 server to this folder
 docker cp asp_bf2_1:/server/bf2/python/bf2/logs .
 
+# asp - Exec into container
+docker exec -it $( docker-compose ps -q asp ) sh
+# asp - List backups
+docker exec -it $( docker-compose ps -q asp ) ls -al /src/ASP/system/backups
+# asp - List cache
+docker exec -it $( docker-compose ps -q asp ) ls -al /src/ASP/system/cache
+# asp - List config
+docker exec -it $( docker-compose ps -q asp ) ls -al /src/ASP/system/config
+# asp - List logs
+docker exec -it $( docker-compose ps -q asp ) ls -al /src/ASP/system/logs
+# asp - List snapshots
+docker exec -it $( docker-compose ps -q asp ) ls -alR /src/ASP/system/snapshots/
+
 # Dump the DB
 docker exec $( docker-compose ps | grep db | awk '{print $1}' ) mysqldump -uroot -pascent bf2stats | gzip > bf2stats.sql.gz
 
