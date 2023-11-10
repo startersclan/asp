@@ -6,7 +6,7 @@ cd "$SCRIPT_DIR"
 
 echo
 echo "[test-snapshots]"
-apk add --no-cache curl
+command -v curl || apk add --no-cache curl
 for i in ./snapshots/*; do
     RES=$( set -x; curl -s -A GameSpyHTTP/1.0 -H 'Content-Type: application/json' --data "@$i" http://asp/ASP/bf2statistics.php )
     echo "$RES"; echo

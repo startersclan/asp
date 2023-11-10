@@ -35,7 +35,7 @@ asp.example.com/ASP/selectunlock.aspx 200
 asp.example.com/ASP/getplayerinfo.aspx 200
 asp.example.com/ASP/system 401
 "
-apk add --no-cache curl
+command -v curl || apk add --no-cache curl
 echo "$ENDPOINTS" | awk NF | while read -r i j; do
     d=$( echo "$i" | cut -d '/' -f1 )
     if curl --head -skL http://$i --resolve $d:80:127.0.0.1 --resolve $d:443:127.0.0.1 2>&1 | grep -E "^HTTP/(1.1|2) $j " > /dev/null; then
