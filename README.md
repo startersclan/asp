@@ -99,6 +99,7 @@ docker-compose down
 
 # Cleanup
 docker-compose down --remove-orphans
+docker volume rm asp_prmasterserver-volume
 docker volume rm asp_backups-volume
 docker volume rm asp_cache-volume
 docker volume rm asp_config-volume
