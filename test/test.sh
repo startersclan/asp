@@ -41,22 +41,12 @@ cleanup_test() {
 trap cleanup_test INT TERM EXIT
 
 echo "Testing..."
-seed_database() {
-    (
-        cd ..
-        docker exec $( docker compose ps -q db ) mysql -h db -uroot -pascent bf2stats -e 'UPDATE stats_provider SET authorized = 1 WHERE id = 1'
-        docker exec $( docker compose ps -q db ) mysql -h db -uroot -pascent bf2stats -e 'SELECT * FROM stats_provider'
-        docker exec $( docker compose ps -q db ) mysql -h db -uroot -pascent bf2stats -e "UPDATE stats_provider_auth_ip SET address = '0.0.0.0/0' "
-        docker exec $( docker compose ps -q db ) mysql -h db -uroot -pascent bf2stats -e 'SELECT * FROM stats_provider_auth_ip'
-    )
-}
 if [ "$TEST" = 'dev' ]; then
     setup() {
         (cd .. && docker compose -f docker-compose.yml $CACHE up --build -d)
     }
     run() {
         docker exec $( docker compose ps -q test-container-networking ) ./test-ready.sh
-        seed_database
         docker exec $( docker compose ps -q test-container-networking ) ./test-routes.sh
         docker exec $( docker compose ps -q test-container-networking ) ./test-snapshots.sh
         # docker exec $( docker compose ps -q test-container-networking ) ./test-internal-dns.sh
@@ -71,7 +61,6 @@ if [ "$TEST" = 'prod' ]; then
     }
     run() {
         docker exec $( docker compose ps -q test-container-networking ) ./test-ready.sh
-        seed_database
         docker exec $( docker compose ps -q test-container-networking ) ./test-routes.sh
         docker exec $( docker compose ps -q test-host-networking ) ./test-endpoints.sh
         docker exec $( docker compose ps -q test-container-networking ) ./test-snapshots.sh
