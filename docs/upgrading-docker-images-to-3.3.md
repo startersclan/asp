@@ -1,6 +1,6 @@
 # Upgrading docker images to v3.3.x
 
-In v3.1.0 and v3.2.0, `asp` had separate `nginx` and `php` images.
+In <= v3.2.x, `asp` had separate `nginx` and `php` images.
 
 Since v3.3.0, `asp` image contains both `nginx` and `php`, with environment variable support, and entrypoint that sets the correct permissions.
 
