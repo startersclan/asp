@@ -1,0 +1,3 @@
+/src/python/bf2/logs/*.log
+/src/python/bf2/logs/snapshots/sent/*.json
+/src/python/bf2/logs/snapshots/unsent/*.json
