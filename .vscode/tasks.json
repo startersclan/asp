@@ -1,0 +1,25 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Test (dev)",
+            "type": "shell",
+            "command": "./test/test.sh dev 1",
+            "group": "build"
+        },
+        {
+            "label": "Test (prod)",
+            "type": "shell",
+            "command": "./test/test.sh prod 1 1",
+            "group": "build"
+        },
+        {
+            "label": "Test (dns)",
+            "type": "shell",
+            "command": "./test/test.sh dns",
+            "group": "build"
+        },
+    ]
+}
