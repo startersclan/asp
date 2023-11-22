@@ -77,9 +77,16 @@ return [
     ],
     "3.2.0" => [
         "comment" => "Added timestamp column to the player_unlock table.",
-        "up" => null,
-        "up_string" => "",
+        "up" => "30300",
+        "up_string" => "3.3.0",
         "down" => "30100",
         "down_string" => "3.1.0",
+    ],
+    "3.3.0" => [
+        "comment" => "Add base game maps to data.sql; Fix Kubra Dam mapinfo redirect",
+        "up" => null,
+        "up_string" => "",
+        "down" => "30200",
+        "down_string" => "3.2.0",
     ]
 ];
