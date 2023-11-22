@@ -308,3 +308,4 @@ INSERT INTO `_version`(`updateid`, `version`) VALUES (30070, '3.0.7');
 INSERT INTO `_version`(`updateid`, `version`) VALUES (30080, '3.0.8');
 INSERT INTO `_version`(`updateid`, `version`) VALUES (30100, '3.1.0');
 INSERT INTO `_version`(`updateid`, `version`) VALUES (30200, '3.2.0');
+INSERT INTO `_version`(`updateid`, `version`) VALUES (30300, '3.3.0');
