@@ -113,7 +113,7 @@ docker volume rm asp_db-volume
 ## Release
 
 ```sh
-./scripts/release.sh "3.x.x" "A comment to describe the release"
+./release.sh 3.x.x "A comment to describe the release"
 git add .
 git commit -m "Chore: Release 3.x.x"
 ```
