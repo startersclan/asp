@@ -1,5 +1,10 @@
 # This is a docker compose override file, for production builds with caching for CI environments
 services:
+  bf2:
+    image: startersclan/docker-bf2:v1.5.3153.0
+    volumes:
+      - ../../src/python:/server/bf2/python # Mount the python files
+
   asp:
     build:
       dockerfile: Dockerfile

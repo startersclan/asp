@@ -148,8 +148,8 @@ services:
       - DB_HOST=db
       - DB_PORT=3306
       - DB_NAME=bf2stats
-      - DB_USER=admin
-      - DB_PASS=admin
+      - DB_USER=root
+      - DB_PASS=ascent
     # ports:
     #   - 8081:80
     volumes:
