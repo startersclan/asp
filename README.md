@@ -14,7 +14,7 @@ docker run --rm -it -p 80:80 -e DB_HOST=db -e DB_PORT=3306 -e DB_NAME=bf2stats -
 
 See [this](docs/full-bf2-stack-example) example showing how to deploy [Battlefield 2 1.5 server](https://github.com/startersclan/docker-bf2), [PRMasterserver](https://github.com/startersclan/PRMasterServer) as the master server, and `ASP` as the stats web server, using `docker-compose`.
 
-### Upgrading to v3.3.0 from prior versions
+### Upgrading to v3.3.0
 
 See [here](docs/upgrading-docker-images-to-3.3.md).
 
