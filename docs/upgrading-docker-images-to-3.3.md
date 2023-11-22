@@ -1,8 +1,8 @@
-# Upgrading docker images from previous versions
+# Upgrading docker images to v3.3.x
 
 In v3.1.0 and v3.2.0, `asp` had separate `nginx` and `php` images.
 
-Since v3.3.0: `asp` image containing both `nginx` and `php`, with environment variable support, and entrypoint that sets the correct permissions.
+Since v3.3.0, `asp` image contains both `nginx` and `php`, with environment variable support, and entrypoint that sets the correct permissions.
 
 Benefits:
 
@@ -74,7 +74,6 @@ To this:
 
 volumes:
   config-volume:
-  ...
 ```
 
 2. If you have `init-container`, now it only needs to set permission for the `db` volume:
