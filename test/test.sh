@@ -49,7 +49,7 @@ if [ "$TEST" = 'dev' ]; then
         docker exec $( docker compose ps -q test-container-networking ) ./test-ready.sh
         docker exec $( docker compose ps -q test-container-networking ) ./test-routes.sh
         docker exec $( docker compose ps -q test-container-networking ) ./test-snapshots.sh
-        # docker exec $( docker compose ps -q test-container-networking ) ./test-internal-dns.sh
+        docker exec $( docker compose ps -q test-container-networking ) ./test-internal-dns.sh
     }
     cleanup() {
         (cd .. && docker compose stop)
