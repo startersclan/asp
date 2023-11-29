@@ -54,12 +54,14 @@ To this:
   asp:
     image: startersclan/bf2stats:3.3.0
     environment:
-      # See ./src/ASP/system/config/config.php for all supported env vars
+      # See ./src/ASP/system/config/config.php for all supported env vars. Use comma-delimited value for array
       - DB_HOST=db
       - DB_PORT=3306
       - DB_NAME=bf2stats
       - DB_USER=root
       - DB_PASS=ascent
+      - ADMIN_HOSTS=127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16   # Limit admins to private IPs
+      - DEBUG_LVL=4
     volumes:
       - backups-volume:/src/ASP/system/backups # This volume is effectively unused since ASP doesn't allow DB backups for a remote DB, but mount it anyway to avoid errors.
       - cache-volume:/src/ASP/system/cache

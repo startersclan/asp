@@ -150,6 +150,8 @@ services:
       - DB_NAME=bf2stats
       - DB_USER=root
       - DB_PASS=ascent
+      - ADMIN_HOSTS=127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16   # Limit admins to private IPs
+      - DEBUG_LVL=4
     # ports:
     #   - 8081:80
     volumes:
