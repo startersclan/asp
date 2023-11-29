@@ -14,7 +14,7 @@ Benefits:
 
 These steps are demonstrated using Docker Compose.
 
-1. Merge the networks and volumes of `asp-nginx` and `asp-php` into a single `asp` container, switch to a volume and env vars for `asp` configuration, and remove `depends_on`.
+1. Merge the networks and volumes of `asp-nginx` and `asp-php` into a single `asp` container, switch to env vars and a volume for `asp` configuration, and remove `depends_on`.
 
 For instance, from this:
 

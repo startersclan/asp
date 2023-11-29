@@ -96,7 +96,7 @@ services:
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-asp-gamespy-http.rule=Host(`bf2web.gamespy.com`)" # Note: `bf2web.gamespy.com` doesn't need https. The BF2 client BFHQ makes a HTTP requests to `bf2web.gamespy.com` with `Host: bf2web.gamespy.com`.
     environment:
       # - XDEBUG_MODE=off   # Uncomment to disable xdebug
-      # See ./src/ASP/system/config/config.php for all supported env vars
+      # See ./src/ASP/system/config/config.php for all supported env vars. Use comma-delimited value for array
       - DB_HOST=db
       - DB_PORT=3306
       - DB_NAME=bf2stats
