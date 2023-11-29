@@ -144,7 +144,7 @@ services:
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME?err}-asp.rule=Host(`asp.example.com`)"
       - "traefik.http.services.${COMPOSE_PROJECT_NAME?err}-asp.loadbalancer.server.port=80"
     environment:
-      # See ./src/ASP/system/config/config.php for all supported env vars
+      # See ./src/ASP/system/config/config.php for all supported env vars. Use comma-delimited value for array
       - DB_HOST=db
       - DB_PORT=3306
       - DB_NAME=bf2stats
